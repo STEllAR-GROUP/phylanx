@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     primitive_argument_type vsplit_operation::vsplit2d_helper(
         primitive_arguments_type&& args) const
     {
-        std::array<std::size_t, 2> matrix_dims =
+        std::array<std::size_t, 3> matrix_dims =
             extract_numeric_value_dimensions(args[0], name_, codename_);
 
         std::size_t num_rows = matrix_dims[0];
@@ -237,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     hpx::future<primitive_argument_type> vsplit_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args,
-        eval_context ctx) const
+        eval_context ctx) const override
     {
         if (operands.empty())
         {
@@ -279,7 +279,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     //////////////////////////////////////////////////////////////////////////
 
     hpx::future<primitive_argument_type> vsplit_operation::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const override
     {
         if (this->no_operands())
         {
