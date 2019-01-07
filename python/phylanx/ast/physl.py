@@ -24,6 +24,20 @@ mapped_methods = {
     "negative": "__minus",
     "print": "cout",
     "subtract": "__sub",
+    "inf": 'inf',
+    "Inf": 'inf',
+    "Infinity": 'inf',
+    "PINF": 'inf',
+    "infty": 'inf',
+    "NINF": 'ninf',
+    "nan": 'nan',
+    "NaN": 'nan',
+    "NAN": 'nan',
+    "PZERO": 'PZERO',
+    "NZERO": 'NZERO',
+    "e": 'euler',
+    "euler_gamma": 'euler_gamma',
+    "pi": 'pi'
 }
 
 methods_supporting_dtype = [
