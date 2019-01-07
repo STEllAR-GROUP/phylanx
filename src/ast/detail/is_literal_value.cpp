@@ -31,8 +31,7 @@ namespace phylanx { namespace ast { namespace detail
         case 1: HPX_FALLTHROUGH;    // bool
         case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 4: HPX_FALLTHROUGH;    // std::string
-        case 5: HPX_FALLTHROUGH;    // std::uint64_t
-        case 9:                     // phylanx::ir::node_data<std::int64_t>
+        case 5:                     // phylanx::ir::node_data<std::int64_t>
             return true;
 
         // phylanx::util::recursive_wrapper<expression>
@@ -81,7 +80,7 @@ namespace phylanx { namespace ast { namespace detail
         case 4:     // std::string
             return util::get<4>(pe.get());
 
-        case 5:     // std::uint64_t
+        case 5:     // phylanx::ir::node_data<std::int64_t>
             return util::get<5>(pe.get());
 
         // phylanx::util::recursive_wrapper<expression>
@@ -91,9 +90,6 @@ namespace phylanx { namespace ast { namespace detail
         // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
         case 8:
             return literal_value(util::get<8>(pe.get()).get());
-
-        case 9:     // phylanx::ir::node_data<std::int64_t>
-            return util::get<9>(pe.get());
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 3: HPX_FALLTHROUGH;    // identifier

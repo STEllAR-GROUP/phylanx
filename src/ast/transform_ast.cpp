@@ -127,7 +127,7 @@ namespace phylanx { namespace ast
             case 1: HPX_FALLTHROUGH;    // bool
             case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
             case 4: HPX_FALLTHROUGH;    // std::string
-            case 5: HPX_FALLTHROUGH;    // std::int64_t
+            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
             default:
                 return pe;
             }
@@ -268,7 +268,7 @@ namespace phylanx { namespace ast
             case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
             case 3: HPX_FALLTHROUGH;    // identifier
             case 4: HPX_FALLTHROUGH;    // std::string
-            case 5: HPX_FALLTHROUGH;    // std::int64_t
+            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
             default:
                 return pe;
             }
@@ -406,7 +406,7 @@ namespace phylanx { namespace ast
             case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
             case 3: HPX_FALLTHROUGH;    // identifier
             case 4: HPX_FALLTHROUGH;    // std::string
-            case 5: HPX_FALLTHROUGH;    // std::int64_t
+            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
             default:
                 return pe;
             }

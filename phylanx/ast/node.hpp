@@ -235,11 +235,10 @@ namespace phylanx { namespace ast
           , phylanx::ir::node_data<double>
           , identifier
           , std::string
-          , std::int64_t
+          , phylanx::ir::node_data<std::int64_t>
           , phylanx::util::recursive_wrapper<expression>
           , phylanx::util::recursive_wrapper<function_call>
           , phylanx::util::recursive_wrapper<std::vector<ast::expression>>
-          , phylanx::ir::node_data<std::int64_t>
         >;
 
     struct primary_expr : expr_node_type, tagged
@@ -262,11 +261,12 @@ namespace phylanx { namespace ast
         }
 
         primary_expr(std::uint64_t val)
-          : expr_node_type(std::int64_t(val))
+          : expr_node_type(
+                phylanx::ir::node_data<std::int64_t>(std::int64_t(val)))
         {
         }
         primary_expr(std::int64_t val)
-          : expr_node_type(val)
+          : expr_node_type(phylanx::ir::node_data<std::int64_t>(val))
         {
         }
 
@@ -403,11 +403,13 @@ namespace phylanx { namespace ast
           : operand_node_type(primary_expr(val))
         {
         }
-        operand(ir::node_data<double> const& val)
+        template <typename T>
+        operand(ir::node_data<T> const& val)
           : operand_node_type(primary_expr(val))
         {
         }
-        operand(ir::node_data<double> && val)
+        template <typename T>
+        operand(ir::node_data<T> && val)
           : operand_node_type(primary_expr(std::move(val)))
         {
         }
@@ -582,10 +584,12 @@ namespace phylanx { namespace ast
         explicit expression(double d)
           : first(operand(d))
         {}
-        explicit expression(ir::node_data<double> const& nd)
+        template <typename T>
+        explicit expression(ir::node_data<T> const& nd)
           : first(operand(nd))
         {}
-        explicit expression(ir::node_data<double> && nd)
+        template <typename T>
+        explicit expression(ir::node_data<T> && nd)
           : first(operand(std::move(nd)))
         {}
 

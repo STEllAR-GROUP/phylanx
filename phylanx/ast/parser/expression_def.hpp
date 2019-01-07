@@ -135,9 +135,9 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        int64_tensor %= '[' >> (int64_matrix % ',') > ']';
+        int64_tensor %= '[' >> (int64_matrix % ',') >> ']';
 #endif
-        int64_matrix %= '[' >> (int64_vector % ',') > ']';
+        int64_matrix %= '[' >> (int64_vector % ',') >> ']';
 
         int64_vector %= '[' >> (long_long % ',') >> ']';
 
