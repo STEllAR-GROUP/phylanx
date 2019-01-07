@@ -202,8 +202,8 @@ namespace phylanx { namespace execution_tree
         std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT void register_pattern(
-        std::string const&, match_pattern_type const& pattern);
+    PHYLANX_EXPORT void register_pattern(std::string const& name,
+        match_pattern_type const& pattern, std::string const& fullpath);
 
     PHYLANX_EXPORT void show_patterns();
     PHYLANX_EXPORT void show_patterns(std::ostream& ostrm);

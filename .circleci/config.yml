@@ -338,7 +338,7 @@ jobs:
             - setup_remote_docker
             - run:
                 name: Installing
-                command: cmake --build /phylanx/build -- -j2 install
+                command: cmake --build /phylanx/build -- -j1 install
             - run:
                 name: Create Docker Image
                 command: |

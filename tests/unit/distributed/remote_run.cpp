@@ -116,7 +116,8 @@ int hpx_main(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::register_pattern("locality_id_action",
-        phylanx::execution_tree::primitives::locality_id_match_data);
+        phylanx::execution_tree::primitives::locality_id_match_data,
+        argv[0]);
 
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
