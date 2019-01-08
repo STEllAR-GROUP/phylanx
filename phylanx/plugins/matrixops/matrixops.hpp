@@ -36,5 +36,6 @@
 #include <phylanx/plugins/matrixops/tile_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
 #include <phylanx/plugins/matrixops/unique.hpp>
+#include <phylanx/plugins/matrixops/vsplit_operation.hpp>
 
 #endif
