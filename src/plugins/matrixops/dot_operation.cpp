@@ -5,6 +5,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
 
@@ -27,17 +28,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("dot",
             std::vector<std::string>{"dot(_1, _2)"},
-            &create_dot_operation, &create_primitive<dot_operation>,
-            "v1, v2\n"
-            "Args:\n"
-            "\n"
-            "    v1 (vector) : a vector\n"
-            "    v2 (vector) : a vector\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The dot product of vector `v1` and `v2`."
-            )
+            &create_dot_operation, &create_primitive<dot_operation>, R"(
+            v1, v2
+            Args:
+
+                v1 (vector) : a vector
+                v2 (vector) : a vector
+
+            Returns:
+
+            The dot product of vector `v1` and `v2`.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -48,15 +48,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
     primitive_argument_type dot_operation::dot0d0d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
         lhs.scalar() *= rhs.scalar();
-        return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
+        return primitive_argument_type{std::move(lhs)};
     }
 
+    template <typename T>
     primitive_argument_type dot_operation::dot0d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
         if (rhs.is_ref())
         {
@@ -70,8 +72,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(rhs)};
     }
 
+    template <typename T>
     primitive_argument_type dot_operation::dot0d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
         if (rhs.is_ref())
         {
@@ -85,8 +88,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(rhs)};
     }
 
+    template <typename T>
     primitive_argument_type dot_operation::dot0d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
         switch (rhs.num_dimensions())
         {
@@ -106,18 +110,67 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // lhs_order == 1 && rhs_order != 2
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot0d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                    "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type dot_operation::dot1d0d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.is_ref())
+        {
+            lhs = lhs.vector() * rhs.scalar();
+        }
+        else
+        {
+            lhs.vector() *= rhs.scalar();
+        }
+
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    template <typename T>
+    primitive_argument_type dot_operation::dot1d1d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.size() != rhs.size())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot1d1d",
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
+        }
+
+        // lhs.dimension(0) == rhs.dimension(0)
+        lhs = T(blaze::dot(lhs.vector(), rhs.vector()));
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    template <typename T>
+    primitive_argument_type dot_operation::dot1d2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.size() != rhs.dimension(0))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot1d2d",
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
+        }
+
+        lhs = blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
+        return primitive_argument_type{std::move(lhs)};
     }
 
     // lhs_num_dims == 1
     // Case 1: Inner product of two vectors
     // Case 2: Inner product of a vector and an array of vectors
+    template <typename T>
     primitive_argument_type dot_operation::dot1d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
         switch (rhs.num_dimensions())
         {
@@ -136,68 +189,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
         }
     }
 
-    primitive_argument_type dot_operation::dot1d0d(
-        operand_type&& lhs, operand_type&& rhs) const
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type dot_operation::dot2d0d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
-        if (lhs.is_ref())
-        {
-            lhs = lhs.vector() * rhs.scalar();
-        }
-        else
-        {
-            lhs.vector() *= rhs.scalar();
-        }
-
-        return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
+        lhs = lhs.matrix() * rhs.scalar();
+        return primitive_argument_type{std::move(lhs)};
     }
 
-    primitive_argument_type dot_operation::dot1d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type dot_operation::dot2d1d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
-        if (lhs.size() != rhs.size())
+        if (lhs.dimension(1) != rhs.size())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d1d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
-        }
-
-        // lhs.dimension(0) == rhs.dimension(0)
-        lhs = double(blaze::dot(lhs.vector(), rhs.vector()));
-        return primitive_argument_type{
-            ir::node_data<double>{std::move(lhs)}};
-    }
-
-    primitive_argument_type dot_operation::dot1d2d(
-        operand_type&& lhs, operand_type&& rhs) const
-    {
-        if (lhs.size() != rhs.dimension(0))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d2d",
+                "dot_operation::dot2d1d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
 
-        lhs = blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
-        return primitive_argument_type{
-            ir::node_data<double>{std::move(lhs)}};
+        rhs = lhs.matrix() * rhs.vector();
+        return primitive_argument_type{std::move(rhs)};
+    }
+
+    template <typename T>
+    primitive_argument_type dot_operation::dot2d2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(1) != rhs.dimension(0))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot2d2d",
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
+        }
+
+        lhs = lhs.matrix() * rhs.matrix();
+        return primitive_argument_type{std::move(lhs)};
     }
 
     // lhs_num_dims == 2
     // Multiply a matrix with a vector
     // Regular matrix multiplication
+    template <typename T>
     primitive_argument_type dot_operation::dot2d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
         switch (rhs.num_dimensions())
         {
@@ -216,52 +259,109 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
-        }
-    }
-
-    primitive_argument_type dot_operation::dot2d0d(
-        operand_type&& lhs, operand_type&& rhs) const
-    {
-        lhs = lhs.matrix() * rhs.scalar();
-        return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
-    }
-
-    primitive_argument_type dot_operation::dot2d1d(
-        operand_type&& lhs, operand_type&& rhs) const
-    {
-        if (lhs.dimension(1) != rhs.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot2d1d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
-
-        rhs = lhs.matrix() * rhs.vector();
-        return primitive_argument_type{
-            ir::node_data<double>{std::move(rhs)}};
     }
 
-    primitive_argument_type dot_operation::dot2d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type dot_operation::dot0d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
     {
-        if (lhs.dimension(1) != rhs.dimension(0))
+        switch (extract_common_type(lhs, rhs))
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot2d2d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
+        case node_data_type_bool:
+            return dot0d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return dot0d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return dot0d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
         }
 
-        lhs = lhs.matrix() * rhs.matrix();
-        return primitive_argument_type{
-            ir::node_data<double>{std::move(lhs)}};
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::dot0d",
+            generate_error_message(
+                "the dot primitive requires for all arguments to "
+                    "be numeric data types"));
     }
 
+    primitive_argument_type dot_operation::dot1d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return dot1d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return dot1d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return dot1d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::dot1d",
+            generate_error_message(
+                "the dot primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    primitive_argument_type dot_operation::dot2d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return dot2d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return dot2d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return dot2d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::dot2d",
+            generate_error_message(
+                "the dot primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> dot_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -286,11 +386,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](operand_type&& op1, operand_type&& op2)
+            [this_ = std::move(this_)](primitive_argument_type&& op1,
+                    primitive_argument_type&& op2)
             ->  primitive_argument_type
             {
-                std::size_t dims = op1.num_dimensions();
-                switch (dims)
+                switch (extract_numeric_value_dimension(
+                    op1, this_->name_, this_->codename_))
                 {
                 case 0:
                     return this_->dot0d(std::move(op1), std::move(op2));
@@ -304,13 +405,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_, ctx),
-            numeric_operand(operands[1], args, name_, codename_, ctx));
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}

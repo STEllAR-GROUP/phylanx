@@ -5,9 +5,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 #include <phylanx/util/random.hpp>
+#include <phylanx/util/detail/bad_swap.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -25,43 +27,6 @@
 
 #include <blaze/Math.h>
 
-//////////////////////////////////////////////////////////////////////////
-namespace blaze
-{
-    namespace _row_swap
-    {
-        using std::swap;
-
-        template <typename T>
-        void check_swap() noexcept(
-            noexcept(swap(std::declval<typename T::BaseType&>(),
-                std::declval<typename T::BaseType&>())))
-        {}
-    }
-
-    // BADBAD: This overload of swap is necessary to work around the problems
-    //         caused by matrix_row_iterator not being a real random access
-    //         iterator. Dereferencing matrix_row_iterator does not yield a
-    //         true reference but only a temporary blaze::Row holding true
-    //         references.
-    //
-    // A real fix for this problem is proposed in PR0022R0
-    // (http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0022r0.html)
-    //
-    using std::iter_swap;
-
-    template <typename T>
-    void swap(Row<T>&& x, Row<T>&& y) noexcept(
-        noexcept(_row_swap::check_swap<T>()) &&
-        noexcept(*std::declval<typename T::Iterator>()))
-    {
-        for (auto a = x.begin(), b = y.begin(); a != x.end() && b != y.end();
-            ++a, ++b)
-        {
-            iter_swap(a, b);
-        }
-    }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -71,17 +36,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("shuffle",
             std::vector<std::string>{"shuffle(_1)"},
-            &create_shuffle_operation, &create_primitive<shuffle_operation>,
-            "args\n"
-            "Args:\n"
-            "\n"
-            "    args (list) : a list of values\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A shuffled version of the list. Note that `args` itself will be "
-            "shuffled by this call."
-            )
+            &create_shuffle_operation,
+            &create_primitive<shuffle_operation>, R"(
+            args
+            Args:
+
+                args (list) : a list of values
+
+            Returns:
+
+            A shuffled version of the list. Note that `args` itself will be "
+            shuffled by this call.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -92,22 +57,79 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type shuffle_operation::shuffle_1d(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type shuffle_operation::shuffle_1d(
+        ir::node_data<T>&& arg) const
     {
         auto x = arg.vector();
         std::shuffle(x.begin(), x.end(), util::rng_);
 
-        return primitive_argument_type{ir::node_data<double>{std::move(x)}};
+        return primitive_argument_type{std::move(arg)};
     }
 
-    primitive_argument_type shuffle_operation::shuffle_2d(arg_type&& arg) const
+    template <typename T>
+    primitive_argument_type shuffle_operation::shuffle_2d(
+        ir::node_data<T>&& arg) const
     {
         auto x = arg.matrix();
-        auto x_begin = util::matrix_row_iterator<decltype(x)>(x);
-        auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
+
+        util::matrix_row_iterator<decltype(x)> x_begin(x);
+        util::matrix_row_iterator<decltype(x)> x_end(x, x.rows());
         std::shuffle(x_begin, x_end, util::rng_);
 
-        return primitive_argument_type{ir::node_data<double>{std::move(x)}};
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    primitive_argument_type shuffle_operation::shuffle_1d(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return shuffle_1d(extract_boolean_value_strict(std::move(arg)));
+
+        case node_data_type_int64:
+            return shuffle_1d(extract_integer_value_strict(std::move(arg)));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return shuffle_1d(extract_numeric_value(std::move(arg)));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "shuffle_operation::shuffle_1d",
+            generate_error_message(
+                "the shuffle primitive requires for its argument to "
+                    "be numeric data type"));
+    }
+
+    primitive_argument_type shuffle_operation::shuffle_2d(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return shuffle_2d(extract_boolean_value_strict(std::move(arg)));
+
+        case node_data_type_int64:
+            return shuffle_2d(extract_integer_value_strict(std::move(arg)));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return shuffle_2d(extract_numeric_value(std::move(arg)));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "shuffle_operation::shuffle_2d",
+            generate_error_message(
+                "the shuffle primitive requires for its argument to "
+                    "be numeric data type"));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -134,29 +156,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](arg_type&& arg)
-                -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& arg)
+            -> primitive_argument_type
+            {
+                switch (extract_numeric_value_dimension(
+                    arg, this_->name_, this_->codename_))
                 {
-                    std::size_t lhs_dims = arg.num_dimensions();
-                    switch (lhs_dims)
-                    {
-                    case 1:
-                        return this_->shuffle_1d(std::move(arg));
+                case 1:
+                    return this_->shuffle_1d(std::move(arg));
 
-                    case 2:
-                        return this_->shuffle_2d(std::move(arg));
+                case 2:
+                    return this_->shuffle_2d(std::move(arg));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "shuffle_operation::eval",
-                            this_->generate_error_message(
-                                "operand has an unsupported number of "
-                                    "dimensions. Only possible values are: "
-                                    "1 or 2."));
-                    }
-                }),
-            numeric_operand(operands[0], args, name_, codename_, std::move(ctx)));
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "shuffle_operation::eval",
+                        this_->generate_error_message(
+                            "operand has an unsupported number of "
+                                "dimensions. Only possible values are: "
+                                "1 or 2."));
+                }
+            }),
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

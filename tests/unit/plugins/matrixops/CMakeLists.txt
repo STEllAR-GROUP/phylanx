@@ -18,6 +18,7 @@ set(tests
     extract_shape
     eye_operation
     flatten
+    flip_operation
     gradient_operation
     hstack_operation
     identity
@@ -25,7 +26,6 @@ set(tests
     linearmatrix
     linspace
     list_slicing_operation
-    mean_operation
     power_operation
     random
     random_distributions

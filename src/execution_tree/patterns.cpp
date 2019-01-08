@@ -18,7 +18,8 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<std::pair<std::string, match_pattern_type>> registered_patterns;
+    std::vector<hpx::util::tuple<std::string, match_pattern_type, std::string>>
+        registered_patterns;
 
     void show_patterns()
     {
@@ -95,10 +96,10 @@ namespace phylanx { namespace execution_tree
         return "No help available.";
     }
 
-    void register_pattern(
-        std::string const& name, match_pattern_type const& pattern)
+    void register_pattern(std::string const& name,
+        match_pattern_type const& pattern, std::string const& fullpath)
     {
-        registered_patterns.emplace_back(name, pattern);
+        registered_patterns.emplace_back(name, pattern, fullpath);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -146,8 +147,8 @@ namespace phylanx { namespace execution_tree
             // patterns registered from external primitive plugins
             for (auto const& pattern : registered_patterns)
             {
-                patterns.push_back(
-                    hpx::util::make_tuple(pattern.first, pattern.second));
+                patterns.push_back(hpx::util::make_tuple(
+                    hpx::util::get<0>(pattern), hpx::util::get<1>(pattern)));
             }
 
             return patterns;

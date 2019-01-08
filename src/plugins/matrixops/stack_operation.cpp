@@ -1169,6 +1169,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        bool has_list_operand_strict(
+            primitive_arguments_type const& args, std::size_t& numargs,
+            std::string const& name, std::string const& codename)
+        {
+            bool result = false;
+            numargs = 0;
+            for (auto const& arg : args)
+            {
+                if (is_list_operand_strict(arg))
+                {
+                    numargs += extract_list_value_size(arg, name, codename);
+                    result = true;
+                }
+                else
+                {
+                    ++numargs;
+                }
+            }
+            return result;
+        }
+    }
+
     hpx::future<primitive_argument_type> stack_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -1212,28 +1236,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
             -> primitive_argument_type
             {
-                if (is_list_operand_strict(args[0]))
+                primitive_arguments_type ops;
+                std::size_t numargs = 0;
+                if (detail::has_list_operand_strict(
+                        args, numargs, this_->name_, this_->codename_))
                 {
-                    args = extract_list_value_strict(args[0],
-                        this_->name_, this_->codename_).args();
+                    ops.reserve(numargs);
+                    for (auto && arg : std::move(args))
+                    {
+                        if (is_list_operand_strict(arg))
+                        {
+                            auto&& list = extract_list_value_strict(
+                                std::move(arg), this_->name_,
+                                this_->codename_).args();
+                            for (auto && l : list)
+                            {
+                                ops.emplace_back(std::move(l));
+                            }
+                        }
+                        else
+                        {
+                            ops.emplace_back(std::move(arg));
+                        }
+                    }
+                }
+                else
+                {
+                    ops = std::move(args);
                 }
 
                 std::size_t matrix_dims = extract_largest_dimension(
-                    args, this_->name_, this_->codename_);
+                    ops, this_->name_, this_->codename_);
                 switch (matrix_dims)
                 {
                 case 0:
-                    return this_->stack0d(std::move(args));
+                    return this_->stack0d(std::move(ops));
 
                 case 1:
-                    return this_->stack1d(std::move(args));
+                    return this_->stack1d(std::move(ops));
 
                 case 2:
-                    return this_->stack2d(std::move(args));
+                    return this_->stack2d(std::move(ops));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
-                    return this_->stack3d(std::move(args));
+                    return this_->stack3d(std::move(ops));
 #endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

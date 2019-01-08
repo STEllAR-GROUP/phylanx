@@ -36,14 +36,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     generic_operation::get_1d_map()
     {
         static std::map<std::string, matrix_vector_function_ptr<T>> map1d = {
-            {"amin",
-                [](arg_type<T>&& m) -> arg_type<T> {
-                    return arg_type<T>((blaze::min)(m.vector()));
-                }},
-            {"amax",
-                [](arg_type<T>&& m) -> arg_type<T> {
-                    return arg_type<T>((blaze::max)(m.vector()));
-                }},
             {"absolute",
                 [](arg_type<T>&& m) -> arg_type<T> {
                     if (m.is_ref())

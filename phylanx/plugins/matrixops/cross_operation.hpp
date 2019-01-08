@@ -31,9 +31,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -44,17 +41,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         primitive_argument_type cross1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type cross1d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type cross1d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         primitive_argument_type cross2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type cross1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type cross1d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type cross1d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type cross2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type cross2d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type cross2d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
     };
 
     inline primitive create_cross_operation(hpx::id_type const& locality,

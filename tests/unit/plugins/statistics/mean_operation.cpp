@@ -83,7 +83,7 @@ void test_mean_operation_2d_x_axis()
     blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
 
     phylanx::ir::node_data<double> expected(
-        blaze::DynamicVector<double>{3.0, 5.0});
+        blaze::DynamicVector<double>{2.5, 3.5, 6.0});
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -112,7 +112,7 @@ void test_mean_operation_2d_y_axis()
     blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
 
     phylanx::ir::node_data<double> expected(
-        blaze::DynamicVector<double>{2.5, 3.5, 6.0});
+        blaze::DynamicVector<double>{3.0, 5.0});
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(

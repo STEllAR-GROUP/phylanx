@@ -8,11 +8,13 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,10 +27,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
      , public std::enable_shared_from_this<linearmatrix>
     {
     protected:
-        using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-        using matrix_type = blaze::DynamicMatrix<double>;
-
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
@@ -43,7 +41,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type linmatrix(args_type&& args) const;
+        primitive_argument_type linmatrix(std::int64_t nx, std::int64_t ny,
+            primitive_argument_type&& x0, primitive_argument_type&& dx,
+            primitive_argument_type&& dy) const;
+
+        template <typename T>
+        primitive_argument_type linmatrix(
+            std::int64_t nx, std::int64_t ny, T x0, T dx, T dy) const;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_linearmatrix(hpx::id_type const& locality,

@@ -19,12 +19,12 @@
 #include <phylanx/plugins/matrixops/extract_shape.hpp>
 #include <phylanx/plugins/matrixops/eye_operation.hpp>
 #include <phylanx/plugins/matrixops/flatten.hpp>
+#include <phylanx/plugins/matrixops/flip_operation.hpp>
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
 #include <phylanx/plugins/matrixops/identity.hpp>
 #include <phylanx/plugins/matrixops/inverse_operation.hpp>
 #include <phylanx/plugins/matrixops/linearmatrix.hpp>
 #include <phylanx/plugins/matrixops/linspace.hpp>
-#include <phylanx/plugins/matrixops/mean_operation.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/plugins/matrixops/reshape_operation.hpp>
@@ -32,7 +32,6 @@
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
 #include <phylanx/plugins/matrixops/softmax_operation.hpp>
 #include <phylanx/plugins/matrixops/squeeze_operation.hpp>
-
 #include <phylanx/plugins/matrixops/stack_operation.hpp>
 #include <phylanx/plugins/matrixops/tile_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>

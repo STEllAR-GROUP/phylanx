@@ -159,6 +159,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type reshape_operation::reshape1d_2d(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
+        using phylanx::util::matrix_row_iterator;
         auto a = arr.vector();
 
         auto it = arg.begin();
@@ -167,9 +168,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicMatrix<T> result(first, second);
 
-        auto d = result.data();
-        d = std::copy(a.begin(), a.end(), d);
+        const matrix_row_iterator<decltype(result)> r_begin(result);
+        const matrix_row_iterator<decltype(result)> r_end(result, first);
 
+        auto b = a.begin();
+        auto e = b;
+        std::advance(e, second);
+
+        for (auto i = r_begin; i != r_end; i++)
+        {
+            std::copy(b, e, i->begin());
+            b = e;
+            std::advance(e, second);
+        }
         return primitive_argument_type{std::move(result)};
     }
 
@@ -255,23 +266,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type reshape_operation::reshape2d_2d(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
-        using phylanx::util::matrix_row_iterator;
         auto a = arr.matrix();
 
         auto it = arg.begin();
-        auto first = extract_scalar_integer_value(*it++);
-        auto second = extract_scalar_integer_value(*it);
+        auto rows = extract_scalar_integer_value(*it++);
+        auto columns = extract_scalar_integer_value(*it);
 
-        blaze::DynamicMatrix<T> result(first, second);
+        blaze::DynamicMatrix<T> result(rows, columns);
 
-        matrix_row_iterator<decltype(a)> const a_begin(a);
-        matrix_row_iterator<decltype(a)> const a_end(a, a.rows());
+        using phylanx::util::matrix_iterator;
+        matrix_iterator<decltype(a)> begin(a, 0);
+        matrix_iterator<decltype(a)> end(a, a.rows());
+        matrix_iterator<blaze::DynamicMatrix<T>> dest(result);
 
-        auto d = result.data();
-        for (auto it = a_begin; it != a_end; ++it)
-        {
-            d = std::copy(it->begin(), it->end(), d);
-        }
+        std::copy(begin, end, dest);
+
         return primitive_argument_type{std::move(result)};
     }
 

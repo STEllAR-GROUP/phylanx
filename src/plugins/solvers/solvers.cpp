@@ -16,7 +16,7 @@ namespace phylanx { namespace plugin
 {
     struct linear_solver_plugin : plugin_base
     {
-        void register_known_primitives() override
+        void register_known_primitives(std::string const& fullpath) override
         {
             namespace pet = phylanx::execution_tree;
 
@@ -24,14 +24,14 @@ namespace phylanx { namespace plugin
             for (auto const& pattern :
                 pet::primitives::linear_solver::match_data)
             {
-                pet::register_pattern(linear_solver_name, pattern);
+                pet::register_pattern(linear_solver_name, pattern, fullpath);
             }
         }
     };
 
     struct decomposition_plugin : plugin_base
     {
-        void register_known_primitives() override
+        void register_known_primitives(std::string const& fullpath) override
         {
             namespace pet = phylanx::execution_tree;
 
@@ -39,7 +39,7 @@ namespace phylanx { namespace plugin
             for (auto const& pattern :
                 pet::primitives::decomposition::match_data)
             {
-                pet::register_pattern(decomposition_name, pattern);
+                pet::register_pattern(decomposition_name, pattern, fullpath);
             }
         }
     };

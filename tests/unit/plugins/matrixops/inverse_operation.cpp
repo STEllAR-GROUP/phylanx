@@ -1,8 +1,7 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
 
 #include <phylanx/phylanx.hpp>
 
@@ -10,8 +9,14 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <vector>
 #include <utility>
+
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 void test_inversion_0d()
 {
@@ -75,12 +80,49 @@ void test_inversion_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+void test_inversion_3d()
+{
+    blaze::Rand<blaze::DynamicTensor<double>> gen{};
+    blaze::DynamicTensor<double> t = gen.generate(3UL, 42UL, 42UL);
+
+    phylanx::execution_tree::primitive lhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(t));
+
+    phylanx::execution_tree::primitive inversion =
+        phylanx::execution_tree::primitives::create_inverse_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(lhs)
+            });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        inversion.eval();
+
+    blaze::DynamicTensor<double> expected = t;
+    for (std::int64_t k = 0; k != expected.pages(); ++k)
+    {
+        auto slice = blaze::pageslice(expected, k);
+        blaze::invert(slice);
+    }
+
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     test_inversion_0d();
     test_inversion_0d_lit();
 
     test_inversion_2d();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_inversion_3d();
+#endif
 
     return hpx::util::report_errors();
 }

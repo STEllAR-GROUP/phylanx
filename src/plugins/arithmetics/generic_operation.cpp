@@ -43,8 +43,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /**/
 
     std::vector<match_pattern_type> const generic_operation::match_data = {
-        PHYLANX_GEN_MATCH_DATA("amin"),
-        PHYLANX_GEN_MATCH_DATA("amax"),
         PHYLANX_GEN_MATCH_DATA("absolute"),
         PHYLANX_GEN_MATCH_DATA("floor"),
         PHYLANX_GEN_MATCH_DATA("ceil"),
