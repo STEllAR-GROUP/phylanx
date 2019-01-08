@@ -4098,6 +4098,9 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
+        case 6:     // phylanx::ir::node_data<std::int64_t>
+            return primitive_argument_type{util::get<6>(std::move(val))};
+
         default:
             break;
         }
@@ -4121,6 +4124,9 @@ namespace phylanx { namespace execution_tree
 
         case 4:                     // phylanx::ir::node_data<double>
             return util::get<4>(std::move(val));
+
+        case 6:                     // phylanx::ir::node_data<std::int64_t>
+            return ir::node_data<double>{util::get<6>(std::move(val))};
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;    // std::string
@@ -4148,6 +4154,7 @@ namespace phylanx { namespace execution_tree
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
         case 5: HPX_FALLTHROUGH;
+        case 6: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
         default:
             break;
         }
@@ -4170,6 +4177,9 @@ namespace phylanx { namespace execution_tree
 
         case 4:     // phylanx::ir::node_data<double>
             return ir::node_data<std::int64_t>{util::get<4>(std::move(val))};
+
+        case 6:     // phylanx::ir::node_data<double>
+            return util::get<6>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;    // std::string
@@ -4196,14 +4206,14 @@ namespace phylanx { namespace execution_tree
 
         case 2:     // ir::node_data<std::int64_t>
             return ir::node_data<std::uint8_t>{
-                util::get<1>(std::move(val)) ? std::uint8_t(1) : std::uint8_t(0)
+                util::get<2>(std::move(val)) ? std::uint8_t(1) : std::uint8_t(0)
             };
 
         case 4:     // phylanx::ir::node_data<double>
-            return ir::node_data<std::uint8_t>{
-                util::get<1>(std::move(val)) ? std::uint8_t(1) : std::uint8_t(0)
-            };
+            return ir::node_data<std::uint8_t>{util::get<4>(std::move(val))};
 
+        case 6:     // phylanx::ir::node_data<std::int64_t>
+            return ir::node_data<std::uint8_t>{util::get<6>(std::move(val))};
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;    // std::string

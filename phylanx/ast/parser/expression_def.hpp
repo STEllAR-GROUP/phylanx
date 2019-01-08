@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
-//  Copyright (c) 2001-2018 Hartmut Kaiser
+//  Copyright (c) 2001-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -103,17 +103,17 @@ namespace phylanx { namespace ast { namespace parser
 
         ///////////////////////////////////////////////////////////////////////
         // Main expression grammar
-        expr =
+        expr %=
                 unary_expr
             >> *(binary_op > unary_expr)
             ;
 
-        unary_expr =
+        unary_expr %=
                 primary_expr
             |   as<ast::unary_expr>()[unary_op > unary_expr]
             ;
 
-        primary_expr =
+        primary_expr %=
                 strict_double
             |   function_call
             |   list
@@ -121,6 +121,11 @@ namespace phylanx { namespace ast { namespace parser
             |   bool_
             |   long_long
             |   string
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            |   int64_tensor
+#endif
+            |   int64_matrix
+            |   int64_vector
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             |   double_tensor
 #endif
@@ -130,44 +135,53 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        double_tensor = '[' >> (double_matrix % ',') > ']';
+        int64_tensor %= '[' >> (int64_matrix % ',') >> ']';
 #endif
-        double_matrix = '[' >> (double_vector % ',') > ']';
+        int64_matrix %= '[' >> (int64_vector % ',') >> ']';
 
-        double_vector = '[' > (double_ % ',') > ']';
+        int64_vector %= '[' >> (long_long % ',') >> ']';
 
-        function_call =
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        double_tensor %= '[' >> (double_matrix % ',') > ']';
+#endif
+        double_matrix %= '[' >> (double_vector % ',') > ']';
+
+        double_vector %= '[' > (double_ % ',') > ']';
+
+        function_call %=
                 (identifier >> '(')
             >   argument_list
             >   ')'
             ;
 
-        list =
+        list %=
                 (lit('\'') >> '(')
             >   argument_list
             >   ')'
             ;
 
-        argument_list = -(expr % ',');
+        argument_list %= -(expr % ',');
 
-        identifier =
+        identifier %=
                 identifier_name
             >>  (('$' > long_long) | attr(std::int64_t(-1)))
             >>  (('$' > long_long) | attr(std::int64_t(-1)))
             ;
 
-        identifier_name =
+        identifier_name %=
                !lexeme[keywords >> !(alnum | '_')]
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
 
-        string = lexeme['"' > *(unesc_char | "\\x" >> hex | (char_ - '"')) > '"']
+        string %=
+                lexeme['"' > *(unesc_char | "\\x" >> hex | (char_ - '"')) > '"']
             ;
 
         ///////////////////////////////////////////////////////////////////////
         // Debugging and error handling and reporting support.
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         BOOST_SPIRIT_DEBUG_NODES(
+            (int64_tensor)
             (double_tensor)
         );
 #endif
@@ -176,6 +190,8 @@ namespace phylanx { namespace ast { namespace parser
             (unary_expr)
             (primary_expr)
             (list)
+            (int64_matrix)
+            (int64_vector)
             (double_matrix)
             (double_vector)
             (function_call)

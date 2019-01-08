@@ -20,17 +20,16 @@ void test_decomposition_lu_PhySL()
 {
     std::string const lu_code = R"(block(
         define(A, [[10, -10, 0], [-3, 15, 6], [5, 7, 5]]),
-        define(b, lu((A))),
-        define(L,slice(b,0)),
-        define(U,slice(b,1)),
-        define(P,slice(b,2)),
-        define(result, false),
-        if (all(A == dot(dot(L, U), P)), store(result, true), store(result, false)),
-            if ((all(L == [[10, 0, 0], [-3, 12, 0], [5, 12, -1]]) &&
-            all(U == [[1, -1, 0], [0, 1, 0.5], [0, 0, 1]]))
-            && (all(P == [[1, 0, 0], [0, 1, 0], [0, 0, 1]])),
-            store(result, true), store(result, false)),
-            result)
+        define(b, lu(A)),
+        define(L, slice(b, 0)),
+        define(U, slice(b, 1)),
+        define(P, slice(b, 2)),
+        define(result, all(A == dot(dot(L, U), P))),
+        if((all(L != [[10,  0, 0], [-3, 12,   0], [5, 12, -1]]) ||
+            all(U != [[ 1, -1, 0], [ 0,  1, 0.5], [0,  0,  1]])) ||
+            all(P != [[ 1,  0, 0], [ 0,  1,   0], [0,  0,  1]]),
+            store(result, false)),
+        result)
     )";
 
     phylanx::execution_tree::compiler::function_list snippets;

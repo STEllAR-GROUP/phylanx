@@ -128,129 +128,144 @@ void test_expression(std::string const& expr, std::string const& expected)
 
 int main(int argc, char* argv[])
 {
-    test_ast("A", phylanx::ast::identifier("A"));
-    test_ast("A$1$2", phylanx::ast::identifier("A", 1, 2));
+   test_ast("A", phylanx::ast::identifier("A"));
+   test_ast("A$1$2", phylanx::ast::identifier("A", 1, 2));
 
-    test_ast("A()",
-        phylanx::ast::function_call(phylanx::ast::identifier("A")));
-    test_ast("A$1$2()",
-        phylanx::ast::function_call(phylanx::ast::identifier("A", 1, 2)));
+   test_ast("A()",
+       phylanx::ast::function_call(phylanx::ast::identifier("A")));
+   test_ast("A$1$2()",
+       phylanx::ast::function_call(phylanx::ast::identifier("A", 1, 2)));
 
+   test_expression(
+       "A + B",
+           "A$1$1\n"
+           "B$1$5\n"
+           "+\n"
+   );
+
+   test_expression(
+       "A$1$0 + B$1$5",
+           "A$1$0\n"
+           "B$1$5\n"
+           "+\n"
+   );
+
+   test_expression(
+       "A + B + -C",
+           "A$1$1\n"
+           "B$1$5\n"
+           "+\n"
+           "C$1$10\n"
+           "-\n"
+           "+\n"
+   );
+
+   test_expression(
+       "A + B * C",
+           "A$1$1\n"
+           "B$1$5\n"
+           "C$1$9\n"
+           "*\n"
+           "+\n"
+   );
+
+   test_expression(
+       "A * B + C",
+           "A$1$1\n"
+           "B$1$5\n"
+           "*\n"
+           "C$1$9\n"
+           "+\n"
+   );
+
+   test_expression(
+       "func(A, B)",
+           "func$1$1\n"
+           "A$1$6\n"
+           "B$1$9\n"
+   );
+
+   test_expression(
+       "func$1$0(A$1$6, B$1$9)",
+           "func$1$0\n"
+           "A$1$6\n"
+           "B$1$9\n"
+   );
+
+   test_expression(
+       "\"test\"",
+           "test\n"
+   );
+
+   test_expression(
+       "1.0 / (1.0 + exp(-dot(A, B)))",
+           "1\n"
+           "1\n"
+           "exp$1$14\n"
+           "dot$1$19\n"
+           "A$1$23\n"
+           "B$1$26\n"
+           "-\n"
+           "+\n"
+           "/\n"
+   );
+
+   test_expression(
+       "'()",
+           ""
+   );
+
+   test_expression(
+       "\"string\\x20to\\x200unescape\\x3a\\x20\\n\\r\\t\\\"\\'\\x41\"",
+       "string to 0unescape\x3a \n\r\t\"\'\x41\n"
+   );
+
+   test_expression(
+       "'(true, 1, 1.0, A, A + B)",
+           "true$1$3\n"
+           "1\n"
+           "1\n"
+           "A$1$17\n"
+           "A$1$20\n"
+           "B$1$24\n"
+           "+\n"
+   );
+
+   test_expression(
+       "'(true, 1, '(1.0, A, A + B))",
+           "true$1$3\n"
+           "1\n"
+           "1\n"
+           "A$1$19\n"
+           "A$1$22\n"
+           "B$1$26\n"
+           "+\n"
+   );
+
+   test_expression(
+       "[1.0, 2.0, 3.0]",
+       "[1, 2, 3]\n"
+   );
+
+   test_expression(
+       "[[1.0, 2.0, 3.0], [2.0, 3.0, 1.0], [3.0, 1.0, 2.0]]",
+       "[[1, 2, 3], [2, 3, 1], [3, 1, 2]]\n"
+   );
     test_expression(
-        "A + B",
-            "A$1$1\n"
-            "B$1$5\n"
-            "+\n"
+        "[[10, 0, 0], [-3, 12, 0], [5, 12, -1]]",
+        "[[10, 0, 0], [-3, 12, 0], [5, 12, -1]]\n"
+    );
+    test_expression(
+        "[[1, -1, 0], [0, 1, 0.5], [0, 0, 1]]",
+        "[[1, -1, 0], [0, 1, 0.5], [0, 0, 1]]\n"
     );
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_expression(
-        "A$1$0 + B$1$5",
-            "A$1$0\n"
-            "B$1$5\n"
-            "+\n"
+        "[[[1.0, 2.0, 3.0], [2.0, 3.0, 1.0], [3.0, 1.0, 2.0]]]",
+        "[[[1, 2, 3], [2, 3, 1], [3, 1, 2]]]\n"
     );
-
-    test_expression(
-        "A + B + -C",
-            "A$1$1\n"
-            "B$1$5\n"
-            "+\n"
-            "C$1$10\n"
-            "-\n"
-            "+\n"
-    );
-
-    test_expression(
-        "A + B * C",
-            "A$1$1\n"
-            "B$1$5\n"
-            "C$1$9\n"
-            "*\n"
-            "+\n"
-    );
-
-    test_expression(
-        "A * B + C",
-            "A$1$1\n"
-            "B$1$5\n"
-            "*\n"
-            "C$1$9\n"
-            "+\n"
-    );
-
-    test_expression(
-        "func(A, B)",
-            "func$1$1\n"
-            "A$1$6\n"
-            "B$1$9\n"
-    );
-
-    test_expression(
-        "func$1$0(A$1$6, B$1$9)",
-            "func$1$0\n"
-            "A$1$6\n"
-            "B$1$9\n"
-    );
-
-    test_expression(
-        "\"test\"",
-            "test\n"
-    );
-
-    test_expression(
-        "1.0 / (1.0 + exp(-dot(A, B)))",
-            "1\n"
-            "1\n"
-            "exp$1$14\n"
-            "dot$1$19\n"
-            "A$1$23\n"
-            "B$1$26\n"
-            "-\n"
-            "+\n"
-            "/\n"
-    );
-
-    test_expression(
-        "'()",
-            ""
-    );
-
-    test_expression(
-        "\"string\\x20to\\x200unescape\\x3a\\x20\\n\\r\\t\\\"\\'\\x41\"",
-        "string to 0unescape\x3a \n\r\t\"\'\x41\n"
-    );
-
-    test_expression(
-        "'(true, 1, 1.0, A, A + B)",
-            "true$1$3\n"
-            "1\n"
-            "1\n"
-            "A$1$17\n"
-            "A$1$20\n"
-            "B$1$24\n"
-            "+\n"
-    );
-
-    test_expression(
-        "'(true, 1, '(1.0, A, A + B))",
-            "true$1$3\n"
-            "1\n"
-            "1\n"
-            "A$1$19\n"
-            "A$1$22\n"
-            "B$1$26\n"
-            "+\n"
-    );
-
-    test_expression(
-        "[1.0, 2.0, 3.0]",
-        "[1, 2, 3]\n"
-    );
-
-    test_expression(
-        "[[1.0, 2.0, 3.0], [2.0, 3.0, 1.0], [3.0, 1.0, 2.0]]",
-        "[[1, 2, 3], [2, 3, 1], [3, 1, 2]]\n"
-    );
+#endif
 
     return hpx::util::report_errors();
 }

@@ -143,6 +143,11 @@ namespace phylanx { namespace ast
                 }
                 break;
 
+            case 0: HPX_FALLTHROUGH;    // nil
+            case 1: HPX_FALLTHROUGH;    // bool
+            case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+            case 4: HPX_FALLTHROUGH;    // std::string
+            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
             default:
                 break;
             }

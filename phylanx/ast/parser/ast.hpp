@@ -51,45 +51,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<phylanx::ast::expression>, args)
 )
 
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::variable_declaration,
-//     (phylanx::ast::identifier, lhs)
-//     (hpx::util::optional<phylanx::ast::expression>, rhs)
-// )
-//
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::assignment,
-//     (phylanx::ast::identifier, lhs)
-//     (phylanx::ast::optoken, operator_)
-//     (phylanx::ast::expression, rhs)
-// )
-//
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::if_statement,
-//     (phylanx::ast::expression, condition)
-//     (phylanx::ast::statement, then)
-//     (hpx::util::optional<phylanx::ast::statement>, else_)
-// )
-//
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::while_statement,
-//     (phylanx::ast::expression, condition)
-//     (phylanx::ast::statement, body)
-// )
-//
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::return_statement,
-//     (hpx::util::optional<phylanx::ast::expression>, expr)
-// )
-//
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::function,
-//     (std::string, return_type)
-//     (phylanx::ast::identifier, function_name)
-//     (std::list<phylanx::ast::identifier>, args)
-//     (hpx::util::optional<phylanx::ast::statement_list>, body)
-// )
-
 #endif
 
 

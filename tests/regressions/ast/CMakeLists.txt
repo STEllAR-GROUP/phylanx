@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    720_parse_arrays
     list_matching_178
     trailing_comments_413
    )
