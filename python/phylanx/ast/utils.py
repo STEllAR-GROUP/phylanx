@@ -10,7 +10,7 @@ import re
 import os
 
 
-def dump_info(a, depth=0):
+def python_ast_print(a, depth=0):
     "Print detailed information about an AST"
     nm = a.__class__.__name__
     print("  " * depth, end="")
@@ -33,26 +33,26 @@ def dump_info(a, depth=0):
         print("  " * depth, end="")
         print("  Upper:")
         if a.upper is not None:
-            dump_info(a.upper, depth + 4)
+            python_ast_print(a.upper, depth + 4)
         print("  " * depth, end="")
         print("  Lower:")
         if a.lower is not None:
-            dump_info(a.lower, depth + 4)
+            python_ast_print(a.lower, depth + 4)
         print("  " * depth, end="")
         print("  Step:")
         if a.step is not None:
-            dump_info(a.step, depth + 4)
+            python_ast_print(a.step, depth + 4)
     elif nm == "If":
         iter_children = False
         print(nm)
-        dump_info(a.test, depth)
+        python_ast_print(a.test, depth)
         for n in a.body:
-            dump_info(n, depth + 1)
+            python_ast_print(n, depth + 1)
         if len(a.orelse) > 0:
             print("  " * depth, end="")
             print("Else")
             for n in a.orelse:
-                dump_info(n, depth + 1)
+                python_ast_print(n, depth + 1)
     else:
         print(nm)
     for (f, v) in ast.iter_fields(a):
@@ -60,12 +60,14 @@ def dump_info(a, depth=0):
             print("%s:attr[%s]=%s" % ("  " * (depth + 1), f, v))
     if iter_children:
         for n in ast.iter_child_nodes(a):
-            dump_info(n, depth + 1)
+            python_ast_print(n, depth + 1)
 
 
 # source http://bit.ly/2C58jl8
-def dump_ast(node, annotate_fields=True, include_attributes=False,
-             indent='  '):
+def python_ast_format(node,
+                      annotate_fields=True,
+                      include_attributes=False,
+                      indent='  '):
     def _format(node, level=0):
         if isinstance(node, ast.AST):
             fields = [(a, _format(b, level)) for a, b in ast.iter_fields(node)]
@@ -94,27 +96,23 @@ def dump_ast(node, annotate_fields=True, include_attributes=False,
     return _format(node)
 
 
-
-
 def save_to_file(data, ofn, verbose=False):
     d = os.path.dirname(ofn)
     if d != "":
         os.makedirs(d, exist_ok=True)
 
     with open(ofn, "w") as f:
-        print(data, file = f)
-    if verbose == True:
+        print(data, file=f)
+    if verbose is True:
         print(ofn, "saved")
 
 
 def dump_to_file(data, key, kwargs):
-    if kwargs[key] != False:
-        if kwargs[key] == True:
+    if kwargs[key] is not False:
+        if kwargs[key] is True:
             # generating file name automatically
             ofn = key + "_" + kwargs["python_src_tag"] + ".txt"
         else:
             # using the user-specified dictionary value as the file name
             ofn = kwargs[key]
         save_to_file(data, ofn, kwargs["debug"])
-
-

@@ -10,7 +10,6 @@ import ast
 import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state, PhylanxSession
-from phylanx.ast.utils import dump_info
 from phylanx.ast.utils import dump_to_file
 
 
@@ -229,7 +228,6 @@ class PhySL:
         self.__src__ = self.generate_physl(self.ir)
 
         dump_to_file(self.__src__, "dump_physl", kwargs)
-
 
         if self.kwargs.get("debug"):
             print_physl_src(self.__src__)

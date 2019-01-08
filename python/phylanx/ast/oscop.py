@@ -8,9 +8,8 @@ import inspect
 import numpy as np
 from string import Template
 from itertools import chain
-
+from phylanx.ast.utils import dump_to_file
 from .oscop_templates import *
-from .utils import dump_to_file
 
 
 class OpenSCoP:
@@ -40,7 +39,6 @@ class OpenSCoP:
             self.oscop_global) + '\n' + self.__src__
 
         dump_to_file(self.__src__, "dump_openscop", kwargs)
-
 
     def _Add(self, node, expr={}, coef=1):
         left = node.left

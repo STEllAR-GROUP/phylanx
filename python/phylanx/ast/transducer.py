@@ -16,89 +16,64 @@ from .oscop import OpenSCoP
 from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
-
-from .utils import dump_to_file
-
+from phylanx.ast.utils import dump_to_file
+# from phylanx.ast.utils import python_ast_format
 
 
 def Phylanx(__phylanx_arg=None, **kwargs):
-
     class __PhylanxDecorator(object):
         def __init__(self, func):
             """
             :function:func the decorated funtion.
             """
-
             self.get_args()
             self.get_env(func)
             python_src = self.get_python_src(func)
             python_ast = self.get_python_ast(python_src, func)
 
             m = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
-            self.backend = m[kwargs["target"]](func, python_ast, kwargs)
-            self.__src__ = self.backend.__src__
+            t = kwargs["target"]
+            if t not in m.keys():
+                raise NotImplementedError(\
+                    "target=%s is not available" % t)
 
+            self.backend = m[t](func, python_ast, kwargs)
+            self.__src__ = self.backend.__src__
 
         def get_args(self):
             """
-            Build default kwargs from the list (via copying the first item).
-            Overwrite the default kwargs if the key/value is passed in.
-            Validate the key/value.
+            List of kwargs keys and valid values
+                target:             "PhySL", "OpenSCoP",
+
+                compiler_stat:      None, WHATEVER
+
+                performance:        None, WHATEVER
+
+                debug:              True, False, WHATEVER
+
+                dump_python_src:    True, False, "path_to_file_you_specified",
+                saving python src to file
+
+                dump_python_ast:    True, False, "path_to_file_you_specified",
+                saving python ast to file
+
+                dump_openscop:      True, False, "path_to_file_you_specified",
+                saving opnscop file, should combine with target="OpenSCoP"
+
+                dump_physl:         True, False, "path_to_file_you_specified",
+                saving physl file, should combine with target="PhySL"
             """
 
-            valid_kwargs = {
-                "target" : [
-                    "PhySL",
-                    "OpenSCoP",
-                ],
-
-                "compiler_state" : [
-                    None,
-                    "skip_validation",
-                ],
-
-                "performance" : [
-                    None,
-                    "skip_validation",
-                ],
-
-                "debug" : [
-                    False,
-                    True,
-                ],
-
-                # saving python src to file
-                "dump_python_src" : [
-                    False,
-                    True,
-                    "path_to_file_you_specify",
-                    "skip_validation",
-                ],
-                # saving python ast to file
-                "dump_python_ast" : [
-                    False,
-                    True,
-                    "path_to_file_you_specify",
-                    "skip_validation",
-                ],
-                # saving openscop file, should combine with "target="OpenSCoP""
-                "dump_openscop" : [
-                    True,
-                    False,
-                    "path_to_file_you_specify",
-                    "skip_validation",
-                ],
-                # saving physl file, should combine with "target="PhySL""
-                "dump_physl" : [
-                    False,
-                    True,
-                    "path_to_file_you_specify",
-                    "skip_validation",
-                ],
+            default_kwargs = {
+                "target": "PhySL",
+                "compiler_state": None,
+                "performance": None,
+                "debug": False,
+                "dump_python_src": False,
+                "dump_python_ast": False,
+                "dump_openscop": True,
+                "dump_physl": False,
             }
-            default_kwargs = {}
-            for key, value in valid_kwargs.items():
-                default_kwargs[key] = value[0]
 
             # overwrite default kwargs
             default_kwargs.update(kwargs)
@@ -106,22 +81,14 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             # validate the keys
             for key in kwargs.keys():
-                if key not in valid_kwargs:
-                    raise NotImplementedError \
-                        ("Unknown Phylanx kwarg key %s" % key)
-
-            # validate the values
-            for key, value in kwargs.items():
-                v2 = valid_kwargs[key]
-                if ((value not in v2) and ("skip_validation" not in v2)):
-                    raise NotImplementedError \
-                        ("Unknown Phylanx kwarg value: %s = " % key, value)
+                if key not in default_kwargs.keys():
+                    raise NotImplementedError(\
+                        "Unknown Phylanx kwarg key %s" % key)
 
             # dump kwargs
-            if kwargs["debug"] == True:
+            if kwargs["debug"] is True:
                 for key, value in kwargs.items():
                     print("Phylanx kwargs:     %-20s =" % key, value)
-
 
         def get_env(self, func):
 
@@ -139,8 +106,6 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             s = s.replace("/", "")
             kwargs["python_src_tag"] = s
 
-
-
         def get_python_src(self, func):
             """Gets the function's source and removes the decorator line."""
 
@@ -155,7 +120,6 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             return src
 
-
         def get_python_ast(self, src, func):
             """Generates the Python AST."""
 
@@ -164,20 +128,18 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             ast.increment_lineno(tree, actual_lineno)
             assert len(tree.body) == 1
 
-            aststr = astpretty.pformat(tree, show_offsets=False)
+            aststr = astpretty.pformat(tree, show_offsets=False)  # prettier
+#           aststr = python_ast_format(tree)                      # less pretty
             dump_to_file(aststr, "dump_python_ast", kwargs)
 
             return tree
 
-
-
         def __call__(self, *args):
             if kwargs["target"] == "OpenSCoP":
-                raise NotImplementedError \
-                    ("OpenSCoP kernels are not yet callable.")
+                raise NotImplementedError(\
+                    "OpenSCoP kernels are not yet callable.")
 
-                result = self.backend.call(args)
-
+            result = self.backend.call(args)
             self.__perfdata__ = self.backend.__perfdata__
 
             return result
@@ -185,12 +147,9 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         def generate_ast(self):
             return generate_phylanx_ast(self.__src__)
 
-
     if callable(__phylanx_arg):
         return __PhylanxDecorator(__phylanx_arg)
     elif __phylanx_arg is not None:
         raise InvalidDecoratorArgumentError
     else:
         return __PhylanxDecorator
-
-
