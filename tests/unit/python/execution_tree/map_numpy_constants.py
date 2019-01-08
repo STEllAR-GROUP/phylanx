@@ -3,8 +3,8 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+import math
 import numpy as np
-
 from phylanx import Phylanx
 
 
@@ -48,11 +48,12 @@ def np_NINF():
 assert np_NINF() == np.NINF
 
 
+@Phylanx
 def np_nan():
     return np.nan
 
 
-assert np_nan() == np.nan
+assert math.isnan(np_nan())
 
 
 @Phylanx
@@ -60,7 +61,7 @@ def np_NaN():
     return np.NaN
 
 
-assert np_NaN() == np.NaN
+assert math.isnan(np_NaN())
 
 
 @Phylanx
@@ -68,7 +69,7 @@ def np_NAN():
     return np.NAN
 
 
-assert np_NAN() == np.NAN
+assert math.isnan(np_NAN())
 
 
 @Phylanx
