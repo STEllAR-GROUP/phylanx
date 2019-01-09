@@ -37,18 +37,24 @@ void test_repeat_operation(std::string const& code,
 int main(int argc, char* argv[])
 {
     test_repeat_operation("repeat(42., 4)", "[42.,42.,42.,42.]");
-    test_repeat_operation("repeat(42., hstack(4), 0)", "[42.,42.,42.,42.]");
+    test_repeat_operation("repeat(42., [4], 0)", "[42.,42.,42.,42.]");
     test_repeat_operation(
         "repeat([42, 13, 33], 3, -1)", "[42, 42, 42, 13, 13, 13, 33, 33, 33]");
-    test_repeat_operation("repeat([42, 13, 33], hstack(3))",
+    test_repeat_operation("repeat([42, 13, 33], [3])",
         "[42, 42, 42, 13, 13, 13, 33, 33, 33]");
     test_repeat_operation(
-        "repeat([42, 13, 33], hstack(3, 0, 2), 0)", "[42, 42, 42, 33, 33]");
-    test_repeat_operation("repeat([[42, 13, 33],[5, 44, 6]], hstack(3, 2), 0)",
-        "[[42, 13, 33],[42, 13, 33],[42, 13, 33],[5, 44, 6],[5, 44, 6]]");
+        "repeat([42, 13, 33], [3, 0, 2], 0)", "[42, 42, 42, 33, 33]");
     test_repeat_operation(
-        "repeat([[42, 13, 33],[5, 44, 6]], hstack(2, 0, 3), 1)",
+        "repeat([42, 13, 33], [0, 3, 0], -1)", "[13, 13, 13]");
+    test_repeat_operation("repeat([[42, 13, 33],[5, 44, 6]], [3, 2], 0)",
+        "[[42, 13, 33],[42, 13, 33],[42, 13, 33],[5, 44, 6],[5, 44, 6]]");
+    test_repeat_operation("repeat([[42, 13, 33],[5, 44, 6]], [2, 0, 3], 1)",
         "[[42, 42, 33, 33, 33],[ 5,  5,  6,  6,  6]]");
+    test_repeat_operation(
+        "repeat([[42, 13, 33],[5, 44, 6]], [0, 1, 3, 2, 2, 0])",
+        "[13, 33, 33, 33,  5,  5, 44, 44]");
+    test_repeat_operation("repeat([[42, 13, 33],[5, 44, 6]], 2)",
+        "[42, 42, 13, 13, 33, 33,  5,  5, 44, 44,  6,  6]");
 
     return hpx::util::report_errors();
 }
