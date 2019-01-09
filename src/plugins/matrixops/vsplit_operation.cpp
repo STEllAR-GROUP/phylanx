@@ -6,15 +6,9 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/slice.hpp>
-#include <phylanx/execution_tree/primitives/slice_node_data.hpp>
-#include <phylanx/execution_tree/primitives/slice_range.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/plugins/matrixops/vsplit_operation.hpp>
-#include <phylanx/util/generate_error_message.hpp>
-
-#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <array>
@@ -25,10 +19,14 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives {
-
-    match_pattern_type const vsplit_operation::match_data = {
-        match_pattern_type{"vsplit", std::vector<std::string>{"vsplit(_1,_2)"},
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const vsplit_operation::match_data =
+    {
+        match_pattern_type{
+            "vsplit",
+            std::vector<std::string>{"vsplit(_1, _s_2)"},
             &create_vsplit_operation, &create_primitive<vsplit_operation>, R"(
             args
             Args:
@@ -38,24 +36,24 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             Returns:
 
             An N by 1 matrix of vertical partitions of m)",
-            true}};
+            true
+        }
+    };
 
     ///////////////////////////////////////////////////////////////////////////
-
     vsplit_operation::vsplit_operation(primitive_arguments_type&& operands,
-        std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , dtype_(extract_dtype(name_))
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     template <typename T>
     primitive_argument_type vsplit_operation::vsplit2d_helper(
         primitive_arguments_type&& args) const
     {
-        std::array<std::size_t, 3> matrix_dims =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> matrix_dims =
             extract_numeric_value_dimensions(args[0], name_, codename_);
 
         std::size_t num_rows = matrix_dims[0];
@@ -71,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             phylanx::ir::node_data<double> val =
                 extract_numeric_value(args[1], name_, codename_);
 
-            std::int64_t num_blocks = val.scalar();
+            std::size_t num_blocks = val.scalar();
             //    extract_numeric_value(args[1], name_, codename_).scalar();
             if (num_blocks <= 0)
             {
@@ -115,11 +113,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         else    // Index-based tiling
         {
             auto&& indices = extract_node_data<T>(std::move(args[1]));
-            if (indices.vector().size() > 0)
+            auto v = indices.vector();
+
+            if (v.size() > 0)
             {
-                for (int i = 0; i < indices.vector().size(); i++)
+                for (int i = 0; i < v.size(); i++)
                 {
-                    if (indices.vector()[i] > num_rows)
+                    if (static_cast<std::size_t>(v[i]) > num_rows)
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "vsplit_operation::eval",
                             generate_error_message(
@@ -130,20 +130,18 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
                 // Include from 0 to first index
                 ranges.push_back(std::make_pair<double, double>(
-                    double(0), double(indices.vector()[0])));
+                    double(0), double(v[0])));
 
                 // Make a list of pairs from the passed index list
-                for (int i = 0; i < indices.vector().size() - 1; i++)
+                for (int i = 0; i < v.size() - 1; i++)
                 {
                     ranges.push_back(std::make_pair<double, double>(
-                        double(indices.vector()[i]),
-                        double(indices.vector()[i + 1])));
+                        double(v[i]), double(v[i + 1])));
                 }
 
                 // Include from last index to last row
                 ranges.push_back(std::make_pair<double, double>(
-                    double(indices.vector()[indices.vector().size() - 1]),
-                    double(num_rows)));
+                    double(v[v.size() - 1]), double(num_rows)));
             }
             else
             {
@@ -161,15 +159,15 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         result.reserve(num_blocks);
 
         auto&& input_data = extract_node_data<T>(std::move(args[0]));
+        auto m = input_data.matrix();
 
         for (int i = 0; i < num_blocks; i++)
         {
-            if (ranges.at(i).second > ranges.at(i).first)
+            if (ranges[i].second > ranges[i].first)
             {
-                blaze::CustomMatrix<T, true, true> block(
-                    &input_data.matrix()(ranges.at(i).first, 0),
-                    ranges.at(i).second - ranges.at(i).first, num_cols,
-                    input_data.matrix().spacing());
+                blaze::CustomMatrix<T, true, true> block(&m(ranges[i].first, 0),
+                    ranges[i].second - ranges[i].first, num_cols, m.spacing());
+
                 result.push_back(primitive_argument_type{
                     std::move(ir::node_data<T>{std::move(block)})});
             }
@@ -205,14 +203,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
-            "vsplit_operation::vsplit2d",
+                "vsplit_operation::vsplit2d",
             generate_error_message(
                 "the vsplit_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     primitive_argument_type vsplit_operation::vsplit_args(
         primitive_arguments_type&& args) const
     {
@@ -233,11 +230,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     hpx::future<primitive_argument_type> vsplit_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty())
         {
@@ -266,26 +261,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    primitive_arguments_type&& ops) -> primitive_argument_type {
-                    return this_->vsplit_args(std::move(ops));
-                }),
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& ops)
+            -> primitive_argument_type
+            {
+                return this_->vsplit_args(std::move(ops));
+            }),
             detail::map_operands(operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    hpx::future<primitive_argument_type> vsplit_operation::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs, std::move(ctx));
-        }
-        return eval(this->operands(), args, std::move(ctx));
-    }
-
 }}}
