@@ -12,6 +12,7 @@ set(tests
     eval
     make_array
     map_numpy
+    map_numpy_constants
     multi_init
     multi_return
     parallel

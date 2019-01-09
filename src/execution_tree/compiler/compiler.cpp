@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <list>
 #include <map>
 #include <string>
@@ -791,17 +792,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (ast::detail::is_identifier(expr))
             {
                 std::string name = ast::detail::identifier_name(expr);
-                if (name == "nil")
+                auto it = get_constants().find(name);
+                if (it != get_constants().end())
                 {
-                    return literal_value(primitive_argument_type{});
-                }
-                else if (name == "false")
-                {
-                    return literal_value(primitive_argument_type{false});
-                }
-                else if (name == "true")
-                {
-                    return literal_value(primitive_argument_type{true});
+                    auto arg = it->second;
+                    return literal_value(std::move(arg));
                 }
                 return handle_variable_reference(std::move(name), expr);
             }
@@ -827,6 +822,46 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     "couldn't fully pattern-match the given expression: " +
                         ast::to_string(expr),
                     name_, id));
+        }
+
+        static std::map<std::string, primitive_argument_type>
+            initialize_constants()
+        {
+            std::map<std::string, primitive_argument_type> constants =
+            {
+                {"nil", primitive_argument_type{}},
+                {"false", primitive_argument_type{false}},
+                {"true", primitive_argument_type{true}},
+                {"inf",
+                    primitive_argument_type{
+                        std::numeric_limits<double>::infinity()}},
+                {"ninf",
+                    primitive_argument_type{
+                        -std::numeric_limits<double>::infinity()}},
+                {"nan",
+                    primitive_argument_type{
+                        std::numeric_limits<double>::quiet_NaN()}},
+                {"NZERO", primitive_argument_type{-0.0}},
+                {"PZERO", primitive_argument_type{+0.0}},
+                {"euler",
+                    primitive_argument_type{
+                        2.7182818284590452353602874713526624977572}},
+                {"euler_gamma",
+                    primitive_argument_type{
+                        0.5772156649015328606065120900824024310421}},
+                {"pi",
+                    primitive_argument_type{
+                        3.1415926535897932384626433832795028841971}}
+            };
+            return constants;
+        }
+
+        static std::map<std::string, primitive_argument_type> const&
+            get_constants()
+        {
+            static std::map<std::string, primitive_argument_type> constants =
+                initialize_constants();
+            return constants;
         }
 
     private:

@@ -26,6 +26,23 @@ mapped_methods = {
     "subtract": "__sub",
 }
 
+numpy_constants = {
+    "inf": 'inf',
+    "Inf": 'inf',
+    "Infinity": 'inf',
+    "PINF": 'inf',
+    "infty": 'inf',
+    "NINF": 'ninf',
+    "nan": 'nan',
+    "NaN": 'nan',
+    "NAN": 'nan',
+    "PZERO": 'PZERO',
+    "NZERO": 'NZERO',
+    "e": 'euler',
+    "euler_gamma": 'euler_gamma',
+    "pi": 'pi'
+}
+
 methods_supporting_dtype = [
     'arange',
     'cumsum',
@@ -52,10 +69,14 @@ def primitive_name(method_name):
     """
 
     primitive_name = mapped_methods.get(method_name)
-    if primitive_name is None:
-        primitive_name = method_name
+    if primitive_name:
+        return primitive_name
 
-    return primitive_name
+    constant_name = numpy_constants.get(method_name)
+    if constant_name:
+        return constant_name
+
+    return method_name
 
 
 def print_physl_src(src, with_symbol_info=False, tag=4):
@@ -99,7 +120,10 @@ def print_physl_src(src, with_symbol_info=False, tag=4):
 def get_symbol_info(symbol, name):
     """Adds symbol info (line and column number) to the symbol."""
 
-    return '%s$%d$%d' % (name, symbol.lineno, symbol.col_offset)
+    if name in numpy_constants.keys():
+        return name
+    else:
+        return '%s$%d$%d' % (name, symbol.lineno, symbol.col_offset)
 
 
 def remove_line(a):
