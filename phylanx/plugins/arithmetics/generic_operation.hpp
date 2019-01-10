@@ -1,5 +1,6 @@
 // Copyright (c) 2018 Tianyi Zhang
 // Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +10,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -102,9 +104,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& funcname, std::string const& name,
             std::string const& codename);
 #endif
-
     private:
         std::string func_name_;
+        node_data_type dtype_;
     };
 
     inline primitive create_generic_operation(hpx::id_type const& locality,
