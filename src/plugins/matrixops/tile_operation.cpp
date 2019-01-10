@@ -156,7 +156,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<T> result(rep * v.size());
         for (auto i = 0; i < rep; ++i)
         {
-            subvector(result, i * v.size(), v.size()) = v;
+            blaze::subvector(result, i * v.size(), v.size()) = v;
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -179,7 +179,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicMatrix<T> result(row, column * v.size());
         for (auto r = 0; r < row; ++r)
             for (auto c = 0; c < column; ++c)
-                blaze::row(submatrix(result, r, c * v.size(), 1, v.size()), 0) =
+                blaze::row(
+                    blaze::submatrix(result, r, c * v.size(), 1, v.size()), 0) =
                     blaze::trans(v);
 
         return primitive_argument_type{std::move(result)};
@@ -257,7 +258,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicMatrix<T> result(m.rows(), rep * m.columns());
         for (auto i = 0; i < rep; ++i)
         {
-            submatrix(result, 0, i * m.columns(), m.rows(), m.columns()) = m;
+            blaze::submatrix(
+                result, 0, i * m.columns(), m.rows(), m.columns()) = m;
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -280,8 +282,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicMatrix<T> result(row * m.rows(), column * m.columns());
         for (auto r = 0; r < row; ++r)
             for (auto c = 0; c < column; ++c)
-                submatrix(result, r * m.rows(), c * m.columns(), m.rows(),
-                    m.columns()) = m;
+                blaze::submatrix(result, r * m.rows(), c * m.columns(),
+                    m.rows(), m.columns()) = m;
 
         return primitive_argument_type{std::move(result)};
     }
