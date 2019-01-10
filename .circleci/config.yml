@@ -68,7 +68,7 @@ anchors:
             when: always
             command: |
                 mkdir -p ${CIRCLE_JOB}
-                xsltproc conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
+                xsltproc /phylanx/conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
 
     - &attach_phylanx_tree
         attach_workspace:
@@ -76,13 +76,22 @@ anchors:
 
 ################################################################################
 jobs:
-    build_test:
+    checkout_code:
         <<: *docker_config
         working_directory: /phylanx
         steps:
             - checkout:
                 path:
-                    /phylanx
+                    /phylanx/source-full
+            # Make a shallow clone of the current commit so that we don't have to copy
+            # the whole repository between work steps.
+            - run:
+                name: Creating shallow clone
+                command: |
+                    git clone --depth=1 file:///phylanx/source-full source
+            - run:
+                name: Download CTest XML to JUnit XML transformation stylesheet
+                command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
             # Install blaze_tensors library
             - run:
                 name: Install blaze_tensors
@@ -90,28 +99,62 @@ jobs:
                     git clone https://github.com/STEllAR-GROUP/blaze_tensor.git --depth=1 /blaze_tensor
                     cmake -H/blaze_tensor -B/blaze_tensor/build
                     cmake --build /blaze_tensor/build --target install
-            # CMake
-            - run:
-                name: Run CMake
-                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DPHYLANX_WITH_BLAZE_TENSOR=ON -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
-            # Build all targets
-            - run:
-                name: Build all targets
-                command: cmake --build build -- -j1
-            # CTest to JUnit XML transformation sheet
-            - run:
-                name: Download CTest XML to JUnit XML transformation stylesheet
-                command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o build/conv.xsl
             - persist_to_workspace:
                 root: /
                 paths:
-                    - phylanx
+                    - phylanx/source
+                    - phylanx/conv.xsl
                     - usr/local/include/blaze_tensor
                     - usr/local/share/BlazeTensor
 
+    configure:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            # CMake
+            - run:
+                name: Run CMake
+                command: |
+                    cmake --version
+                    cmake                                           \
+                        /phylanx/source                             \
+                        -G "Ninja"                                  \
+                        -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1}    \
+                        -DPHYLANX_WITH_TOOLS=On                     \
+                        -DHPX_DIR=/usr/local/lib/cmake/HPX          \
+                        -Dblaze_DIR=/blaze/share/blaze/cmake        \
+                        -DPHYLANX_WITH_BLAZE_TENSOR=ON              \
+                        -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
+                        -DCMAKE_BUILD_TYPE=Debug                    \
+                        -DCMAKE_CXX_COMPILER=clang++                \
+                        -DCMAKE_C_COMPILER=clang                    \
+                        -DPHYLANX_WITH_HIGHFIVE=On
+            - persist_to_workspace:
+                root: /
+                paths:
+                    - phylanx/build
+                    - phylanx/source
+
+    build:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            # Build all targets
+            - run:
+                name: Build all targets
+                command: |
+                    ninja -j1
+            # CTest to JUnit XML transformation sheet
+            - persist_to_workspace:
+                root: /
+                paths:
+                    - phylanx/build
+
     check.code_format:
         <<: *docker_config
-        working_directory: /phylanx
+        working_directory: /phylanx/source
         steps:
             - <<: *attach_phylanx_tree
             - run:
@@ -128,11 +171,13 @@ jobs:
             # Inspect
             - run:
                 name: Build the Inspect tool
-                command: cmake --build build -- -j1 tools.inspect
+                working_directory: /phylanx/build
+                command: |
+                    ninja -j1 tools.inspect
                 when: always
             - run:
                 name: Check the formatting of Phylanx's C++ files
-                command: build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx
+                command: ../build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx/source
                 when: always
             - run:
                 name: Convert inspect HTML output to XML
@@ -146,7 +191,7 @@ jobs:
                 path: /code_format
     check.help_format:
         <<: *docker_config
-        working_directory: /phylanx
+        working_directory: /phylanx/source
         steps:
             - <<: *attach_phylanx_tree
             - run:
@@ -175,7 +220,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build regression tests
-                command: cmake --build . -- -j1 tests.regressions
+                command: ninja -j1 tests.regressions
             - run:
                 name: Run regression tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.regressions
@@ -191,7 +236,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build arithmetics primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.arithmetics
+                command: ninja -j1 tests.unit.plugins.arithmetics
             - run:
                 name: Run arithmetics primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.arithmetics
@@ -207,7 +252,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build boolean primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.booleans
+                command: ninja -j1 tests.unit.plugins.booleans
             - run:
                 name: Run boolean primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.booleans
@@ -223,7 +268,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build control primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.controls
+                command: ninja -j1 tests.unit.plugins.controls
             - run:
                 name: Run control primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.controls
@@ -239,7 +284,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build file I/O and solvers primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.{fileio,solvers}
+                command: ninja -j1 tests.unit.plugins.{fileio,solvers}
             - run:
                 name: Run file I/O and solvers primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.plugins.(fileio|solvers)'
@@ -255,7 +300,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build ListOps primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.listops
+                command: ninja -j1 tests.unit.plugins.listops
             - run:
                 name: Run ListOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.listops
@@ -271,7 +316,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build MatrixOps primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.matrixops
+                command: ninja -j1 tests.unit.plugins.matrixops
             - run:
                 name: Run MatrixOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.matrixops
@@ -287,7 +332,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build statistics primitive plugin unit tests
-                command: cmake --build . -- -j1 tests.unit.plugins.statistics
+                command: ninja -j1 tests.unit.plugins.statistics
             - run:
                 name: Run statistics primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.statistics
@@ -303,7 +348,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
-                command: cmake --build . -- -j1 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
+                command: ninja -j1 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
             - run:
                 name: Run tests.unit.{execution_tree,ast,algorithm,primitives}
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm|primitives)'
@@ -319,7 +364,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build tests.unit.{config,ir,util,performance_counters,python}
-                command: cmake --build . -- -j1 tests.unit.{config,ir,util,performance_counters,python}
+                command: ninja -j1 tests.unit.{config,ir,util,performance_counters,python}
             - run:
                 name: Run tests.unit.config
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(config|ir|util|performance_counters|python)'
@@ -333,16 +378,16 @@ jobs:
         environment:
             TARGET_IMAGE_NAME: stellargroup/phylanx:devel
         steps:
-            - attach_workspace:
-                at: /
+            - <<: *attach_phylanx_tree
             - setup_remote_docker
             - run:
                 name: Installing
-                command: cmake --build /phylanx/build -- -j1 install
+                command: ninja -j1 install
+                working_directory: /phylanx/build
             - run:
                 name: Create Docker Image
                 command: |
-                    cp /phylanx/tools/docker/circleci/Dockerfile .
+                    cp /phylanx/source/tools/docker/circleci/Dockerfile .
                     VER="18.03.0-ce"
                     curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
                     tar -xz -C /tmp -f /tmp/docker-$VER.tgz
@@ -368,47 +413,53 @@ workflows:
     version: 2
     build_and_test_phylanx:
         jobs:
-            - build_test:
+            - checkout_code:
                 <<: *ignore_docs
+            - configure:
+                requires:
+                    - checkout_code
+            - build:
+                requires:
+                    - configure
             - check.code_format:
                 requires:
-                    - build_test
+                    - build
             - check.help_format:
                 requires:
-                    - build_test
+                    - build
             - tests.regressions:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.arithmetics:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.booleans:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.controls:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.fileio_solvers:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.listops:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.matrixops:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.plugins.statistics:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.group_1:
                 requires:
-                    - build_test
+                    - build
             - tests.unit.group_2:
                 requires:
-                    - build_test
+                    - build
             - deploy_image:
                 requires:
-                    - build_test
+                    - build
                     - check.code_format
                     - check.help_format
                     - tests.regressions
