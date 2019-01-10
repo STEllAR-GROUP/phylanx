@@ -7,6 +7,7 @@ set(tests
     arange
     argmin
     argmax
+    clip
     column_slicing
     constant
     count_nonzero
