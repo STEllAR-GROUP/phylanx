@@ -11,7 +11,7 @@ if(NOT GIT_FOUND)
 endif()
 
 if(NOT GIT_REPOSITORY)
-  set(GIT_REPOSITORY git@github.com:justwagle/phylanx.git --branch gh-pages)
+  set(GIT_REPOSITORY git@github.com:STEllAR-GROUP/phylanx.git --branch gh-pages)
 endif()
 
 if(EXISTS "${CMAKE_BINARY_DIR}/gh-pages")
