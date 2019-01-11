@@ -12,13 +12,13 @@
 namespace phylanx { namespace util { namespace detail
 {
     template <typename T>
-    T numeric_limits_min()
+    constexpr T numeric_limits_min()
     {
         return -(std::numeric_limits<T>::max)();
     }
 
     template <>
-    inline std::uint8_t numeric_limits_min<std::uint8_t>()
+    inline constexpr std::uint8_t numeric_limits_min<std::uint8_t>()
     {
         return 0;
     }
