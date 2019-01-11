@@ -26,7 +26,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
-
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -85,6 +87,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{ir::node_data<T>{result}};
     }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type clip::clip3d(ir::node_data<T>&& arg,
+        ir::node_data<T>&& min, ir::node_data<T>&& max) const
+    {
+        auto result = (blaze::max)(
+            min.tensor(), (blaze::min)(max.tensor(), arg.tensor()));
+
+        return primitive_argument_type{ir::node_data<T>{result}};
+    }
+#endif
 
     template <typename T>
     primitive_argument_type clip::clip_helper(
