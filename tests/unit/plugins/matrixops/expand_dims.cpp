@@ -48,15 +48,25 @@ int main(int argc, char* argv[])
     test_expand_dims_operation("expand_dims(42., -1)", "[42.]");
     test_expand_dims_operation("expand_dims(33, 0)", "[33]");
     test_expand_dims_operation(
+        "expand_dims([42., 13., 33.], 1)", "[[ 42.],[ 13.],[ 33.]]");
+    test_expand_dims_operation(
         "expand_dims([42., 13., 33.], -1)", "[[ 42.],[ 13.],[ 33.]]");
+    test_expand_dims_operation(
+        "expand_dims([42., 13., 33.], 0)", "[[42., 13., 33.]]");
     test_expand_dims_operation(
         "expand_dims([42., 13., 33.], -2)", "[[42., 13., 33.]]");
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], 0)",
+        "[[[ 42.,  13.], [  2.,  33.]]]");
     test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], -3)",
         "[[[ 42.,  13.], [  2.,  33.]]]");
     test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], 2)",
         "[[[ 42.],[ 13.]], [[  2.],[ 33.]]]");
+    test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], -1)",
+        "[[[ 42.],[ 13.]], [[  2.],[ 33.]]]");
     test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], 1)",
+        "[[[ 42.,  13.]], [[  2.,  33.]]]");
+    test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], -2)",
         "[[[ 42.,  13.]], [[  2.,  33.]]]");
 
 #endif
