@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
-        primitive_argument_type clip::clip3d(ir::node_data<T>&& arg,
+        primitive_argument_type clip3d(ir::node_data<T>&& arg,
             ir::node_data<T>&& min, ir::node_data<T>&& max) const;
 #endif
 
