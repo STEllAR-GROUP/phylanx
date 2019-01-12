@@ -87,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "amax(_1, _2, _3, _4)"
             },
             &create_amax_operation, &create_primitive<max_operation>, R"(
-            a, axis, keepdims
+            a, axis, keepdims, initial
             Args:
 
                 a (vector or matrix): a scalar, a vector or a matrix
@@ -96,6 +96,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 keepdims (optional, bool): If this is set to True, the axes which "
                    are reduced are left in the result as dimensions with size "
                    one. False by default
+                initial (optional, scalar): The minimum value of an output
+                   element.
 
             Returns:
 

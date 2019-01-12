@@ -1,13 +1,15 @@
-// Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2019 Bita Hasheminezhad
+// Copyright (c) 2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/statistics/sum_operation.hpp>
+#include <phylanx/plugins/statistics/logsumexp_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
 #include <phylanx/util/blaze_traits.hpp>
+
+#include <hpx/util/optional.hpp>
 
 #include <cstddef>
 #include <functional>
@@ -28,9 +30,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         template <typename T>
-        struct statistics_sum_op
+        struct statistics_logsumexp_op
         {
-            statistics_sum_op(std::string const& name,
+            statistics_logsumexp_op(std::string const& name,
                 std::string const& codename)
             {}
 
@@ -43,51 +45,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
             typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
             operator()(Scalar s, T initial) const
             {
-                return s + initial;
+                return s;
             }
 
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
             operator()(Vector const& v, T initial) const
             {
-                return blaze::sum(v) + initial;
+                return blaze::sum(blaze::exp(v)) + initial;
             }
 
             static T finalize(T value, std::size_t size)
             {
-                return value;
+                return blaze::log(value);
             }
         };
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const sum_operation::match_data =
+    match_pattern_type const logsumexp_operation::match_data =
     {
         match_pattern_type{
-            "sum",
+            "logsumexp",
             std::vector<std::string>{
-                "sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)",
-                "sum(_1, _2, _3, _4)"
+                "logsumexp(_1)", "logsumexp(_1, _2)", "logsumexp(_1, _2, _3)"
             },
-            &create_sum_operation, &create_primitive<sum_operation>, R"(
-            v, axis, keepdims, initial
+            &create_logsumexp_operation, &create_primitive<logsumexp_operation>,
+            R"(
+            a, axis, keepdims
             Args:
 
-                v (vector or matrix) : a vector or matrix
-                axis (optional, integer): a axis to sum along
+                a (array) : a scalar, a vector, a matrix or a tensor
+                axis (optional, integer): Axis over which the sum is taken.
+                    By default axis is None, and all elements are summed.
                 keepdims (optional, boolean): keep dimension of input
-                initial (optional, scalar): The starting value for the sum
 
             Returns:
 
-            The sum of all values along the specified axis.)",
+            The log of the sum of exponentials of input elements.)",
             true
         }
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    sum_operation::sum_operation(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    logsumexp_operation::logsumexp_operation(
+        primitive_arguments_type&& operands, std::string const& name,
+        std::string const& codename)
       : base_type(std::move(operands), name, codename)
     {
     }
