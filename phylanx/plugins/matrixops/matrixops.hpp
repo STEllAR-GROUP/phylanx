@@ -27,6 +27,7 @@
 #include <phylanx/plugins/matrixops/linspace.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
+#include <phylanx/plugins/matrixops/repeat_operation.hpp>
 #include <phylanx/plugins/matrixops/reshape_operation.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
@@ -36,5 +37,6 @@
 #include <phylanx/plugins/matrixops/tile_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
 #include <phylanx/plugins/matrixops/unique.hpp>
+#include <phylanx/plugins/matrixops/vsplit_operation.hpp>
 
 #endif

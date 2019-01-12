@@ -28,7 +28,7 @@ namespace phylanx { namespace plugin
     ///////////////////////////////////////////////////////////////////////////
     bool load_plugins(plugin_map_type& plugins)
     {
-        hpx::util::section ini = hpx::get_runtime().get_config();
+        hpx::util::section& ini = hpx::get_runtime().get_config();
 
         // load all components as described in the configuration information
         if (!ini.has_section("phylanx.plugins"))
@@ -55,14 +55,14 @@ namespace phylanx { namespace plugin
             return false;     // something bad happened
         }
 
-        hpx::util::section::section_map const& s = (*sec).get_sections();
-        typedef hpx::util::section::section_map::const_iterator iterator;
+        hpx::util::section::section_map& s = (*sec).get_sections();
+        typedef hpx::util::section::section_map::iterator iterator;
 
         iterator end = s.end();
-        for (iterator i = s.begin (); i != end; ++i)
+        for (iterator i = s.begin(); i != end; ++i)
         {
             // the section name is the instance name of the component
-            hpx::util::section const& sect = i->second;
+            hpx::util::section& sect = i->second;
             std::string instance (sect.get_name());
             std::string component;
 
@@ -160,7 +160,11 @@ namespace phylanx { namespace plugin
                     std::shared_ptr<phylanx::plugin::plugin_base> plugin(
                         factory->create());
 
-                    plugin->register_known_primitives();
+                    plugin->register_known_primitives(lib_path.string());
+
+                    // store the full path of this plugin
+                    sect.add_entry(
+                        std::string("loaded_from_path"), lib_path.string());
                 }
             }
             catch (...) {

@@ -101,14 +101,14 @@ namespace phylanx { namespace plugin
     /**/
 
 #define PHYLANX_REGISTER_PLUGIN_FACTORY_3(pluginname, match_data, name)        \
-    namespace phylanx {                                                        \
-        namespace plugin {                                                     \
+    namespace phylanx { namespace plugin {                                     \
             struct pluginname : plugin_base                                    \
             {                                                                  \
-                void register_known_primitives() override                      \
+                void register_known_primitives(                                \
+                    std::string const& fullpath) override                      \
                 {                                                              \
                     phylanx::execution_tree::register_pattern(                 \
-                        name, match_data);                                     \
+                        name, match_data, fullpath);                           \
                 }                                                              \
             };                                                                 \
         }                                                                      \

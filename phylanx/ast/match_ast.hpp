@@ -119,8 +119,8 @@ namespace phylanx { namespace ast
     bool match_ast(std::string const&, identifier const&, F&&, Ts const&...);
     template <typename F, typename... Ts>
     bool match_ast(std::int64_t, identifier const&, F&&, Ts const&...);
-    template <typename F, typename... Ts>
-    bool match_ast(ir::node_data<double> const&, identifier const&, F&&,
+    template <typename T, typename F, typename... Ts>
+    bool match_ast(ir::node_data<T> const&, identifier const&, F&&,
         Ts const&...);
     template <typename F, typename... Ts>
     bool match_ast(primary_expr const&, identifier const&, F&&, Ts const&...);
@@ -256,8 +256,8 @@ namespace phylanx { namespace ast
         return false;
     }
 
-    template <typename F, typename... Ts>
-    bool match_ast(ir::node_data<double> const& nd, identifier const& id, F&& f,
+    template <typename T, typename F, typename... Ts>
+    bool match_ast(ir::node_data<T> const& nd, identifier const& id, F&& f,
         Ts const&... ts)
     {
         // handle placeholder

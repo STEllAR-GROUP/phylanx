@@ -149,12 +149,12 @@ namespace phylanx { namespace ast
             val, std::forward<F>(f), ts...);
     }
 
-    template <typename F, typename... Ts>
+    template <typename T, typename F, typename... Ts>
     bool traverse(
-        phylanx::ir::node_data<double> const& data, F&& f, Ts const&... ts)
+        phylanx::ir::node_data<T> const& data, F&& f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](phylanx::ir::node_data<double> const& data, F&& f,
+            [](phylanx::ir::node_data<T> const& data, F&& f,
                 Ts const&... ts)
             {
                 detail::on_enter::call(f, data, ts...);
@@ -213,27 +213,6 @@ namespace phylanx { namespace ast
     template <typename F, typename... Ts>
     bool traverse(
         std::vector<ast::expression> const& expr, F&& f, Ts const&... ts);
-
-    //     template <typename F>
-    //     bool traverse(assignment const& op, F && f);
-    //
-    //     template <typename F>
-    //     bool traverse(variable_declaration const& op, F && f);
-    //
-    //     template <typename F>
-    //     bool traverse(statement const& op, F && f);
-    //
-    //     template <typename F>
-    //     bool traverse(if_statement const& op, F && f);
-    //
-    //     template <typename F>
-    //     bool traverse(while_statement const& op, F && f);
-    //
-    //     template <typename F>
-    //     bool traverse(return_statement const& op, F && f);
-    //
-    //     template <typename F>
-    //     bool traverse(function const& op, F && f);
 
     namespace detail
     {
