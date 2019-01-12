@@ -26,6 +26,7 @@
 #include <phylanx/plugins/matrixops/inverse_operation.hpp>
 #include <phylanx/plugins/matrixops/linearmatrix.hpp>
 #include <phylanx/plugins/matrixops/linspace.hpp>
+#include <phylanx/plugins/matrixops/ndim.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/plugins/matrixops/repeat_operation.hpp>
