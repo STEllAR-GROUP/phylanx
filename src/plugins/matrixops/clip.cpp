@@ -136,6 +136,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(args[1]), sizes[0], sizes[1], name_, codename_),
                 extract_value_matrix<T>(
                     std::move(args[2]), sizes[0], sizes[1], name_, codename_));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return clip3d(extract_value_tensor<T>(std::move(args[0]), sizes[0],
+                              sizes[1], sizes[2], name_, codename_),
+                extract_value_tensor<T>(std::move(args[1]), sizes[0], sizes[1],
+                    sizes[2], name_, codename_),
+                extract_value_tensor<T>(std::move(args[2]), sizes[0], sizes[1],
+                    sizes[2], name_, codename_));
+#endif
         default:
             break;
         }
