@@ -8,6 +8,7 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
+#include <phylanx/util/detail/numeric_limits_min.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -190,20 +191,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        T numeric_limits_min()
-        {
-            return -(std::numeric_limits<T>::max)();
-        }
-
-        template <>
-        std::uint8_t numeric_limits_min<std::uint8_t>()
-        {
-            return 0;
-        }
-    }
 
     template <typename T>
     primitive_argument_type argmax::argmax2d_flatten(
@@ -216,7 +203,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_row_iterator<decltype(a)> a_begin(a);
         const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-        T global_max = detail::numeric_limits_min<T>();
+        T global_max = phylanx::util::detail::numeric_limits_min<T>();
         std::size_t global_index = 0ul;
         std::size_t passed_rows = 0ul;
         for (auto it = a_begin; it != a_end; ++it, ++passed_rows)

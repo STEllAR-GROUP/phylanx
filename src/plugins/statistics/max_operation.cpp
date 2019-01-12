@@ -7,6 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/max_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
+#include <phylanx/util/detail/numeric_limits_min.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 
 #include <hpx/util/optional.hpp>
@@ -32,19 +33,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         template <typename T>
-        T numeric_limits_min()
-        {
-            return -(std::numeric_limits<T>::max)();
-        }
-
-        template <>
-        std::uint8_t numeric_limits_min<std::uint8_t>()
-        {
-            return 0;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-        template <typename T>
         struct statistics_max_op
         {
             statistics_max_op(std::string const& name,
@@ -53,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             static constexpr T initial()
             {
-                return numeric_limits_min<T>();
+                return phylanx::util::detail::numeric_limits_min<T>();
             }
 
             template <typename Scalar>
