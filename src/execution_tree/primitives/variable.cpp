@@ -28,11 +28,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     primitive create_variable(hpx::id_type const& locality,
         primitive_argument_type&& operand, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, bool register_with_agas)
     {
         static std::string type("variable");
-        return create_primitive_component(
-            locality, type, std::move(operand), name, codename);
+        return create_primitive_component(locality, type, std::move(operand),
+            name, codename, register_with_agas);
     }
 
     match_pattern_type const variable::match_data =

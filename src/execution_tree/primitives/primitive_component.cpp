@@ -209,28 +209,30 @@ namespace phylanx { namespace execution_tree
 {
     primitive create_primitive_component(hpx::id_type const& locality,
         std::string const& type, primitive_arguments_type&& operands,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        bool register_with_agas)
     {
         return primitive{
             hpx::new_<primitives::primitive_component>(
                 locality, type, std::move(operands), name, codename),
-            name};
+            name, register_with_agas};
     }
 
     primitive create_primitive_component(hpx::id_type const& locality,
         std::string const& type, primitive_arguments_type&& operands,
-        eval_context ctx, std::string const& name, std::string const& codename)
+        eval_context ctx, std::string const& name, std::string const& codename,
+        bool register_with_agas)
     {
         return primitive{
             hpx::new_<primitives::primitive_component>(locality, type,
                 std::move(operands), std::move(ctx), name, codename),
-            name};
+            name, register_with_agas};
     }
 
     primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
         primitive_argument_type operand, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, bool register_with_agas)
     {
         primitive_arguments_type operands;
         operands.emplace_back(std::move(operand));
@@ -238,7 +240,7 @@ namespace phylanx { namespace execution_tree
         return primitive{
             hpx::new_<primitives::primitive_component>(
                 locality, type, std::move(operands), name, codename),
-            name};
+            name, register_with_agas};
     }
 }}
 

@@ -126,10 +126,11 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive::primitive(hpx::future<hpx::id_type>&& fid, std::string const& name)
+    primitive::primitive(hpx::future<hpx::id_type>&& fid,
+            std::string const& name, bool register_with_agas)
       : base_type(std::move(fid))
     {
-        if (!name.empty())
+        if (register_with_agas && !name.empty())
         {
             this->base_type::register_as(name).get();
         }

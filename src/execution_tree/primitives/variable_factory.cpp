@@ -52,23 +52,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable_factory::eval(
-        primitive_argument_type && arg, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // copy operand as we have to move it
         primitive_argument_type body = operands_[0];
 
         if (create_variable_)
         {
-            // create a new instance of the variable
+            // create a new instance of the variable, do not register with AGAS
             return hpx::make_ready_future(
-                primitive_argument_type{create_variable(
-                    hpx::find_here(), std::move(body), name_, codename_)});
+                primitive_argument_type{create_variable(hpx::find_here(),
+                    std::move(body), name_, codename_, false)});
         }
 
-        // create a new instance of the function
+        // create a new instance of the function, do not register with AGAS
         return hpx::make_ready_future(
             primitive_argument_type{create_function(
-                hpx::find_here(), std::move(body), name_, codename_)});
+                hpx::find_here(), std::move(body), name_, codename_, false)});
     }
 
     void variable_factory::store(primitive_argument_type&& data,

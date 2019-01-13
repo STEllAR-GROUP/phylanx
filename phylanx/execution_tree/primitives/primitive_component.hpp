@@ -35,8 +35,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         PHYLANX_EXPORT static std::shared_ptr<primitive_component_base>
         create_primitive(std::string const& type,
-            primitive_arguments_type&& params,
-            std::string const& name, std::string const& codename);
+            primitive_arguments_type&& params, std::string const& name,
+            std::string const& codename);
 
     public:
         primitive_component() = default;

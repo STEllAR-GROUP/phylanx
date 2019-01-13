@@ -17,6 +17,7 @@
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
 #include <iosfwd>
@@ -86,8 +87,10 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     class variable_frame
     {
-        using variables_map_type =
-            std::map<util::hashed_string, primitive_argument_type>;
+        using allocator_type = hpx::util::internal_allocator<
+            std::pair<util::hashed_string const, primitive_argument_type>>;
+        using variables_map_type = std::map<util::hashed_string,
+            primitive_argument_type, std::less<>, allocator_type>;
 
     public:
         variable_frame() = default;
@@ -137,7 +140,7 @@ namespace phylanx { namespace execution_tree
 
         eval_context(eval_mode mode = eval_default)
           : mode_(mode)
-          , variables_(std::make_shared<variable_frame>())
+          , variables_(std::allocate_shared<variable_frame>(alloc_))
         {}
 
         eval_context& set_mode(eval_mode mode) noexcept
@@ -172,8 +175,8 @@ namespace phylanx { namespace execution_tree
 
         eval_context& add_frame()
         {
-            variables_ =
-                std::make_shared<variable_frame>(std::move(variables_));
+            variables_ = std::allocate_shared<variable_frame>(
+                alloc_, std::move(variables_));
             return *this;
         }
 
@@ -192,6 +195,9 @@ namespace phylanx { namespace execution_tree
     public:
         eval_mode mode_;
         std::shared_ptr<variable_frame> variables_;
+
+        PHYLANX_EXPORT static
+            hpx::util::internal_allocator<variable_frame> alloc_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -255,8 +261,8 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        PHYLANX_EXPORT primitive(
-            hpx::future<hpx::id_type>&& fid, std::string const& name);
+        PHYLANX_EXPORT primitive(hpx::future<hpx::id_type>&& fid,
+            std::string const& name, bool register_with_agas = true);
 
         primitive(primitive const&) = default;
         primitive(primitive &&) = default;

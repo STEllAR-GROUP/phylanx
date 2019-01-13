@@ -25,11 +25,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     primitive create_function(hpx::id_type const& locality,
         primitive_argument_type&& operand, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, bool register_with_agas)
     {
         static std::string type("function");
-        return create_primitive_component(
-            locality, type, std::move(operand), name, codename);
+        return create_primitive_component(locality, type, std::move(operand),
+            name, codename, register_with_agas);
     }
 
     match_pattern_type const function::match_data =

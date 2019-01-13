@@ -49,7 +49,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     PHYLANX_EXPORT primitive create_function(hpx::id_type const& locality,
         primitive_argument_type&& operand,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "",
+        bool register_with_agas = true);
 }}}
 
 #endif

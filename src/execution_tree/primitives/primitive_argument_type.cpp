@@ -7,11 +7,15 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 
 #include <hpx/include/serialization.hpp>
+#include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
 
 namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::util::internal_allocator<variable_frame> eval_context::alloc_;
+
     ///////////////////////////////////////////////////////////////////////////
     void topology::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
