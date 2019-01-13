@@ -220,8 +220,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // Reuse the memory from lhs operand
-        auto m = lhs.matrix();
-        Op{}.op_assign(m, rhs.matrix());
+        auto m = lhs.tensor();
+        Op{}.op_assign(m, rhs.tensor());
 
         return primitive_argument_type(std::move(lhs));
     }
