@@ -233,12 +233,6 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
-        primitive_arguments_type&& operands, eval_context ctx,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
-    PHYLANX_EXPORT primitive create_primitive_component(
-        hpx::id_type const& locality, std::string const& type,
         primitive_argument_type operand, std::string const& name = "",
         std::string const& codename = "<unknown>",
         bool register_with_agas = true);

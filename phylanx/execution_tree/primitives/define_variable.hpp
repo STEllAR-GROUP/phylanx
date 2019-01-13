@@ -24,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //
     // This is a helper primitive needed for proper binding of the expression
     // value to a variable.
-    class define_variable : public primitive_component_base
+    class define_variable
+      : public primitive_component_base
       , public std::enable_shared_from_this<define_variable>
     {
     public:
@@ -49,6 +50,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         util::hashed_string target_name_;   // name of the represented variable
+        std::shared_ptr<primitive_component> target_;
     };
 }}}
 
