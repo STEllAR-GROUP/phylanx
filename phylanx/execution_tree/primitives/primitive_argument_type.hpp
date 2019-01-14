@@ -17,6 +17,7 @@
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
@@ -132,13 +133,13 @@ namespace phylanx { namespace execution_tree
     {
         enum initmode { noinit = 0 };
 
-        eval_context(initmode) noexcept
+        explicit eval_context(initmode) noexcept
           : mode_(eval_default)
           , variables_()
         {
         }
 
-        eval_context(eval_mode mode = eval_default)
+        explicit eval_context(eval_mode mode = eval_default)
           : mode_(mode)
           , variables_(std::allocate_shared<variable_frame>(alloc_))
         {}
@@ -162,11 +163,13 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type* get_var(
             util::hashed_string const& name) noexcept
         {
+            HPX_ASSERT(bool(variables_));
             return variables_->get_var(name);
         }
         primitive_argument_type const* get_var(
             util::hashed_string const& name) const noexcept
         {
+            HPX_ASSERT(bool(variables_));
             return variables_->get_var(name);
         }
 

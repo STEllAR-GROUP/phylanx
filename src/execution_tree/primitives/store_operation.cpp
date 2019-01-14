@@ -163,9 +163,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type params;
         params.emplace_back(extract_ref_value(arg, name_, codename_));
 
-        return value_operand(
-                operands_[1], std::move(arg), name_, codename_, std::move(ctx))
-            .then(hpx::launch::sync,
+        auto f =
+            value_operand(operands_[1], std::move(arg), name_, codename_, ctx);
+
+        return f.then(hpx::launch::sync,
                 [   this_ = std::move(this_),
                     lhs = extract_ref_value(operands_[0], name_, codename_),
                     args = std::move(params),
