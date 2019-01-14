@@ -6,7 +6,6 @@
 set(tests
     add_operation
     add_lists
-    cumsum
     div_operation
     generic_operation
     mul_operation

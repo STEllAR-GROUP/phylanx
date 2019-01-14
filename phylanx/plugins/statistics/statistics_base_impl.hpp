@@ -231,11 +231,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
             case -2: HPX_FALLTHROUGH;
             case 0:
-                return statistics2d_axis0(std::move(arg), keepdims, initial);
+                return derived().statistics2d_axis0(std::move(arg), keepdims, initial);
 
             case -1: HPX_FALLTHROUGH;
             case 1:
-                return statistics2d_axis1(std::move(arg), keepdims, initial);
+                return derived().statistics2d_axis1(std::move(arg), keepdims, initial);
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -245,7 +245,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "axis to be between -2 and 1 for matrices."));
             }
         }
-        return statistics2d_flat(std::move(arg), keepdims, initial);
+        return derived().statistics2d_flat(std::move(arg), keepdims, initial);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -481,10 +481,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (a_dims)
         {
         case 0:
-            return statistics0d(std::move(arg), axis, keepdims, initial_value);
+            return derived().statistics0d(std::move(arg), axis, keepdims, initial_value);
 
         case 1:
-            return statistics1d(std::move(arg), axis, keepdims, initial_value);
+            return derived().statistics1d(std::move(arg), axis, keepdims, initial_value);
 
         case 2:
             return statistics2d(std::move(arg), axis, keepdims, initial_value);

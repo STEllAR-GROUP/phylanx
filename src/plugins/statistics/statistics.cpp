@@ -9,6 +9,8 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(cumsum_operation_plugin,
+    phylanx::execution_tree::primitives::cumsum_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(max_operation_plugin,
     phylanx::execution_tree::primitives::max_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(mean_operation_plugin,
