@@ -7,7 +7,10 @@ set(subdirs
     als
     lir
     lra
+<<<<<<< HEAD
     kmeans
+=======
+>>>>>>> 0d4e446787bba0ddd326b883757a37e02d662fdb
     nn
    )
 
