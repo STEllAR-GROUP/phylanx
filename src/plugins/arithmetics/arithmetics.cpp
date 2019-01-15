@@ -15,6 +15,10 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(add_operation_plugin,
     phylanx::execution_tree::primitives::add_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(div_operation_plugin,
     phylanx::execution_tree::primitives::div_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(maximum_plugin,
+    phylanx::execution_tree::primitives::maximum::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(minimum_plugin,
+    phylanx::execution_tree::primitives::minimum::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(mul_operation_plugin,
     phylanx::execution_tree::primitives::mul_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sub_operation_plugin,

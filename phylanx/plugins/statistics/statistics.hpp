@@ -7,6 +7,7 @@
 #define PHYLANX_PLUGINS_STATISTICS_PRIMITIVES_DEC_25_2018_0703PM
 
 #include <phylanx/plugins/statistics/cumsum_operation.hpp>
+#include <phylanx/plugins/statistics/logsumexp_operation.hpp>
 #include <phylanx/plugins/statistics/max_operation.hpp>
 #include <phylanx/plugins/statistics/mean_operation.hpp>
 #include <phylanx/plugins/statistics/min_operation.hpp>

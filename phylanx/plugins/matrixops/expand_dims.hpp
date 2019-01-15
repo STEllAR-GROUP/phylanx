@@ -1,5 +1,6 @@
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,9 +23,11 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    /// \brief Creates a vector from scalar values and a column matrix from
-    /// vectors
-    /// \param a may either be a scalar or a vector
+/// \brief Expands the shape of an array by adding a dimension along the given
+///        axis.
+/// \param a     The scalar, vector, or matrix to be expanded.
+/// \param axis  The axis which the dimension is expanded along.
+
     class expand_dims
       : public primitive_component_base
       , public std::enable_shared_from_this<expand_dims>

@@ -8,6 +8,8 @@ set(tests
     add_lists
     div_operation
     generic_operation
+    maximum
+    minimum
     mul_operation
     sub_operation
     unary_minus_operation

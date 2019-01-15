@@ -5,6 +5,7 @@
 
 set(tests
     cumsum_operation
+	  logsumexp_operation
     max_operation
     mean_operation
     min_operation

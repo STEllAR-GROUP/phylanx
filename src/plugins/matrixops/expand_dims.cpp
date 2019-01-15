@@ -1,5 +1,6 @@
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -35,16 +36,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const expand_dims::match_data =
     {
         match_pattern_type("expand_dims",
-            std::vector<std::string>{"expand_dims(_1)"},
+            std::vector<std::string>{"expand_dims(_1,_2)"},
             &create_expand_dims, &create_primitive<expand_dims>, R"(
-            arg
+            arg, axis
             Args:
 
                 arg (number or list of numbers): number or list of numbers
+                axis (integer): an axis to expand along
 
             Returns:
 
-            Adds a dimension, making a scalar a vector or a vector a matrix.
+            Expand the shape of an array by adding a dimension.
             )")
     };
 
@@ -66,24 +68,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type expand_dims::add_dim_0d(
         primitive_arguments_type&& args) const
     {
-        std::int64_t axis = 0;
-        if (args.size() == 2)
-        {
-            axis =
-                extract_scalar_integer_value_strict(args[1], name_, codename_);
-        }
+        std::int64_t axis =
+            extract_scalar_integer_value_strict(args[1], name_, codename_);
 
-        if (axis != 0 || axis < -1)
+        if (axis != 0 && axis != -1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::expand_dims::add_dim_0d",
                 generate_error_message(
-                    "the axis parameter to expand_dims is out of range"));
-        }
-
-        if (axis < 0)
-        {
-            axis += 1;
+                    "the expand_dims primitive requires operand axis to be "
+                    "either 0 or -1 for scalars."));
         }
 
         switch (extract_common_type(args[0]))
@@ -136,19 +130,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type expand_dims::add_dim_1d(
         primitive_arguments_type&& args) const
     {
-        std::int64_t axis = 0;
-        if (args.size() == 2)
-        {
-            axis =
-                extract_scalar_integer_value_strict(args[1], name_, codename_);
-        }
+        std::int64_t axis =
+            extract_scalar_integer_value_strict(args[1], name_, codename_);
 
         if (axis > 1 || axis < -2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::expand_dims::add_dim_1d",
                 generate_error_message(
-                    "the axis parameter to expand_dims is out of range"));
+                    "the expand_dims primitive requires operand axis "
+                    "to be between -2 and 1 for vector values."));
         }
 
         if (axis < 0)
@@ -213,19 +204,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type expand_dims::add_dim_2d(
         primitive_arguments_type&& args) const
     {
-        std::int64_t axis = 0;
-        if (args.size() == 2)
-        {
-            axis =
-                extract_scalar_integer_value_strict(args[1], name_, codename_);
-        }
+        std::int64_t axis =
+            extract_scalar_integer_value_strict(args[1], name_, codename_);
 
         if (axis > 2 || axis < -3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::expand_dims::add_dim_2d",
                 generate_error_message(
-                    "the axis parameter to expand_dims is out of range"));
+                    "the expand_dims primitive requires operand axis "
+                    "to be between -3 and 2 for matrix values."));
         }
 
         if (axis < 0)
@@ -268,22 +256,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1 && operands.size() != 2)
+        if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "expand_dims::eval",
                 generate_error_message(
-                    "the expand_dims primitive requires exactly one or two "
+                    "the expand_dims primitive requires exactly two "
                     "operands"));
         }
 
-        if (!valid(operands[0]))
+        for (auto const& i : operands)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "expand_dims::eval",
-                generate_error_message(
-                    "the expand_dims primitive requires that the "
+            if (!valid(i))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "expand_dims::eval",
+                    generate_error_message(
+                        "the expand_dims primitive requires that the "
                         "arguments given by the operands array are valid"));
+            }
         }
 
         auto this_ = this->shared_from_this();
