@@ -11,13 +11,17 @@ if(PHYLANX_WITH_DOCUMENTATION)
   find_package(Breathe)
 
   if(NOT SPHINX_FOUND)
-    message("Sphinx is unavailable, sphinx documentation generation disabled. Set SPHINX_ROOT to your sphinx-build installation directory.")
+    message(SEND_ERROR "Sphinx is unavailable, sphinx documentation generation disabled.
+            Set SPHINX_ROOT to your sphinx-build installation directory.")
     set(PHYLANX_WITH_DOCUMENTATION OFF)
   elseif(NOT BREATHE_FOUND)
-    message("Breathe is unavailable, sphinx documentation generation disabled. Set BREATHE_APIDOC_ROOT to your breathe-apidoc installation directory.")
+    message(SEND_ERROR "Breathe is unavailable, sphinx documentation generation disabled.
+            Set BREATHE_APIDOC_ROOT to your breathe-apidoc installation directory.")
     set(PHYLANX_WITH_DOCUMENTATION OFF)
   elseif(NOT DOXYGEN_FOUND)
-    message("Doxygen tool is unavailable, sphinx documentation generation disabled. Add the doxygen executable to your path or set the DOXYGEN_EXECUTABLE variable manually.")
+    message(SEND_ERROR "Doxygen tool is unavailable, sphinx documentation generation
+            disabled. Add the doxygen executable to your path or set the
+            DOXYGEN_EXECUTABLE variable manually.")
     set(PHYLANX_WITH_DOCUMENTATION OFF)
   endif()
 endif()
