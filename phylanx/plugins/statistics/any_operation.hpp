@@ -8,29 +8,26 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/plugins/statistics/statistics_base.hpp>
 
-#include <hpx/lcos/future.hpp>
-
-#include <cstdint>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class any_operation
-      : public primitive_component_base
-      , public std::enable_shared_from_this<any_operation>
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
     {
-    protected:
-        using arg_type = ir::node_data<std::uint8_t>;
+        template <typename T>
+        struct statistics_any_op;
+    }
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& operands,
-            primitive_arguments_type const& args,
-            eval_context ctx) const override;
+    class any_operation
+      : public statistics<detail::statistics_any_op, any_operation>
+    {
+        using base_type =
+            statistics<detail::statistics_any_op, any_operation>;
 
     public:
         static match_pattern_type const match_data;
@@ -39,19 +36,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         any_operation(primitive_arguments_type&& params,
             std::string const& name, std::string const& codename);
-
-    private:
-        template <typename T>
-        primitive_argument_type any0d(T&& arg) const;
-
-        template <typename T>
-        primitive_argument_type any1d(T&& arg) const;
-
-        template <typename T>
-        primitive_argument_type any2d(T&& arg) const;
-
-        template <typename T>
-        primitive_argument_type any_nd(T&& arg) const;
     };
 
     inline primitive create_any_operation(hpx::id_type const& locality,

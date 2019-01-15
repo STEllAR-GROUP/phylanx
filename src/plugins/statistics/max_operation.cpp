@@ -10,8 +10,6 @@
 #include <phylanx/util/detail/numeric_limits_min.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 
-#include <hpx/util/optional.hpp>
-
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
