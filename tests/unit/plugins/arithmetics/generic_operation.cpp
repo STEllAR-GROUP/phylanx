@@ -703,6 +703,29 @@ void test_3d_operations()
 }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_operation(std::string const& code, std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+void test_dtype()
+{
+    test_operation("floor__int(10)", "10");
+    test_operation("floor__int(10.2)", "10");
+}
+
 int main(int argc, char* argv[])
 {
     test_0d_operations();
@@ -712,5 +735,8 @@ int main(int argc, char* argv[])
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_3d_operations();
 #endif
+
+    test_dtype();
+
     return hpx::util::report_errors();
 }
