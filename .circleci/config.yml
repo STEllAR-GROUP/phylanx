@@ -113,7 +113,6 @@ jobs:
                     - phylanx/conv.xsl
                     - usr/local/include/blaze_tensor
                     - usr/local/share/BlazeTensor
-
     configure:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -146,7 +145,6 @@ jobs:
                 paths:
                     - phylanx/build
                     - phylanx/source
-
     build:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -162,27 +160,25 @@ jobs:
                 root: /
                 paths:
                     - phylanx/build
-
     docs_push:
-    <<: *docker_config
-    working_directory: /phylanx/build
-    steps:
-        - <<: *attach_phylanx_tree
-        # Build all targets
-        - run:
-            name: Pushing Sphinx Documentation
-            command: |
-              mkdir -p ~/.ssh
-              echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> ~/.ssh/known_hosts
-              git config --global user.name "StellarBot"
-              git config --global user.email "stellar@cct.lsu.edu"
-              ninja -j1 git_docs
-        # CTest to JUnit XML transformation sheet
-        - persist_to_workspace:
-            root: /
-            paths:
-                - phylanx/build
-
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            # Build all targets
+            - run:
+                name: Pushing Sphinx Documentation
+                command: |
+                    mkdir -p ~/.ssh
+                    echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> ~/.ssh/known_hosts
+                    git config --global user.name "StellarBot"
+                    git config --global user.email "stellar@cct.lsu.edu"
+                    ninja -j1 git_docs
+            # CTest to JUnit XML transformation sheet
+            - persist_to_workspace:
+                root: /
+                paths:
+                    - phylanx/build
     check.code_format:
         <<: *docker_config
         working_directory: /phylanx/source
