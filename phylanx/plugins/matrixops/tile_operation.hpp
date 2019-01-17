@@ -99,14 +99,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type tile2d_3args(
             ir::node_data<T>&& arr, ir::range&& arg) const;
 
+
         primitive_argument_type tile3d(
             primitive_argument_type&& arr, ir::range&& arg) const;
-        //template <typename T>
-        //primitive_argument_type tile3d_1arg(
-        //    ir::node_data<T>&& arr, ir::range&& arg) const;
-        //template <typename T>
-        //primitive_argument_type tile3d_2args(
-        //    ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d_1arg(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d_2args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d_3args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
         template <typename T>
         primitive_argument_type tile3d(ir::node_data<T>&& arr,
             ir::range&& arg) const;

@@ -432,18 +432,80 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the tile primitive requires for all arguments to "
                 "be numeric data types"));
     }
+
     ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type tile_operation::tile3d_1arg(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto t = arr.tensor();
+        auto rep = extract_scalar_integer_value_strict(*arg.begin());
+
+        blaze::DynamicTensor<T> result(t.pages(), t.rows(), rep * t.columns());
+        for (auto i = 0; i < rep; ++i)
+        {
+            blaze::subtensor(result, 0, 0, i * t.columns(), t.pages(), t.rows(),
+                t.columns()) = t;
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type tile_operation::tile3d_2args(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto t = arr.tensor();
+        auto it = arg.begin();
+        auto row = extract_scalar_integer_value_strict(*it);
+        auto column = extract_scalar_integer_value_strict(*++it);
+
+        blaze::DynamicTensor<T> result(
+            t.pages(), row * t.rows(), column * t.columns());
+        for (auto r = 0; r < row; ++r)
+            for (auto c = 0; c < column; ++c)
+                blaze::subtensor(result, 0, r * t.rows(), c * t.columns(),
+                    t.pages(), t.rows(), t.columns()) = t;
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type tile_operation::tile3d_3args(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto t = arr.tensor();
+        auto it = arg.begin();
+        auto page = extract_scalar_integer_value_strict(*it);
+        auto row = extract_scalar_integer_value_strict(*++it);
+        auto column = extract_scalar_integer_value_strict(*++it);
+
+        blaze::DynamicTensor<T> result(
+            page * t.pages(), row * t.rows(), column * t.columns());
+
+        for (auto p = 0; p < page; ++p)
+            for (auto r = 0; r < row; ++r)
+                for (auto c = 0; c < column; ++c)
+                    blaze::subtensor(result, p * t.pages(), r * t.rows(),
+                        c * t.columns(), t.pages(), t.rows(), t.columns()) = t;
+
+        return primitive_argument_type{std::move(result)};
+    }
+
     template <typename T>
     primitive_argument_type tile_operation::tile3d(ir::node_data<T>&& arr,
         ir::range&& arg) const
     {
         switch (arg.size())
         {
-        //case 1:
-        //    return tile3d_1arg(std::move(arr), std::move(arg));
+        case 1:
+            return tile3d_1arg(std::move(arr), std::move(arg));
 
-        //case 2:
-        //    return tile3d_2args(std::move(arr), std::move(arg));
+        case 2:
+            return tile3d_2args(std::move(arr), std::move(arg));
+
+        case 3:
+            return tile3d_3args(std::move(arr), std::move(arg));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -489,6 +551,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the tile primitive requires for all arguments to "
                 "be numeric data types"));
     }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> tile_operation::eval(
         primitive_arguments_type const& operands,
@@ -544,6 +608,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 3:
                         return this_->tile3d(std::move(arr), std::move(arg));
 #endif
+
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "tile_operation::eval",
