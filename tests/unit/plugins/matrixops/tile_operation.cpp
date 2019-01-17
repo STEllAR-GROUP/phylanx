@@ -184,6 +184,93 @@ void test_tile_operation_2d_matrix()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+void test_tile_operation_0d_tensor()
+{
+    phylanx::execution_tree::primitive arr =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+
+    phylanx::execution_tree::primitive tile =
+        phylanx::execution_tree::primitives::create_tile_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{std::move(arr),
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        phylanx::ir::node_data<std::int64_t>(2),
+                        phylanx::ir::node_data<std::int64_t>(1),
+                        phylanx::ir::node_data<std::int64_t>(3)}}});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        tile.eval();
+
+    blaze::DynamicTensor<double> expected{{{42., 42., 42.}}, {{42., 42., 42.}}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_tile_operation_1d_tensor()
+{
+    blaze::DynamicVector<double> vec{42., 13., 33.};
+
+    phylanx::execution_tree::primitive arr =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(vec));
+
+    phylanx::execution_tree::primitive tile =
+        phylanx::execution_tree::primitives::create_tile_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{ std::move(arr),
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        phylanx::ir::node_data<std::int64_t>(1),
+                        phylanx::ir::node_data<std::int64_t>(2),
+                        phylanx::ir::node_data<std::int64_t>(3)}} });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        tile.eval();
+
+    blaze::DynamicTensor<double> expected{
+           {{42., 13., 33., 42., 13., 33., 42., 13., 33.},
+            {42., 13., 33., 42., 13., 33., 42., 13., 33.}}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_tile_operation_2d_tensor()
+{
+    blaze::DynamicMatrix<double> mat{{1., 2.}, {3., 4.}};
+
+    phylanx::execution_tree::primitive arr =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(mat));
+
+    phylanx::execution_tree::primitive tile =
+        phylanx::execution_tree::primitives::create_tile_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{std::move(arr),
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        phylanx::ir::node_data<std::int64_t>(2),
+                        phylanx::ir::node_data<std::int64_t>(2),
+                        phylanx::ir::node_data<std::int64_t>(3)}}});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        tile.eval();
+
+    blaze::DynamicTensor<double> expected{
+        {{1., 2., 1., 2., 1., 2.}, {3., 4., 3., 4., 3., 4.},
+         {1., 2., 1., 2., 1., 2.}, {3., 4., 3., 4., 3., 4.}},
+        {{1., 2., 1., 2., 1., 2.}, {3., 4., 3., 4., 3., 4.},
+         {1., 2., 1., 2., 1., 2.}, {3., 4., 3., 4., 3., 4.}}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     test_tile_operation_0d_vector();
@@ -192,5 +279,12 @@ int main(int argc, char* argv[])
     test_tile_operation_1d_matrix();
     test_tile_operation_2d_vector();
     test_tile_operation_2d_matrix();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_tile_operation_0d_tensor();
+    test_tile_operation_1d_tensor();
+    test_tile_operation_2d_tensor();
+#endif
+
     return hpx::util::report_errors();
 }
