@@ -164,7 +164,7 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Build all targets
+            # Build Documentation and Push to gh-pages branch
             - run:
                 name: Pushing Sphinx Documentation
                 command: |
@@ -173,7 +173,6 @@ jobs:
                     git config --global user.name "StellarBot"
                     git config --global user.email "stellar@cct.lsu.edu"
                     ninja -j1 git_docs
-            # CTest to JUnit XML transformation sheet
             - persist_to_workspace:
                 root: /
                 paths:
