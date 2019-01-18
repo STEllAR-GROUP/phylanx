@@ -67,7 +67,6 @@ anchors:
             branches:
                 only:
                     - master
-                    - documentation_changes
 
     - &convert_xml
         run:
