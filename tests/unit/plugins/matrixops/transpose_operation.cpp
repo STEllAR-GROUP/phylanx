@@ -1,4 +1,5 @@
 //   Copyright (c) 2017-2018 Hartmut Kaiser
+//   Copyright (c) 2019 Bita Hasheminezhad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +10,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -94,6 +96,65 @@ void test_transpose_operation_1d_lit()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_transpose_operation_1d_axes0d()
+{
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
+
+    phylanx::execution_tree::primitive lhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
+
+    phylanx::execution_tree::primitive axes =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(0));
+
+    phylanx::execution_tree::primitive transpose =
+        phylanx::execution_tree::primitives::create_transpose_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(lhs),std::move(axes)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        transpose.eval();
+
+    blaze::DynamicVector<double> expected(v);
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_transpose_operation_1d_axes1d()
+{
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
+
+    phylanx::execution_tree::primitive lhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
+
+    phylanx::execution_tree::primitive axes =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(-1));
+
+    phylanx::execution_tree::primitive transpose =
+        phylanx::execution_tree::primitives::create_transpose_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{
+                    std::move(axes)}});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        transpose.eval();
+
+    blaze::DynamicVector<double> expected(v);
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
 void test_transpose_operation_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
@@ -140,6 +201,70 @@ void test_transpose_operation_2d_lit()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_transpose_operation_2d_axes()
+{
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
+
+    phylanx::execution_tree::primitive lhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
+
+    blaze::DynamicVector<std::int64_t> v{1, 0};
+    phylanx::execution_tree::primitive axes =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(v));
+
+    phylanx::execution_tree::primitive transpose =
+        phylanx::execution_tree::primitives::create_transpose_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{
+                    std::move(axes)}});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        transpose.eval();
+
+    blaze::DynamicMatrix<double> expected = blaze::trans(m);
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_transpose_operation_2d_axes_nochange()
+{
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
+
+    phylanx::execution_tree::primitive lhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
+
+    blaze::DynamicVector<std::int64_t> v{-2, -1};
+    phylanx::execution_tree::primitive axes =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(v));
+
+    phylanx::execution_tree::primitive transpose =
+        phylanx::execution_tree::primitives::create_transpose_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{
+                    std::move(axes)}});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        transpose.eval();
+
+    blaze::DynamicMatrix<double> expected(m);
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
 int main(int argc, char* argv[])
 {
     test_transpose_operation_0d();
@@ -147,9 +272,13 @@ int main(int argc, char* argv[])
 
     test_transpose_operation_1d();
     test_transpose_operation_1d_lit();
+    test_transpose_operation_1d_axes0d();
+    test_transpose_operation_1d_axes1d();
 
     test_transpose_operation_2d();
     test_transpose_operation_2d_lit();
+    test_transpose_operation_2d_axes();
+    test_transpose_operation_2d_axes_nochange();
 
     return hpx::util::report_errors();
 }
