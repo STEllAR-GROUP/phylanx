@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API reference &mdash; Phylanx 0.0.1 documentation</title>
+  <title>API reference &mdash; Phylanx master documentation</title>
   
 
   
@@ -24,20 +24,29 @@
 
   
 
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Acknowledgements" href="acknowledgement.html" />
-    <link rel="prev" title="About Phylanx" href="manual/about.html" /> 
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Phylanx master documentation" href="index.html"/>
+        <link rel="next" title="Acknowledgements" href="acknowledgement.html"/>
+        <link rel="prev" title="About Phylanx" href="manual/about.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
    
   <div class="wy-grid-for-nav">
@@ -54,7 +63,7 @@
 
           
             
-            <img src="_static/PHYLANX_STELLAR.png" class="logo" alt="Logo"/>
+            <img src="_static/PHYLANX_STELLAR.png" class="logo" />
           
           </a>
 
@@ -62,7 +71,7 @@
             
             
               <div class="version">
-                0.0.1
+                master
               </div>
             
           
@@ -108,7 +117,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" aria-label="top navigation">
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Phylanx</a>
@@ -116,10 +125,9 @@
       </nav>
 
 
+      
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
           
 
 
@@ -167,8 +175,9 @@
 <h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives14diag_operationE">
-<span id="phylanx::execution_tree::primitives::diag_operation"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation"></span><em class="property">class </em><code class="descname">diag_operation</code> : <em class="property">public</em> primitive_component_base, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv2N7phylanx14execution_tree10primitives14diag_operationE" title="phylanx::execution_tree::primitives::diag_operation">diag_operation</a>&gt;<a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives14diag_operationE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;diag_operation.hpp&gt;</em><div class="breathe-sectiondef docutils container">
+<span id="phylanx::execution_tree::primitives::diag_operation"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation"></span><em class="property">class </em><code class="descname">diag_operation</code><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives14diag_operationE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><em>#include &lt;diag_operation.hpp&gt;</em><p>Inherits from primitive_component_base, std::enable_shared_from_this&lt; diag_operation &gt;</p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives14diag_operation14diag_operationEv">
@@ -180,8 +189,8 @@
 <span id="phylanx::execution_tree::primitives::diag_operation::diag_operation__primitive_arguments_typeRR.ssCR.ssCR"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1af2dfdac54978f2c0bd1e930dfabc835f"></span><code class="descname">diag_operation</code><span class="sig-paren">(</span>primitive_arguments_type &amp;&amp;<em>operands</em>, std::string <em class="property">const</em> &amp;<em>name</em>, std::string <em class="property">const</em> &amp;<em>codename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives14diag_operation14diag_operationERR24primitive_arguments_typeRNSt6stringERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Diag Operation Primitive. </p>
 <p>Constructs a diagonal matrix if the input is a vector, extracts the diagonal if the input is a matrix and returns unchanged input if the input is a scalar.</p>
-<p><p>If used inside PhySL: </p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span> <span class="n">diag</span> <span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">0</span> <span class="p">)</span>
+<p>
+If used inside PhySL: <div class="highlight-cpp"><div class="highlight"><pre><span></span> <span class="n">diag</span> <span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">0</span> <span class="p">)</span>
 
      <span class="nl">input</span> <span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">Vector</span> <span class="n">or</span> <span class="n">a</span> <span class="n">Matrix</span>
      <span class="nl">k</span>     <span class="p">:</span> <span class="n">Which</span> <span class="n">diagonal</span> <span class="n">to</span> <span class="n">extract</span> <span class="n">or</span> <span class="n">create</span><span class="p">,</span> <span class="k">default</span> <span class="n">being</span> <span class="mi">0</span>
@@ -220,18 +229,24 @@
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Private Functions</p>
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag0dERRN2ir9node_dataI1TEENSt7int64_tE">
-<span id="phylanx::execution_tree::primitives::diag_operation::diag0d__ir::node_data:T:RR.std::int64_tC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1acd2798b5e9948a3c7cf18e6455be3d51"></span>primitive_argument_type <code class="descname">diag0d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>args</em>, std::int64_t <em>k</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag0dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::diag_operation::diag0d__ir::node_data:T:RR.std::int64_tC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1acd2798b5e9948a3c7cf18e6455be3d51"></span>primitive_argument_type <code class="descname">diag0d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>args</em>, std::int64_t <em>k</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag0dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag1dERRN2ir9node_dataI1TEENSt7int64_tE">
-<span id="phylanx::execution_tree::primitives::diag_operation::diag1d__ir::node_data:T:RR.std::int64_tC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1a8ed3d1c06a5c803feda0a79479b33725"></span>primitive_argument_type <code class="descname">diag1d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>args</em>, std::int64_t <em>k</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag1dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::diag_operation::diag1d__ir::node_data:T:RR.std::int64_tC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1a8ed3d1c06a5c803feda0a79479b33725"></span>primitive_argument_type <code class="descname">diag1d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>args</em>, std::int64_t <em>k</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag1dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag2dERRN2ir9node_dataI1TEENSt7int64_tE">
-<span id="phylanx::execution_tree::primitives::diag_operation::diag2d__ir::node_data:T:RR.std::int64_tC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1ae1a50b6a6749b39414e1c6838be9393b"></span>primitive_argument_type <code class="descname">diag2d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>args</em>, std::int64_t <em>k</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag2dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::diag_operation::diag2d__ir::node_data:T:RR.std::int64_tC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1ae1a50b6a6749b39414e1c6838be9393b"></span>primitive_argument_type <code class="descname">diag2d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>args</em>, std::int64_t <em>k</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives14diag_operation6diag2dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -254,8 +269,9 @@
 
 <dl class="class">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives18gradient_operationE">
-<span id="phylanx::execution_tree::primitives::gradient_operation"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation"></span><em class="property">class </em><code class="descname">gradient_operation</code> : <em class="property">public</em> primitive_component_base, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv2N7phylanx14execution_tree10primitives18gradient_operationE" title="phylanx::execution_tree::primitives::gradient_operation">gradient_operation</a>&gt;<a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives18gradient_operationE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;gradient_operation.hpp&gt;</em><div class="breathe-sectiondef docutils container">
+<span id="phylanx::execution_tree::primitives::gradient_operation"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation"></span><em class="property">class </em><code class="descname">gradient_operation</code><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives18gradient_operationE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><em>#include &lt;gradient_operation.hpp&gt;</em><p>Inherits from primitive_component_base, std::enable_shared_from_this&lt; gradient_operation &gt;</p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives18gradient_operation18gradient_operationEv">
@@ -267,8 +283,8 @@
 <span id="phylanx::execution_tree::primitives::gradient_operation::gradient_operation__primitive_arguments_typeRR.ssCR.ssCR"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation_1a09b2052e1914eb847ab87de6082d0729"></span><code class="descname">gradient_operation</code><span class="sig-paren">(</span>primitive_arguments_type &amp;&amp;<em>operands</em>, std::string <em class="property">const</em> &amp;<em>name</em>, std::string <em class="property">const</em> &amp;<em>codename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives18gradient_operation18gradient_operationERR24primitive_arguments_typeRNSt6stringERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Gradient Operation Primitive. </p>
 <p>Returns gradient of the input</p>
-<p><p>If used inside PhySL: </p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span> <span class="n">gradient</span> <span class="p">(</span><span class="n">input</span> <span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+<p>
+If used inside PhySL: <div class="highlight-cpp"><div class="highlight"><pre><span></span> <span class="n">gradient</span> <span class="p">(</span><span class="n">input</span> <span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
 
      <span class="nl">input</span> <span class="p">:</span> <span class="n">Vector</span> <span class="n">or</span> <span class="n">a</span> <span class="n">Matrix</span>
      <span class="nl">axis</span>  <span class="p">:</span> <span class="n">Axis</span> <span class="n">to</span> <span class="n">perform</span> <span class="n">gradient</span> <span class="n">along</span> <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
@@ -321,13 +337,17 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives18gradient_operation10gradient1dERRN2ir9node_dataI1TEE">
-<span id="phylanx::execution_tree::primitives::gradient_operation::gradient1d__ir::node_data:T:RRC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation_1aeb654acf21c7598c763f71eceee585a0"></span>primitive_argument_type <code class="descname">gradient1d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>arg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives18gradient_operation10gradient1dERRN2ir9node_dataI1TEE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::gradient_operation::gradient1d__ir::node_data:T:RRC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation_1aeb654acf21c7598c763f71eceee585a0"></span>primitive_argument_type <code class="descname">gradient1d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>arg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives18gradient_operation10gradient1dERRN2ir9node_dataI1TEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives18gradient_operation10gradient2dERRN2ir9node_dataI1TEENSt7int64_tE">
-<span id="phylanx::execution_tree::primitives::gradient_operation::gradient2d__ir::node_data:T:RR.std::int64_tC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation_1a0a387184f599a40825846612dd6c303f"></span>primitive_argument_type <code class="descname">gradient2d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>arg</em>, std::int64_t <em>axis</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives18gradient_operation10gradient2dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::gradient_operation::gradient2d__ir::node_data:T:RR.std::int64_tC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1gradient__operation_1a0a387184f599a40825846612dd6c303f"></span>primitive_argument_type <code class="descname">gradient2d</code><span class="sig-paren">(</span>ir::node_data&lt;T&gt; &amp;&amp;<em>arg</em>, std::int64_t <em>axis</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives18gradient_operation10gradient2dERRN2ir9node_dataI1TEENSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -335,8 +355,9 @@
 
 <dl class="class">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives12linearmatrixE">
-<span id="phylanx::execution_tree::primitives::linearmatrix"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linearmatrix"></span><em class="property">class </em><code class="descname">linearmatrix</code> : <em class="property">public</em> primitive_component_base, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv2N7phylanx14execution_tree10primitives12linearmatrixE" title="phylanx::execution_tree::primitives::linearmatrix">linearmatrix</a>&gt;<a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives12linearmatrixE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;linearmatrix.hpp&gt;</em><div class="breathe-sectiondef docutils container">
+<span id="phylanx::execution_tree::primitives::linearmatrix"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linearmatrix"></span><em class="property">class </em><code class="descname">linearmatrix</code><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives12linearmatrixE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><em>#include &lt;linearmatrix.hpp&gt;</em><p>Inherits from primitive_component_base, std::enable_shared_from_this&lt; linearmatrix &gt;</p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives12linearmatrix12linearmatrixEv">
@@ -373,8 +394,10 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives12linearmatrix9linmatrixENSt7int64_tENSt7int64_tE1T1T1T">
-<span id="phylanx::execution_tree::primitives::linearmatrix::linmatrix__std::int64_t.std::int64_t.T.T.TC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linearmatrix_1a0dc5881450928cfed8c3924e3224cf49"></span>primitive_argument_type <code class="descname">linmatrix</code><span class="sig-paren">(</span>std::int64_t <em>nx</em>, std::int64_t <em>ny</em>, T <em>x0</em>, T <em>dx</em>, T <em>dy</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives12linearmatrix9linmatrixENSt7int64_tENSt7int64_tE1T1T1T" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::linearmatrix::linmatrix__std::int64_t.std::int64_t.T.T.TC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linearmatrix_1a0dc5881450928cfed8c3924e3224cf49"></span>primitive_argument_type <code class="descname">linmatrix</code><span class="sig-paren">(</span>std::int64_t <em>nx</em>, std::int64_t <em>ny</em>, T <em>x0</em>, T <em>dx</em>, T <em>dy</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives12linearmatrix9linmatrixENSt7int64_tENSt7int64_tE1T1T1T" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -390,7 +413,7 @@
 
 <dl class="class">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives8linspaceE">
-<span id="phylanx::execution_tree::primitives::linspace"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linspace"></span><em class="property">class </em><code class="descname">linspace</code> : <em class="property">public</em> primitive_component_base, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv2N7phylanx14execution_tree10primitives8linspaceE" title="phylanx::execution_tree::primitives::linspace">linspace</a>&gt;<a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives8linspaceE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::linspace"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linspace"></span><em class="property">class </em><code class="descname">linspace</code><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives8linspaceE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><em>#include &lt;linspace.hpp&gt;</em><p>Creates a linear space of evenly spaced numbers over the given interval. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -400,6 +423,7 @@
 </dd>
 </dl>
 </p>
+<p>Inherits from primitive_component_base, std::enable_shared_from_this&lt; linspace &gt;</p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
@@ -412,10 +436,10 @@
 <dt id="_CPPv2N7phylanx14execution_tree10primitives8linspace8linspaceERR24primitive_arguments_typeRNSt6stringERNSt6stringE">
 <span id="phylanx::execution_tree::primitives::linspace::linspace__primitive_arguments_typeRR.ssCR.ssCR"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linspace_1a2df64656ea04bbdb4d1f7a0203b4791f"></span><code class="descname">linspace</code><span class="sig-paren">(</span>primitive_arguments_type &amp;&amp;<em>args</em>, std::string <em class="property">const</em> &amp;<em>name</em>, std::string <em class="property">const</em> &amp;<em>codename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives8linspace8linspaceERR24primitive_arguments_typeRNSt6stringERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Creates a linear space of evenly spaced numbers over the given interval. </p>
-<p><p>start: the first value of the sequence.</p>
-<p>stop: the last value of the sequence. It will be ignored if the number of samples is less than 2.</p>
-<p>num_samples: number of samples in the sequence.</p>
-<dl class="docutils">
+<p>
+start: the first value of the sequence.
+stop: the last value of the sequence. It will be ignored if the number of samples is less than 2.
+num_samples: number of samples in the sequence.<dl class="docutils">
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
 <li><code class="docutils literal"><span class="pre">args</span></code>: Is a vector with exactly three elements (in order):</li>
@@ -459,8 +483,10 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2NK7phylanx14execution_tree10primitives8linspace10linspace1dE1T1TNSt7int64_tE">
-<span id="phylanx::execution_tree::primitives::linspace::linspace1d__T.T.std::int64_tC"></span><em class="property">template </em>&lt;<em class="property">typename</em> T&gt;<br /><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linspace_1a94dcee20b77316eeb268fcc4d6409d4f"></span>primitive_argument_type <code class="descname">linspace1d</code><span class="sig-paren">(</span>T <em>start</em>, T <em>end</em>, std::int64_t <em>nelements</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives8linspace10linspace1dE1T1TNSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="phylanx::execution_tree::primitives::linspace::linspace1d__T.T.std::int64_tC"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1linspace_1a94dcee20b77316eeb268fcc4d6409d4f"></span>primitive_argument_type <code class="descname">linspace1d</code><span class="sig-paren">(</span>T <em>start</em>, T <em>end</em>, std::int64_t <em>nelements</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7phylanx14execution_tree10primitives8linspace10linspace1dE1T1TNSt7int64_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -476,8 +502,9 @@
 
 <dl class="class">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives6randomE">
-<span id="phylanx::execution_tree::primitives::random"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1random"></span><em class="property">class </em><code class="descname">random</code> : <em class="property">public</em> primitive_component_base, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv2N7phylanx14execution_tree10primitives6randomE" title="phylanx::execution_tree::primitives::random">random</a>&gt;<a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives6randomE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;random.hpp&gt;</em><div class="breathe-sectiondef docutils container">
+<span id="phylanx::execution_tree::primitives::random"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1random"></span><em class="property">class </em><code class="descname">random</code><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives6randomE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><em>#include &lt;random.hpp&gt;</em><p>Inherits from primitive_component_base, std::enable_shared_from_this&lt; random &gt;</p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives6random6randomEv">
@@ -488,28 +515,28 @@
 <dt id="_CPPv2N7phylanx14execution_tree10primitives6random6randomERR24primitive_arguments_typeRNSt6stringERNSt6stringE">
 <span id="phylanx::execution_tree::primitives::random::random__primitive_arguments_typeRR.ssCR.ssCR"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1random_1a05200c3d5b98f824556780a3dbfc671f"></span><code class="descname">random</code><span class="sig-paren">(</span>primitive_arguments_type &amp;&amp;<em>operands</em>, std::string <em class="property">const</em> &amp;<em>name</em>, std::string <em class="property">const</em> &amp;<em>codename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives6random6randomERR24primitive_arguments_typeRNSt6stringERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Create a new random data element of the requested dimensions that is filled using random numbers distributed based on the given arguments</p>
-<p><p>dimensions: Specifies the number of dimensions of the newly created data element</p>
-<p> This value can either be another data element, in which case the newly created element will have the same dimensions. This can also be a list of values to use as the dimensions for the newly created data element.</p>
-<p>parameters: (optional) Specifies what distribution to use to generate the random numbers. This has to be a list of parameters where the first list element is the name of the distribution to use (see below). The remaining list elements are specific to the distribution selected. (default: </p>
-<code class="docutils literal"><span class="pre">list(&quot;normal&quot;,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></code>).<dl class="docutils">
+<p>
+dimensions: Specifies the number of dimensions of the newly created data element
+ This value can either be another data element, in which case the newly created element will have the same dimensions. This can also be a list of values to use as the dimensions for the newly created data element.
+parameters: (optional) Specifies what distribution to use to generate the random numbers. This has to be a list of parameters where the first list element is the name of the distribution to use (see below). The remaining list elements are specific to the distribution selected. (default: <code class="docutils literal"><span class="pre">list(&quot;normal&quot;,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></code>).<dl class="docutils">
 <dt><strong>Note</strong></dt>
-<dd>Possible values for <em>parameters</em>  list(“uniform_int”, min, max): Produces integer values evenly distributed across a range ([min, max): range of generated values)<p> list(“uniform”, min, max): Produces floating point values evenly distributed across a range ([min, max): range of generated values)</p>
-<p> list(“bernoulli”, p): Produces random boolean values, according to the discrete probability function (p: probability of a trial generating true)</p>
-<p> list(“binomial”, t, p): Produces random non-negative integer values, distributed according to the discrete binomial probability function (t: number of trials, p: probability of a trial generating true)</p>
-<p> list(“negative_binomial”, k, p): Produces random non- negative integer values, distributed according to the discrete negative binomial probability (k: number of trial failures, p: probability of a trial generating true)</p>
-<p> list(“geometric”, p): Produces random non-negative integer values, distributed according to the discrete geometric probability function (p: probability of a trial generating true)</p>
-<p> list(“poisson”, mean): Produces random non-negative integer values, distributed according to discrete Poisson probability function (mean: the mean of the distribution)</p>
-<p> list(“exponential”, lambda): Produces random non-negative floating-point values, distributed according to the exponential probability density function (lambda: the rate parameter)</p>
-<p> list(“gamma”, alpha, beta): Produces random positive floating-point values, distributed according to the gamma probability density function (alpha: shape, beta: scale)</p>
-<p> list(“weibull”, a, b): Produces random positive floating-point values, distributed according to the Weibull probability density function (a: shape, b: scale)</p>
-<p> list(“extreme_value”, a, b): Produces random positive floating-point values, distributed according to the extreme value probability density function, also known as Gumbel Type I, log-Weibull, or Fisher-Tippett Type I distribution (a: location, b: scale)</p>
-<p> list(“normal”, mean, stddev): Generates random numbers according to the Normal (or Gaussian) random number distribution (mean: mean, stddev: standard deviation)</p>
-<p> list(“lognormal”, m, s): Produces random numbers according to a log-normal distribution (m: log-scale, s: shape)</p>
-<p> list(“chi_squared”, n): Produces random positive floating-point values, distributed according to the Chi-squared probability density function (n: degrees of freedom)</p>
-<p> list(“cauchy”, a, b): Produces random positive floating-point values, distributed according to the Cauchy (Lorentz) probability density function (a: location, s: scale)</p>
-<p> list(“fisher_f”, m, n): Produces random positive floating-point values, distributed according to the f-probability density function (m: degrees of freedom, n: degrees of freedom)</p>
-<p> list(“student_t”, n): Produces random positive floating-point values, distributed according to the student probability density function (n: degrees of freedom)</p>
-</dd>
+<dd>Possible values for <em>parameters</em>  list(“uniform_int”, min, max): Produces integer values evenly distributed across a range ([min, max): range of generated values)
+ list(“uniform”, min, max): Produces floating point values evenly distributed across a range ([min, max): range of generated values)
+ list(“bernoulli”, p): Produces random boolean values, according to the discrete probability function (p: probability of a trial generating true)
+ list(“binomial”, t, p): Produces random non-negative integer values, distributed according to the discrete binomial probability function (t: number of trials, p: probability of a trial generating true)
+ list(“negative_binomial”, k, p): Produces random non- negative integer values, distributed according to the discrete negative binomial probability (k: number of trial failures, p: probability of a trial generating true)
+ list(“geometric”, p): Produces random non-negative integer values, distributed according to the discrete geometric probability function (p: probability of a trial generating true)
+ list(“poisson”, mean): Produces random non-negative integer values, distributed according to discrete Poisson probability function (mean: the mean of the distribution)
+ list(“exponential”, lambda): Produces random non-negative floating-point values, distributed according to the exponential probability density function (lambda: the rate parameter)
+ list(“gamma”, alpha, beta): Produces random positive floating-point values, distributed according to the gamma probability density function (alpha: shape, beta: scale)
+ list(“weibull”, a, b): Produces random positive floating-point values, distributed according to the Weibull probability density function (a: shape, b: scale)
+ list(“extreme_value”, a, b): Produces random positive floating-point values, distributed according to the extreme value probability density function, also known as Gumbel Type I, log-Weibull, or Fisher-Tippett Type I distribution (a: location, b: scale)
+ list(“normal”, mean, stddev): Generates random numbers according to the Normal (or Gaussian) random number distribution (mean: mean, stddev: standard deviation)
+ list(“lognormal”, m, s): Produces random numbers according to a log-normal distribution (m: log-scale, s: shape)
+ list(“chi_squared”, n): Produces random positive floating-point values, distributed according to the Chi-squared probability density function (n: degrees of freedom)
+ list(“cauchy”, a, b): Produces random positive floating-point values, distributed according to the Cauchy (Lorentz) probability density function (a: location, s: scale)
+ list(“fisher_f”, m, n): Produces random positive floating-point values, distributed according to the f-probability density function (m: degrees of freedom, n: degrees of freedom)
+ list(“student_t”, n): Produces random positive floating-point values, distributed according to the student probability density function (n: degrees of freedom)</dd>
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
 <li><code class="docutils literal"><span class="pre">operands</span></code>: Is a vector with at least one element (in order):</li>
@@ -561,8 +588,9 @@
 
 <dl class="class">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives17slicing_operationE">
-<span id="phylanx::execution_tree::primitives::slicing_operation"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1slicing__operation"></span><em class="property">class </em><code class="descname">slicing_operation</code> : <em class="property">public</em> primitive_component_base, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv2N7phylanx14execution_tree10primitives17slicing_operationE" title="phylanx::execution_tree::primitives::slicing_operation">slicing_operation</a>&gt;<a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives17slicing_operationE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;slicing_operation.hpp&gt;</em><div class="breathe-sectiondef docutils container">
+<span id="phylanx::execution_tree::primitives::slicing_operation"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1slicing__operation"></span><em class="property">class </em><code class="descname">slicing_operation</code><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives17slicing_operationE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><em>#include &lt;slicing_operation.hpp&gt;</em><p>Inherits from primitive_component_base, std::enable_shared_from_this&lt; slicing_operation &gt;</p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv2N7phylanx14execution_tree10primitives17slicing_operation17slicing_operationEv">
@@ -734,29 +762,31 @@
 
 <dl class="dir">
 <dt>
-<span class="target" id="dir_04d83dafd60e05c95fbfc4d81e9b9d04"></span><em>dir</em> <code class="descname">/Files/Scraps/phylanx_docs/source/phylanx/plugins/matrixops</code></dt>
+<span class="target" id="dir_04d83dafd60e05c95fbfc4d81e9b9d04"></span><em>dir</em> <code class="descname">/phylanx/source/phylanx/plugins/matrixops</code></dt>
 <dd></dd></dl>
 
 <dl class="dir">
 <dt>
-<span class="target" id="dir_b8ac3b2f32615b55cc1488b60e37a0f5"></span><em>dir</em> <code class="descname">/Files/Scraps/phylanx_docs/source/phylanx</code></dt>
+<span class="target" id="dir_b8ac3b2f32615b55cc1488b60e37a0f5"></span><em>dir</em> <code class="descname">/phylanx/source/phylanx</code></dt>
 <dd></dd></dl>
 
 <dl class="dir">
 <dt>
-<span class="target" id="dir_dada8019b1a91d6105d2d643a9f93b28"></span><em>dir</em> <code class="descname">/Files/Scraps/phylanx_docs/source/phylanx/plugins</code></dt>
+<span class="target" id="dir_dada8019b1a91d6105d2d643a9f93b28"></span><em>dir</em> <code class="descname">/phylanx/source/phylanx/plugins</code></dt>
 <dd></dd></dl>
 
 <dl class="dir">
 <dt>
-<span class="target" id="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b"></span><em>dir</em> <code class="descname">/Files/Scraps/phylanx_docs/source</code></dt>
+<span class="target" id="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b"></span><em>dir</em> <code class="descname">/phylanx/source</code></dt>
 <dd></dd></dl>
 
 </div>
 
 
            </div>
-           
+           <div class="articleComments">
+            
+           </div>
           </div>
           <!-- Copyright (c) 2018 Mikael Simberg
      Copyright (c) 2018 Bibek Wagle
@@ -781,12 +811,12 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017-2019, The Ste||ar Group
-      Last updated on Jan 10, 2019.
+        &copy; Copyright 2017-2019, The STE||AR-Group..
+      Last updated on Jan 18, 2019.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
  
 
 Distributed under the Boost Software License, Version 1.0. (See accompanying file
@@ -808,34 +838,36 @@ LICENSE_1_0.txt or copy at
 
   
 
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'0.0.1',
-              LANGUAGE:'en',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'master',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
 
+  
+  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
+          SphinxRtdTheme.StickyNav.enable();
       });
-  </script> 
+  </script>
+   
 
 </body>
 </html>
