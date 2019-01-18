@@ -26,6 +26,7 @@
 #include <blaze/Math.h>
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
+#include <phylanx/util/tensor_iterators.hpp>
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -733,6 +734,64 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <typename T>
+    primitive_argument_type repeat_operation::repeat3d0d_flatten(
+        ir::node_data<T>&& arg,
+        val_type&& rep) const
+    {
+        auto t = arg.tensor();
+        blaze::DynamicVector<T> result(
+            t.pages() * t.rows() * t.columns() * rep);
+        using phylanx::util::tensor_iterator;
+        tensor_iterator<decltype(t)> begin(t, 0);
+        tensor_iterator<decltype(t)> end(t, t.pages());
+
+        std::size_t c = 0;
+        for (auto it = begin; it != end; ++it, ++c)
+        {
+            blaze::subvector(result, c * rep, rep) = *it;
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type repeat_operation::repeat3d1d_flatten(
+        ir::node_data<T>&& arg,
+        ir::node_data<val_type>&& rep) const
+    {
+        auto v = rep.vector();
+        if (v.size() == 1)
+        {
+            return repeat3d0d_flatten(std::move(arg), std::move(v[0]));
+        }
+        else
+        {
+            auto t = arg.tensor();
+            if (v.size() ==t.pages()* t.rows() * t.columns())
+            {
+                blaze::DynamicVector<T> result(blaze::sum(v));
+                using phylanx::util::tensor_iterator;
+                tensor_iterator<decltype(t)> begin(t, 0);
+                tensor_iterator<decltype(t)> end(t, t.pages());
+
+                std::size_t c = 0;       // counter on result's elements
+                auto it2 = v.begin();    // iterator over repetition vector
+                for (auto it1 = begin; it1 != end; ++it1, ++it2)
+                {
+                    blaze::subvector(result, c, *it2) = *it1;
+                    c += *it2;
+                }
+                return primitive_argument_type{std::move(result)};
+            }
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "repeat_operation::repeat3d1d_flatten",
+            generate_error_message("the repetition should be a unit-size "
+                                   "vector or a vector which size is the "
+                                   "number of a's elements."));
+    }
+
+    template <typename T>
     primitive_argument_type repeat_operation::repeat3d(ir::node_data<T>&& arg,
         ir::node_data<val_type>&& rep,
         hpx::util::optional<val_type> axis) const
@@ -768,12 +827,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             switch (rep.num_dimensions())
             {
-        //    case 0:
-        //        return repeat3d0d_flatten(
-        //            std::move(arg), std::move(rep.scalar()));
+            case 0:
+                return repeat3d0d_flatten(
+                    std::move(arg), std::move(rep.scalar()));
 
-        //    case 1:
-        //        return repeat3d1d_flatten(std::move(arg), std::move(rep));
+            case 1:
+                return repeat3d1d_flatten(std::move(arg), std::move(rep));
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,

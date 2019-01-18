@@ -108,6 +108,13 @@ int main(int argc, char* argv[])
     test_repeat_operation(
         "repeat([[[42, 13, 5],[33, 4, 23]]], [2, 0, 1], 2)",
         "[[[42, 42,  5], [33, 33, 23]]]");
+
+    //flatten
+    test_repeat_operation("repeat([[[42, 13],[33, 4]],[[5, 44],[6, 23]]], 2)",
+        "[42, 42, 13, 13, 33, 33,  4,  4,  5,  5, 44, 44,  6,  6, 23, 23]");
+    test_repeat_operation("repeat([[[42, 13],[33, 4]],[[5, 44],[6, 23]]], "
+                          "[0, 2, 3, 0, 1, 0, 0, 2])",
+                          "[13, 13, 33, 33, 33,  5, 23, 23]");
 #endif
     return hpx::util::report_errors();
 }

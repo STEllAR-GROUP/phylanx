@@ -135,6 +135,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<val_type>&& rep) const;
 
         template <typename T>
+        primitive_argument_type repeat3d0d_flatten(ir::node_data<T>&& arg,
+            val_type&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat3d1d_flatten(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+
+        template <typename T>
         primitive_argument_type repeat3d(ir::node_data<T>&& arg,
             ir::node_data<val_type>&& rep,
             hpx::util::optional<val_type> axis) const;
