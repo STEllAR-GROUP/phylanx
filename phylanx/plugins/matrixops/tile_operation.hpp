@@ -48,13 +48,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
+        bool validate_reps(ir::range const& arg) const;
+
         primitive_argument_type tile0d(
             primitive_argument_type&& arr, ir::range&& arg) const;
-        primitive_argument_type tile1d(
-            primitive_argument_type&& arr, ir::range&& arg) const;
-        primitive_argument_type tile2d(
-            primitive_argument_type&& arr, ir::range&& arg) const;
-
         template <typename T>
         primitive_argument_type tile0d_1arg(
             ir::node_data<T>&& arr, ir::range&& arg) const;
@@ -64,6 +61,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type tile0d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
+
+        primitive_argument_type tile1d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
         template <typename T>
         primitive_argument_type tile1d_1arg(
             ir::node_data<T>&& arr, ir::range&& arg) const;
@@ -73,6 +73,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type tile1d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
+
+        primitive_argument_type tile2d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
         template <typename T>
         primitive_argument_type tile2d_1arg(
             ir::node_data<T>&& arr, ir::range&& arg) const;
@@ -83,6 +86,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type tile2d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type tile0d_3args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+
+        template <typename T>
+        primitive_argument_type tile1d_3args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+
+        template <typename T>
+        primitive_argument_type tile2d_3args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+
+
+        primitive_argument_type tile3d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d_1arg(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d_2args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d_3args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile3d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
+#endif
     };
 
     inline primitive create_tile_operation(hpx::id_type const& locality,
