@@ -195,7 +195,7 @@ namespace phylanx { namespace util
     public:
         explicit tensor_iterator(
                 Tensor& t, std::size_t row = 0, std::size_t page = 0)
-          : tensor_(&m)
+          : tensor_(&t)
           , page_(page)
           , row_(row)
           , pos_()
@@ -280,7 +280,7 @@ namespace phylanx { namespace util
         Tensor* tensor_;
         std::size_t page_;
         std::size_t row_;
-        typename tensor::Iterator pos_;
+        typename Tensor::Iterator pos_;
     };
 
 }}
