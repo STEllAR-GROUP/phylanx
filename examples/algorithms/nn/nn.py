@@ -1,6 +1,6 @@
 # Inspired by SUNIL RAY
 # https://www.analyticsvidhya.com/blog/2017/05/neural-network-from-scratch-in-python-and-r/
-# Copyright (c) 2018 Weile Wei
+# Copyright (c) 2019 Weile Wei
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
