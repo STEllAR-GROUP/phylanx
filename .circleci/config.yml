@@ -62,7 +62,7 @@ anchors:
                 ignore:
                     - gh-pages
 
-    - &docs_push
+    - &docs_push_branch_filter
         filters:
             branches:
                 only:
@@ -447,6 +447,7 @@ workflows:
                 requires:
                     - configure
             - docs_push:
+                <<: *docs_push_branch_filter
                 requires:
                     - build
             - check.code_format:
