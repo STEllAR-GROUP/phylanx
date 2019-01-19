@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -62,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t block_dims =
             extract_numeric_value_dimension(args[1], name_, codename_);
 
-        std::vector<std::pair<double, double>> ranges;
+        std::vector<std::pair<std::size_t, std::size_t>> ranges;
 
         if (block_dims < 1)    // Scalar tiling
         {
@@ -88,27 +90,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "matrices/vectors into more blocks than there "
                         "are rows"));
             }
+            if (num_cols % num_blocks != 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "vsplit_operation::eval",
+                    generate_error_message(
+                        "the vsplit_operation primitive can not split "
+                        "matrices/vectors unevenly"));
+            }
+            std::size_t block_size = num_cols / num_blocks;
 
             std::size_t last_index(num_rows);
             std::size_t tmp_block_num(num_blocks);
 
-            // Find a list of tiles which, starting from the back, will
-            // be of the correct sizes to use up all rows, but keep tile
-            // sizes as large and uniform as possible. I think that always
-            // means that the first tile will absorb the difference/be the
-            // smallest
-            while (tmp_block_num > 0)
+            for(int i = 0; i < num_rows; i += block_size)
             {
-                double block_size =
-                    std::ceil(double(last_index) / double(tmp_block_num));
-                std::pair<double, double> range(
-                    last_index - block_size, last_index);
-                tmp_block_num--;
-                last_index -= block_size;
+                std::pair<std::size_t, std::size_t> range(i, i+block_size);
                 ranges.push_back(range);
             }
-            // We want the list of ranges in forward order
-            std::reverse(ranges.begin(), ranges.end());
         }
         else    // Index-based tiling
         {
@@ -120,28 +119,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (int i = 0; i < v.size(); i++)
                 {
                     if (static_cast<std::size_t>(v[i]) > num_rows)
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "vsplit_operation::eval",
-                            generate_error_message(
-                                "the vsplit_operation primitive cannot include"
-                                "rows numbered higher than the total number of"
-                                "rows in the matrix being split"));
+                        v[i] = num_rows;
                 }
 
                 // Include from 0 to first index
-                ranges.push_back(std::make_pair<double, double>(
-                    double(0), double(v[0])));
+                ranges.push_back(std::make_pair<std::size_t, std::size_t>(
+                    std::size_t(0), std::size_t(v[0])));
 
                 // Make a list of pairs from the passed index list
                 for (int i = 0; i < v.size() - 1; i++)
                 {
-                    ranges.push_back(std::make_pair<double, double>(
-                        double(v[i]), double(v[i + 1])));
+                    ranges.push_back(std::make_pair<std::size_t, std::size_t>(
+                        std::size_t(v[i]), std::size_t(v[i + 1])));
                 }
 
                 // Include from last index to last row
-                ranges.push_back(std::make_pair<double, double>(
-                    double(v[v.size() - 1]), double(num_rows)));
+                ranges.push_back(std::make_pair<std::size_t, std::size_t>(
+                    std::size_t(v[v.size() - 1]), std::size_t(num_rows)));
+                for(int i = 0 ; i < ranges.size(); i++){
+                    std::cout << ranges[i].first << " " << ranges[i].second << std::endl;
+                }
             }
             else
             {

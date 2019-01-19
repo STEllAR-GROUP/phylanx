@@ -17,7 +17,7 @@
 void vsplit_operation_scalar_blocks()
 {
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0}, {10.0, 11.0, 12.0}, {13.0, 14.0, 15.0}};
+        {7.0, 8.0, 9.0}};
 
     phylanx::execution_tree::primitive matrix =
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
@@ -43,9 +43,9 @@ void vsplit_operation_scalar_blocks()
     blaze::CustomMatrix<double, true, true> expected_first(
         &(m1(0, 0)), 1, 3, m1.spacing());
     blaze::CustomMatrix<double, true, true> expected_second(
-        &(m1(1, 0)), 2, 3, m1.spacing());
+        &(m1(1, 0)), 1, 3, m1.spacing());
     blaze::CustomMatrix<double, true, true> expected_third(
-        &(m1(3, 0)), 2, 3, m1.spacing());
+        &(m1(2, 0)), 1, 3, m1.spacing());
 
     phylanx::ir::node_data<double> data_expected_first(
         std::move(expected_first));
@@ -75,7 +75,7 @@ void vsplit_operation_range_blocks()
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0},
         {7.0, 8.0, 9.0}, {10.0, 11.0, 12.0}, {13.0, 14.0, 15.0}};
 
-    blaze::DynamicVector<double> blocks{0.0, 1.0, 4.0, 2.0, 3.0};
+    blaze::DynamicVector<double> blocks{0.0, 1.0, 4.0, 2.0, 7.0};
 
     phylanx::execution_tree::primitive matrix =
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
@@ -108,9 +108,9 @@ void vsplit_operation_range_blocks()
     blaze::CustomMatrix<double, true, true> expected_third(
         &(m1(0, 0)), 0, 3, m1.spacing());
     blaze::CustomMatrix<double, true, true> expected_fourth(
-        &(m1(2, 0)), 1, 3, m1.spacing());
+        &(m1(2, 0)), 3, 3, m1.spacing());
     blaze::CustomMatrix<double, true, true> expected_fifth(
-        &(m1(3, 0)), 2, 3, m1.spacing());
+        &(m1(0, 0)), 0, 3, m1.spacing());
 
     phylanx::ir::node_data<double> data_expected_zero(std::move(expected_zero));
     phylanx::ir::node_data<double> data_expected_first(
@@ -152,6 +152,7 @@ int main(int argc, char* argv[])
 {
     vsplit_operation_scalar_blocks();
     vsplit_operation_range_blocks();
+    //vsplit_failure_modes();
 
     return hpx::util::report_errors();
 }
