@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -29,6 +29,9 @@
 #include <sstream>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -38,18 +41,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("random",
             std::vector<std::string>{"random(_1)", "random(_1, _2)"},
-            &create_random, &create_primitive<random>,
-            "size, distribution\n"
-            "Args:\n"
-            "\n"
-            "    size (int) : the size of the array of random numbers\n"
-            "    distribution (optional, string or list) : the name of the "
-            "    distribution, or a list that begins with the name and is "
-            "    followed by up to two numeric parameters."
-            "\n"
-            "Returns:\n"
-            "\n"
-            "An array of random numbers.")
+            &create_random, &create_primitive<random>, R"(
+            size, distribution
+            Args:
+
+                size (int) : the size of the array of random numbers
+                distribution (optional, string or list) : the name of the
+                    distribution, or a list that begins with the name and is
+                    followed by up to two numeric parameters.
+
+            Returns:
+
+            An array of random numbers.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -76,16 +79,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto const& args = list;
                 switch (args.size())
                 {
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    {
+                        auto elem_0 = args.begin();
+                        result[0] = extract_scalar_integer_value(*elem_0);
+                        result[1] = extract_scalar_integer_value(*(++elem_0));
+                        result[2] = extract_scalar_integer_value(*(++elem_0));
+                    }
+                    return result;
+#endif
                 case 2:
                     {
                         auto elem_0 = args.begin();
-                        result[0] = extract_integer_value(*elem_0)[0];
-                        result[1] = extract_integer_value(*(++elem_0))[0];
+                        result[0] = extract_scalar_integer_value(*elem_0);
+                        result[1] = extract_scalar_integer_value(*(++elem_0));
                     }
                     return result;
 
                 case 1:
-                    result[0] = extract_integer_value(*args.begin())[0];
+                    result[0] = extract_scalar_integer_value(*args.begin());
                     return result;
 
                 case 0:
@@ -265,6 +278,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(m)};
         }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename Dist, typename T>
+        primitive_argument_type randomize(
+            Dist& dist, blaze::DynamicTensor<T>& t)
+        {
+            std::size_t const pages = t.pages();
+            std::size_t const rows = t.rows();
+            std::size_t const columns = t.columns();
+
+            for (std::size_t k = 0; k != pages; ++k)
+            {
+                for (std::size_t i = 0; i != rows; ++i)
+                {
+                    for (std::size_t j = 0; j != columns; ++j)
+                    {
+                        t(k, i, j) = dist(util::rng_);
+                    }
+                }
+            }
+
+            return primitive_argument_type{std::move(t)};
+        }
+#endif
+
         ///////////////////////////////////////////////////////////////////////
         struct distribution
         {
@@ -273,8 +310,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             virtual primitive_argument_type call0d() = 0;
             virtual primitive_argument_type call1d(std::size_t dim) = 0;
             virtual primitive_argument_type call2d(
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
-                    dims) = 0;
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            virtual primitive_argument_type call3d(
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
+#endif
         };
 
         using create_distribution_type = std::unique_ptr<distribution> (*)(
@@ -282,6 +322,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const&);
 
         //////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#define PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
+    primitive_argument_type call3d(                                            \
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
+    {                                                                          \
+        blaze::DynamicTensor<T> data(dims[0], dims[1], dims[2]);               \
+        return randomize(dist_, data);                                         \
+    }                                                                          \
+    /**/
+#else
+#define PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)
+#endif
+
 #define PHYLANX_RANDOM_DISTRIBUTION_1(type, stdtype, param, T)                 \
     struct type##_distribution : distribution                                  \
     {                                                                          \
@@ -321,6 +374,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
             return randomize(dist_, data);                                     \
         }                                                                      \
+        PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
         stdtype dist_;                                                         \
     };                                                                         \
                                                                                \
@@ -370,11 +424,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return randomize(dist_, data);                                     \
         }                                                                      \
         primitive_argument_type call2d(                                        \
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override \
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)       \
+            override                                                           \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
             return randomize(dist_, data);                                     \
         }                                                                      \
+        PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
         stdtype dist_;                                                         \
     };                                                                         \
                                                                                \
@@ -424,6 +480,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 #undef PHYLANX_RANDOM_DISTRIBUTION_1
 #undef PHYLANX_RANDOM_DISTRIBUTION_2
+#undef PHYLANX_RANDOM_IMPLEMENT_TENSOR
 
         ///////////////////////////////////////////////////////////////////////
         std::map<std::string, create_distribution_type> distributions =
@@ -524,6 +581,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return (it->second)(params, name, codename)->call2d(dims);
         }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type randomize3d(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+            distribution_parameters_type&& params, std::string const& name,
+            std::string const& codename)
+        {
+            auto it = distributions.find(std::get<0>(params));
+            if (it == distributions.end())
+            {
+                std::ostringstream msg;
+                msg << "attempting to use an unknown random number "
+                            "distribution: " << std::get<0>(params) << ". ";
+                msg << "Known distributions are";
+                std::string tween = ": ";
+                for(it = distributions.begin(); it != distributions.end(); ++it) {
+                    msg << tween;
+                    msg << it->first;
+                    tween = ", ";
+                }
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "random::randomize3d",
+                    util::generate_error_message(
+                        msg.str(), name, codename));
+            }
+            return (it->second)(params, name, codename)->call3d(dims);
+        }
+#endif
+
         ///////////////////////////////////////////////////////////////////////
         inline int num_dimensions(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
@@ -604,6 +689,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->random2d(dims, std::move(params));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->random3d(dims, std::move(params));
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
@@ -633,6 +722,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         return detail::randomize2d(dims, std::move(params), name_, codename_);
     }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    primitive_argument_type random::random3d(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+        distribution_parameters_type&& params) const
+    {
+        return detail::randomize3d(dims, std::move(params), name_, codename_);
+    }
+#endif
 }}}
 
 ///////////////////////////////////////////////////////////////////////////////
