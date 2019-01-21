@@ -225,11 +225,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto a = arg.matrix();
 
-        using phylanx::util::matrix_row_iterator;
-        matrix_row_iterator<decltype(a)> a_begin(a);
-        matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+        using phylanx::util::matrix_column_iterator;
+        matrix_column_iterator<decltype(a)> a_begin(a);
+        matrix_column_iterator<decltype(a)> a_end(a, a.columns());
 
-        blaze::DynamicVector<std::int64_t> result(a.rows());
+        blaze::DynamicVector<std::int64_t> result(a.columns());
         auto result_it = result.begin();
         for (auto it = a_begin; it != a_end; ++it, ++result_it)
         {
@@ -246,11 +246,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto a = arg.matrix();
 
-        using phylanx::util::matrix_column_iterator;
-        matrix_column_iterator<decltype(a)> a_begin(a);
-        matrix_column_iterator<decltype(a)> a_end(a, a.columns());
+        using phylanx::util::matrix_row_iterator;
+        matrix_row_iterator<decltype(a)> a_begin(a);
+        matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-        blaze::DynamicVector<std::int64_t> result(a.columns());
+        blaze::DynamicVector<std::int64_t> result(a.rows());
         auto result_it = result.begin();
         for (auto it = a_begin; it != a_end; ++it, ++result_it)
         {

@@ -105,7 +105,7 @@ void test_argmin_2d_x_axis()
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, -3.0}, {4.0, 5.0, -6.0}};
 
     phylanx::ir::node_data<std::int64_t> expected(
-        blaze::DynamicVector<std::int64_t>{2, 2});
+        blaze::DynamicVector<std::int64_t>{0, 0, 1});
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -135,7 +135,7 @@ void test_argmin_2d_y_axis()
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
 
     phylanx::ir::node_data<std::int64_t> expected(
-        blaze::DynamicVector<std::int64_t>{0, 0, 0});
+        blaze::DynamicVector<std::int64_t>{0, 0});
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
