@@ -141,6 +141,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type random2d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type random3d(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+            distribution_parameters_type&& params) const;
+#endif
     };
 
     inline primitive create_random(hpx::id_type const& locality,
