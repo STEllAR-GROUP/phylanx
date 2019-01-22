@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -113,7 +114,7 @@ void test_argmax_2d_0_axis()
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(0));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>());
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_argmax(hpx::find_here(),
@@ -284,6 +285,24 @@ void test_argmax_3d_2_axis()
 }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_operation(std::string const& code, std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_argmax_0d();
@@ -293,6 +312,9 @@ int main(int argc, char* argv[])
     test_argmax_2d_flat();
     test_argmax_2d_0_axis();
     test_argmax_2d_1_axis();
+
+    test_operation("argmax([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], 0)", "[1, 1, 1]");
+    test_operation("argmax([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], 1)", "[2, 2]");
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_argmax_3d_flat();

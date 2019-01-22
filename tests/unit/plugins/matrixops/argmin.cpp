@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -98,11 +99,11 @@ void test_argmin_2d_flat()
         phylanx::execution_tree::extract_integer_value_strict(f.get()));
 }
 
-void test_argmin_2d_x_axis()
+void test_argmin_2d_0_axis()
 {
     using arg_type = phylanx::execution_tree::primitive_argument_type;
 
-    blaze::DynamicMatrix<double> m1{{1.0, 2.0, -3.0}, {4.0, 5.0, -6.0}};
+    blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, -6.0}};
 
     phylanx::ir::node_data<std::int64_t> expected(
         blaze::DynamicVector<std::int64_t>{0, 0, 1});
@@ -128,14 +129,14 @@ void test_argmin_2d_x_axis()
     HPX_TEST_EQ(expected, actual);
 }
 
-void test_argmin_2d_y_axis()
+void test_argmin_2d_1_axis()
 {
     using arg_type = phylanx::execution_tree::primitive_argument_type;
 
-    blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+    blaze::DynamicMatrix<double> m1{{1.0, 2.0, -3.0}, {4.0, 5.0, -6.0}};
 
     phylanx::ir::node_data<std::int64_t> expected(
-        blaze::DynamicVector<std::int64_t>{0, 0});
+        blaze::DynamicVector<std::int64_t>{2, 2});
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -283,13 +284,36 @@ void test_argmin_3d_2_axis()
 }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_operation(std::string const& code, std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_argmin_0d();
+
     test_argmin_1d();
+
     test_argmin_2d_flat();
-    test_argmin_2d_x_axis();
-    test_argmin_2d_y_axis();
+    test_argmin_2d_0_axis();
+    test_argmin_2d_1_axis();
+
+    test_operation("argmin([[1.0, 2.0, -3.0], [4.0, 5.0, -6.0]], 0)", "[0, 0, 1]");
+    test_operation("argmin([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], 1)", "[0, 0]");
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_argmin_3d_flat();

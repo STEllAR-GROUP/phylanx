@@ -12,6 +12,7 @@
 #include <limits>
 #include <string>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
