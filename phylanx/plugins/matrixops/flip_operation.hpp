@@ -23,11 +23,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives {
     /// \brief Reverses the order of elements in an array along the given axis
     /// \param a         The scalar, vector, or matrix to flip
-    /// \param axis      Flip is calculated along the provided axis and an
-    ///                  arry of the same shape is returned.
-
-
-
+    /// \param axis      Optional. Flip is calculated along the provided axis
+    ///                  and an array of the same shape is returned.
     class flip_operation
       : public primitive_component_base
       , public std::enable_shared_from_this<flip_operation>
@@ -49,18 +46,26 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
     private:
         template <typename T>
-        primitive_argument_type flip1d(ir::node_data<T>&& arg,
-            val_type axis) const;
+        primitive_argument_type flip1d(ir::node_data<T>&& arg) const;
         template <typename T>
-        primitive_argument_type flip2d(ir::node_data<T>&& arg,
-            val_type axis) const;
+        primitive_argument_type flip1d(ir::node_data<T>&& arg,
+            ir::range&& axes) const;
+
         template <typename T>
         primitive_argument_type flip2d_axis0(ir::node_data<T>&& arg) const;
         template <typename T>
         primitive_argument_type flip2d_axis1(ir::node_data<T>&& arg) const;
         template <typename T>
+        primitive_argument_type flip2d_both_axes(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type flip2d(ir::node_data<T>&& arg,
+            ir::range&& axes) const;
+
+        template <typename T>
+        primitive_argument_type flipnd(ir::node_data<T>&& arg) const;
+        template <typename T>
         primitive_argument_type flipnd(ir::node_data<T>&& arg,
-            val_type axis) const;
+            ir::range&& axes) const;
     };
 
     inline primitive create_flip_operation(hpx::id_type const& locality,
