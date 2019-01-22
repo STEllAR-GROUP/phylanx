@@ -192,7 +192,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
+                name_, codename_, std::move(ctx)));
     }
 
 }}}
