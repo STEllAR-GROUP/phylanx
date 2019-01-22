@@ -9,6 +9,7 @@
 #include <phylanx/plugins/matrixops/arange.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
+#include <phylanx/plugins/matrixops/clip.hpp>
 #include <phylanx/plugins/matrixops/constant.hpp>
 #include <phylanx/plugins/matrixops/count_nonzero_operation.hpp>
 #include <phylanx/plugins/matrixops/cross_operation.hpp>
@@ -25,6 +26,7 @@
 #include <phylanx/plugins/matrixops/inverse_operation.hpp>
 #include <phylanx/plugins/matrixops/linearmatrix.hpp>
 #include <phylanx/plugins/matrixops/linspace.hpp>
+#include <phylanx/plugins/matrixops/ndim.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/plugins/matrixops/repeat_operation.hpp>

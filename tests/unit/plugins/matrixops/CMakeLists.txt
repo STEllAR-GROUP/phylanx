@@ -7,6 +7,7 @@ set(tests
     arange
     argmin
     argmax
+    clip
     column_slicing
     constant
     count_nonzero
@@ -26,6 +27,7 @@ set(tests
     linearmatrix
     linspace
     list_slicing_operation
+    ndim
     power_operation
     random
     random_distributions

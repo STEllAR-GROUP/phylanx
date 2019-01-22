@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     builtin_function(p.create_primitive_, default_locality));
                 result.define(p.primitive_type_ + "__float",
                     builtin_function(p.create_primitive_, default_locality));
-        }
+            }
         }
 
         return result;

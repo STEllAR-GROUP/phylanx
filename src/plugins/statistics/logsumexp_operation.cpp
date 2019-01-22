@@ -1,19 +1,18 @@
-// Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2019 Bita Hasheminezhad
+// Copyright (c) 2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/statistics/max_operation.hpp>
+#include <phylanx/plugins/statistics/logsumexp_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/detail/numeric_limits_min.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 
-#include <algorithm>
+#include <hpx/util/optional.hpp>
+
 #include <cstddef>
-#include <cstdint>
-#include <limits>
+#include <functional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -31,70 +30,67 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         template <typename T>
-        struct statistics_max_op
+        struct statistics_logsumexp_op
         {
-            statistics_max_op(std::string const& name,
+            statistics_logsumexp_op(std::string const& name,
                 std::string const& codename)
             {}
 
             static constexpr T initial()
             {
-                return phylanx::util::detail::numeric_limits_min<T>();
+                return T(0);
             }
 
             template <typename Scalar>
             typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
             operator()(Scalar s, T initial) const
             {
-                return (std::max)(s, initial);
+                return s;
             }
 
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
             operator()(Vector const& v, T initial) const
             {
-                return (std::max)((blaze::max)(v), initial);
+                return blaze::sum(blaze::exp(v)) + initial;
             }
 
             static T finalize(T value, std::size_t size)
             {
-                return value;
+                return blaze::log(value);
             }
         };
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const max_operation::match_data =
+    match_pattern_type const logsumexp_operation::match_data =
     {
         match_pattern_type{
-            "amax",
+            "logsumexp",
             std::vector<std::string>{
-                "amax(_1)", "amax(_1, _2)", "amax(_1, _2, _3)",
-                "amax(_1, _2, _3, _4)"
+                "logsumexp(_1)", "logsumexp(_1, _2)", "logsumexp(_1, _2, _3)"
             },
-            &create_amax_operation, &create_primitive<max_operation>, R"(
-            a, axis, keepdims, initial
+            &create_logsumexp_operation, &create_primitive<logsumexp_operation>,
+            R"(
+            a, axis, keepdims
             Args:
 
-                a (vector or matrix): a scalar, a vector or a matrix
-                axis (optional, integer): an axis to max along. By default, "
-                   flattened input is used.
-                keepdims (optional, bool): If this is set to True, the axes which "
-                   are reduced are left in the result as dimensions with size "
-                   one. False by default
-                initial (optional, scalar): The minimum value of an output
-                   element.
+                a (array) : a scalar, a vector, a matrix or a tensor
+                axis (optional, integer): Axis over which the sum is taken.
+                    By default axis is None, and all elements are summed.
+                keepdims (optional, boolean): keep dimension of input
 
             Returns:
 
-            Returns the maximum of an array or maximum along an axis.)",
+            The log of the sum of exponentials of input elements.)",
             true
         }
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    max_operation::max_operation(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    logsumexp_operation::logsumexp_operation(
+        primitive_arguments_type&& operands, std::string const& name,
+        std::string const& codename)
       : base_type(std::move(operands), name, codename)
     {
     }

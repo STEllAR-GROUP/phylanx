@@ -17,6 +17,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(
     argmax_plugin, phylanx::execution_tree::primitives::argmax::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     argmin_plugin, phylanx::execution_tree::primitives::argmin::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(clip_plugin,
+    phylanx::execution_tree::primitives::clip::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(count_nonzero_operation_plugin,
     phylanx::execution_tree::primitives::count_nonzero_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(column_slicing_operation_plugin,
@@ -59,6 +61,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(linearmatrix_plugin,
     phylanx::execution_tree::primitives::linearmatrix::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     linspace_plugin, phylanx::execution_tree::primitives::linspace::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(
+    ndim_plugin, phylanx::execution_tree::primitives::ndim::match_data);
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 PHYLANX_REGISTER_PLUGIN_FACTORY(page_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[3]);

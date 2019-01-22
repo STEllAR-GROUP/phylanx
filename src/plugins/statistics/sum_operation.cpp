@@ -70,12 +70,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "sum(_1, _2, _3, _4)"
             },
             &create_sum_operation, &create_primitive<sum_operation>, R"(
-            v, axis, keepdims
+            v, axis, keepdims, initial
             Args:
 
                 v (vector or matrix) : a vector or matrix
                 axis (optional, integer): a axis to sum along
                 keepdims (optional, boolean): keep dimension of input
+                initial (optional, scalar): The starting value for the sum
 
             Returns:
 

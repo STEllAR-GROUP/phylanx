@@ -9,6 +9,8 @@ set(tests
     cumsum
     div_operation
     generic_operation
+    maximum
+    minimum
     mul_operation
     sub_operation
     unary_minus_operation

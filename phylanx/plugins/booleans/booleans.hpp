@@ -6,9 +6,7 @@
 #if !defined(PHYLANX_PLUGINS_BOOLEANS_APR_07_2108_1127PM)
 #define PHYLANX_PLUGINS_BOOLEANS_APR_07_2108_1127PM
 
-#include <phylanx/plugins/booleans/all_operation.hpp>
 #include <phylanx/plugins/booleans/and_operation.hpp>
-#include <phylanx/plugins/booleans/any_operation.hpp>
 #include <phylanx/plugins/booleans/equal.hpp>
 #include <phylanx/plugins/booleans/greater.hpp>
 #include <phylanx/plugins/booleans/greater_equal.hpp>
