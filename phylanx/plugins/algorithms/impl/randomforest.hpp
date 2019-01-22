@@ -3,15 +3,15 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+#if !defined(__PHYLANX_RANDOMFORESTIMPL_HPP__)
+#define __PHYLANX_RANDOMFORESTIMPL_HPP__
+
 #include <hpx/throw_exception.hpp>
 #include <hpx/parallel/algorithms/for_each.hpp>
 #include <hpx/parallel/algorithms/transform.hpp>
 #include <hpx/parallel/algorithms/reduce.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
-//#include <boost/variant/variant.hpp>
-//#include <boost/variant/get.hpp>
-//#include <boost/variant/recursive_variant.hpp>
 #include <boost/range/irange.hpp>
 
 #include <algorithm>
@@ -146,7 +146,6 @@ struct randomforest_impl {
             idx.resize(v.size());
 
         std::iota(idx.begin(), idx.end(), 0);
-
         std::sort(idx.begin(), idx.end()
             , [&v](F const i1, F const i2) {
                 return v[i1] < v[i2];
@@ -466,3 +465,5 @@ struct randomforest_impl {
 };
 
 }}} // end namespace
+
+#endif

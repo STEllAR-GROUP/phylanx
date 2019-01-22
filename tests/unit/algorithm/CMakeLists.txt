@@ -6,9 +6,11 @@
 set(tests
     simple_als
     simple_lra
+    simple_randomforest
    )
 
 set(simple_lra_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(simple_randomforest_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

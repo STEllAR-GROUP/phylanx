@@ -5,10 +5,11 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <phylanx/config.hpp>
+#include <phylanx/util/variant.hpp>
+#include <phylanx/util/generate_error_message.hpp>
+#include <phylanx/ir/dictionary.hpp>
 #include <phylanx/plugins/algorithms/randomforest.hpp>
 #include <phylanx/plugins/algorithms/impl/randomforest.hpp>
-#include <phylanx/util/detail/add_simd.hpp>
-#include <phylanx/util/detail/div_simd.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
