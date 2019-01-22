@@ -9,9 +9,9 @@
 #include <hpx/parallel/algorithms/reduce.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/variant/variant.hpp>
-#include <boost/variant/get.hpp>
-#include <boost/variant/recursive_variant.hpp>
+//#include <boost/variant/variant.hpp>
+//#include <boost/variant/get.hpp>
+//#include <boost/variant/recursive_variant.hpp>
 #include <boost/range/irange.hpp>
 
 #include <algorithm>
@@ -37,12 +37,14 @@
  */
 namespace phylanx { namespace algorithms { namespace impl {
 
+using namespace phylanx::util;
+
 struct nil {};
 struct randomforest_node;
 
-using randomforest_node_variant = boost::variant<
+using randomforest_node_variant = phylanx::util::variant<
     nil
-    , boost::recursive_wrapper<randomforest_node>
+    , phylanx::util::recursive_wrapper<randomforest_node>
     , std::uint64_t
     , double
     , std::tuple< std::vector< std::uint64_t >, std::vector< std::uint64_t > >
@@ -53,6 +55,10 @@ using randomforest_node_map = std::map<
 >;
 
 struct randomforest_node {
+    randomforest_node()
+        : fields() {
+    }
+
     randomforest_node_map fields;
 };
 
@@ -221,7 +227,7 @@ struct randomforest_impl {
             outcome_hist[classes[k]] += 1.0;
         }
 
-        return std::distance(outcome_hist.begin()
+        return (outcome_hist.size() < 1) ? 0 : std::distance(outcome_hist.begin()
             , std::max_element(outcome_hist.begin(), outcome_hist.end())
         );
     }
@@ -237,45 +243,51 @@ struct randomforest_impl {
         , std::unordered_map<double, std::uint64_t> & classes) {
 
         using tuple_vec_vec = std::tuple< std::vector<std::uint64_t>, std::vector<std::uint64_t> >;
-        std::tuple< std::vector<std::uint64_t>, std::vector<std::uint64_t> > left_right = boost::get<tuple_vec_vec>(node.fields["groups"]);
+        tuple_vec_vec left_right = phylanx::util::get<tuple_vec_vec>(node.fields["groups"]);
         node.fields.erase("groups");
 
-        if(std::get<0>(left_right).size() == 0) {
-            auto term = to_terminal(train_labels, std::get<1>(left_right), classes);
+        auto& left = std::get<0>(left_right);
+        auto& right = std::get<1>(left_right);
+
+        if(left.size() == 0 || right.size() == 0) {
+            std::vector<std::uint64_t> joint{left};
+            joint.reserve(joint.size() + right.size());
+            joint.insert(joint.end(), right.begin(), right.end());
+            auto term = to_terminal(train_labels, joint, classes);
             node.fields["lw"] = term;
-        }
-        else if(std::get<1>(left_right).size() == 0) {
-            auto term = to_terminal(train_labels, std::get<0>(left_right), classes);
             node.fields["rw"] = term;
+            return;
         }
 
         if(depth >= max_depth) {
-            auto lterm = to_terminal(train_labels, std::get<0>(left_right), classes);
-            auto rterm = to_terminal(train_labels, std::get<1>(left_right), classes);
+            auto lterm = to_terminal(train_labels, left, classes);
+            auto rterm = to_terminal(train_labels, right, classes);
             node.fields["lw"] = lterm;
             node.fields["rw"] = rterm;
             return;
         }
 
-        if(std::get<0>(left_right).size() <= min_size) {
-             auto lterm = to_terminal(train_labels, std::get<0>(left_right), classes);
+        if(left.size() <= min_size) {
+             auto lterm = to_terminal(train_labels, left, classes);
              node.fields["lw"] = lterm;
         }
-
-        randomforest_node left_node;
-        get_split(train, train_labels, std::get<0>(left_right), n_features, classes, left_node);
-        node.fields["left"] = left_node;
-        split(boost::get<randomforest_node>(node.fields["left"]), train, train_labels, max_depth, min_size, n_features, depth + 1, classes);
+        else {
+            randomforest_node left_node{};
+            get_split(train, train_labels, left, n_features, classes, left_node);
+            split(left_node, train, train_labels, max_depth, min_size, n_features, depth + 1, classes);
+            node.fields["left"] = std::move(left_node);
+        }
         
-        if(std::get<1>(left_right).size() <= min_size) {
-            auto rterm = to_terminal(train_labels, std::get<1>(left_right), classes);
+        if(right.size() <= min_size) {
+            auto rterm = to_terminal(train_labels, right, classes);
             node.fields["rw"] = rterm;
         }
-
-        randomforest_node right_node;
-        get_split(train, train_labels, std::get<1>(left_right), n_features, classes, right_node);
-        node.fields["right"] = right_node;
-        split(boost::get<randomforest_node>(node.fields["right"]), train, train_labels, max_depth, min_size, n_features, depth + 1, classes);
+        else {
+            randomforest_node right_node{};
+            get_split(train, train_labels, right, n_features, classes, right_node);
+            split(right_node, train, train_labels, max_depth, min_size, n_features, depth + 1, classes);
+            node.fields["right"] = std::move(right_node);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -299,23 +311,25 @@ struct randomforest_impl {
         , blaze::DynamicMatrix<double> const& r
         , std::uint64_t const i) {
 
-        auto index = boost::get<std::uint64_t>(node.fields["index"]);
-        auto value = boost::get<double>(node.fields["value"]);
+        auto index = phylanx::util::get<std::uint64_t>(node.fields["index"]);
+        auto value = phylanx::util::get<double>(node.fields["value"]);
 
         if(r(i, index) < value) {
-            auto lw = boost::get<std::uint64_t>(node.fields["lw"]);
+            auto lw = phylanx::util::get<std::uint64_t>(node.fields["lw"]);
             if( lw == std::numeric_limits<std::uint64_t>::max()) {
-                auto left = boost::get<randomforest_node>(node.fields["left"]);
+                auto& left_var = phylanx::util::get< phylanx::util::recursive_wrapper<randomforest_node> >(node.fields["left"]);
+                auto& left = left_var.get();
                 return node_predict(left, r, i);
             }
             else {
                 return lw;
             }
-        } 
+        }
 
-        auto rw = boost::get<std::uint64_t>(node.fields["rw"]);
+        auto rw = phylanx::util::get<std::uint64_t>(node.fields["rw"]);
         if(rw == std::numeric_limits<std::uint64_t>::max()) {
-            auto right = boost::get<randomforest_node>(node.fields["right"]);
+            auto& right_var = phylanx::util::get< phylanx::util::recursive_wrapper<randomforest_node> >(node.fields["right"]);
+            auto& right = right_var.get();
             return node_predict(right, r, i);
         }
 
