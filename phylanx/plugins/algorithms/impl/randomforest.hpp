@@ -32,8 +32,10 @@
 /*
   life savers...
 
-   https://www.boost.org/doc/libs/1_68_0/libs/spirit/doc/html/spirit/qi/tutorials/mini_xml___asts_.html
-   https://www.boost.org/doc/libs/1_68_0/libs/spirit/example/qi/mini_xml1.cpp
+   https://www.boost.org/doc/libs/1_68_0/libs/spirit/
+       doc/html/spirit/qi/tutorials/mini_xml___asts_.html
+   https://www.boost.org/doc/libs/1_68_0/libs/spirit/
+       example/qi/mini_xml1.cpp
  */
 namespace phylanx { namespace algorithms { namespace impl {
 
@@ -85,7 +87,8 @@ struct randomforest_impl {
             std::uint64_t const feature
             , double const val
             , blaze::DynamicMatrix<double> const& dataset
-            , std::tuple< std::vector< std::uint64_t >, std::vector< std::uint64_t > > & groups ) {
+            , std::tuple< std::vector< std::uint64_t >
+                , std::vector< std::uint64_t > > & groups ) {
 
         std::vector< std::uint64_t > left, right;
         auto const rows = dataset.rows();
@@ -109,10 +112,14 @@ struct randomforest_impl {
         , std::tuple< std::vector<std::uint64_t>, std::vector<std::uint64_t> > const& groups
         , std::unordered_map<double, std::uint64_t> & classes) {
 
-        std::vector<std::uint64_t> groups_len{std::get<0>(groups).size(), std::get<1>(groups).size()};
-        std::vector< std::vector<std::uint64_t> > groups_vec{std::get<0>(groups), std::get<1>(groups)};
+        std::vector<std::uint64_t> groups_len{std::get<0>(groups).size()
+            , std::get<1>(groups).size()};
+        std::vector< std::vector<std::uint64_t> > groups_vec{std::get<0>(groups)
+            , std::get<1>(groups)};
 
-        double const n_instances = static_cast<double>(std::accumulate(groups_len.begin(), groups_len.end(), 0UL));
+        double const n_instances = static_cast<double>(
+            std::accumulate(groups_len.begin(), groups_len.end(), 0UL)
+        );
         double gini = 0.0;
 
         blaze::DynamicVector<double> p(classes.size());
@@ -128,12 +135,15 @@ struct randomforest_impl {
 
             double const score = std::accumulate(p.begin(), p.end(), 0.0
                 , [&group_len](double const pval, double const qval) {
-                    return std::pow(pval/group_len, 2.0) + std::pow(qval/group_len, 2.0);
+                    return std::pow(pval/group_len, 2.0) +
+                        std::pow(qval/group_len, 2.0);
                 }
             );
 
             gini += (1.0 - score) * static_cast<double>(group_len / n_instances);
-            std::transform(p.begin(), p.end(), p.begin(), [](auto const i) { return 0.0; });
+            std::transform(p.begin()
+                , p.end(), p.begin()
+                , [](auto const i) { return 0.0; });
         }
 
         return gini;
@@ -171,11 +181,15 @@ struct randomforest_impl {
 
         {
             std::default_random_engine generator;
-            std::uniform_int_distribution<std::uint64_t> distribution(0, dataset.columns());
-            auto gen = [&generator, &distribution]() { return distribution(generator); };
+            std::uniform_int_distribution<std::uint64_t> distribution(0
+                , dataset.columns());
+            auto gen = [&generator, &distribution]() {
+                return distribution(generator);
+            };
 
             std::vector<std::int64_t> idx_w(dataset.columns());
-            std::generate_n(idx_w.begin(), idx_w.size(), [&gen]() { return gen(); });
+            std::generate_n(idx_w.begin(), idx_w.size()
+                , [&gen]() { return gen(); });
             std::vector<std::uint64_t> idx_w_sort;
             argsort(idx_w, idx_w_sort);
 
@@ -191,17 +205,20 @@ struct randomforest_impl {
             );
         }
 
-        std::tuple< std::vector< std::uint64_t >, std::vector< std::uint64_t > > groups;
+        std::tuple< std::vector< std::uint64_t >
+            , std::vector< std::uint64_t > > groups;
 
         for(auto feature : features) {
             for(auto const r : dataset_indices) {
                 test_split(feature, dataset(r, feature), dataset, groups);
-                auto const gini = gini_index(dataset, dataset_labels, groups, classes);
+                auto const gini = gini_index(dataset
+                    , dataset_labels, groups, classes);
                 if(gini < b_score) {
                     b_idx = feature;
                     b_val = dataset(r, feature);
                     b_score = gini;
-                    b_groups = std::make_tuple( std::get<0>(groups), std::get<1>(groups) );
+                    b_groups = std::make_tuple( std::get<0>(groups)
+                        , std::get<1>(groups) );
                 }
             }
         }
@@ -241,8 +258,10 @@ struct randomforest_impl {
         , std::uint64_t depth
         , std::unordered_map<double, std::uint64_t> & classes) {
 
-        using tuple_vec_vec = std::tuple< std::vector<std::uint64_t>, std::vector<std::uint64_t> >;
-        tuple_vec_vec left_right = phylanx::util::get<tuple_vec_vec>(node.fields["groups"]);
+        using tuple_vec_vec = std::tuple< std::vector<std::uint64_t>
+            , std::vector<std::uint64_t> >;
+        tuple_vec_vec left_right = phylanx::util::get<tuple_vec_vec>(
+            node.fields["groups"]);
         node.fields.erase("groups");
 
         auto& left = std::get<0>(left_right);
@@ -273,7 +292,8 @@ struct randomforest_impl {
         else {
             randomforest_node left_node{};
             get_split(train, train_labels, left, n_features, classes, left_node);
-            split(left_node, train, train_labels, max_depth, min_size, n_features, depth + 1, classes);
+            split(left_node, train, train_labels, max_depth, min_size, n_features
+                , depth + 1, classes);
             node.fields["left"] = std::move(left_node);
         }
         
@@ -284,7 +304,8 @@ struct randomforest_impl {
         else {
             randomforest_node right_node{};
             get_split(train, train_labels, right, n_features, classes, right_node);
-            split(right_node, train, train_labels, max_depth, min_size, n_features, depth + 1, classes);
+            split(right_node, train, train_labels, max_depth, min_size, n_features
+                , depth + 1, classes);
             node.fields["right"] = std::move(right_node);
         }
     }
@@ -300,8 +321,10 @@ struct randomforest_impl {
         , std::uint64_t n_features
         , std::unordered_map<double, std::uint64_t> & classes) {
 
-        get_split(train, train_labels, sample_indices, n_features, classes, tree_root);
-        split(tree_root, train, train_labels, max_depth, min_size, n_features, 1, classes);
+        get_split(train, train_labels, sample_indices, n_features, classes
+            , tree_root);
+        split(tree_root, train, train_labels, max_depth, min_size, n_features
+            , 1, classes);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -316,7 +339,11 @@ struct randomforest_impl {
         if(r(i, index) < value) {
             auto lw = phylanx::util::get<std::uint64_t>(node.fields["lw"]);
             if( lw == std::numeric_limits<std::uint64_t>::max()) {
-                auto& left_var = phylanx::util::get< phylanx::util::recursive_wrapper<randomforest_node> >(node.fields["left"]);
+                auto& left_var = phylanx::util::get<
+                    phylanx::util::recursive_wrapper<
+                        randomforest_node>
+                >(node.fields["left"]);
+
                 auto& left = left_var.get();
                 return node_predict(left, r, i);
             }
@@ -327,7 +354,10 @@ struct randomforest_impl {
 
         auto rw = phylanx::util::get<std::uint64_t>(node.fields["rw"]);
         if(rw == std::numeric_limits<std::uint64_t>::max()) {
-            auto& right_var = phylanx::util::get< phylanx::util::recursive_wrapper<randomforest_node> >(node.fields["right"]);
+            auto& right_var = phylanx::util::get<
+                phylanx::util::recursive_wrapper<
+                    randomforest_node>
+            >(node.fields["right"]);
             auto& right = right_var.get();
             return node_predict(right, r, i);
         }
@@ -348,7 +378,9 @@ struct randomforest_impl {
 
         std::default_random_engine generator;
         std::uniform_int_distribution<std::int64_t> distribution(0,dataset.rows());
-        auto gen = [&generator, &distribution] { return static_cast<std::uint64_t>(distribution(generator)); };
+        auto gen = [&generator, &distribution] {
+            return static_cast<std::uint64_t>(distribution(generator));
+        };
 
         std::vector<std::uint64_t> idx_w(dataset.rows());
         std::generate_n(idx_w.begin(), idx_w.size(), gen);
@@ -374,8 +406,11 @@ struct randomforest_impl {
             }
         );
 
-        std::vector< blaze::DynamicVector<std::uint64_t> > prediction_histograms(predictions.size());
-        auto prediction_indices = boost::irange<std::uint64_t>(0UL, predictions.size());
+        std::vector< blaze::DynamicVector<std::uint64_t> > prediction_histograms(
+            predictions.size()
+        );
+        auto prediction_indices = boost::irange<std::uint64_t>(0UL
+            , predictions.size());
 
         hpx::parallel::for_each(
             hpx::parallel::execution::par
@@ -419,7 +454,8 @@ struct randomforest_impl {
             classes[(*itr)] = i;
         }
 
-        std::uint64_t const n_features = static_cast<std::uint64_t>(std::floor(std::sqrt(train.rows())));
+        std::uint64_t const n_features = static_cast<std::uint64_t>(
+            std::floor(std::sqrt(train.rows())));
         
         std::vector< std::vector<std::uint64_t> > subsample_indices(trees.size());
         
@@ -429,10 +465,12 @@ struct randomforest_impl {
             hpx::parallel::execution::par
             , std::begin(tree_indices)
             , std::end(tree_indices)
-            , [this, &train, &train_labels, &subsample_indices, &max_depth, &min_size, &sample_size, &n_features]
+            , [this, &train, &train_labels, &subsample_indices, &max_depth, &min_size
+                , &sample_size, &n_features]
                 (std::uint64_t const idx) {
                     subsample(train, subsample_indices[idx], sample_size);
-                    build_tree(trees[idx], train, train_labels, subsample_indices[idx], max_depth, min_size, n_features, classes); 
+                    build_tree(trees[idx], train, train_labels, subsample_indices[idx]
+                        , max_depth, min_size, n_features, classes);
             }
         );
     }
