@@ -7,7 +7,9 @@
 # Phylanx: An Asynchronous Distributed Array Computing Toolkit
 
 Find our project website [here](http://phylanx.stellar-group.org/). This site provides an overview of the project as well 
-as information on who we are and what we plan to do!
+as information on who we are and what we plan to do! 
+
+The full documentation for the project can be found [here](https://stellar-group.github.io/phylanx/). If you can't find what you are looking for in the documentation or you suspect you've found a bug in Phylanx we very much encourage and appreciate any issue reports through the [issue tracker for this Github project](https://github.com/STEllAR-GROUP/phylanx/issues).
 
 The [CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx) contiguous
 integration service tracks the current build status for the master branch:
