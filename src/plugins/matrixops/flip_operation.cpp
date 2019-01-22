@@ -26,6 +26,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -36,11 +39,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("flip",
         std::vector<std::string>{"flip(_1,_2)","flip(_1)"},
         &create_flip_operation, &create_primitive<flip_operation>,
-        "a, axis\n"
+        "a, axes\n"
         "Args:\n"
         "\n"
         "    a (array) : a scalar, a vector a matrix or a tensor\n"
-        "    axis (optional, integer or tuple of integers): an axis to flip "
+        "    axes (optional, integer or tuple of integers): an axis to flip "
         "       over. The default, axis=None, will flip over all of the axes "
         "       of the input array.\n"
         "\n"
@@ -109,6 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type flip_operation::flip2d_axis0(
         ir::node_data<T>&& arg) const
@@ -243,6 +247,446 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "to be of size 1 or 2 for matrices."));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_axis0(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::rowslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_axis1(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::columnslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_axis2(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::pageslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_axes_0_1(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::rowslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            for (std::size_t i = 0; i != result.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(result, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_axes_0_2(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            for (std::size_t i = 0; i != t.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::rowslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            for (std::size_t i = 0; i != result.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(result, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_axes_1_2(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            for (std::size_t i = 0; i != t.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::columnslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            for (std::size_t i = 0; i != result.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(result, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d_all_axes(
+        ir::node_data<T>&& arg) const
+    {
+        using phylanx::util::matrix_column_iterator;
+        auto t = arg.tensor();
+
+        if (!arg.is_ref())
+        {
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            for (std::size_t i = 0; i != t.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicTensor<T> result(t.pages(), t.rows(), t.columns());
+            for (std::size_t i = 0; i != t.rows(); ++i)
+            {
+                auto slice = blaze::rowslice(t, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                auto result_slice = blaze::rowslice(result, i);
+                matrix_column_iterator<decltype(result_slice)> r_begin(
+                    result_slice);
+                std::reverse_copy(c_begin, c_end, r_begin);
+            }
+            for (std::size_t i = 0; i != result.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(result, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            for (std::size_t i = 0; i != result.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(result, i);
+                matrix_column_iterator<decltype(slice)> c_begin(slice);
+                matrix_column_iterator<decltype(slice)> c_end(
+                    slice, slice.columns());
+                std::reverse(c_begin, c_end);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+    }
+
+    template <typename T>
+    primitive_argument_type flip_operation::flip3d(ir::node_data<T>&& arg,
+        ir::range&& axes) const
+    {
+        if (axes.size() == 3)
+        {
+            auto it = axes.begin();
+            auto first = extract_scalar_integer_value_strict(*it);
+            auto second = extract_scalar_integer_value_strict(*++it);
+            auto third = extract_scalar_integer_value_strict(*++it);
+
+            if (first < 0)
+                first += 3;
+            if (second < 0)
+                second += 3;
+            if (third < 0)
+                third += 3;
+
+            if ((first == 0 && second == 1 && third == 2) ||
+                (first == 0 && second == 2 && third == 1) ||
+                (first == 1 && second == 0 && third == 2) ||
+                (first == 1 && second == 2 && third == 0) ||
+                (first == 2 && second == 1 && third == 0) ||
+                (first == 2 && second == 0 && third == 1))
+                return flip3d_all_axes(std::move(arg));
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::flip3d",
+                generate_error_message(
+                    "the flip_operation primitive requires each axis "
+                    "to be between -3 and 2 for tensors and there should "
+                    "not be any repetition in axes"));
+        }
+        else if (axes.size() == 2)
+        {
+            auto it = axes.begin();
+            auto first = extract_scalar_integer_value_strict(*it);
+            auto second = extract_scalar_integer_value_strict(*++it);
+
+            if (first < 0)
+                first += 3;
+            if (second < 0)
+                second += 3;
+
+            if ((first == 0 && second == 1) || (first == 1 && second == 0))
+                return flip3d_axes_0_1(std::move(arg));
+
+            else if ((first == 0 && second == 2) || (first == 2 && second == 0))
+                return flip3d_axes_0_2(std::move(arg));
+
+            else if ((first == 1 && second == 2) || (first == 2 && second == 1))
+                return flip3d_axes_1_2(std::move(arg));
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::flip3d",
+                generate_error_message(
+                    "the flip_operation primitive requires each axis "
+                    "to be between -3 and 2 for tensors and there should "
+                    "not be any repetition in axes"));
+        }
+        else if (axes.size() == 1)
+        {
+            switch (extract_scalar_integer_value_strict(*axes.begin()))
+            {
+            case -3:
+                HPX_FALLTHROUGH;
+            case 0:
+                return flip3d_axis0(std::move(arg));
+
+            case -2:
+                HPX_FALLTHROUGH;
+            case 1:
+                return flip3d_axis1(std::move(arg));
+
+            case -1:
+                HPX_FALLTHROUGH;
+            case 2:
+                return flip3d_axis2(std::move(arg));
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "flip_operation::flip3d",
+                    generate_error_message(
+                        "the flip_operation primitive requires operand axis "
+                        "to be between -3 and 2 for tensors."));
+            }
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "flip_operation::flip3d",
+            generate_error_message(
+                "the flip_operation primitive requires operand axis "
+                "to be of size 1, 2 or 3 for tensors."));
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type flip_operation::flipnd(ir::node_data<T>&& arg) const
     {
@@ -256,6 +700,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 2:
             return flip2d_both_axes(std::move(arg));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return flip3d_all_axes(std::move(arg));
+#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -282,6 +731,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 2:
             return flip2d(std::move(arg), std::move(axes));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return flip3d(std::move(arg), std::move(axes));
+#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
