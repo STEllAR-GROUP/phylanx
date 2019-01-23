@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,9 @@
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(and_operation_plugin,
-    phylanx::execution_tree::primitives::and_operation::match_data);
+    phylanx::execution_tree::primitives::and_operation::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(logical_and_operation_plugin,
+    phylanx::execution_tree::primitives::and_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(equal_plugin,
     phylanx::execution_tree::primitives::equal::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(greater_plugin,
@@ -26,8 +28,16 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(not_equal_plugin,
 PHYLANX_REGISTER_PLUGIN_FACTORY(nonzero_plugin,
     phylanx::execution_tree::primitives::nonzero_where::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(or_operation_plugin,
-    phylanx::execution_tree::primitives::or_operation::match_data);
+    phylanx::execution_tree::primitives::or_operation::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(logical_or_operation_plugin,
+    phylanx::execution_tree::primitives::or_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(unary_not_operation_plugin,
-    phylanx::execution_tree::primitives::unary_not_operation::match_data);
+    phylanx::execution_tree::primitives::unary_not_operation::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(logical_unary_not_operation_plugin,
+    phylanx::execution_tree::primitives::unary_not_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(where_plugin,
     phylanx::execution_tree::primitives::nonzero_where::match_data[1]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(xor_operation_plugin,
+    phylanx::execution_tree::primitives::xor_operation::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(logical_xor_operation_plugin,
+    phylanx::execution_tree::primitives::xor_operation::match_data[1]);

@@ -30,21 +30,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const or_operation::match_data =
+    static constexpr char const* const help_string = R"(
+        a, b
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+            The logical or of `a` and `b`.
+    )";
+
+    match_pattern_type const or_operation::match_data[2] =
     {
-        hpx::util::make_tuple("__or",
+        match_pattern_type("__or",
             std::vector<std::string>{"_1 || __2", "__or(_1, __2)"},
             &create_or_operation, &create_primitive<or_operation>,
-            "a, b\n"
-            "Args:\n"
-            "\n"
-            "    a (boolean) : a boolean argument\n"
-            "    b (boolean) : a boolean argument\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The logical or of `a` and `b`."
-            )
+            help_string),
+
+        match_pattern_type("logical_or",
+            std::vector<std::string>{"logical_or(_1, __2)"},
+            &create_or_operation, &create_primitive<or_operation>,
+            help_string)
     };
 
     ///////////////////////////////////////////////////////////////////////////
