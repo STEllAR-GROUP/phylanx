@@ -50,3 +50,5 @@ Phylanx is currently funded by
   Any opinions, findings, and conclusions or recommendations expressed in this
   material are those of the author(s) and do not necessarily reflect the views
   of the National Science Foundation.
+
+* The Defense Technical Information Center under the contract: FA8075-14-D-0002/0007
