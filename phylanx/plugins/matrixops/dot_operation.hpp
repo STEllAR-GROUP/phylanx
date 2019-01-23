@@ -59,6 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type dot0d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
         template <typename T>
         primitive_argument_type dot1d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -71,6 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type dot1d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
         template <typename T>
         primitive_argument_type dot2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -83,6 +85,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type dot2d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type dot0d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type dot1d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type dot2d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+        primitive_argument_type dot3d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type dot3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+#endif
     };
 
     inline primitive create_dot_operation(hpx::id_type const& locality,

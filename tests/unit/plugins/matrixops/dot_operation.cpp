@@ -10,6 +10,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -724,6 +725,26 @@ void test_dot_operation_2d2d_numpy()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void test_dot_operation(std::string const& code,
+    std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_dot_operation_0d();
@@ -754,6 +775,19 @@ int main(int argc, char* argv[])
     test_dot_operation_2d2d();
     test_dot_operation_2d2d_lit();
     test_dot_operation_2d2d_numpy();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_dot_operation("dot(2, [[[1,2,3,4]],[[5,6,7,8]]])",
+                       "[[[ 2,  4,  6,  8]], [[10, 12, 14, 16]]]");
+    test_dot_operation("dot([1,-1,0,1], [[[3, 2, 5.], [1, 10., 2], [3, 2, 15],"
+        "[1, 11, 2]],[[4, 20, 5.], [1, 10., 2], [40, 12, 5], [1, 13, 21]]])",
+        "[[ 3.,  3.,  5.], [ 4., 23., 24.]]");
+    test_dot_operation(
+        "dot([[1,-1,0,1],[0, 1,0,1]], [[[3, 2, 5.], [1, 10., 2], [3, 2, 15],"
+        "[1, 11, 2]],[[4, 20, 5.], [1, 10., 2], [40, 12, 5], [1, 13, 21]]])",
+        "[[[ 3.,  3.,  5.], [ 4., 23., 24.]], [[ 2., 21.,  4.], "
+        "[ 2., 23., 23.]]]");
+#endif
 
     return hpx::util::report_errors();
 }
