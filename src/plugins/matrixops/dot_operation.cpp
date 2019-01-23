@@ -258,7 +258,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type dot_operation::dot2d0d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
-        lhs = lhs.matrix() * rhs.scalar();
+        if (lhs.is_ref())
+        {
+            lhs = lhs.matrix() * rhs.scalar();
+        }
+        else
+        {
+            lhs.matrix() *= rhs.scalar();
+        }
         return primitive_argument_type{std::move(lhs)};
     }
 
@@ -358,6 +365,84 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type dot_operation::dot3d0d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.is_ref())
+        {
+            lhs = lhs.tensor() * rhs.scalar();
+        }
+        else
+        {
+            lhs.tensor() *= rhs.scalar();
+        }
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    template <typename T>
+    primitive_argument_type dot_operation::dot3d1d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(2) != rhs.size())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot3d1d",
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
+        }
+        auto t = lhs.tensor();
+        blaze::DynamicMatrix<T> result(t.pages(), t.rows());
+
+        for (std::size_t i = 0; i != t.pages(); ++i)
+            blaze::row(blaze::submatrix(result, i, 0, 1, t.rows()), 0) =
+                blaze::trans(blaze::pageslice(t, i) * rhs.vector());
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type dot_operation::dot3d2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(2) != rhs.dimension(0))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot3d2d",
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
+        }
+
+        auto m = rhs.matrix();
+        auto t = lhs.tensor();
+
+        blaze::DynamicTensor<T> result(t.pages(), t.rows(), m.columns());
+
+        for (std::size_t i = 0; i != t.pages(); ++i)
+            blaze::pageslice(
+                blaze::subtensor(result, i, 0, 0, 1, t.rows(), m.columns()),
+                0) = blaze::pageslice(t, i) * m;
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type dot_operation::dot3d3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(2) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot3d3d",
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::dot3d3d",
+            generate_error_message(
+                "it is not supported by Phylanx yet"));
+    }
+
     // lhs_num_dims == 3
     template <typename T>
     primitive_argument_type dot_operation::dot3d(
@@ -369,17 +454,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // If is_tensor(lhs) && is_scalar(rhs)
             return dot3d0d(std::move(lhs), std::move(rhs));
 
-        //case 1:
-        //    // If is_tensor(lhs) && is_vector(rhs)
-        //    return dot3d1d(std::move(lhs), std::move(rhs));
+        case 1:
+            // If is_tensor(lhs) && is_vector(rhs)
+            return dot3d1d(std::move(lhs), std::move(rhs));
 
-        //case 2:
-        //    // If is_tensor(lhs) && is_matrix(rhs)
-        //    return dot3d2d(std::move(lhs), std::move(rhs));
+        case 2:
+            // If is_tensor(lhs) && is_matrix(rhs)
+            return dot3d2d(std::move(lhs), std::move(rhs));
 
-        //case 3:
-        //    // If is_tensor(lhs) && is_tensor(rhs)
-        //    return dot3d3d(std::move(lhs), std::move(rhs));
+        case 3:
+            // If is_tensor(lhs) && is_tensor(rhs)
+            return dot3d3d(std::move(lhs), std::move(rhs));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

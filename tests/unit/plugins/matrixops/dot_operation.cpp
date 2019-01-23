@@ -1,5 +1,6 @@
 //   Copyright (c) 2017 Hartmut Kaiser
 //   Copyright (c) 2017 Parsa Amini
+//   Copyright (c) 2019 Bita Hasheminezhad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +13,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -783,10 +785,19 @@ int main(int argc, char* argv[])
         "[1, 11, 2]],[[4, 20, 5.], [1, 10., 2], [40, 12, 5], [1, 13, 21]]])",
         "[[ 3.,  3.,  5.], [ 4., 23., 24.]]");
     test_dot_operation(
-        "dot([[1,-1,0,1],[0, 1,0,1]], [[[3, 2, 5.], [1, 10., 2], [3, 2, 15],"
+        "dot([[1,-1,0, 1],[0, 1,0, 1]], [[[3, 2, 5.], [1, 10., 2], [3, 2, 15],"
         "[1, 11, 2]],[[4, 20, 5.], [1, 10., 2], [40, 12, 5], [1, 13, 21]]])",
         "[[[ 3.,  3.,  5.], [ 4., 23., 24.]], [[ 2., 21.,  4.], "
         "[ 2., 23., 23.]]]");
+
+    test_dot_operation("dot([[[3, 2, 5], [1, 10, 2], [3, 42, 15], [1, 11, 2]]],"
+        "3)",
+        "[[[  9,   6,  15],[  3,  30,  6],[  9, 126,  45],[  3,  33,  6]]]");
+    test_dot_operation("dot([[[3, 2, 5], [1, 10, 2], [3, 42, 15], [1, 11, 2]]],"
+                       "[1, 0, 2])","[[13,  5, 33,  5]]");
+    test_dot_operation("dot([[[3, 2, 5], [1, 10, 2], [3, 2, 15], [1, 11, 2]]],"
+                       "[[1, -1],[1, 0],[2, 1]])",
+        "[[[15,  2],[15,  1],[35, 12],[16,  1]]]");
 #endif
 
     return hpx::util::report_errors();

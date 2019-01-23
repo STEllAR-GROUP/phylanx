@@ -97,6 +97,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type dot2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
+        template <typename T>
+        primitive_argument_type dot3d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type dot3d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type dot3d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type dot3d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
         primitive_argument_type dot3d(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         template <typename T>
