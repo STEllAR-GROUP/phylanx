@@ -83,6 +83,7 @@ phylanx_detect_cpp_dialect()
     OFF ADVANCED CATEGORY "Build")
 
   if(PHYLANX_WITH_DIRECT_VS_NONDIRECT_POLICY)
+    phylanx_add_config_define(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY)
     message("DIRECT VS NONDIRECT POLICY ENABLED --------------")
   endif()
 #endif()
