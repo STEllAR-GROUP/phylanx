@@ -72,6 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_numeric_value(args[1], name_, codename_);
 
             std::size_t num_blocks = val.scalar();
+            ranges.reserve(num_blocks);
             //    extract_numeric_value(args[1], name_, codename_).scalar();
             if (num_blocks <= 0)
             {
@@ -121,7 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (static_cast<std::size_t>(v[i]) > num_rows)
                         v[i] = num_rows;
                 }
-
+                ranges.reserve(v.size()+1);
                 // Include from 0 to first index
                 ranges.push_back(std::make_pair<std::size_t, std::size_t>(
                     std::size_t(0), std::size_t(v[0])));
