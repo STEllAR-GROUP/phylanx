@@ -18,46 +18,47 @@
 #include <string>
 #include <utility>
 
-namespace phylanx {
-namespace execution_tree {
-namespace primitives {
+namespace phylanx { namespace execution_tree { namespace primitives {
 
-class hsplit_operation : public primitive_component_base,
-                         public std::enable_shared_from_this<hsplit_operation> {
-  protected:
-  hpx::future<primitive_argument_type>
-  eval(primitive_arguments_type const &operands,
-       primitive_arguments_type const &args, eval_context ctx) const override;
+    class hsplit_operation
+      : public primitive_component_base
+      , public std::enable_shared_from_this<hsplit_operation>
+    {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
-  public:
-  static match_pattern_type const match_data;
+    public:
+        static match_pattern_type const match_data;
 
-  hsplit_operation() = default;
+        hsplit_operation() = default;
 
-  hsplit_operation(primitive_arguments_type &&operands, std::string const &name,
-                   std::string const &codename);
+        hsplit_operation(primitive_arguments_type&& operands,
+            std::string const& name, std::string const& codename);
 
-  private:
-  primitive_argument_type hsplit_args(primitive_arguments_type &&args) const;
+    private:
+        primitive_argument_type hsplit_args(
+            primitive_arguments_type&& args) const;
 
-  template <typename T>
-  primitive_argument_type
-  hsplit2d_helper(primitive_arguments_type &&args) const;
-  primitive_argument_type hsplit2d(primitive_arguments_type &&args) const;
+        template <typename T>
+        primitive_argument_type hsplit2d_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type hsplit2d(primitive_arguments_type&& args) const;
 
-  private:
-  node_data_type dtype_;
-};
+    private:
+        node_data_type dtype_;
+    };
 
-inline primitive create_hsplit_operation(hpx::id_type const &locality,
-                                         primitive_arguments_type &&operands,
-                                         std::string const &name = "",
-                                         std::string const &codename = "") {
-  return create_primitive_component(locality, "hsplit", std::move(operands),
-                                    name, codename);
-}
-}
-}
-}
+    inline primitive create_hsplit_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands,
+        std::string const& name = "",
+        std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "hsplit", std::move(operands), name, codename);
+    }
+}}}
 
 #endif
