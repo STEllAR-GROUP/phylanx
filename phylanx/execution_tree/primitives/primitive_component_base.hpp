@@ -25,6 +25,11 @@
 #include <utility>
 #include <vector>
 
+#ifdef HPX_HAVE_APEX
+#include <phylanx/util/apex_direct_vs_nondirect_policy.hpp>
+#endif
+
+
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -132,6 +137,10 @@ namespace phylanx { namespace execution_tree
 
 #if defined(HPX_HAVE_APEX)
             std::string eval_name_;
+#ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
+	    std::unique_ptr<phylanx::util::apex_direct_vs_nondirect_policy> 
+		direct_vs_nondirect_policy_instance;
+#endif
 #endif
         };
     }

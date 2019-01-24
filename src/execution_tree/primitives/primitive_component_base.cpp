@@ -23,12 +23,29 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <iostream>
+
+
+#ifdef HPX_HAVE_APEX
+#include <phylanx/util/apex_direct_vs_nondirect_policy.hpp>
+#include "apex_api.hpp"
+#endif
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive_arguments_type primitive_component_base::noargs{};
 
+/*    ~primitive_component_base::primitive_component_base()
+     {
+#if defined(HPX_HAVE_APEX)
+#ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
+        delete direct_vs_nondirect_policy_instance;
+#endif    
+
+#endif
+     }
+*/
     primitive_component_base::primitive_component_base(
             primitive_arguments_type&& params,
             std::string const& name, std::string const& codename,
@@ -43,6 +60,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
 #if defined(HPX_HAVE_APEX)
         eval_name_ = name_ + "::eval";
+#ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
+	std::cout << name_ << " " << codename << std::endl;
+        direct_vs_nondirect_policy_instance = 
+		std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>(name_);
+
+#endif    
+
 #endif
     }
 
