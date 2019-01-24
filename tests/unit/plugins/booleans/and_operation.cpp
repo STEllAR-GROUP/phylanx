@@ -1,4 +1,4 @@
-//   Copyright (c) 2017-2018 Hartmut Kaiser
+//   Copyright (c) 2017-2019 Hartmut Kaiser
 //   Copyright (c) 2018 Shahrzad Shirzad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -1587,6 +1588,24 @@ void test_and_operation_2d1d_double_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_operation(std::string const& code, std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_and_operation_0d_false();
@@ -1650,6 +1669,10 @@ int main(int argc, char* argv[])
     test_and_operation_2d0d_double_lit_false();
     test_and_operation_2d1d_double();
     test_and_operation_2d1d_double_lit();
+
+    test_operation("true && false", "false");
+    test_operation("__and(true, false)", "false");
+    test_operation("logical_and(true, false)", "false");
 
     return hpx::util::report_errors();
 }

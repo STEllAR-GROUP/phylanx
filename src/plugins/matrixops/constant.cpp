@@ -266,6 +266,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "be numeric data types"));
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    ir::node_data<T> constant::constant3d_helper(primitive_argument_type&& op,
+        operand_type::dimensions_type const& dim) const
+    {
+        if (valid(op))
+        {
+            return ir::node_data<T>{
+                blaze::DynamicTensor<T>(dim[0], dim[1], dim[2],
+                    extract_scalar_data<T>(std::move(op), name_, codename_))};
+        }
+
+        // create an empty tensor
+        return ir::node_data<T>{
+            blaze::DynamicTensor<T>(dim[0], dim[1], dim[2])};
+    }
+
+    primitive_argument_type constant::constant3d(primitive_argument_type&& op,
+        operand_type::dimensions_type const& dim) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(op);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return constant3d_helper<std::uint8_t>(std::move(op), dim);
+
+        case node_data_type_int64:
+            return constant3d_helper<std::int64_t>(std::move(op), dim);
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return constant3d_helper<double>(std::move(op), dim);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "constant::constant2d",
+            generate_error_message(
+                "the constant primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+#endif
+
     hpx::future<primitive_argument_type> constant::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -370,6 +422,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 2:
                         return this_->constant2d(std::move(op0), dims);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                    case 3:
+                        return this_->constant3d(std::move(op0), dims);
+#endif
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
@@ -456,6 +512,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->constant2d(std::move(value), dims);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->constant3d(std::move(value), dims);
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "constant::eval",
