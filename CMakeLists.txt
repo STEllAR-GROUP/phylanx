@@ -76,6 +76,16 @@ phylanx_detect_cpp_dialect()
 
 ################################################################################
 # Build options
+#if(HPX_WITH_APEX)
+  phylanx_option(
+    PHYLANX_WITH_DIRECT_VS_NONDIRECT_POLICY BOOL
+    "Enable or disable the direct vs nondirect policy"
+    OFF ADVANCED CATEGORY "Build")
+
+  if(PHYLANX_WITH_DIRECT_VS_NONDIRECT_POLICY)
+    message("DIRECT VS NONDIRECT POLICY ENABLED --------------")
+  endif()
+#endif()
 
 phylanx_option(
   PHYLANX_WITH_TESTS_BENCHMARKS BOOL
