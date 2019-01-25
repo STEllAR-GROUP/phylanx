@@ -1,5 +1,6 @@
 // Copyright (c) 2018 Shahrzad Shirzad
 // Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2019 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -26,9 +27,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     /// This implementation is intended to behave like [NumPy implementation of flatten]
     /// (https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.chararray.
     /// flatten.html).
-    /// \param a It may be a scalar value, vector, or matrix
-    /// \param order The order from which the flattened array should be created from the
-    /// input (optional)
+    /// \param a      It may be a scalar value, vector, matrix or tensor
+    /// \param order  Optional. The order from which the flattened array should
+    ///               be created from the input
     class flatten
       : public primitive_component_base
       , public std::enable_shared_from_this<flatten>
@@ -60,6 +61,15 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         template <typename T>
         primitive_argument_type flatten2d(
             ir::node_data<T>&& arg, std::string order) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type flatten3d(
+            primitive_argument_type&& arg, std::string order) const;
+        template <typename T>
+        primitive_argument_type flatten3d(
+            ir::node_data<T>&& arg, std::string order) const;
+#endif
+
     };
 
     inline primitive create_flatten(hpx::id_type const& locality,
