@@ -21,6 +21,7 @@ set(tests
     flatten
     flip_operation
     gradient_operation
+    hsplit_operation
     hstack_operation
     identity
     inverse_operation
