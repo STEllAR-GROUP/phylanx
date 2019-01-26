@@ -61,9 +61,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #if defined(HPX_HAVE_APEX)
         eval_name_ = name_ + "::eval";
 #ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
-	std::cout << name_ << " " << codename << std::endl;
-        direct_vs_nondirect_policy_instance = 
-		std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>(name_);
+	if( name_ == "/phylanx/store$0/0$7$17" )
+        {
+		std::cout << name_ << " " << codename << std::endl;
+        	direct_vs_nondirect_policy_instance = 
+			std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>(name_);
+	}
 
 #endif    
 

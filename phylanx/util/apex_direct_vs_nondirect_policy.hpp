@@ -37,7 +37,8 @@ namespace phylanx { namespace util
         int tuning_window;
         //int send_count;
 
-        std::string counter_name;
+        std::string counter_name_time;
+        std::string counter_name_eval_count;
         std::string name;
         std::string primitive_name_;
 
@@ -130,8 +131,41 @@ namespace phylanx { namespace util
         }
 
 */
-/*
-        static apex_event_type apex_parcel_coalescing_event(
+
+        int direct_policy(const apex_context context)
+        {
+
+            //apex::custom_event(instance->request->get_trigger(), NULL);
+            //instance->set_coalescing_params();
+            //apex::reset(instance->counter_name);
+
+	    std::cout << "called policy" << std::endl; 
+            /*std::string const count_pc_name(
+                "/phylanx{locality#0/total}/primitives/store/count/eval");
+            hpx::performance_counters::performance_counter count_pc(
+                count_pc_name);
+
+            std::string const time_pc_name(
+                "/phylanx{locality#0/total}/primitives/store/time/eval");
+	    hpx::performance_counters::performance_counter time_pc(time_pc_name);
+            auto values =
+                time_pc.get_counter_values_array(hpx::launch::sync, false); 
+
+ 	    //auto const info = count_pc.get_info(hpx::launch::sync);
+ 	    //auto const info = count_pc.get_info(hpx::launch::sync);
+ 	    //
+ 	    
+            for (std::size_t i = 0; i != values.values_.size(); ++i)
+            {
+                std::cout << values.values_[i] << std::endl; 
+	    } */
+
+            return APEX_NOERROR;
+	
+        }
+
+
+        apex_event_type apex_direct_vs_nondirect_event(
             apex_event_type in_type = APEX_INVALID_EVENT)
         {
             static apex_event_type event_type;
@@ -141,7 +175,6 @@ namespace phylanx { namespace util
              }
              return event_type;
         }
-*/
 
         apex_direct_vs_nondirect_policy(std::string primitive_name)
           : tuning_window(1)
@@ -151,13 +184,14 @@ namespace phylanx { namespace util
             std::stringstream ss;
 //"/phylanx{locality#0/total}/primitives/" + name + "/time/eval"
             ss << "/phylanx{locality#" << hpx::get_locality_id();
-            ss << "/total}/primitives" + primitive_name_ + "/time/eval";
-            counter_name = std::string(ss.str());
-	    std::cout << counter_name << std::endl;
-            //policy_handle_sample_counter = apex::sample_runtime_counter(50000, counter_name);
+            ss << "/total}/primitives/store/time/eval";
+            //ss << "/total}/primitives" + primitive_name_ + "/time/eval";
+            counter_name_time = std::string(ss.str());
+	    std::cout << counter_name_time << std::endl;
+            //policy_handle_sample_counter = apex::sample_runtime_counter(500000, counter_name_time);
 
-/*
-            std::function<double(void)> metric = [=]() -> double {
+
+/*            std::function<double(void)> metric = [=]() -> double {
                 apex_profile* profile = apex::get_profile(counter_name);
                 if (profile == nullptr || profile->calls == 0)
                 {
@@ -167,6 +201,7 @@ namespace phylanx { namespace util
                 std::cout << "Counter current Value: " << result << "\n";
                 return result;
             };
+
             request = new apex_tuning_request(name);
             request->set_metric(metric);
             //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
@@ -177,22 +212,27 @@ namespace phylanx { namespace util
             request->add_param_long("buffer_time", 1000, 1000, 5000, 1000);
             request->set_trigger(apex::register_custom_event(name));
             tuning_session_handle = apex::setup_custom_tuning(*request);
+*/
 
-	    // To register the policy using the send event: uncomment the following line
-            policy_handle = apex::register_policy(APEX_SEND, count_based_policy);
 
 	    // To register a periodic policy: uncomment the following line
             //policy_handle = apex::register_periodic_policy(500000, direct_policy);
 
 	    // To register a custom event : uncomment the following two line
-            //custom_coalescing_event = apex_parcel_coalescing_event(apex::register_custom_event("APEX parcel coalescing event"));
-            //policy_handle = apex::register_policy(custom_coalescing_event, direct_policy);
+            custom_direct_vs_nondirect_event = 
+		apex_direct_vs_nondirect_event(
+		apex::register_custom_event("APEX direct vs nondirect event"));
+            policy_handle = apex::register_policy(
+		custom_direct_vs_nondirect_event, 
+		[&](const apex_context context) -> int{
+			return this->direct_policy(context);
+			});
 
 
 	    // To call the custom event include this header file and use this following commented line
 	    // Do not uncomment the below line. It is just an example how to use it elsewhere
 	    //apex::custom_event(hpx::util::apex_parcel_coalescing_policy::return_apex_parcel_coalescing_event(), NULL);
-*/
+
             if (policy_handle == nullptr)
             {
                 std::cerr << "Error registering policy!" << std::endl;
