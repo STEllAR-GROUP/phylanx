@@ -240,11 +240,11 @@ namespace phylanx { namespace util
             else std::cout<<" Done registering policy.\n";
         }
 
-/*        static apex_event_type return_apex_parcel_coalescing_event()
+        apex_event_type return_apex_direct_vs_nondirect_event()
         {
-             return apex_parcel_coalescing_event(custom_coalescing_event);
+             return apex_direct_vs_nondirect_event(custom_direct_vs_nondirect_event);
         }
-*/
+
 
         void initialize()
         {

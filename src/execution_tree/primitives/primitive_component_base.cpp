@@ -344,6 +344,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
+#if defined(HPX_HAVE_APEX)
+#ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
+	if( name_ == "/phylanx/store$0/0$7$17" )
+        {
+		apex::custom_event(
+			direct_vs_nondirect_policy_instance->return_apex_direct_vs_nondirect_event(),
+		 	NULL);
+	}
+
+#endif    
+
+#endif
+ 
         if ((eval_count_ != 0 && measurements_enabled_) ||
             (eval_count_ > get_ec_threshold()))
         {
