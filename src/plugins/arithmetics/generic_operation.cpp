@@ -90,6 +90,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             compiler::primitive_name_parts name_parts;
             if (!compiler::parse_primitive_name(name, name_parts))
             {
+                std::string::size_type p = name.find("__");
+                if (p != std::string::npos)
+                {
+                    return name.substr(0, p);
+                }
                 return name;
             }
 
@@ -105,8 +110,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     generic_operation::generic_operation(
-        primitive_arguments_type && operands,
-        std::string const& name, std::string const& codename)
+            primitive_arguments_type && operands,
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , func_name_(detail::extract_function_name(name))
       , dtype_(extract_dtype(name_))

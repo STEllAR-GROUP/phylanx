@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -24,20 +24,28 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const unary_not_operation::match_data =
+    static constexpr char const* const help_string = R"(
+        a
+        Args:
+
+            a (boolean) : a boolean argument
+
+        Returns:
+
+        The opposite of `a`.
+    )";
+
+    match_pattern_type const unary_not_operation::match_data[2] =
     {
-        hpx::util::make_tuple("__not",
+        match_pattern_type("__not",
             std::vector<std::string>{"!_1", "__not(_1)"},
-            &create_unary_not_operation, &create_primitive<unary_not_operation>,
-            "a\n"
-            "Args:\n"
-            "\n"
-            "    a (boolean) : a boolean argument\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The opposite of `a`."
-            )
+            &create_unary_not_operation,
+            &create_primitive<unary_not_operation>, help_string),
+
+        match_pattern_type("logical_not",
+            std::vector<std::string>{"logical_not(_1)"},
+            &create_unary_not_operation,
+            &create_primitive<unary_not_operation>, help_string)
     };
 
     ///////////////////////////////////////////////////////////////////////////

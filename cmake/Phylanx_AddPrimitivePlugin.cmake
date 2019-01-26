@@ -17,12 +17,12 @@ macro(add_phylanx_primitive_plugin name)
   if(NOT ${name}_SOURCE_ROOT)
     set(${name}_SOURCE_ROOT ".")
   endif()
-  hpx_debug("Add primitive plugin ${name}: ${name}_SOURCE_ROOT: ${${name}_SOURCE_ROOT}")
+  phylanx_debug("Add primitive plugin ${name}: ${name}_SOURCE_ROOT: ${${name}_SOURCE_ROOT}")
 
   if(NOT ${name}_HEADER_ROOT)
     set(${name}_HEADER_ROOT ".")
   endif()
-  hpx_debug("Add primitive plugin ${name}: ${name}_HEADER_ROOT: ${${name}_HEADER_ROOT}")
+  phylanx_debug("Add primitive plugin ${name}: ${name}_HEADER_ROOT: ${${name}_HEADER_ROOT}")
 
   # Collect sources and headers from the given (current) directory
   # (recursively), but only if AUTOGLOB flag is specified.
@@ -30,7 +30,7 @@ macro(add_phylanx_primitive_plugin name)
     if(NOT ${name}_SOURCE_GLOB)
       set(${name}_SOURCE_GLOB "${${name}_SOURCE_ROOT}/*.cpp")
     endif()
-    hpx_debug("Add primitive plugin ${name}: ${name}_SOURCE_GLOB: ${${name}_SOURCE_GLOB}")
+    phylanx_debug("Add primitive plugin ${name}: ${name}_SOURCE_GLOB: ${${name}_SOURCE_GLOB}")
 
     add_phylanx_library_sources(${name}_primitive
       GLOB_RECURSE GLOBS "${${name}_SOURCE_GLOB}")
@@ -46,7 +46,7 @@ macro(add_phylanx_primitive_plugin name)
       set(${name}_HEADER_GLOB "${${name}_HEADER_ROOT}/*.hpp"
                               "${${name}_HEADER_ROOT}/*.h")
     endif()
-    hpx_debug("Add primitive plugin ${name}: ${name}_HEADER_GLOB: ${${name}_HEADER_GLOB}")
+    phylanx_debug("Add primitive plugin ${name}: ${name}_HEADER_GLOB: ${${name}_HEADER_GLOB}")
 
     add_phylanx_library_headers(${name}_primitive
       GLOB_RECURSE GLOBS "${${name}_HEADER_GLOB}")
@@ -58,19 +58,19 @@ macro(add_phylanx_primitive_plugin name)
       ROOT ${${name}_HEADER_ROOT}
       TARGETS ${${name}_primitive_HEADERS})
   else()
-    add_hpx_library_sources_noglob(${name}_primitive
+    add_phylanx_library_sources_noglob(${name}_primitive
         SOURCES "${${name}_SOURCES}")
 
-    add_hpx_source_group(
+    add_phylanx_source_group(
       NAME ${name}
       CLASS "Source Files"
       ROOT ${${name}_SOURCE_ROOT}
       TARGETS ${${name}_primitive_SOURCES})
 
-    add_hpx_library_headers_noglob(${name}_primitive
+    add_phylanx_library_headers_noglob(${name}_primitive
         HEADERS "${${name}_HEADERS}")
 
-    add_hpx_source_group(
+    add_phylanx_source_group(
       NAME ${name}
       CLASS "Header Files"
       ROOT ${${name}_HEADER_ROOT}
@@ -192,6 +192,11 @@ macro(add_phylanx_primitive_plugin name)
   target_link_libraries(${name}_primitive
     ${HPX_TLL_PRIVATE}
       blaze::blaze)
+  if(PHYLANX_WITH_BLAZE_TENSOR)
+    target_link_libraries(${name}_primitive
+      ${HPX_TLL_PRIVATE}
+        BlazeTensor::BlazeTensor)
+  endif()
 
 endmacro()
 

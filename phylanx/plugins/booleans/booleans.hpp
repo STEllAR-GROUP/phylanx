@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -16,6 +16,7 @@
 #include <phylanx/plugins/booleans/not_equal.hpp>
 #include <phylanx/plugins/booleans/or_operation.hpp>
 #include <phylanx/plugins/booleans/unary_not_operation.hpp>
+#include <phylanx/plugins/booleans/xor_operation.hpp>
 
 #endif
 

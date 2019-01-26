@@ -1,5 +1,6 @@
 // Copyright (c) 2018 Shahrzad Shirzad
 // Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2019 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -25,6 +26,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives {
@@ -32,10 +36,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     match_pattern_type const flatten::match_data = {hpx::util::make_tuple(
         "flatten", std::vector<std::string>{"flatten(_1, _2)", "flatten(_1)"},
         &create_flatten, &create_primitive<flatten>, R"(
-            a, axis
+            a, order
             Args:
 
-                ar (array) : a vector or matrix
+                a (array) : a scalar, vector, matrix or a tensor
                 order (optional, char): 'C' means row-major(C-style),
                                         'F' means column-major(Fortran-style),
                                         The default is 'C'.
@@ -208,6 +212,87 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type flatten::flatten3d(
+        ir::node_data<T>&& arg, std::string order) const
+    {
+        using phylanx::util::matrix_column_iterator;
+        using phylanx::util::matrix_row_iterator;
+
+        auto t = arg.tensor();
+
+        blaze::DynamicVector<T> result(t.pages() * t.rows() * t.columns());
+        auto d = result.data();
+
+        if (order == "C")
+        {
+            for (std::size_t i = 0; i != t.pages(); ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                matrix_row_iterator<decltype(slice)> const a_begin(slice);
+                matrix_row_iterator<decltype(slice)> const a_end(
+                    slice, slice.rows());
+
+                for (auto it = a_begin; it != a_end; ++it)
+                    d = std::copy(it->begin(), it->end(), d);
+            }
+        }
+
+        if (order == "F")
+        {
+            for (std::size_t i = 0; i != t.columns(); ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                matrix_column_iterator<decltype(slice)> const a_begin(slice);
+                matrix_column_iterator<decltype(slice)> const a_end(
+                    slice, slice.columns());
+
+                for (auto it = a_begin; it != a_end; ++it)
+                    d = std::copy(it->begin(), it->end(), d);
+            }
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type flatten::flatten3d(
+        primitive_argument_type&& arg, std::string order) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return flatten3d(
+                extract_boolean_value_strict(std::move(arg), name_, codename_),
+                order);
+
+        case node_data_type_int64:
+            return flatten3d(
+                extract_integer_value_strict(std::move(arg), name_, codename_),
+                order);
+
+        case node_data_type_double:
+            return flatten3d(
+                extract_numeric_value_strict(std::move(arg), name_, codename_),
+                order);
+
+        case node_data_type_unknown:
+            return flatten3d(
+                extract_numeric_value(std::move(arg), name_, codename_), order);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::flatten::flatten3d",
+            generate_error_message(
+                "the arange primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> flatten::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -254,6 +339,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         case 2:
                             return this_->flatten2d(std::move(arg), "C");
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                        case 3:
+                            return this_->flatten3d(std::move(arg), "C");
+#endif
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "flatten::eval",
@@ -272,7 +361,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 if (order != "C" && order != "F")
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::flatten::"
-                        "flatten0d",
+                        "eval",
                         this_->generate_error_message(
                             "order not understood "
                             "the order parameter could only be 'C' or 'F'"));
@@ -291,6 +380,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 case 2:
                     return this_->flatten2d(std::move(arg), std::move(order));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->flatten3d(std::move(arg), std::move(order));
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "flatten::eval",

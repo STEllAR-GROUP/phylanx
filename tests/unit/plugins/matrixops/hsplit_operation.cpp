@@ -14,10 +14,10 @@
 #include <utility>
 #include <vector>
 
-void vsplit_operation_scalar_blocks()
+void hsplit_operation_scalar_blocks()
 {
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0}};
+        {7.0, 8.0, 9.0}, {10.0, 11.0, 12.0}, {13.0, 14.0, 15.0}};
 
     phylanx::execution_tree::primitive matrix =
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
@@ -28,8 +28,8 @@ void vsplit_operation_scalar_blocks()
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
             phylanx::execution_tree::primitive_argument_type{3.0});
 
-    phylanx::execution_tree::primitive vsplit =
-        phylanx::execution_tree::primitives::create_vsplit_operation(
+    phylanx::execution_tree::primitive hsplit =
+        phylanx::execution_tree::primitives::create_hsplit_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{
@@ -38,14 +38,14 @@ void vsplit_operation_scalar_blocks()
                     std::move(num_blocks)}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        vsplit.eval();
+        hsplit.eval();
 
-    blaze::CustomMatrix<double, true, true> expected_first(
-        &(m1(0, 0)), 1, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_second(
-        &(m1(1, 0)), 1, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_third(
-        &(m1(2, 0)), 1, 3, m1.spacing());
+    blaze::DynamicMatrix<double> expected_first{
+        {1.0}, {4.0}, {7.0}, {10.0}, {13.0}};
+    blaze::DynamicMatrix<double> expected_second{
+        {2.0}, {5.0}, {8.0}, {11.0}, {14.0}};
+    blaze::DynamicMatrix<double> expected_third{
+        {3.0}, {6.0}, {9.0}, {12.0}, {15.0}};
 
     phylanx::ir::node_data<double> data_expected_first(
         std::move(expected_first));
@@ -70,12 +70,12 @@ void vsplit_operation_scalar_blocks()
         phylanx::execution_tree::extract_numeric_value(*it));
 }
 
-void vsplit_operation_range_blocks()
+void hsplit_operation_range_blocks()
 {
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0},
         {7.0, 8.0, 9.0}, {10.0, 11.0, 12.0}, {13.0, 14.0, 15.0}};
 
-    blaze::DynamicVector<double> blocks{0.0, 1.0, 4.0, 2.0, 7.0};
+    blaze::DynamicVector<double> blocks{0.0, 1.0, 4.0, 2.0, 3.0};
 
     phylanx::execution_tree::primitive matrix =
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
@@ -87,8 +87,8 @@ void vsplit_operation_range_blocks()
             phylanx::execution_tree::primitive_argument_type{
                 phylanx::ir::node_data<double>(blocks)});
 
-    phylanx::execution_tree::primitive vsplit =
-        phylanx::execution_tree::primitives::create_vsplit_operation(
+    phylanx::execution_tree::primitive hsplit =
+        phylanx::execution_tree::primitives::create_hsplit_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{
@@ -97,20 +97,17 @@ void vsplit_operation_range_blocks()
                     std::move(block_range)}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        vsplit.eval();
+        hsplit.eval();
 
-    blaze::CustomMatrix<double, true, true> expected_zero(
-        &(m1(0, 0)), 0, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_first(
-        &(m1(0, 0)), 1, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_second(
-        &(m1(1, 0)), 3, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_third(
-        &(m1(0, 0)), 0, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_fourth(
-        &(m1(2, 0)), 3, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_fifth(
-        &(m1(0, 0)), 0, 3, m1.spacing());
+    blaze::DynamicMatrix<double> expected_zero(5, 0);
+    blaze::DynamicMatrix<double> expected_first{
+        {1.0}, {4.0}, {7.0}, {10.0}, {13.0}};
+    blaze::DynamicMatrix<double> expected_second{
+        {2.0, 3.0}, {5.0, 6.0}, {8.0, 9.0}, {11.0, 12.0}, {14.0, 15.0}};
+    blaze::DynamicMatrix<double> expected_third(5, 0);
+    blaze::DynamicMatrix<double> expected_fourth{
+        {3.0}, {6.0}, {9.0}, {12.0}, {15.0}};
+    blaze::DynamicMatrix<double> expected_fifth(5, 0);
 
     phylanx::ir::node_data<double> data_expected_zero(std::move(expected_zero));
     phylanx::ir::node_data<double> data_expected_first(
@@ -150,9 +147,8 @@ void vsplit_operation_range_blocks()
 
 int main(int argc, char* argv[])
 {
-    vsplit_operation_scalar_blocks();
-    vsplit_operation_range_blocks();
-    //vsplit_failure_modes();
+    hsplit_operation_scalar_blocks();
+    hsplit_operation_range_blocks();
 
     return hpx::util::report_errors();
 }

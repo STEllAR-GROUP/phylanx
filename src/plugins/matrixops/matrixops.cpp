@@ -51,6 +51,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(flip_operation_plugin,
     phylanx::execution_tree::primitives::flip_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(gradient_operation_plugin,
     phylanx::execution_tree::primitives::gradient_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(hsplit_operation_plugin,
+    phylanx::execution_tree::primitives::hsplit_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(hstack_operation_plugin,
     phylanx::execution_tree::primitives::stack_operation::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(

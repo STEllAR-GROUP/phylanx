@@ -10,7 +10,7 @@ MACRO (phylanx_set_lib_name target name)
   # there is no need to change debug/release names explicitly
   # as we use CMAKE_DEBUG_POSTFIX to alter debug names
 
-  hpx_debug("phylanx_set_lib_name: target:" ${target} "name: " ${name})
+  phylanx_debug("phylanx_set_lib_name: target:" ${target} "name: " ${name})
   set_target_properties (${target}
       PROPERTIES
       OUTPUT_NAME                phylanx_${name}
