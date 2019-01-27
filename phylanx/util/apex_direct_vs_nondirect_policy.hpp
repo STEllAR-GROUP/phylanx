@@ -139,8 +139,11 @@ namespace phylanx { namespace util
             //instance->set_coalescing_params();
             //apex::reset(instance->counter_name);
 
-	    std::cout << "called policy" << std::endl; 
-            /*std::string const count_pc_name(
+	    //std::string const& name = hpx::util::get<1>(primitive_name_);
+	    //std::string const& instance_number = hpx::util::get<2>(primitive_name_);
+
+	    //std::cout << "called policy for:" << name << " " << instance_number << std::endl; 
+            std::string const count_pc_name(
                 "/phylanx{locality#0/total}/primitives/store/count/eval");
             hpx::performance_counters::performance_counter count_pc(
                 count_pc_name);
@@ -148,17 +151,28 @@ namespace phylanx { namespace util
             std::string const time_pc_name(
                 "/phylanx{locality#0/total}/primitives/store/time/eval");
 	    hpx::performance_counters::performance_counter time_pc(time_pc_name);
-            auto values =
+
+            auto time_values =
                 time_pc.get_counter_values_array(hpx::launch::sync, false); 
+
+            auto count_values =
+                count_pc.get_counter_values_array(hpx::launch::sync, false); 
+
 
  	    //auto const info = count_pc.get_info(hpx::launch::sync);
  	    //auto const info = count_pc.get_info(hpx::launch::sync);
  	    //
  	    
-            for (std::size_t i = 0; i != values.values_.size(); ++i)
+            for (std::size_t i = 0; i != time_values.values_.size(); ++i)
             {
-                std::cout << values.values_[i] << std::endl; 
-	    } */
+                std::cout << "Time values: " << time_values.values_[i] << std::endl; 
+	    } 
+
+            for (std::size_t i = 0; i != count_values.values_.size(); ++i)
+            {
+                std::cout << "Count Values: " << count_values.values_[i] << std::endl; 
+	    } 
+
 
             return APEX_NOERROR;
 	
@@ -178,7 +192,7 @@ namespace phylanx { namespace util
 
         apex_direct_vs_nondirect_policy(std::string primitive_name)
           : tuning_window(1)
-          , name("Phylnax direct vs nondirect policy")
+          , name(primitive_name + "policy")
           , primitive_name_(primitive_name)
         {
             std::stringstream ss;
@@ -190,8 +204,8 @@ namespace phylanx { namespace util
 	    std::cout << counter_name_time << std::endl;
             //policy_handle_sample_counter = apex::sample_runtime_counter(500000, counter_name_time);
 
-
-/*            std::function<double(void)> metric = [=]() -> double {
+/*
+            std::function<double(void)> metric = [=]() -> double {
                 apex_profile* profile = apex::get_profile(counter_name);
                 if (profile == nullptr || profile->calls == 0)
                 {
@@ -207,13 +221,13 @@ namespace phylanx { namespace util
             //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
             request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
             //request->add_param_long("parcel_count", 20, 20, 26, 2);
-            request->add_param_long("parcel_count", 20, 2, 256, 2);
-            //request->add_param_long("buffer_time", 1000, 1000, 2000, 1000);
-            request->add_param_long("buffer_time", 1000, 1000, 5000, 1000);
+            //request->add_param_long("parcel_count", start, min, max, step);
+            request->add_param_long("direct_vs_nondirect_threshold", 100000, 100000, 500000, 50000);
+            //request->add_param_long("direct_vs_nondirect_hysteresis", 1000, 1000, 5000, 1000);
             request->set_trigger(apex::register_custom_event(name));
             tuning_session_handle = apex::setup_custom_tuning(*request);
-*/
 
+*/
 
 	    // To register a periodic policy: uncomment the following line
             //policy_handle = apex::register_periodic_policy(500000, direct_policy);
