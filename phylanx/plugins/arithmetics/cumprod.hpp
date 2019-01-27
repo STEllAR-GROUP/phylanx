@@ -1,13 +1,16 @@
 //   Copyright (c) 2018 Hartmut Kaiser
+//   Copyright (c) 2019 Bibek Wagle
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_CUMSUM_OCT_03_2018_0953AM)
-#define PHYLANX_PRIMITIVES_CUMSUM_OCT_03_2018_0953AM
+#if !defined(PHYLANX_PRIMITIVES_CUMPROD_JAN_03_2019_1053AM)
+#define PHYLANX_PRIMITIVES_CUMPROD_JAN_03_2019_1053AM
 
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/arithmetics/cumulative.hpp>
+
+#include <hpx/lcos/future.hpp>
 
 #include <string>
 #include <utility>
@@ -17,30 +20,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        struct cumsum_op;
+        struct cumprod_op;
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    class cumsum
-      : public cumulative<detail::cumsum_op, cumsum>
+    class cumprod
+      : public cumulative<detail::cumprod_op, cumprod>
     {
-        using base_type = cumulative<detail::cumsum_op, cumsum>;
+        using base_type = cumulative<detail::cumprod_op, cumprod>;
 
     public:
         static match_pattern_type const match_data;
 
-        cumsum() = default;
+        cumprod() = default;
 
-        cumsum(primitive_arguments_type&& operands,
+        cumprod(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
     };
 
-    inline primitive create_cumsum(hpx::id_type const& locality,
+    inline primitive create_cumprod(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "cumsum", std::move(operands), name, codename);
+            locality, "cumprod", std::move(operands), name, codename);
     }
 }}}
 
