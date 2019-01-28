@@ -301,9 +301,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return ec_threshold;
     }
 
+#if defined(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY) && defined(HPX_HAVE_APEX)
+    std::int64_t primitive_component_base::get_exec_threshold() const
+    {
+    
+        std::int64_t exec_threshold =
+            std::stol(hpx::get_config_entry(
+                "phylanx.exec_time_threshold" + name_,"400000"));
+#if defined(__POWERPC__) && defined(__clang_version__)
+        exec_threshold = 0;
+#endif
+ 
+	std::cout << "threshold: " << exec_threshold << std::endl;
+        return exec_threshold;
+
+    }
+
+    std::int64_t primitive_component_base::get_exec_hysteresis() const
+    {
+    
+        std::int64_t exec_hysteresis =
+            std::stol(hpx::get_config_entry(
+                "phylanx.exec_time_hysteresis" + name_,"150000"));
+
+#if defined(__POWERPC__) && defined(__clang_version__)
+        exec_hysteresis = 0;
+#endif
+ 
+	std::cout << "hysteresis: " << exec_hysteresis << std::endl;
+        return exec_hysteresis;
+    }
+
+#endif
+
+
     // get execution time upper threshold from command line
     std::int64_t primitive_component_base::get_exec_upper_threshold()
     {
+
         static std::int64_t exec_upper_threshold =
             std::stol(hpx::get_config_entry(
                 "phylanx.exec_time_upper_threshold",
@@ -317,6 +352,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "500000"
 #endif
                 ));
+
         return exec_upper_threshold;
     }
 
@@ -328,6 +364,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "phylanx.exec_time_lower_threshold", "350000"));
         return exec_lower_threshold;
     }
+
+
 
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
@@ -354,10 +392,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
 			direct_vs_nondirect_policy_instance->return_apex_direct_vs_nondirect_event(),
 		 	NULL);
 	    }
+
+            if ((eval_count_ != 0 && measurements_enabled_) ||
+            	(eval_count_ > get_ec_threshold()))
+            {
+            	// check whether execution status needs to be changed (with some
+            	// hysteresis)
+            	std::int64_t exec_time = (eval_duration_ / eval_count_);
+
+            	if (exec_time > (get_exec_threshold() + get_exec_hysteresis()))
+            	{
+                	execute_directly_ = 0;
+            	}
+            	else if (exec_time < (get_exec_threshold() - get_exec_hysteresis()))
+            	{
+                	execute_directly_ = 1;
+            	}
+            	else
+            	{
+                	execute_directly_ = -1;
+            	}
+            }
 	}
-
-
-#endif
+#else
         if ((eval_count_ != 0 && measurements_enabled_) ||
             (eval_count_ > get_ec_threshold()))
         {
@@ -378,6 +435,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+#endif
  
         if (execute_directly_ == 1)
         {
