@@ -10,6 +10,7 @@
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
 #include <phylanx/plugins/matrixops/clip.hpp>
+#include <phylanx/plugins/matrixops/concatenate.hpp>
 #include <phylanx/plugins/matrixops/constant.hpp>
 #include <phylanx/plugins/matrixops/count_nonzero_operation.hpp>
 #include <phylanx/plugins/matrixops/cross_operation.hpp>
