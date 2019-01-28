@@ -1,5 +1,5 @@
-// Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Bita Hasheminezhad
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -30,6 +30,14 @@ namespace phylanx { namespace execution_tree { namespace primitives {
       : public primitive_component_base
       , public std::enable_shared_from_this<flip_operation>
     {
+    public:
+        enum flip_mode
+        {
+            flip_mode_up_down,       // flipud
+            flip_mode_left_right,    // fliplr
+            flip_mode_axes
+        };
+
     protected:
         using val_type = std::int64_t;
         hpx::future<primitive_argument_type> eval(
@@ -38,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             eval_context ctx) const override;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         flip_operation() = default;
 
@@ -86,7 +94,38 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         template <typename T>
         primitive_argument_type flipnd(ir::node_data<T>&& arg,
             ir::range&& axes) const;
+        primitive_argument_type flipnd_helper(
+            primitive_argument_type&& arg) const;
+
+        template <typename T>
+        primitive_argument_type flipud(ir::node_data<T>&& arg) const;
+        primitive_argument_type flipud_helper(
+            primitive_argument_type&& arg) const;
+
+        template <typename T>
+        primitive_argument_type fliplr(ir::node_data<T>&& arg) const;
+        primitive_argument_type fliplr_helper(
+            primitive_argument_type&& arg) const;
+
+    private:
+        flip_mode mode_;
     };
+
+    inline primitive create_flipud_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "flipud", std::move(operands), name, codename);
+    }
+
+    inline primitive create_fliplr_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "fliplr", std::move(operands), name, codename);
+    }
 
     inline primitive create_flip_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands, std::string const& name = "",
