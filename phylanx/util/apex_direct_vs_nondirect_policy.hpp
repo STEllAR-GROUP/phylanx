@@ -37,11 +37,12 @@ namespace phylanx { namespace util
         int tuning_window;
         //int send_count;
 
-        std::string counter_name_time;
-        std::string counter_name_eval_count;
-        std::string name;
+        std::string counter_name_time_;
+        std::string counter_name_count_;
+
+        std::string policy_name_;
         std::string primitive_name_;
-        int primitive_instance_number_;
+        std::size_t primitive_instance_number_;
 
         PHYLANX_API_EXPORT apex_policy_handle* policy_handle;
         PHYLANX_API_EXPORT apex_tuning_session_handle tuning_session_handle;
@@ -107,72 +108,12 @@ namespace phylanx { namespace util
         }
 */
 
-/*
-        static int count_based_policy(const apex_context context)
-        {
-            if (instance->send_count < 50000)
-            {
-                if(instance->count_mutex.try_lock())
-                {
-                    instance->send_count++;
-                    instance->count_mutex.unlock();
-                }
-                return APEX_NOERROR;
-            }
-            else
-            {
-                if(instance->policy_mutex.try_lock())
-                {
-                    instance->send_count=0;
-                    instance->direct_policy(context);
-                    instance->policy_mutex.unlock();
-                }
-                return APEX_NOERROR;
-            }
-        }
-
-*/
 
         int direct_policy(const apex_context context)
         {
 
             apex::custom_event(request->get_trigger(), NULL);
-            //apex::custom_event(this->request->get_trigger(), NULL);
-            //instance->set_coalescing_params();
-            //apex::reset(instance->counter_name);
 
-	    //std::string const& name = hpx::util::get<1>(primitive_name_);
-	    //std::string const& instance_number = hpx::util::get<2>(primitive_name_);
-
-	    //std::cout << "called policy for:" << name << " " << instance_number << std::endl; 
-/*
-            std::string const count_pc_name(
-                "/phylanx{locality#0/total}/primitives/store/count/eval");
-            hpx::performance_counters::performance_counter count_pc(
-                count_pc_name);
-
-            std::string const time_pc_name(
-                "/phylanx{locality#0/total}/primitives/store/time/eval");
-	    hpx::performance_counters::performance_counter time_pc(time_pc_name);
-
-            auto time_values =
-                time_pc.get_counter_values_array(hpx::launch::sync, false); 
-
-            auto count_values =
-                count_pc.get_counter_values_array(hpx::launch::sync, false); 
-
- 	    
-            for (std::size_t i = 0; i != time_values.values_.size(); ++i)
-            {
-                std::cout << "Time values: " << time_values.values_[i] << std::endl; 
-	    } 
-
-            for (std::size_t i = 0; i != count_values.values_.size(); ++i)
-            {
-                std::cout << "Count Values: " << count_values.values_[i] << std::endl; 
-	    } 
-
-*/
             return APEX_NOERROR;
 	
         }
@@ -191,36 +132,42 @@ namespace phylanx { namespace util
 
         apex_direct_vs_nondirect_policy(std::string primitive_name)
           : tuning_window(1)
-          , name(primitive_name + "policy")
+          , policy_name_(primitive_name + "_policy")
           , primitive_name_(primitive_name)
         {
-            std::stringstream ss;
-//"/phylanx{locality#0/total}/primitives/" + name + "/time/eval"
-            ss << "/phylanx{locality#" << hpx::get_locality_id();
-            ss << "/total}/primitives/store/time/eval";
-            //ss << "/total}/primitives" + primitive_name_ + "/time/eval";
-            counter_name_time = std::string(ss.str());
-	    std::cout << counter_name_time << std::endl;
-            //policy_handle_sample_counter = apex::sample_runtime_counter(500000, counter_name_time);
-	    primitive_instance_number_ = 0;
+
+	    phylanx::execution_tree::compiler::primitive_name_parts primitive_name_parts = 
+		phylanx::execution_tree::compiler::parse_primitive_name(primitive_name_);
+
+
+	    std::cout << "primitive name: " << primitive_name_parts.primitive << std::endl;
+	    std::cout << "Instance Number: " << primitive_name_parts.sequence_number << std::endl;
+
+            std::stringstream ss_time, ss_count;
+
+            ss_time << "/phylanx{locality#" << hpx::get_locality_id();
+            ss_time << "/total}/primitives/" << primitive_name_parts.primitive << "/time/eval";
+            counter_name_time_ = std::string(ss_time.str());
+	    std::cout << "Time counter name: " << counter_name_time_ << std::endl;
+
+            ss_count << "/phylanx{locality#" << hpx::get_locality_id();
+            ss_count << "/total}/primitives/" << primitive_name_parts.primitive << "/count/eval";
+            counter_name_count_ = std::string(ss_count.str());
+	    std::cout << "Count counter name: " << counter_name_count_ << std::endl;
+
+	    primitive_instance_number_ = primitive_name_parts.sequence_number;
 
             std::function<double(void)> metric = [=]() -> double {
-                /*apex_profile* profile = apex::get_profile(counter_name_time);
-                if (profile == nullptr || profile->calls == 0)
-                {
-                    return 0.0;
-                }*/
 		
-                std::string const count_pc_name(
-   	             "/phylanx{locality#0/total}/primitives/store/count/eval");
-                hpx::performance_counters::performance_counter count_pc(
-          	      count_pc_name);
-
-            	std::string const time_pc_name(
-                	"/phylanx{locality#0/total}/primitives/store/time/eval");
+           	std::string const time_pc_name(counter_name_time_);
 	    	hpx::performance_counters::performance_counter time_pc(
 			time_pc_name);
 
+                std::string const count_pc_name(counter_name_count_);
+                hpx::performance_counters::performance_counter count_pc(
+          	      count_pc_name);
+
+ 
             	auto time_values =
                 	time_pc.get_counter_values_array(hpx::launch::sync, false); 
 
@@ -228,15 +175,10 @@ namespace phylanx { namespace util
                 	count_pc.get_counter_values_array(hpx::launch::sync, false); 
 
  	    
-            	for (std::size_t i = 0; i != time_values.values_.size(); ++i)
+            	/*for (std::size_t i = 0; i != time_values.values_.size(); ++i)
             	{
                 	//std::cout << "Time values: " << time_values.values_[i] << std::endl; 
-	    	} 
-
-            	for (std::size_t i = 0; i != count_values.values_.size(); ++i)
-            	{
-                	//std::cout << "Count Values: " << count_values.values_[i] << std::endl; 
-	    	} 
+	    	}*/ 
 		
 		double count_times = count_values.values_[primitive_instance_number_];
 		double result = 0;
@@ -251,15 +193,15 @@ namespace phylanx { namespace util
                 return result;
             };
 
-            request = new apex_tuning_request(name);
+            request = new apex_tuning_request(policy_name_);
             request->set_metric(metric);
             //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
             request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
             //request->add_param_long("parcel_count", 20, 20, 26, 2);
             //request->add_param_long("parcel_count", start, min, max, step);
-            request->add_param_long("direct_vs_nondirect_threshold", 100000, 100000, 500000, 50000);
+            request->add_param_long("chunk_threshold" + primitive_name_, 100000, 100000, 500000, 50000);
             //request->add_param_long("direct_vs_nondirect_hysteresis", 1000, 1000, 5000, 1000);
-            request->set_trigger(apex::register_custom_event(name));
+            request->set_trigger(apex::register_custom_event(policy_name_));
             tuning_session_handle = apex::setup_custom_tuning(*request);
 
 
