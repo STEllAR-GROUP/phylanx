@@ -193,11 +193,14 @@ jobs:
                 name: Converting flake8 text output to XML
                 command: tools/flake8/flake_to_junit.py /artifacts/phylanx_flake8_report.txt /code_format/phylanx_flake8.xml
                 when: always
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
+                working_directory: /phylanx/build
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tools.inspect
+                working_directory: /phylanx/build
                 when: always
             # Inspect
             - run:
@@ -248,10 +251,11 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.regressions
             - run:
                 name: Build regression tests
@@ -269,10 +273,11 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.arithmetics
             - run:
                 name: Build arithmetics primitive plugin unit tests
@@ -290,10 +295,11 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.booleans
             - run:
                 name: Build boolean primitive plugin unit tests
@@ -311,10 +317,11 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.controls
             - run:
                 name: Build control primitive plugin unit tests
@@ -332,10 +339,11 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.{fileio,solvers}
             - run:
                 name: Build file I/O and solvers primitive plugin unit tests
@@ -353,10 +361,11 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.listops
             - run:
                 name: Build ListOps primitive plugin unit tests
@@ -375,9 +384,10 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - run:
-            # Explain
+                name: Avoid re-running CMake
+                command: touch build.ninja
+            - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.matrixops
             - run:
                 name: Build MatrixOps primitive plugin unit tests
@@ -396,9 +406,10 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - run:
-            # Explain
+                name: Avoid re-running CMake
+                command: touch build.ninja
+            - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.plugins.statistics
             - run:
                 name: Build statistics primitive plugin unit tests
@@ -417,9 +428,10 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - run:
-            # Explain
+                name: Avoid re-running CMake
+                command: touch build.ninja
+            - run:
                 name: Justify build
-                working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
             - run:
                 name: Build tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
@@ -437,6 +449,9 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
             - run:
             # Explain
                 name: Justify build
@@ -460,7 +475,10 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - setup_remote_docker
-            # Explain
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
+                working_directory: /phylanx/build
             - run:
                 name: Justify build
                 command: ninja -n -d explain install
