@@ -53,70 +53,52 @@ namespace phylanx { namespace util
         std::mutex params_mutex;
         std::mutex count_mutex;
         std::mutex policy_mutex;
-/*
-        void set_coalescing_params()
+  
+	void set_direct_vs_nondirect_params()
         {
-            std::shared_ptr<apex_param_long> parcel_count_param =
+            std::shared_ptr<apex_param_long> chunk_threshold_param =
                 std::static_pointer_cast<apex_param_long>(
-                    request->get_param("parcel_count"));
+                    request->get_param("chunk_threshold" + primitive_name_));
 
-            std::shared_ptr<apex_param_long> buffer_time_param =
-                std::static_pointer_cast<apex_param_long>(
-                    request->get_param("buffer_time"));
+            const int chunk_threshold = chunk_threshold_param->get_value();
 
-            const int parcel_count = parcel_count_param->get_value();
-            const int buffer_time = buffer_time_param->get_value();
-
-
-            apex::sample_value(
+            /*apex::sample_value(
                 "hpx.plugins.coalescing_message_handler.num_messages",
-                parcel_count);
+               parcel_count);
             apex::sample_value(
-                "hpx.plugins.coalescing_message_handler.interval", buffer_time);
-            std::cout<<"now setting coalescing values Parcel Count: " << parcel_count << "  Buffer_time: " << buffer_time << "\n";
+                "hpx.plugins.coalescing_message_handler.interval", buffer_time); */
+
+            std::cout<<"now setting chunking threshold value: " << chunk_threshold  << "\n";
+
             hpx::set_config_entry(
-                "hpx.plugins.coalescing_message_handler.num_messages",
-                parcel_count);
-            hpx::set_config_entry(
-                "hpx.plugins.coalescing_message_handler.interval", buffer_time);
+                "phylanx.exec_time_threshold" + primitive_name_,
+                chunk_threshold);
+            //hpx::set_config_entry(
+                //"hpx.plugins", buffer_time);
         }
-*/
-/*
+
         int direct_policy(const apex_context context)
         {
 	    if (!apex::has_session_converged(tuning_session_handle)){
-	    	apex_profile* profile = apex::get_profile(instance->counter_name);
-            	//apex_profile* profile = apex::get_profile();
-            	if (profile == nullptr) {
-                	printf("Nullpointer coutername, %s  send count %d\n ",instance->counter_name.c_str(), instance->send_count);
-                	fflush(stdout);
-            	}
-            	if (profile != nullptr && profile->calls >= instance->tuning_window)
-            	{
-                	apex::custom_event(instance->request->get_trigger(), NULL);
-                	instance->set_coalescing_params();
-                	apex::reset(instance->counter_name);
-            	}
+            	apex::custom_event(request->get_trigger(), NULL);
+                this->set_direct_vs_nondirect_params();
             }
             else {
- 		printf("As session is converged, policy is deregistered\n"); fflush(stdout);
- 		apex::deregister_policy(policy_handle);
+ 		//apex::deregister_policy(policy_handle);
+ 		//std::cout << "As session is converged for: " + primitive_name_
+			//+ " , policy is deregistered\n"; 
 
 	    }
             return APEX_NOERROR;
-	
         }
-*/
 
 
-        int direct_policy(const apex_context context)
+        /*int direct_policy(const apex_context context)
         {
-
-            apex::custom_event(request->get_trigger(), NULL);
 
             return APEX_NOERROR;
 	
-        }
+        }*/
 
 
         apex_event_type apex_direct_vs_nondirect_event(
@@ -195,8 +177,8 @@ namespace phylanx { namespace util
 
             request = new apex_tuning_request(policy_name_);
             request->set_metric(metric);
-            //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
-            request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
+            request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
+            //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
             //request->add_param_long("parcel_count", 20, 20, 26, 2);
             //request->add_param_long("parcel_count", start, min, max, step);
             request->add_param_long("chunk_threshold" + primitive_name_, 100000, 100000, 500000, 50000);
@@ -222,7 +204,7 @@ namespace phylanx { namespace util
 
 	    // To call the custom event include this header file and use this following commented line
 	    // Do not uncomment the below line. It is just an example how to use it elsewhere
-	    //apex::custom_event(hpx::util::apex_parcel_coalescing_policy::return_apex_parcel_coalescing_event(), NULL);
+	    //apex::custom_event(policy_event, NULL);
 
             if (policy_handle == nullptr)
             {

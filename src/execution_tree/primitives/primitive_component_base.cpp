@@ -348,9 +348,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
 	if( name_ == "/phylanx/store$0/0$7$17" )
         {
+            if (!apex::has_session_converged(direct_vs_nondirect_policy_instance->tuning_session_handle)){
+
 		apex::custom_event(
 			direct_vs_nondirect_policy_instance->return_apex_direct_vs_nondirect_event(),
 		 	NULL);
+	    }
 	}
 
 #endif    
