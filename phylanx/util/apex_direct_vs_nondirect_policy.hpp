@@ -60,7 +60,13 @@ namespace phylanx { namespace util
                 std::static_pointer_cast<apex_param_long>(
                     request->get_param("chunk_threshold" + primitive_name_));
 
+            std::shared_ptr<apex_param_long> chunk_hysteresis_param =
+                std::static_pointer_cast<apex_param_long>(
+                    request->get_param("chunk_hysteresis" + primitive_name_));
+
+
             const int chunk_threshold = chunk_threshold_param->get_value();
+            const int chunk_hysteresis = chunk_hysteresis_param->get_value();
 
             /*apex::sample_value(
                 "hpx.plugins.coalescing_message_handler.num_messages",
@@ -68,13 +74,17 @@ namespace phylanx { namespace util
             apex::sample_value(
                 "hpx.plugins.coalescing_message_handler.interval", buffer_time); */
 
-            std::cout<<"now setting chunking threshold value: " << chunk_threshold  << "\n";
+            std::cout<<"now setting chunking threshold value: " << chunk_threshold << 
+		" chunk hysteresis: " << chunk_hysteresis << "\n";
 
             hpx::set_config_entry(
                 "phylanx.exec_time_threshold" + primitive_name_,
                 chunk_threshold);
-            //hpx::set_config_entry(
-                //"hpx.plugins", buffer_time);
+
+            hpx::set_config_entry(
+                "phylanx.exec_time_hysteresis" + primitive_name_,
+                chunk_hysteresis);
+ 
         }
 
         int direct_policy(const apex_context context)
@@ -179,10 +189,8 @@ namespace phylanx { namespace util
             request->set_metric(metric);
             request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
             //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
-            //request->add_param_long("parcel_count", 20, 20, 26, 2);
-            //request->add_param_long("parcel_count", start, min, max, step);
             request->add_param_long("chunk_threshold" + primitive_name_, 100000, 100000, 500000, 50000);
-            //request->add_param_long("direct_vs_nondirect_hysteresis", 1000, 1000, 5000, 1000);
+            request->add_param_long("chunk_hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
             tuning_session_handle = apex::setup_custom_tuning(*request);
 

@@ -344,9 +344,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-#if defined(HPX_HAVE_APEX)
-#ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
-	if( name_ == "/phylanx/store$0/0$7$17" )
+#if defined(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY) && defined(HPX_HAVE_APEX)
+
+ 	if( name_ == "/phylanx/store$0/0$7$17" )
         {
             if (!apex::has_session_converged(direct_vs_nondirect_policy_instance->tuning_session_handle)){
 
@@ -356,10 +356,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 	    }
 	}
 
-#endif    
 
 #endif
- 
         if ((eval_count_ != 0 && measurements_enabled_) ||
             (eval_count_ > get_ec_threshold()))
         {
@@ -380,6 +378,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+ 
         if (execute_directly_ == 1)
         {
             return hpx::launch::sync;
