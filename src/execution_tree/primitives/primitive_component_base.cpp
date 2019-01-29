@@ -61,7 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #if defined(HPX_HAVE_APEX)
         eval_name_ = name_ + "::eval";
 #ifdef PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY
-	if( name_ == "/phylanx/store$0/0$7$17" )
+	if( name_ == "/phylanx/store$0/0$14$21" )
         {
 		std::cout << name_ << " " << codename << std::endl;
         	direct_vs_nondirect_policy_instance = 
@@ -312,7 +312,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         exec_threshold = 0;
 #endif
  
-	std::cout << "threshold: " << exec_threshold << std::endl;
+	std::cout << name_ + " threshold: " << exec_threshold << std::endl;
         return exec_threshold;
 
     }
@@ -328,7 +328,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         exec_hysteresis = 0;
 #endif
  
-	std::cout << "hysteresis: " << exec_hysteresis << std::endl;
+	std::cout << name_ + " hysteresis: " << exec_hysteresis << std::endl;
         return exec_hysteresis;
     }
 
@@ -384,7 +384,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 #if defined(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY) && defined(HPX_HAVE_APEX)
 
- 	if( name_ == "/phylanx/store$0/0$7$17" )
+ 	if( name_ == "/phylanx/store$0/0$14$21" )
         {
             if (!apex::has_session_converged(direct_vs_nondirect_policy_instance->tuning_session_handle)){
 
