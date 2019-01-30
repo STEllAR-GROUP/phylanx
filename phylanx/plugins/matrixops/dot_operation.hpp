@@ -1,5 +1,6 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
 //  Copyright (c) 2017 Alireza Kheirkhahan
+//  Copyright (c) 2019 Bita Hasheminezhad
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -25,6 +26,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<dot_operation>
     {
+    public:
+        enum dot_mode
+        {
+            dot_product,
+            tensordot_product
+        };
+
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
@@ -32,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         dot_operation() = default;
 
@@ -116,6 +124,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type dot3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 #endif
+
+    private:
+        dot_mode mode_;
     };
 
     inline primitive create_dot_operation(hpx::id_type const& locality,
@@ -124,6 +135,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         return create_primitive_component(
             locality, "dot", std::move(operands), name, codename);
+    }
+    inline primitive create_tensordot_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands,
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "tensordot", std::move(operands), name, codename);
     }
 }}}
 

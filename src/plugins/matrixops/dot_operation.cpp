@@ -28,10 +28,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const dot_operation::match_data =
-    {
-        hpx::util::make_tuple("dot",
-            std::vector<std::string>{"dot(_1, _2)"},
+    std::vector<match_pattern_type> const dot_operation::match_data = {
+        match_pattern_type{"dot", std::vector<std::string>{"dot(_1, _2)"},
             &create_dot_operation, &create_primitive<dot_operation>, R"(
             v1, v2
             Args:
@@ -41,14 +39,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Returns:
 
-            The dot product of two arrays: `v1` and `v2`.)")
-    };
+            The dot product of two arrays: `v1` and `v2`.)"},
+        match_pattern_type{"tensordot",
+            std::vector<std::string>{
+                "tensordot(_1, _2)", "tensordot(_1, _2,_3)"},
+            &create_dot_operation, &create_primitive<dot_operation>, R"(
+            a, b, axes
+            Args:
+
+                a (array) : a vector, matrix or a tensor
+                b (array) : a vector, matrix or a tensor
+                axes(optional, integer or tuple of integers): if an int N, sum
+                    over the last N axes of a and the first N axes of b in
+                    order. The sizes of the corresponding axes must match.
+
+            Returns:
+
+            The tensor dot product along specified axes for arrays>=1-D.)"}};
 
     ///////////////////////////////////////////////////////////////////////////
+    dot_operation::dot_mode extract_dot_mode(std::string const& name)
+    {
+        dot_operation::dot_mode result = dot_operation::dot_product;
+
+        if (name.find("tensordot") != std::string::npos)
+        {
+            result = dot_operation::tensordot_product;
+        }
+        return result;
+    }
+
     dot_operation::dot_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+        , mode_(extract_dot_mode(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -611,13 +636,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 2)
+        if (operands.size() != 2 && operands.size() != 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
                 generate_error_message(
                     "the dot_operation primitive requires exactly "
-                        "two operands"));
+                        "two or three operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
@@ -630,37 +655,98 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& op1,
+        if (operands.size() == 2)
+        {
+            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                [this_ = std::move(this_)](primitive_argument_type&& op1,
                     primitive_argument_type&& op2)
-            ->  primitive_argument_type
+                ->primitive_argument_type
             {
-                switch (extract_numeric_value_dimension(
-                    op1, this_->name_, this_->codename_))
+                if (this_->mode_ == dot_product)
                 {
-                case 0:
-                    return this_->dot0d(std::move(op1), std::move(op2));
+                    switch (extract_numeric_value_dimension(
+                        op1, this_->name_, this_->codename_))
+                    {
+                    case 0:
+                        return this_->dot0d(std::move(op1), std::move(op2));
 
-                case 1:
-                    return this_->dot1d(std::move(op1), std::move(op2));
+                    case 1:
+                        return this_->dot1d(std::move(op1), std::move(op2));
 
-                case 2:
-                    return this_->dot2d(std::move(op1), std::move(op2));
+                    case 2:
+                        return this_->dot2d(std::move(op1), std::move(op2));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                case 3:
-                    return this_->dot3d(std::move(op1), std::move(op2));
+                    case 3:
+                        return this_->dot3d(std::move(op1), std::move(op2));
 #endif
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dot_operation::eval",
-                        this_->generate_error_message(
-                            "left hand side operand has unsupported "
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::eval",
+                            this_->generate_error_message(
+                                "left hand side operand has unsupported "
                                 "number of dimensions"));
+                    }
                 }
+                else if (this_->mode_ == tensordot_product)
+                {
+                    //axes 2
+                }
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dot_operation::eval",
+                    this_->generate_error_message(
+                        "unsupported dot mode requested"));
             }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx));
+                value_operand(operands[0], args, name_, codename_, ctx),
+                value_operand(operands[1], args, name_, codename_, ctx));
+        }
+        else if (operands.size() == 3 && valid(operands[2]))
+        {
+            if (this_->mode_ == dot_product)
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dot_operation::eval",
+                    this_->generate_error_message(
+                        "the dot product  requires exactly two operands"));
+            else if (this_->mode_ == tensordot_product)
+            {
+                return hpx::dataflow(hpx::launch::sync,
+                    hpx::util::unwrapping(
+                        [this_ = std::move(this_)](
+                            primitive_argument_type&& op1,
+                            primitive_argument_type&& op2,
+                            ir::range&& axes) -> primitive_argument_type {
+                    switch (axes.size())
+                    {
+                    case 1:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::eval",
+                            this_->generate_error_message("case 1"));
+                    case 2:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::eval",
+                            this_->generate_error_message("case 2"));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::eval",
+                            this_->generate_error_message("."));
+                    }
+
+                        }),
+                    value_operand(operands[0], args, name_, codename_, ctx),
+                    value_operand(operands[1], args, name_, codename_, ctx),
+                    list_operand(operands[2], args, name_, codename_, ctx));
+            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::eval",
+                this_->generate_error_message(
+                    "unsupported dot mode requested"));
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::eval",
+            generate_error_message(
+                "the dot_operation primitive requires that the "
+                "arguments given by the operands array are valid"));
     }
 }}}
