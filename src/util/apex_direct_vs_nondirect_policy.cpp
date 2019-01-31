@@ -5,7 +5,7 @@
 
 
 #include <hpx/config.hpp>
-#include <hpx/util/apex_direct_vs_nondirect_policy.hpp>
+#include <phylanx/util/apex_direct_vs_nondirect_policy.hpp>
 #include <iostream>
 
 
