@@ -29,8 +29,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         enum dot_mode
         {
+            outer_product,
             dot_product,
-            tensordot_product
+            doubledot_product
         };
 
     protected:
@@ -48,11 +49,49 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
+        primitive_argument_type outer1d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+        primitive_argument_type outer2d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+        primitive_argument_type outer_nd(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+        primitive_argument_type outer_nd_helper(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type outer1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type outer1d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type outer1d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type outer2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type outer2d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type outer3d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type outer3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+#endif
+
         primitive_argument_type dot0d(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         primitive_argument_type dot1d(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         primitive_argument_type dot2d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        primitive_argument_type dot_nd(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
 
         template <typename T>
@@ -125,9 +164,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 #endif
 
+        primitive_argument_type tensordot_int_axis(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs,
+            ir::range&& axes) const;
+
     private:
         dot_mode mode_;
     };
+
+    inline primitive create_outer_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "outer", std::move(operands), name, codename);
+    }
 
     inline primitive create_dot_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
@@ -136,6 +187,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "dot", std::move(operands), name, codename);
     }
+
     inline primitive create_tensordot_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
