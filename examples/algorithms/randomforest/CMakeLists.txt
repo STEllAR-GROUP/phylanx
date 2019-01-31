@@ -5,6 +5,7 @@
 
 set(example_programs
     randomforest
+    simple_randomforest
    )
 
 foreach(example_program ${example_programs})
