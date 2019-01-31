@@ -1,130 +1,240 @@
-from numpy.random import rand
-from numpy import argsort, sum, float64, zeros, max, nan
+#  Copyright (c) 2018 Christopher Taylor
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+# significant re-working of the algorithm implementation found on this site:
+#
+# https://machinelearningmastery.com/implement-random-forest-scratch-python/
+#
+from numpy import floor, argsort, sum, sqrt
+from numpy import float64, int64, zeros
+from numpy import argmax, inf, genfromtxt
+from numpy import vstack, iinfo, finfo, unique
+from numpy.random import randint, rand
 
-# code ported from https://machinelearningmastery.com/implement-random-forest-scratch-python/
+from phylanx import Phylanx
 
 def test_split(idx, val, dataset):
     left, right = list(), list()
-    for row in dataset:
+    for i in range(dataset.shape[0]):
+        row = dataset[i, :]
         if row[idx] < val:
             left.append(row)
         else:
             right.append(row)
 
-    return (left, right, nan, nan) # tuple of lists
+    if len(left) < 1 and len(right) > 0:
+        return (zeros((0,)), vstack(right))
+    elif len(left) > 0 and len(right) < 0:
+        return (vstack(left), zeros((0,)))
+
+    return (vstack(left), vstack(right))
+
 
 def gini_index(groups, classes):
-    groups_len = map(lambda x: len(x), groups)
+    groups_len = list(map(lambda x: len(x), groups))
     n_instances = float64(sum(groups_len))
     gini = 0.0
-    classes_len = len(classes)
-    for (group, group_len) in filter(lambda x: x[1] > 0, zip(groups, groups_len)):
-        score = 0.0
-        p = zeros(classes_len)
-        for row in group:
-            p[classes[row[-1]]] += 1
-        p /= size
-        score += p * p
 
-        gini += (1.0 - score) * (size / n_instances)
+    p = zeros(len(classes), dtype=float64)
+    for (group, group_len) in filter(
+        lambda x: x[1] > 0, zip(groups, groups_len)
+    ):
+        for row in group:
+            p[classes[int64(row[-1])]] += 1.0
+        score = sum(((p / float64(group_len)) ** 2.0))
+        gini += (1.0 - score) * float64(group_len / n_instances)
+        p[:] = 0.0
 
     return gini
 
-def get_split(dataset, n_features):
-    cls_values = dict()
-    cls_counter = 0
-    for row in range(len(dataset)):
-        cls_val = dataset[row][-1]
-        if cls_values.has_key(cls_val):
-            cls_values[cls_val] = cls_counter
-            cls_counter+=1
 
-    b_idx, b_val, b_score, b_groups = nan, nan, nan, {}
-    idx_w = rand(len(dataset[0]-1))
-    idx = list(range(idx_w))
-    features = idx[ argsort(idx_w) ][:n_features]
+def get_split(dataset, n_features, classes):
+    cls_values = zeros(len(classes), dtype=int64)
+    for i in range(len(classes)):
+        cls_values[classes[i]] = i
 
+    b_idx = 0
+    b_val = 0
+    b_score = 0
+    b_groups = (list(), list())
+    idx_w = randint(0, dataset.shape[1] - 1, size=dataset.shape[1] - 1)
+    idx = zeros(dataset.shape[1] - 1, dtype=int64)
+
+    for i in range(dataset.shape[1] - 1):
+        idx[i] = i
+
+    features = idx[argsort(idx_w)][:n_features]
     for feature in features:
-        for row in range(len(dataset)):
-            groups = test_split(feature, dataset[row,:], dataset)
+        for r in range(dataset.shape[0]):
+            groups = test_split(feature, dataset[r, feature], dataset)
             gini = gini_index(groups, cls_values)
-            if gini < b_score: 
-                b_idx, b_val, b_score, b_groups = feature, dataset[row,:], gini, groups
+            if gini < b_score:
+                b_idx = feature
+                b_val = dataset[r, feature]
+                b_score = gini
+                b_groups = groups
 
-    return {'idx' : b_idx, 'val' : b_val, 'groups' : b_groups }
+    return {'index': b_idx,
+            'value': b_val,
+            'groups': b_groups,
+            'lw': inf,
+            'rw': inf}
 
-def to_terminal(classes, group):
-    outcome_hist = zeros(len(classes))
 
-    def update(hist, val):
-        hist[val] += 1
+def to_terminal(group, classes):
+    outcome_hist = zeros(len(classes), dtype=int64)
+    for g in group:
+        k = int64(g[-1])
+        outcome_hist[classes[k]] += 1
 
-    map(lambda g: update(outcome_hist, classes[g[-1]]), group)
+    return argmax(outcome_hist)
 
-    return max(outcome_hist)
 
-def split(node, max_depth, min_sz, n_features, depth):
-    IDX, VAL = 'idx', 'val'
-    GRP, LFT, RHT, LW, RW = 'groups', 0, 1, 2, 3 #'left', 'right', 'lw', 'rw'
+def split(node, max_depth, min_sz, n_features, depth, classes):
+    GRP, LFT, RHT, LW, RW = 'groups', 'left', 'right', 'lw', 'rw'
 
-    (left, right, lw, rw) = node[GRP]
-    if len(left) == 0 or len(right) == 0:
-        if len(node) < 4:
-            lr_list = left + right
-            term = to_terminal(lr_list)
-            node[GRP] = (term, term)
+    (left, right) = node[GRP]
+    del(node[GRP])
 
-        if depth >= max_depth:
-            lterm = to_terminal(left)
-            rterm = to_terminal(right)
-            node[GRP] = (list(), list(), lterm, rterm)
-
-        if len(left) <= min_sz:
-            node[GRP][LFT] = (list(), list(), to_terminal(left), nan)
+    if left.shape == (0,) or right.shape == (0,):
+        if left.shape == (0,):
+            term = to_terminal(right, classes)
         else:
-            node[GRP][LFT] = get_split(left, n_features)
-            split(node[GRP][LFT], max_depth, min_sz, n_features, depth+1)
+            term = to_terminal(left, classes)
 
-        if len(right) <= min_sz:
-             node[GRP][RHT] = (list(), list(), nan, to_terminal(right))
-        else:
-            node[GRP][RHT] = get_split(right, n_features)
-            split(node[GRP][RHT], max_depth, min_sz, n_features, depth+1)
-          
-def build_tree(train, max_depth, min_sz, n_features):
-    root = get_split(train, n_features)
-    split(root, max_depth, min_size, n_features, 1)
+        node[LW] = term
+        node[RW] = term
+        return
+
+    if depth >= max_depth:
+        lterm = to_terminal(left, classes)
+        rterm = to_terminal(right, classes)
+        node[LW] = lterm
+        node[RW] = rterm
+        return
+
+    if len(left) <= min_sz:
+        node[LW] = to_terminal(left, classes)
+    else:
+        node[LFT] = get_split(left, n_features, classes)
+        split(node[LFT], max_depth, min_sz, n_features, depth + 1, classes)
+
+    if len(right) <= min_sz:
+        node[RW] = to_terminal(right, classes)
+    else:
+        node[RHT] = get_split(right, n_features, classes)
+        split(node[RHT], max_depth, min_sz, n_features, depth + 1, classes)
+
+
+def build_tree(train, max_depth, min_sz, n_features, classes):
+    root = get_split(train, n_features, classes)
+    split(root, max_depth, min_sz, n_features, 1, classes)
     return root
 
-def predict(node, row):
-    if row[node[0]] < node[1]:
-        if node[2].has_key('lterm'):
-            return node[2][0]
+
+def node_predict(node, r):
+    if r[node['index']] < node['value']:
+        if node['lw'] == inf:
+            return node_predict(node['left'], r)
         else:
-            return predict(node[2][0], row)
+            return node['lw']
     else:
-        if node[2].has_key('rterm'):
-            return node[2][1]
+        if node['rw'] == inf:
+            return node_predict(node['right'], r)
         else:
-            return predict(node[2][1], row)
+            return node['rw']
+
 
 def subsample(dataset, ratio):
-    n_sample = round(len(dataset) * ratio) 
-    idx_w = list(map(lambda x: rand(), range(len(dataset))))
+    n_sample = int64(floor(len(dataset) * ratio))
+    idx_w = list(map(lambda x: rand(), range(dataset.shape[0])))
     idx_s = argsort(idx_w)
-    sample = list(map(lambda i: idx_w[idx_s[i]], range(n_sample)))
+    sample = vstack(map(lambda x: dataset[idx_s[x], :], range(n_sample)))
     return sample
 
-def bagging_predict(trees, row, classes):
-    predictions = list(map(lambda tree: predict(tree, row) for tree in trees))
-    cls_hist = zeros(len(classes.keys()))
-    for p in range(len(predictions)):
-        cls_hist[classes[p]] += 1
-    return max(cls_hist)
 
-def random_forest(train, test, max_depth, min_sz, sample_sz, n_trees, n_features):
-    trees = list(map(lambda x: build_tree(subsample(train, sample_sz), max_depth, min_sz, n_features), prange(n_trees)))
-    predictions = list(map(lambda t: bagging_predict(t, row), test))
-    return (trees, predictions)
+def bagging_predict(trees, row, classes):
+    predictions = list(map(lambda tree: node_predict(tree, row), trees))
+    # parallel
+    #
+    # predictions =
+    # list(map(lambda tree:
+    # node_predict(trees[tree], row),
+    # prange(len(trees)))
+    #
+    classes_vec = zeros(len(classes), dtype=int64)
+    for p in predictions:
+        classes_vec[classes[p]] += 1
+
+    idx = argmax(classes_vec)
+    for (k, v) in classes.items():
+        if v == idx:
+            return k
+    return inf
+
+
+@Phylanx
+def random_forest(train, max_depth, min_sz, sample_sz, n_trees):
+    cls = unique(train[:, -1])
+    classes = dict()
+    for c in range(cls.shape[0]):
+        classes[int64(cls[c])] = c
+
+    n_features = int64(floor(sqrt(dataset.shape[0])))
+    trees = list(
+        map(lambda i:
+            build_tree(
+                subsample(train, sample_sz),
+                max_depth,
+                min_sz,
+                n_features,
+                classes
+            ),
+            range(n_trees))
+    )
+
+    # parallel
+    #
+    # trees =
+    # list(map(lambda i:
+    # build_tree(subsample(train, sample_sz)
+    # , max_depth, min_sz, n_features)
+    # , prange(n_trees)))
+    #
+    return {'trees': trees, 'classes': classes}
+
+
+def predict(randomforest, test):
+    trees, classes = randomforest['trees'], randomforest['classes']
+    predictions = list(
+        map(lambda row:
+            bagging_predict(
+                trees,
+                test[row, :],
+                classes),
+            range(len(test)))
+    )
+
+    return predictions
+
 
 if __name__ == "__main__":
+    file_name = "../datasets/breast_cancer.csv"
+    dataset = genfromtxt(file_name, skip_header=1, delimiter=",")
+    max_depth = 10
+    min_size = 1
+    sample_size = 1.0
+    n_trees = [1, 5, 10]
+    train = int64(dataset.shape[0] / 2)
+    trees = random_forest(
+        dataset[:train, :],
+        max_depth,
+        min_size,
+        sample_size,
+        n_trees[1]
+    )
+    #print('predict')
+    #predict = predict(trees, dataset[train:, :])
+    print(predict)
