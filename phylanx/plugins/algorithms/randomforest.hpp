@@ -24,9 +24,9 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class randomforest
+    class randomforest_fit
       : public primitive_component_base
-      , public std::enable_shared_from_this<randomforest>
+      , public std::enable_shared_from_this<randomforest_fit>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         static match_pattern_type const match_data;
 
-        randomforest() = default;
+        randomforest_fit() = default;
 
         ///
         /// Creates a primitive executing the RandomForest algorithm on 
@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         /// \param args Is a (possibly empty) list of any values to be
         ///             concatenated into a PhySL list in order.
         ///
-        randomforest(primitive_arguments_type&& operands,
+        randomforest_fit(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
@@ -54,17 +54,60 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
     protected:
-        primitive_argument_type calculate_randomforest(
+        primitive_argument_type calculate(
             primitive_arguments_type&& args) const;
     };
 
-    inline primitive create_randomforest(hpx::id_type const& locality,
+    inline primitive create_randomforest_fit(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "randomforest", std::move(operands), name, codename);
+            locality, "randomforest_fit", std::move(operands), name, codename);
     }
+
+    class randomforest_predict
+      : public primitive_component_base
+      , public std::enable_shared_from_this<randomforest_predict>
+    {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
+
+    public:
+        static match_pattern_type const match_data;
+
+        randomforest_predict() = default;
+
+        ///
+        /// Creates a primitive executing the RandomForest algorithm on 
+        /// the given input data
+        ///
+        /// \param args Is a (possibly empty) list of any values to be
+        ///             concatenated into a PhySL list in order.
+        ///
+        randomforest_predict(primitive_arguments_type&& operands,
+            std::string const& name, std::string const& codename);
+
+        hpx::future<primitive_argument_type> eval(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
+
+    protected:
+        primitive_argument_type calculate(
+            primitive_arguments_type&& args) const;
+    };
+
+    inline primitive create_randomforest_predict(hpx::id_type const& locality,
+        primitive_arguments_type&& operands,
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "randomforest_predict", std::move(operands), name, codename);
+    }
+
 }}}
 
 #endif
