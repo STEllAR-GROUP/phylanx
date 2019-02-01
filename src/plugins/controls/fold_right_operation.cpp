@@ -28,35 +28,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"fold_right(_1, _2, _3)"},
             &create_fold_right_operation,
             &create_primitive<fold_right_operation>,
-            "fun, ini, range\n"
-            "\n"
-            "Args:\n"
-            "\n"
-            "    fun (function) : a function that takes a two float arguments\n"
-            "                     and returns a float argument\n"
-            "    ini (float) : an initial value\n"
-            "    range (iterator) : a list or iterator\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "    This function is equivalent to the Python code:\n"
-            "\n"
-            "  def fr(f, i, r):\n"
-            "      c = i\n"
-            "      for n in r:\n"
-            "          c = f(n, c)\n"
-            "      return c\n"
-            "\n"
-            "Example(s):\n"
-            "\n"
-            "  @Phylanx\n"
-            "  def foo():\n"
-            "      v = fold_right(lambda a, b : 2 * a - b, 3, [1, 2, 3])\n"
-            "      print(v)\n"
-            "  foo()\n"
-            "\n"
-            "Result:\n"
-            "  1"
+            R"(fun, ini, range
+
+            Args:
+
+                fun (function) : a function that takes a two float arguments
+                                 and returns a float argument
+                ini (float) : an initial value
+                range (iterator) : a list or iterator
+
+            Returns:
+
+                This function is equivalent to the Python code:
+
+              def fr(f, i, r):
+                  c = i
+                  for n in r:
+                      c = f(n, c)
+                  return c
+
+            Example(s):
+
+              @Phylanx
+              def foo():
+                  v = fold_right(lambda a, b : 2 * a - b, 3, [1, 2, 3])
+                  print(v)
+              foo()
+
+            Result:
+              1)"
             )
     };
 

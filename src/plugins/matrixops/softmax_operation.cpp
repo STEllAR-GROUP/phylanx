@@ -35,19 +35,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("softmax",
         std::vector<std::string>{"softmax(_1)","softmax(_1,_2)"},
         &create_softmax_operation, &create_primitive<softmax_operation>,
-        "a, axis\n"
-        "Args:\n"
-        "\n"
-        "    a (array_like) : input array\n"
-        "    axis (optional, integer): an axis to softmax along. The\n"
-        "        default is the last axis (axis == -1) of an array. Axis\n"
-        "        is effective for >1d arrays.\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "Returns an array of the same shape which is the normalized exponential\n"
-        "function of the given array.  The resulting array consists of real\n"
-        "values in the range (0..1], which add up to 1 in direction of the given axis")
+        R"(a, axis
+        Args:
+
+            a (array_like) : input array
+            axis (optional, integer): an axis to softmax along. The
+                default is the last axis (axis == -1) of an array. Axis
+                is effective for >1d arrays.
+
+        Returns:
+
+        Returns an array of the same shape which is the normalized exponential
+        function of the given array.  The resulting array consists of real
+        values in the range (0..1], which add up to 1 in direction of the given axis)")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -39,17 +39,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("flip",
         std::vector<std::string>{"flip(_1,_2)","flip(_1)"},
         &create_flip_operation, &create_primitive<flip_operation>,
-        "a, axes\n"
-        "Args:\n"
-        "\n"
-        "    a (array) : a scalar, a vector a matrix or a tensor\n"
-        "    axes (optional, integer or tuple of integers): an axis to flip "
-        "       over. The default, axis=None, will flip over all of the axes "
-        "       of the input array.\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "Reverses the order of elements in an array along the given axis")
+        R"(a, axes
+        Args:
+
+            a (array) : a scalar, a vector a matrix or a tensor
+            axes (optional, integer or tuple of integers): an axis to flip
+               over. The default, axis=None, will flip over all of the axes
+               of the input array.
+
+        Returns:
+
+        Reverses the order of elements in an array along the given axis)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
