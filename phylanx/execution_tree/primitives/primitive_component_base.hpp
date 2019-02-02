@@ -143,6 +143,11 @@ namespace phylanx { namespace execution_tree
 
 	    std::unique_ptr<phylanx::util::apex_direct_vs_nondirect_policy> 
 		direct_vs_nondirect_policy_instance;
+
+	/*public:
+	    std::int64_t get_eval_count_public(bool reset) const;
+            std::int64_t get_eval_duration_public(bool reset) const;*/
+ 
 #endif
 #endif
         };

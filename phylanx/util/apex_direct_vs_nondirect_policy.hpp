@@ -11,6 +11,8 @@
 #include <hpx/runtime/startup_function.hpp>
 #include <hpx/runtime/config_entry.hpp>
 #include <hpx/util/thread_description.hpp>
+//#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+
 #include <iostream>
 
 #ifdef HPX_HAVE_APEX
@@ -22,6 +24,15 @@
 #include <string>
 #include <stdio.h>
 #endif
+/*
+namespace phylanx { namespace execution_tree
+{
+    namespace primitives
+    {
+	 struct primitive_component_base;
+    }
+}
+}*/    
 
 namespace phylanx { namespace util
 {
@@ -33,6 +44,8 @@ namespace phylanx { namespace util
         //std::shared_ptr<apex_policy_handle> policy_handle_sample_counter;
         //std::shared_ptr<apex_tuning_request> request;
         apex_policy_handle* policy_handle_sample_counter;
+        //phylanx::execution_tree::primitives::primitive_component_base* primitive_class_handle_;
+
         apex_tuning_request* request;
         int tuning_window;
         //int send_count;
@@ -50,23 +63,27 @@ namespace phylanx { namespace util
         //PHYLANX_API_EXPORT apex_direct_vs_nondirect_policy* instance;
         PHYLANX_API_EXPORT apex_event_type custom_direct_vs_nondirect_event;
 
+        std::int64_t* eval_count_;
+        std::int64_t eval_duration_;
+
+
         std::mutex params_mutex;
         std::mutex count_mutex;
         std::mutex policy_mutex;
-  
+
 	void set_direct_vs_nondirect_params()
         {
             std::shared_ptr<apex_param_long> chunk_threshold_param =
                 std::static_pointer_cast<apex_param_long>(
                     request->get_param("chunk_threshold" + primitive_name_));
 
-            std::shared_ptr<apex_param_long> chunk_hysteresis_param =
+            /*std::shared_ptr<apex_param_long> chunk_hysteresis_param =
                 std::static_pointer_cast<apex_param_long>(
-                    request->get_param("chunk_hysteresis" + primitive_name_));
+                    request->get_param("chunk_hysteresis" + primitive_name_)); */
 
 
             const int chunk_threshold = chunk_threshold_param->get_value();
-            const int chunk_hysteresis = chunk_hysteresis_param->get_value();
+            //const int chunk_hysteresis = chunk_hysteresis_param->get_value();
 
             /*apex::sample_value(
                 "hpx.plugins.coalescing_message_handler.num_messages",
@@ -76,17 +93,17 @@ namespace phylanx { namespace util
 
             std::cout << primitive_name_ + " policy is setting threshold: " 
 		<< chunk_threshold << " hysteresis: "
-		 << chunk_hysteresis << "\n";
+		 /*<< chunk_hysteresis */ << "\n";
 
             hpx::set_config_entry(
                 "phylanx.exec_time_threshold" + primitive_name_,
                 chunk_threshold);
 
-            hpx::set_config_entry(
+            /*px::set_config_entry(
                 "phylanx.exec_time_hysteresis" + primitive_name_,
-                chunk_hysteresis);
+                chunk_hysteresis); */
  
-        }
+       }
 
         int direct_policy(const apex_context context)
         {
@@ -94,12 +111,12 @@ namespace phylanx { namespace util
             	apex::custom_event(request->get_trigger(), NULL);
                 this->set_direct_vs_nondirect_params();
             }
-            else {
+            //else {
  		//apex::deregister_policy(policy_handle);
  		//std::cout << "As session is converged for: " + primitive_name_
 			//+ " , policy is deregistered\n"; 
 
-	    }
+	    //}
             return APEX_NOERROR;
         }
 
@@ -123,10 +140,15 @@ namespace phylanx { namespace util
              return event_type;
         }
 
-        apex_direct_vs_nondirect_policy(std::string primitive_name)
+        apex_direct_vs_nondirect_policy(std::string primitive_name,
+		std::int64_t& eval_count
+		) 
+		//phylanx::execution_tree::primitives::primitive_component_base* primitive_class_handle)
           : tuning_window(1)
           , policy_name_(primitive_name + "_policy")
           , primitive_name_(primitive_name)
+	  , eval_count_ (&eval_count)
+          //, primitive_class_handle_(primitive_class_handle)
         {
 
 	    phylanx::execution_tree::compiler::primitive_name_parts primitive_name_parts = 
@@ -135,6 +157,7 @@ namespace phylanx { namespace util
 
 	    std::cout << "primitive name: " << primitive_name_parts.primitive << std::endl;
 	    std::cout << "Instance Number: " << primitive_name_parts.sequence_number << std::endl;
+	    std::cout << "Eval count: " << *eval_count_ << std::endl;
 
             std::stringstream ss_time, ss_count;
 
@@ -170,19 +193,27 @@ namespace phylanx { namespace util
  	    
             	/*for (std::size_t i = 0; i != time_values.values_.size(); ++i)
             	{
-                	//std::cout << "Time values: " << time_values.values_[i] << std::endl; 
-	    	}*/ 
+                	std::cout << "Time values: " << time_values.values_[i] << std::endl; 
+	    	}*/
 		
 		double count_times = count_values.values_[primitive_instance_number_];
 		double result = 0;
 
 		if ( count_times > 0 ) 
                 	result = time_values.values_[primitive_instance_number_] / 
-				count_values.values_[primitive_instance_number_];
+				count_times;
 		else 
 			result = 0;
 
-                std::cout << primitive_name_ + " Counter current Value for: " << result << "\n";
+		//if ( primitive_class_handle_->get_eval_count_public(false) > 0 )
+		//	std::cout << " no problem" << std::endl;
+	          	//std::int64_t exec_time = (primitive_class_handle_->eval_duration_ / 
+			//	primitive_class_handle_->eval_count_);
+
+                std::cout << primitive_name_ + " Counter current Value for: " << result << 
+			" time: " << time_values.values_[primitive_instance_number_]  << " count: "
+				<< count_times << "\n";
+                std::cout << " Eval count: " << *eval_count_ << std::endl; 
                 return result;
             };
 
@@ -191,7 +222,7 @@ namespace phylanx { namespace util
             request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
             //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
             request->add_param_long("chunk_threshold" + primitive_name_, 100000, 100000, 1000000, 100000);
-            request->add_param_long("chunk_hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
+            //request->add_param_long("chunk_hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
             tuning_session_handle = apex::setup_custom_tuning(*request);
 
@@ -206,7 +237,7 @@ namespace phylanx { namespace util
 		apex::register_custom_event("APEX direct vs nondirect event"));
             policy_handle = apex::register_policy(
 		custom_direct_vs_nondirect_event, 
-		[&](const apex_context context) -> int{
+		[=](const apex_context context) -> int{
 			return this->direct_policy(context);
 			});
 
