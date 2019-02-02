@@ -64,7 +64,7 @@ namespace phylanx { namespace util
         PHYLANX_API_EXPORT apex_event_type custom_direct_vs_nondirect_event;
 
         std::int64_t* eval_count_;
-        std::int64_t eval_duration_;
+        std::int64_t* eval_duration_;
 
 
         std::mutex params_mutex;
@@ -75,11 +75,11 @@ namespace phylanx { namespace util
         {
             std::shared_ptr<apex_param_long> chunk_threshold_param =
                 std::static_pointer_cast<apex_param_long>(
-                    request->get_param("chunk_threshold" + primitive_name_));
+                    request->get_param("threshold" + primitive_name_));
 
             /*std::shared_ptr<apex_param_long> chunk_hysteresis_param =
                 std::static_pointer_cast<apex_param_long>(
-                    request->get_param("chunk_hysteresis" + primitive_name_)); */
+                    request->get_param("hysteresis" + primitive_name_)); */
 
 
             const int chunk_threshold = chunk_threshold_param->get_value();
@@ -140,14 +140,16 @@ namespace phylanx { namespace util
              return event_type;
         }
 
-        apex_direct_vs_nondirect_policy(std::string primitive_name,
-		std::int64_t& eval_count
+        apex_direct_vs_nondirect_policy(std::string primitive_name
+		, std::int64_t& eval_count
+		, std::int64_t& eval_duration
 		) 
 		//phylanx::execution_tree::primitives::primitive_component_base* primitive_class_handle)
           : tuning_window(1)
           , policy_name_(primitive_name + "_policy")
           , primitive_name_(primitive_name)
 	  , eval_count_ (&eval_count)
+	  , eval_duration_ (&eval_duration)
           //, primitive_class_handle_(primitive_class_handle)
         {
 
@@ -174,55 +176,27 @@ namespace phylanx { namespace util
 	    primitive_instance_number_ = primitive_name_parts.sequence_number;
 
             std::function<double(void)> metric = [=]() -> double {
-		
-           	std::string const time_pc_name(counter_name_time_);
-	    	hpx::performance_counters::performance_counter time_pc(
-			time_pc_name);
 
-                std::string const count_pc_name(counter_name_count_);
-                hpx::performance_counters::performance_counter count_pc(
-          	      count_pc_name);
-
- 
-            	auto time_values =
-                	time_pc.get_counter_values_array(hpx::launch::sync, false); 
-
-            	auto count_values =
-                	count_pc.get_counter_values_array(hpx::launch::sync, false); 
-
- 	    
-            	/*for (std::size_t i = 0; i != time_values.values_.size(); ++i)
-            	{
-                	std::cout << "Time values: " << time_values.values_[i] << std::endl; 
-	    	}*/
-		
-		double count_times = count_values.values_[primitive_instance_number_];
-		double result = 0;
-
-		if ( count_times > 0 ) 
-                	result = time_values.values_[primitive_instance_number_] / 
-				count_times;
+		double result = 0;		
+        	if ( *eval_count_ > 0 ) 
+                	result = *eval_duration_ / 
+				*eval_count_;
 		else 
 			result = 0;
 
-		//if ( primitive_class_handle_->get_eval_count_public(false) > 0 )
-		//	std::cout << " no problem" << std::endl;
-	          	//std::int64_t exec_time = (primitive_class_handle_->eval_duration_ / 
-			//	primitive_class_handle_->eval_count_);
-
                 std::cout << primitive_name_ + " Counter current Value for: " << result << 
-			" time: " << time_values.values_[primitive_instance_number_]  << " count: "
-				<< count_times << "\n";
-                std::cout << " Eval count: " << *eval_count_ << std::endl; 
-                return result;
+			" time: " << *eval_duration_  << " count: "
+				<< *eval_count_ << "\n";
+
+            return result;
             };
 
             request = new apex_tuning_request(policy_name_);
             request->set_metric(metric);
-            request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
-            //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
-            request->add_param_long("chunk_threshold" + primitive_name_, 100000, 100000, 1000000, 100000);
-            //request->add_param_long("chunk_hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
+            //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
+            request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
+            request->add_param_long("threshold" + primitive_name_, 100000, 100000, 1000000, 100000);
+            //request->add_param_long("hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
             tuning_session_handle = apex::setup_custom_tuning(*request);
 

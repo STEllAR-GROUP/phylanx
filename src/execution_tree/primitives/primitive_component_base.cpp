@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
 		std::cout << name_ << " " << codename << std::endl;
         	direct_vs_nondirect_policy_instance = 
-			std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>				   (name_, eval_count_);
+			std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>				   (name_, eval_count_, eval_duration_);
 	}
 
 #endif    
