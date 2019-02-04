@@ -2480,8 +2480,8 @@ namespace phylanx { namespace execution_tree
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8:                     // phylanx::ir::dictionary
+        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        case 7:                     // phylanx::ir::range
             return true;
 
         default:
@@ -2572,9 +2572,9 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_numeric_value_size",
+            "phylanx::execution_tree::extract_list_value_size",
             util::generate_error_message(
-                "primitive_argument_type does not hold a numeric "
+                "primitive_argument_type does not hold a list "
                     "value type (type held: '" + type + "')",
                 name, codename));
     }
