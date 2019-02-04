@@ -1,5 +1,5 @@
-// Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Bita Hasheminezhad
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
     test_flip_operation("flip([13., 42., 33.], 0)", "hstack(33., 42., 13.)");
     test_flip_operation("flip([13., 42., 33.]+0, 0)", "hstack(33., 42., 13.)");
     test_flip_operation("flip([13., 42., 33.], -1)", "hstack(33., 42., 13.)");
+    test_flip_operation("flipud([13, 42, 33])", "[33, 42, 13]");
 
     test_flip_operation("flip([[13, 42, 33],[101, 12, 65]])",
         "[[ 65,  12, 101], [ 33,  42,  13]]");
@@ -60,6 +61,10 @@ int main(int argc, char* argv[])
         "[[ 65,  12, 101], [ 33,  42,  13]]");
     test_flip_operation("flip([[13, 42, 33],[101, 12, 65]]+0, make_list(1,0))",
         "[[ 65,  12, 101], [ 33,  42,  13]]");
+    test_flip_operation("flipud([[13, 42, 33],[101, 12, 65]])",
+        "[[101,  12,  65],[ 13,  42,  33]]");
+    test_flip_operation("fliplr([[13, 42, 33],[101, 12, 65]])",
+        "[[ 33,  42,  13],[ 65,  12, 101]]");
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_flip_operation(
@@ -101,6 +106,12 @@ int main(int argc, char* argv[])
     test_flip_operation(
         "flip([[[13., 42., 33.],[101., 12., 65.]]], make_list(-3,-2,-1))",
         "[[[ 65.,  12., 101.], [ 33.,  42.,  13.]]]");
+    test_flip_operation(
+        "flipud([[[13, 42, 33],[101, 12, 65]],[[3, 4, 31],[10, 2, 5]]])",
+        "[[[ 3,  4,  31],[ 10,  2,  5]],[[ 13,  42,  33],[101,  12,  65]]]");
+    test_flip_operation(
+        "fliplr([[[13, 42, 33],[101, 12, 65]],[[3, 4, 31],[10, 2, 5]]])",
+        "[[[101,  12,  65],[ 13,  42,  33]],[[ 10,  2,  5],[ 3,  4,  31]]]");
 #endif
 
     return hpx::util::report_errors();
