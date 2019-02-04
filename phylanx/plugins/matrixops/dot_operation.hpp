@@ -164,7 +164,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 #endif
 
-        primitive_argument_type tensordot_int_axis(
+        primitive_argument_type contraction2d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        primitive_argument_type contraction_nd(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type contraction2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type contraction2d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type contraction2d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+        primitive_argument_type contraction3d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type contraction3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type contraction3d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type contraction3d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+#endif
+
+        primitive_argument_type tensordot_scalar_axis(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs,
+            ir::range&& axes) const;
+        primitive_argument_type tensordot_range_axes(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs,
             ir::range&& axes) const;
 

@@ -41,7 +41,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Returns:
 
-            Computes the outer product of two arrays.)"},
+            Computes the outer product of two arrays. Always returns a matrix)"},
+
         match_pattern_type{"dot", std::vector<std::string>{"dot(_1, _2)"},
             &create_dot_operation, &create_primitive<dot_operation>, R"(
             a, b
@@ -54,6 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             The dot product of two arrays: `a` and `b`. The dot product of an
             N-D array and an M-D array is of dimension N+M-2)"},
+
         match_pattern_type{"tensordot",
             std::vector<std::string>{
                 "tensordot(_1, _2)", "tensordot(_1, _2,_3)"},
@@ -63,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 a (array) : a vector, matrix or a tensor
                 b (array) : a vector, matrix or a tensor
-                axes(optional, integer or tuple of integers): if an int N, sum
+                axes(optional, integer or tuple of integers): if a scalar N, sum
                     over the last N axes of a and the first N axes of b in
                     order. The sizes of the corresponding axes must match.
 
@@ -541,7 +543,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for (std::size_t i = 0; i != m.rows(); ++i)
         {
             auto slice = blaze::rowslice(result, i);
-            slice = blaze::trans(blaze::outer(v, blaze::row(m, i)));
+            //slice = blaze::trans(blaze::outer(v, blaze::row(m, i)));
+            slice = blaze::outer(blaze::row(m, i), v);
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -638,6 +641,146 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "dot_operation::outer3d",
                 generate_error_message(
                     "the result has >3 dimensions which is not supported"));
+        }
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type dot_operation::contraction2d2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(0) != rhs.dimension(0) ||
+            lhs.dimension(1) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction2d2d",
+                generate_error_message("shape-mismatch for sum"));
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction2d2d",
+            generate_error_message(" ravel "));
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type dot_operation::contraction2d3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(0) != rhs.dimension(0) ||
+            lhs.dimension(1) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction2d3d",
+                generate_error_message("shape-mismatch for sum"));
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction2d3d",
+            generate_error_message(" depends on  contraction2d2d "));
+        auto t = rhs.tensor();
+        blaze::DynamicVector<T> result(t.columns());
+        for (std::size_t i = 0; i != t.columns(); ++i)
+        {
+            auto slice = blaze::columnslice(t, i);
+            //result[i] = contraction2d2d(slice, lhs.matrix());
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+#endif
+
+    template <typename T>
+    primitive_argument_type dot_operation::contraction2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 2:
+            // If is_matrix(lhs) && is_matrix(rhs) -> a scalar
+            return contraction2d2d(std::move(lhs), std::move(rhs));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            // If is_matrix(lhs) && is_tensor(rhs) -> a vector
+            return contraction2d3d(std::move(lhs), std::move(rhs));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction2d",
+                generate_error_message("the left operand has >3 dimensions "
+                                       "which is not supported"));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type dot_operation::contraction3d2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(1) != rhs.dimension(0) ||
+            lhs.dimension(2) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction3d2d",
+                generate_error_message("shape-mismatch for sum"));
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction3d2d",
+            generate_error_message(" depends on contraction2d2d "));
+        auto t = lhs.tensor();
+        blaze::DynamicVector<T> result(t.pages());
+        for (std::size_t i = 0; i != t.pages(); ++i)
+        {
+            auto slice = blaze::pageslice(t, i);
+            //result[i] = contraction2d2d(slice, rhs.matrix());
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+
+    template <typename T>
+    primitive_argument_type dot_operation::contraction3d3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(0) != rhs.dimension(0) ||
+            lhs.dimension(1) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction3d3d",
+                generate_error_message("shape-mismatch for sum"));
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction3d3d",
+            generate_error_message("  "));
+
+    }
+
+
+    template <typename T>
+    primitive_argument_type dot_operation::contraction3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 2:
+            // If is_tensor(lhs) && is_matrix(rhs) -> a vector
+            return contraction3d2d(std::move(lhs), std::move(rhs));
+
+        case 3:
+            // If is_tensor(lhs) && is_tensor(rhs) -> a matrix
+            return contraction3d3d(std::move(lhs), std::move(rhs));
+
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction3d",
+                generate_error_message("the left operand has >3 dimensions "
+                                       "which is not supported"));
         }
     }
 #endif
@@ -839,6 +982,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type dot_operation::outer3d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
     {
@@ -871,6 +1015,76 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dot_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
+#endif
+
+    primitive_argument_type dot_operation::contraction2d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return contraction2d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return contraction2d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return contraction2d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction2d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    primitive_argument_type dot_operation::contraction3d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return contraction3d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return contraction3d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return contraction3d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction3d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type dot_operation::dot_nd(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
@@ -940,8 +1154,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                    "number of dimensions"));
     }
 
+    primitive_argument_type dot_operation::contraction_nd(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_numeric_value_dimension(lhs, name_, codename_))
+        {
+
+        case 2:
+            return contraction2d(std::move(lhs), std::move(rhs));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return contraction3d(std::move(lhs), std::move(rhs));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction_nd",
+                generate_error_message("left hand side operand has unsupported "
+                                       "number of dimensions"));
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type dot_operation::tensordot_int_axis(
+    primitive_argument_type dot_operation::tensordot_scalar_axis(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs,
         ir::range&& axes) const
     {
@@ -951,10 +1186,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (extract_numeric_value_dimension(lhs) < axis ||
             extract_numeric_value_dimension(rhs) < axis)
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::tensordot_int_axis",
+                "dot_operation::tensordot_scalar_axis",
                 generate_error_message(
                     "the given axes should not be "
-                    "larger than any of operands dimensions"));
+                    "greater than any of operands dimensions"));
         else
         {
             switch (axis)
@@ -965,15 +1200,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 1:
                 return dot_nd(std::move(lhs), std::move(rhs));
 
-            //case 2:
+            case 2:
+                return contraction_nd(std::move(lhs), std::move(rhs));
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dot_operation::tensordot_int_axis",
-                    generate_error_message("the given axes is out of range. An "
-                                           "integer axis should be <3"));
+                    "dot_operation::tensordot_scalar_axis",
+                    generate_error_message("the given axes is out of range. A "
+                                           "scalar axis should be <3"));
             }
         }
+    }
+
+    primitive_argument_type dot_operation::tensordot_range_axes(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs,
+        ir::range&& axes) const
+    {
+        auto it = axes.begin();
+        auto axes_a_size = extract_list_value_size(*it);
+        auto axes_b_size = extract_list_value_size(*++it);
+        if (axes_a_size == 1 && axes_b_size == 1)
+        {
+            auto axis_b = extract_scalar_integer_value(*it);
+            auto axis_a = extract_scalar_integer_value(*axes.begin());
+            std::cout << axis_a << std::endl;
+            std::cout << axis_b << std::endl;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::tensordot_range_axes",
+            generate_error_message("other cases"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1017,9 +1272,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->dot_nd(std::move(op1), std::move(op2));
 
                 else if (this_->mode_ == doubledot_product)
-                {
-                    //axes 2
-                }
+
+                    return this_->contraction_nd(
+                        std::move(op1), std::move(op2));
+
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "dot_operation::eval",
                     this_->generate_error_message(
@@ -1046,13 +1302,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (axes.size())
                     {
                     case 1:
-                        return this_->tensordot_int_axis(
+                        return this_->tensordot_scalar_axis(
                             std::move(op1), std::move(op2), std::move(axes));
 
                     case 2:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dot_operation::eval",
-                            this_->generate_error_message("case 2"));
+                        return this_->tensordot_range_axes(
+                            std::move(op1), std::move(op2), std::move(axes));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

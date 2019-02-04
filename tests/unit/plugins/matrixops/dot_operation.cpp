@@ -749,6 +749,39 @@ void test_dot_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
+    // outer product
+    //test_dot_operation("outer(6., 7.)", "[[42.]]");
+    //test_dot_operation("outer(6., [1, 2, 7])", "[[6., 12., 42.]]");
+    //test_dot_operation("outer(3., [[1, 2, 7]])", "[[3., 6., 21.]]");
+    //test_dot_operation("outer([0, 7, 1], 6)", "[[ 0], [42], [ 6]]");
+    test_dot_operation("outer([1, 2, 3], [4, 5, 6, 7])",
+        "[[ 4,  5,  6,  7],[ 8, 10, 12, 14],[12, 15, 18, 21]]");
+    //test_dot_operation("outer([1, 2, 3], [[42, 1, 1],[4, 5, 6]])",
+    //    "[[ 42,   1,   1,   4,   5,   6],[ 84,   2,   2,   8,  10,  12],"
+    //    "[126,   3,   3,  12,  15,  18]]");
+    //test_dot_operation("outer([[1,1],[2,3]], 3)", "[[3],[3],[6],[9]");
+    //test_dot_operation("outer([[1, 1],[2, 3]], [1, 4, 5])",
+    //    "[[ 1,  4,  5],[ 1,  4,  5],[ 2,  8, 10],[ 3, 12, 15]]");
+    //test_dot_operation("outer([[1, 1],[2, 3]], [[1, 4, 5]])",
+    //    "[[ 1,  4,  5],[ 1,  4,  5],[ 2,  8, 10],[ 3, 12, 15]]");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    //test_dot_operation("outer(3, [[[1,2],[2,3]]])", "[[3, 6, 6, 9]]");
+    //test_dot_operation("outer([1, 2, 3], [[[42, 1]],[[4, 5]]])",
+    //    "[[ 42,   1,   4,   5], [ 84,   2,   8,  10], [126,   3,  12,  15]]");
+    //test_dot_operation("outer([[1, 2],[4, 3]], [[[42, 1]],[[4, 5]]])",
+    //    "[[ 42,   1,   4,   5], [ 84,   2,   8,  10], [168,   4,  16,  20], "
+    //    "[126,  3,  12,  15]]");
+    //test_dot_operation("outer([[[-1, 6],[1, 3]]], [[[0, 7]],[[2, 3]]])",
+    //    "[[ 0, -7, -2, -3],[ 0, 42, 12, 18],[ 0, 7, 2, 3],[ 0, 21, 6, 9]]");
+    //test_dot_operation("outer([[[-1, 6],[1, 3]]], 7)", "[[-7],[42],[ 7],[21]]");
+    //test_dot_operation("outer([[[-1, 6],[1, 3]]], [0, 2, 7])",
+    //    "[[ 0, -2, -7],[ 0, 12, 42],[ 0,  2,  7],[ 0,  6, 21]]");
+    //test_dot_operation("outer([[[-1, 6],[1, 3]]], [[0, 2],[4, 7]])",
+    //    "[[ 0, -2, -4, -7],[ 0, 12, 24, 42],[ 0, 2, 4, 7],[ 0,  6, 12, 21]]");
+#endif
+
+    // dot product
     test_dot_operation_0d();
     test_dot_operation_0d_lit();
     test_dot_operation_0d1d();
@@ -798,19 +831,17 @@ int main(int argc, char* argv[])
     test_dot_operation("dot([[[3, 2, 5], [1, 10, 2], [3, 2, 15], [1, 11, 2]]],"
                        "[[1, -1],[1, 0],[2, 1]])",
         "[[[15,  2],[15,  1],[35, 12],[16,  1]]]");
-
-    test_dot_operation("tensordot([[[1, 2],[3, 4]],[[5, 6],[7, 8]]],[[1,-1],"
-                       "[1, 1]],1)",
-        "[[[ 3,  1],[ 7,  1]],[[11,  1],[15,  1]]]"); //the same as dot product
 #endif
 
+    // tensordot
+    //// axes = 0 (scalar axes)
     test_dot_operation("tensordot(6., 7., 0)", "42.");
     test_dot_operation("tensordot(6., [1, 2, 7], 0)", "[6., 12., 42.]");
     test_dot_operation("tensordot(3., [[1, 2, 7]], 0)", "[[3., 6., 21.]]");
     test_dot_operation("tensordot([0, 7, 1], 6, 0)", "[0, 42, 6]");
     test_dot_operation("tensordot([1, 2, 3], [4, 5, 6, 7], 0)",
         "[[ 4,  5,  6,  7],[ 8, 10, 12, 14],[12, 15, 18, 21]]");
-
+    test_dot_operation("tensordot([[1,1],[2,3]], 3, 0)", "[[3, 3],[6, 9]]");
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation(
@@ -821,6 +852,21 @@ int main(int argc, char* argv[])
     test_dot_operation("tensordot([[[1,2],[2,3]]], 3, 0)", "[[[3, 6],[6, 9]]]");
     test_dot_operation("tensordot([[42, 1, 1],[4, 5, 6]], [1, 2], 0)",
         "[[[42, 84],[ 1,  2],[ 1,  2]],[[ 4,  8],[ 5, 10],[ 6, 12]]]");
+
+
+#endif
+
+    //// axes = 1 (scalar axes), same as dot product but does not deal with <1d
+    test_dot_operation(
+        "tensordot([1, 2, 3], [[42, 1],[4, 5],[0, 6]], 1)", "[50, 29]");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_dot_operation("tensordot([[[1, 2],[3, 4]],[[5, 6],[7, 8]]],[[1,-1],"
+                       "[1, 1]], 1)",
+        "[[[ 3,  1],[ 7,  1]],[[11,  1],[15,  1]]]");
+    test_dot_operation(
+        "tensordot([[[3, 2, 5], [1, 10, 2], [3, 42, 15], [1, 11, 2]]],"
+        "[1, 0, 2], 1)", "[[13,  5, 33,  5]]");
 #endif
     return hpx::util::report_errors();
 }
