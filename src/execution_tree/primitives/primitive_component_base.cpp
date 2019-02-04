@@ -65,7 +65,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
 		std::cout << name_ << " " << codename << std::endl;
         	direct_vs_nondirect_policy_instance = 
-			std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>				   (name_, eval_count_, eval_duration_);
+			std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>				   (name_, eval_count_, eval_duration_
+			, exec_threshold_, execute_directly_);
 	}
 
 #endif    
@@ -305,31 +306,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::int64_t primitive_component_base::get_exec_threshold() const
     {
     
-        std::int64_t exec_threshold =
+        /*std::int64_t exec_threshold =
             std::stol(hpx::get_config_entry(
-                "phylanx.exec_time_threshold" + name_,"400000"));
+                "phylanx.exec_time_threshold" + name_,"400000")); */
 #if defined(__POWERPC__) && defined(__clang_version__)
-        exec_threshold = 0;
+        exec_threshold_ = 0;
 #endif
  
-	std::cout << name_ + " threshold: " << exec_threshold << std::endl;
-        return exec_threshold;
+	std::cout << name_ + " threshold: " << exec_threshold_ << std::endl;
+        return exec_threshold_;
 
     }
 
     std::int64_t primitive_component_base::get_exec_hysteresis() const
     {
     
-        std::int64_t exec_hysteresis =
+        /*std::int64_t exec_hysteresis =
             std::stol(hpx::get_config_entry(
-                "phylanx.exec_time_hysteresis" + name_,"150000"));
+                "phylanx.exec_time_hysteresis" + name_,"75000")); */
 
 #if defined(__POWERPC__) && defined(__clang_version__)
-        exec_hysteresis = 0;
+        exec_hysteresis_ = 0;
 #endif
  
-	std::cout << name_ + " hysteresis: " << exec_hysteresis << std::endl;
-        return exec_hysteresis;
+	//std::cout << name_ + " hysteresis: " << hysteresis_ << std::endl;
+        return exec_hysteresis_;
     }
 
 #endif

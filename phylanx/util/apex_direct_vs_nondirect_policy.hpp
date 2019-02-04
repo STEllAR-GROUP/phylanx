@@ -65,6 +65,9 @@ namespace phylanx { namespace util
 
         std::int64_t* eval_count_;
         std::int64_t* eval_duration_;
+        std::int64_t* exec_threshold_;
+        std::int64_t* execute_directly_;
+
 
 
         std::mutex params_mutex;
@@ -105,11 +108,24 @@ namespace phylanx { namespace util
  
        }
 
+	void set_direct_vs_nondirect_params_directly()
+        {
+            std::shared_ptr<apex_param_long> chunk_threshold_param =
+                std::static_pointer_cast<apex_param_long>(
+                    request->get_param("threshold" + primitive_name_));
+
+            *exec_threshold_ = chunk_threshold_param->get_value();
+
+            std::cout << primitive_name_ + " policy is setting threshold: " 
+		<< *exec_threshold_ << "\n";
+ 
+       }
+
         int direct_policy(const apex_context context)
         {
 	    if (!apex::has_session_converged(tuning_session_handle)){
             	apex::custom_event(request->get_trigger(), NULL);
-                this->set_direct_vs_nondirect_params();
+                this->set_direct_vs_nondirect_params_directly();
             }
             //else {
  		//apex::deregister_policy(policy_handle);
@@ -119,14 +135,6 @@ namespace phylanx { namespace util
 	    //}
             return APEX_NOERROR;
         }
-
-
-        /*int direct_policy(const apex_context context)
-        {
-
-            return APEX_NOERROR;
-	
-        }*/
 
 
         apex_event_type apex_direct_vs_nondirect_event(
@@ -143,6 +151,8 @@ namespace phylanx { namespace util
         apex_direct_vs_nondirect_policy(std::string primitive_name
 		, std::int64_t& eval_count
 		, std::int64_t& eval_duration
+		, std::int64_t& exec_threshold 
+		, std::int64_t& execute_directly 
 		) 
 		//phylanx::execution_tree::primitives::primitive_component_base* primitive_class_handle)
           : tuning_window(1)
@@ -150,6 +160,8 @@ namespace phylanx { namespace util
           , primitive_name_(primitive_name)
 	  , eval_count_ (&eval_count)
 	  , eval_duration_ (&eval_duration)
+	  , exec_threshold_ (&exec_threshold)
+	  , execute_directly_ (&execute_directly)
           //, primitive_class_handle_(primitive_class_handle)
         {
 
@@ -193,8 +205,8 @@ namespace phylanx { namespace util
 
             request = new apex_tuning_request(policy_name_);
             request->set_metric(metric);
-            //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
-            request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
+            request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
+            //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
             request->add_param_long("threshold" + primitive_name_, 100000, 100000, 1000000, 100000);
             //request->add_param_long("hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
