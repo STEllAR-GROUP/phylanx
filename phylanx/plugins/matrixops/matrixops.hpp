@@ -25,6 +25,7 @@
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
 #include <phylanx/plugins/matrixops/hsplit_operation.hpp>
 #include <phylanx/plugins/matrixops/identity.hpp>
+#include <phylanx/plugins/matrixops/insert.hpp>
 #include <phylanx/plugins/matrixops/inverse_operation.hpp>
 #include <phylanx/plugins/matrixops/linearmatrix.hpp>
 #include <phylanx/plugins/matrixops/linspace.hpp>

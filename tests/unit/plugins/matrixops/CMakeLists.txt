@@ -25,6 +25,7 @@ set(tests
     hsplit_operation
     hstack_operation
     identity
+    insert
     inverse_operation
     linearmatrix
     linspace
