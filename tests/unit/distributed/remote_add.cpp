@@ -28,19 +28,7 @@ std::string add_str = R"(
 )";
 
 std::string columnwise_tile_str = R"(
-    define(columnwise_tile, m, n, block(
-        define(dims, shape(m)),
-        define(cols, slice(dims, 1) / n),
-        fmap(
-            lambda(i,
-                slice(m,
-                    list(0, slice(dims, 0)),
-                    list(cols * i, cols * (i + 1))
-                )
-            ),
-            range(0, n)
-        )
-    ))
+    define(columnwise_tile, m, n, hsplit(m, n))
 )";
 
 std::string columnwise_merge_str = R"(

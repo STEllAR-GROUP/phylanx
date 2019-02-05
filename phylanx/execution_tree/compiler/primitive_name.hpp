@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,11 +19,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
 {
     // The full name of every component is patterned after
     //
-    // /phylanx/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag1>[$<tag2>]
+    /// /phylanx$<locality>/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag1>[$<tag2>]
     //
     //  where:
     //      <primitive>:   the name of primitive type representing the given
     //                     node in the expression tree
+    //      <locality>:    the locality-id of the HPX locality the primitive
+    //                     was created on
     //      <sequence-nr>: the sequence number of the corresponding instance
     //                     of type <primitive>
     //      <instance>:    (optional), some primitives have additional instance

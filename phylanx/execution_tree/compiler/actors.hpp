@@ -354,6 +354,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
     ///////////////////////////////////////////////////////////////////////////
     struct entry_point
     {
+        entry_point() = default;        // needed for serialization
+
         entry_point(std::string const& name)
           : name_(name)
         {
@@ -377,7 +379,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 if (it == last)
                 {
                     return it->run(ctx);
-        }
+                }
                 it->run(ctx);
             }
             return primitive_argument_type{};
@@ -404,6 +406,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return code_.back().get_expression_topology(
                 std::move(functions), std::move(resolve_children));
         }
+
+        void serialize(hpx::serialization::input_archive& ar, unsigned);
+        void serialize(hpx::serialization::output_archive& ar, unsigned);
 
         std::string name_;      // the name of this entry point
         std::list<function> code_;  // the functions representing this
@@ -508,7 +513,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
         PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
             unsigned);
 
-        entry_points_type code_;
         std::map<std::string, std::list<function>> scratchpad_;
         std::list<compiler::entry_point> entrypoints_;
     };

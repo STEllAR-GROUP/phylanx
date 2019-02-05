@@ -45,6 +45,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     PHYLANX_EXPORT primitive create_debug_output(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
+
+    ///////////////////////////////////////////////////////////////////////////
+    extern match_pattern_type const locality_match_data;
+
+    hpx::future<primitive_argument_type> locality_id(
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context);
 }}}
 
 #endif

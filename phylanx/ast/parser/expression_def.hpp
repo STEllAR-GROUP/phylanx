@@ -164,7 +164,7 @@ namespace phylanx { namespace ast { namespace parser
         argument_list %= -(expr % ',');
 
         attribute %=
-                '{' > identifier_name > '}'
+                lexeme['{' > *(char_ - '}') > '}']
             |   attr(std::string{})
             ;
 

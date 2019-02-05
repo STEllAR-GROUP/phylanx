@@ -35,12 +35,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
     ///////////////////////////////////////////////////////////////////////////
     void program::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
-        ar & code_ & scratchpad_;
+        ar & scratchpad_ & entrypoints_;
     }
 
     void program::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
-        ar & code_ & scratchpad_;
+        ar & scratchpad_ & entrypoints_;
     }
 }}}
 

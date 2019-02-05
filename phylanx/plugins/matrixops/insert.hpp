@@ -14,6 +14,7 @@
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
+#include <hpx/util/optional.hpp>
 
 #include <cstddef>
 #include <cstdint>

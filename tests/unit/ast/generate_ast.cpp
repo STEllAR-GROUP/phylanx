@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
    );
 
    test_expression(
-       "\"string\\x20to\\x200unescape\\x3a\\x20\\n\\r\\t\\\"\\'\\x41\"",
+       R"("string\x20to\x200unescape\x3a\x20\n\r\t\"\'\x41")",
        "string to 0unescape\x3a \n\r\t\"\'\x41\n"
    );
 
