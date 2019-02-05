@@ -1,5 +1,5 @@
-// Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Bita Hasheminezhad
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -34,9 +34,33 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const flip_operation::match_data =
+    std::vector<match_pattern_type> const flip_operation::match_data =
     {
-        hpx::util::make_tuple("flip",
+        match_pattern_type{"flipud",
+        std::vector<std::string>{"flipud(_1)"},
+        &create_flip_operation, &create_primitive<flip_operation>,
+        R"(a
+        Args:
+
+            a (array) : a vector a matrix or a tensor
+
+        Returns:
+
+        Flip array in the up/down direction)"},
+
+        match_pattern_type{"fliplr",
+        std::vector<std::string>{"fliplr(_1)"},
+        &create_flip_operation, &create_primitive<flip_operation>,
+        R"(a
+        Args:
+
+            a (array) : a matrix or a tensor
+
+        Returns:
+
+        Flip array in the left/right direction)"},
+
+        match_pattern_type{"flip",
         std::vector<std::string>{"flip(_1,_2)","flip(_1)"},
         &create_flip_operation, &create_primitive<flip_operation>,
         R"(a, axes
@@ -49,15 +73,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         Returns:
 
-        Reverses the order of elements in an array along the given axis)")
+        Reverses the order of elements in an array along the given axes)"},
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    flip_operation::flip_mode extract_flip_mode(std::string const& name)
+    {
+        flip_operation::flip_mode result = flip_operation::flip_mode_axes;
+
+        if (name.find("flipud") != std::string::npos)
+        {
+            result = flip_operation::flip_mode_up_down;
+        }
+        else if (name.find("fliplr") != std::string::npos)
+        {
+            result = flip_operation::flip_mode_left_right;
+        }
+        return result;
+    }
+
     flip_operation::flip_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+        , mode_(extract_flip_mode(name_))
     {}
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type flip_operation::flip1d(ir::node_data<T>&& arg) const
     {
@@ -745,6 +786,140 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    primitive_argument_type flip_operation::flipnd_helper(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return flipnd(
+                extract_boolean_value(std::move(arg), name_, codename_));
+        case node_data_type_int64:
+            return flipnd(
+                extract_integer_value(std::move(arg), name_, codename_));
+        case node_data_type_double:
+            return flipnd(
+                extract_numeric_value(std::move(arg), name_, codename_));
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "flip::flipnd_helper",
+            generate_error_message(
+                "the flip primitive requires for all arguments "
+                "to be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type flip_operation::flipud(ir::node_data<T>&& arg) const
+    {
+        switch (arg.num_dimensions())
+        {
+        case 0:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::flipud",
+                generate_error_message("input array should be >= 1d"));
+
+        case 1:
+            return flip1d(std::move(arg));
+
+        case 2:
+            return flip2d_axis0(std::move(arg));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return flip3d_axis0(std::move(arg));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::flipud",
+                generate_error_message(
+                    "operand a has an invalid number of dimensions"));
+        }
+    }
+
+    primitive_argument_type flip_operation::flipud_helper(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return flipud(
+                extract_boolean_value(std::move(arg), name_, codename_));
+        case node_data_type_int64:
+            return flipud(
+                extract_integer_value(std::move(arg), name_, codename_));
+        case node_data_type_double:
+            return flipud(
+                extract_numeric_value(std::move(arg), name_, codename_));
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "flip::flipud_helper",
+            generate_error_message(
+                "the flip primitive requires for all arguments "
+                "to be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type flip_operation::fliplr(ir::node_data<T>&& arg) const
+    {
+        switch (arg.num_dimensions())
+        {
+        case 0:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::fliplr",
+                generate_error_message("input array should be >= 2d"));
+
+        case 1:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::fliplr",
+                generate_error_message("input array should be >= 2d"));
+
+        case 2:
+            return flip2d_axis1(std::move(arg));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return flip3d_axis1(std::move(arg));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "flip_operation::fliplr",
+                generate_error_message(
+                    "operand a has an invalid number of dimensions"));
+        }
+    }
+
+    primitive_argument_type flip_operation::fliplr_helper(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return fliplr(
+                extract_boolean_value(std::move(arg), name_, codename_));
+        case node_data_type_int64:
+            return fliplr(
+                extract_integer_value(std::move(arg), name_, codename_));
+        case node_data_type_double:
+            return fliplr(
+                extract_numeric_value(std::move(arg), name_, codename_));
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "flip::fliplr_helper",
+            generate_error_message(
+                "the flip primitive requires for all arguments "
+                "to be numeric data types"));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> flip_operation::eval(
         primitive_arguments_type const& operands,
@@ -771,6 +946,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 2 && valid(operands[1]))
         {
+            if (this_->mode_ == flip_mode_up_down ||
+                this_->mode_ == flip_mode_left_right)
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "flip::eval",
+                    this_->generate_error_message(
+                        "the flip operation in up/down and left/right mode "
+                        "requires exactly one operand"));
+
             return hpx::dataflow(hpx::launch::sync,
                 hpx::util::unwrapping(
                     [this_ = std::move(this_)](primitive_argument_type&& arg,
@@ -806,31 +989,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 value_operand(operands[0], args, name_, codename_, ctx),
                 list_operand(operands[1], args, name_, codename_, ctx));
         }
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    primitive_argument_type&& arg) -> primitive_argument_type {
-                    switch (extract_common_type(arg))
-                    {
-                    case node_data_type_bool:
-                        return this_->flipnd(extract_boolean_value(
-                            std::move(arg), this_->name_, this_->codename_));
-                    case node_data_type_int64:
-                        return this_->flipnd(extract_integer_value(
-                            std::move(arg), this_->name_, this_->codename_));
-                    case node_data_type_double:
-                        return this_->flipnd(extract_numeric_value(
-                            std::move(arg), this_->name_, this_->codename_));
-                    default:
-                        break;
-                    }
+        if (operands.size() == 1 || mode_ == flip_mode_axes)
+        {
+            return hpx::dataflow(hpx::launch::sync,
+                hpx::util::unwrapping(
+                    [this_ = std::move(this_)](primitive_argument_type&& arg)
+                        -> primitive_argument_type {
+                        switch (this_->mode_)
+                        {
+                        case flip_mode_up_down:
+                            return this_->flipud_helper(std::move(arg));
 
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "flip::eval",
-                        this_->generate_error_message(
-                            "the flip primitive requires for all arguments "
-                            "to be numeric data types"));
-                }),
-            value_operand(operands[0], args, name_, codename_, ctx));
+                        case flip_mode_left_right:
+                            return this_->fliplr_helper(std::move(arg));
+
+                        case flip_mode_axes:
+                            return this_->flipnd_helper(std::move(arg));
+
+                        default:
+                            break;
+                        }
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "flip_operation::eval",
+                            this_->generate_error_message(
+                                "unsupported flip mode requested"));
+                    }),
+                value_operand(operands[0], args, name_, codename_, ctx));
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "flip::eval",
+            this_->generate_error_message(
+                "the flip operation in up/down and left/right mode "
+                "requires exactly one operand"));
     }
 }}}

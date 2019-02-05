@@ -538,7 +538,7 @@ class PhySL:
         }
         dtype = ''
         for k in node.keywords:
-            if k.arg is 'dtype':
+            if k.arg == 'dtype':
                 if isinstance(k.value, ast.Name):
                     type_str = phylanx_dtype.get(k.value.id)
                 if isinstance(k.value, ast.Str):
