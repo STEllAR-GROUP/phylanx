@@ -142,6 +142,9 @@ namespace phylanx { namespace execution_tree
             std::int64_t get_exec_hysteresis() const;
             std::int64_t exec_threshold_ = 425000;
             std::int64_t exec_hysteresis_ = 75000;
+		
+            hpx::launch select_direct_eval_execution_policy(hpx::launch policy);
+	    bool policy_initialized_ = false;
 
 	    std::unique_ptr<phylanx::util::apex_direct_vs_nondirect_policy> 
 		direct_vs_nondirect_policy_instance;
