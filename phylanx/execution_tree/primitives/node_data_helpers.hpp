@@ -193,7 +193,83 @@ namespace phylanx { namespace execution_tree
     void extract_value_scalar(
         typename ir::node_data<T>::storage0d_type& result,
         ir::node_data<T>&& rhs, std::string const& name,
-        std::string const& codename);
+        std::string const& codename)
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 0:
+            if (rhs.is_ref())
+            {
+                result = rhs.scalar();
+            }
+            else
+            {
+                result = std::move(rhs.scalar_non_ref());
+            }
+            return;
+
+        case 1:
+            {
+                auto v = rhs.vector();
+                if (v.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_scalar",
+                        util::generate_error_message(
+                            "cannot broadcast a vector of size larger than one "
+                            "into a scalar",
+                            name, codename));
+                }
+                result = v[0];
+                return;
+            }
+
+        case 2:
+            {
+                auto m = rhs.matrix();
+                if (m.rows() != 1 || m.columns() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_scalar",
+                        util::generate_error_message(
+                            "cannot broadcast a matrix of size larger than one "
+                            "by one into a scalar",
+                            name, codename));
+                }
+                result = m(0, 0);
+                return;
+            }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            {
+                auto t = rhs.tensor();
+                if (t.rows() != 1 || t.columns() != 1 || t.pages() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_scalar",
+                        util::generate_error_message(
+                            "cannot broadcast a tensor of size larger than one "
+                            "by one by one into a scalar",
+                            name, codename));
+                }
+                result = t(0, 0, 0);
+                return;
+            }
+#endif
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_value_scalar",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a scalar numeric "
+                    "value type",
+                name, codename));
+    }
+
 
     template <typename T>
     void extract_value_vector(
