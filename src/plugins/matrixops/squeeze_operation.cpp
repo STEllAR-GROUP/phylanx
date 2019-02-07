@@ -36,15 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("squeeze",
         std::vector<std::string>{"squeeze(_1)","squeeze(_1,_2)"},
         &create_squeeze_operation, &create_primitive<squeeze_operation>,
-        "a, axis\n"
-        "Args:\n"
-        "\n"
-        "    a (vector or matrix) : a vector or matrix\n"
-        "    axis (optional, integer): an axis to squeeze along\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "Remove single-dimensional entries from the shape of an array")
+        R"(a, axis
+        Args:
+
+            a (vector or matrix) : a vector or matrix
+            axis (optional, integer): an axis to squeeze along
+
+        Returns:
+
+        Remove single-dimensional entries from the shape of an array)")
     };
 
     ///////////////////////////////////////////////////////////////////////////

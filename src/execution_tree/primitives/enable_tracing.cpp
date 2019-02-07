@@ -34,12 +34,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("enable_tracing",
             std::vector<std::string>{"enable_tracing(_1)"},
             &create_enable_tracing, &create_primitive<enable_tracing>,
-            "eon\n"
-            "Args:\n"
-            "\n"
-            "    eon (boolean) : set to true/false to enable/disable tracing."
-            "\n"
-            "Returns:\n"
+            R"(eon
+            Args:
+
+                eon (boolean) : set to true/false to enable/disable tracing.
+
+            Returns:)"
             )
     };
 

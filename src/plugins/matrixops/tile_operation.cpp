@@ -34,17 +34,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const tile_operation::match_data = {
         hpx::util::make_tuple("tile", std::vector<std::string>{"tile(_1,_2)"},
             &create_tile_operation, &create_primitive<tile_operation>,
-            "a, reps\n"
-            "Args:\n"
-            "\n"
-            "    a (array_like) : input array\n"
-            "    reps (integer or tuple of integers): Number of repetitions of "
-            "    a along each axis.\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "Constructs an array by repeating a, the number of times given by "
-            "reps.")};
+            R"(a, reps
+            Args:
+
+                a (array_like) : input array
+                reps (integer or tuple of integers): Number of repetitions of
+                a along each axis.
+
+            Returns:
+
+            Constructs an array by repeating a, the number of times given by
+            reps.)")};
 
     ///////////////////////////////////////////////////////////////////////////
     tile_operation::tile_operation(primitive_arguments_type&& operands,

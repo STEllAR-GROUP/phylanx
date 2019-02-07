@@ -39,41 +39,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{"flipud",
         std::vector<std::string>{"flipud(_1)"},
         &create_flip_operation, &create_primitive<flip_operation>,
-        "a\n"
-        "Args:\n"
-        "\n"
-        "    a (array) : a vector a matrix or a tensor\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "Flip array in the up/down direction"},
+        R"(a
+        Args:
+
+            a (array) : a vector a matrix or a tensor
+
+        Returns:
+
+        Flip array in the up/down direction)"},
 
         match_pattern_type{"fliplr",
         std::vector<std::string>{"fliplr(_1)"},
         &create_flip_operation, &create_primitive<flip_operation>,
-        "a\n"
-        "Args:\n"
-        "\n"
-        "    a (array) : a matrix or a tensor\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "Flip array in the left/right direction"},
+        R"(a
+        Args:
+
+            a (array) : a matrix or a tensor
+
+        Returns:
+
+        Flip array in the left/right direction)"},
 
         match_pattern_type{"flip",
         std::vector<std::string>{"flip(_1,_2)","flip(_1)"},
         &create_flip_operation, &create_primitive<flip_operation>,
-        "a, axes\n"
-        "Args:\n"
-        "\n"
-        "    a (array) : a scalar, a vector a matrix or a tensor\n"
-        "    axes (optional, integer or tuple of integers): an axis to flip "
-        "       over. The default, axis=None, will flip over all of the axes "
-        "       of the input array.\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "Reverses the order of elements in an array along the given axes"},
+        R"(a, axes
+        Args:
+
+            a (array) : a scalar, a vector a matrix or a tensor
+            axes (optional, integer or tuple of integers): an axis to flip
+               over. The default, axis=None, will flip over all of the axes
+               of the input array.
+
+        Returns:
+
+        Reverses the order of elements in an array along the given axes)"},
     };
 
     ///////////////////////////////////////////////////////////////////////////

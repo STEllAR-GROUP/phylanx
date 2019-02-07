@@ -35,20 +35,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4)"
             },
             &create_lra, &create_primitive<lra>,
-            "x, y, alpha, iters, enable_output\n"
-            "Args:\n"
-            "\n"
-            "    x (matrix) : a matrix\n"
-            "    y (vector) : a vector\n"
-            "the data\n"
-            "    alpha (float): It is the learning rate\n"
-            "    iters (int): The number of iterations\n"
-            "    enable_output (optional, boolean): If enabled, prints out the step "
-            "number and weights during each iteration\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The Calculated weights"
+            R"(x, y, alpha, iters, enable_output
+            Args:
+
+                x (matrix) : a matrix
+                y (vector) : a vector
+            the data
+                alpha (float): It is the learning rate
+                iters (int): The number of iterations
+                enable_output (optional, boolean): If enabled, prints out the step
+            number and weights during each iteration
+
+            Returns:
+
+            The Calculated weights)"
             )
     };
 

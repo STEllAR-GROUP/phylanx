@@ -37,22 +37,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("repeat",
             std::vector<std::string>{"repeat(_1,_2)", "repeat(_1,_2,_3)"},
             &create_repeat_operation, &create_primitive<repeat_operation>,
-            "a, repeats, axis\n"
-            "Args:\n"
-            "\n"
-            "    a (array) : a scalar, a vector, a "
-            "       matrix or a tensor\n"
-            "    repeats (integer or a vector of integers) : The number of "
-            "       repetitions for each element. repeats is broadcasted to "
-            "       fit the shape of the given axis.\n"
-            "    axis (optional, integer): an axis to repeat along. By default,"
-            "       flattened input is used.\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "Repeated array which has the same shape as a, except along the "
-            "given axis. In case of no axis for matrices flatten result is "
-            "returned")};
+            R"(a, repeats, axis
+            Args:
+
+                a (array) : a scalar, a vector, a
+                   matrix or a tensor
+                repeats (integer or a vector of integers) : The number of
+                   repetitions for each element. repeats is broadcasted to
+                   fit the shape of the given axis.
+                axis (optional, integer): an axis to repeat along. By default,
+                   flattened input is used.
+
+            Returns:
+
+            Repeated array which has the same shape as a, except along the
+            given axis. In case of no axis for matrices flatten result is
+            returned)")};
 
     ///////////////////////////////////////////////////////////////////////////
     repeat_operation::repeat_operation(primitive_arguments_type&& operands,

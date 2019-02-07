@@ -26,17 +26,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("for",
             std::vector<std::string>{"for(_1, _2, _3, _4)"},
             &create_for_operation, &create_primitive<for_operation>,
-            "init, cond, reinit, body\n"
-            "Args:\n"
-            "\n"
-            "    init (statements) : initialize loop variables\n"
-            "    cond (expression) : boolean expression, if true the loop continues\n"
-            "    reinit (statements) : update variables evaluated by `cond`\n"
-            "    body (statements) : code to execute as the body of the loop\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "  The value returned from the last iteration, `nil` otherwise."
+            R"(init, cond, reinit, body
+            Args:
+
+                init (statements) : initialize loop variables
+                cond (expression) : boolean expression, if true the loop continues
+                reinit (statements) : update variables evaluated by `cond`
+                body (statements) : code to execute as the body of the loop
+
+            Returns:
+
+              The value returned from the last iteration, `nil` otherwise.)"
             )
     };
 

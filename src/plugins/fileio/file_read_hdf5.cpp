@@ -34,15 +34,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("file_read_hdf5",
             std::vector<std::string>{"file_read_hdf5(_1, _2)"},
             &create_file_read_hdf5, &create_primitive<file_read_hdf5>,
-            "fname,dsetname\n"
-            "Args:\n"
-            "\n"
-            "    fname (string) : a file name\n"
-            "    dsetname (string) : a dataset name\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The dataset, either a matrix or vector."
+            R"(fname,dsetname
+            Args:
+
+                fname (string) : a file name
+                dsetname (string) : a dataset name
+
+            Returns:
+
+            The dataset, either a matrix or vector.)"
             )
     };
 
