@@ -313,7 +313,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         exec_threshold_ = 0;
 #endif
  
-	std::cout << name_ + " threshold: " << exec_threshold_ << std::endl;
+	//std::cout << name_ + " threshold: " << exec_threshold_ << std::endl;
         return exec_threshold_;
 
     }
@@ -384,9 +384,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-	if( eval_count_ > 5 && policy_initialized_ == false && name_ == "/phylanx/transpose$2/0$53$46" )
+	if( eval_count_ > 5 && policy_initialized_ == false /*&& name_ == "/phylanx/transpose$2/0$53$46"*/ )
         {
-		std::cout << name_ << " " << std::endl;
+		//std::cout << name_ << " " << std::endl;
         	direct_vs_nondirect_policy_instance = 
 			std::make_unique<phylanx::util::apex_direct_vs_nondirect_policy>				   	     (name_, eval_count_, eval_duration_
 			, exec_threshold_, execute_directly_);
@@ -400,7 +400,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 	}*/
 
- 	if( eval_count_ > 50 && name_ == "/phylanx/transpose$2/0$53$46" )
+ 	if( eval_count_ > 50 /*&& name_ == "/phylanx/transpose$2/0$53$46" */ )
         {
 		//std::cout << name_ << " more than 50" << std::endl;
             if (!apex::has_session_converged(direct_vs_nondirect_policy_instance->tuning_session_handle)){
@@ -428,12 +428,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 	execute_directly_ = -1;
             	}
             }
-	    std::int64_t count = get_eval_count(true);
-	    std::int64_t duration = get_eval_duration(true);
-	    //eval_count_ = 0;
-	    //eval_duration_ = 0;
-	    std::cout << " eval count and duration" << count << " " << duration 
-		<< " measurement: " << measurements_enabled_ << std::endl;
+	    //std::int64_t count = get_eval_count(true);
+	    //std::int64_t duration = get_eval_duration(true);
+	    eval_count_ = 0;
+	    eval_duration_ = 0;
+	    //std::cout << " eval count and duration" << count << " " << duration 
+	    //	<< " measurement: " << measurements_enabled_ << std::endl;
 	    
 	}
  

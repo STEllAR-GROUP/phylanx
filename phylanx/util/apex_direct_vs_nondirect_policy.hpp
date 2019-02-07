@@ -63,11 +63,13 @@ namespace phylanx { namespace util
         //PHYLANX_API_EXPORT apex_direct_vs_nondirect_policy* instance;
         PHYLANX_API_EXPORT apex_event_type custom_direct_vs_nondirect_event;
 
+	apex_event_type my_custom_event_2 = APEX_CUSTOM_EVENT_2;
+
         std::int64_t* eval_count_;
         std::int64_t* eval_duration_;
         std::int64_t* exec_threshold_;
         std::int64_t* execute_directly_;
-
+	long threshold_ = 100000;
 
 
         std::mutex params_mutex;
@@ -110,21 +112,24 @@ namespace phylanx { namespace util
 
 	void set_direct_vs_nondirect_params_directly()
         {
-            std::shared_ptr<apex_param_long> chunk_threshold_param =
+            /*std::shared_ptr<apex_param_long> chunk_threshold_param =
                 std::static_pointer_cast<apex_param_long>(
-                    request->get_param("threshold"));
+                    request->get_param("threshold")); */
 
-            *exec_threshold_ = chunk_threshold_param->get_value();
+            //*exec_threshold_ = chunk_threshold_param->get_value();
+            *exec_threshold_ = threshold_;
 
-            std::cout << primitive_name_ + " policy is setting threshold: " 
-		<< *exec_threshold_ << "\n";
+            //std::cout << primitive_name_ + " policy is setting threshold: " 
+		//<< *exec_threshold_ << "\n";
+		//<< *exec_threshold_ << "\n";
  
        }
 
         int direct_policy(const apex_context context)
         {
 	    if (!apex::has_session_converged(tuning_session_handle)){
-            	apex::custom_event(request->get_trigger(), NULL);
+            	//apex::custom_event(request->get_trigger(), NULL);
+            	apex::custom_event(my_custom_event_2, NULL);
                 this->set_direct_vs_nondirect_params_directly();
             }
             //else {
@@ -196,21 +201,31 @@ namespace phylanx { namespace util
 		else 
 			result = 0;
 
-                std::cout << primitive_name_ + " Counter current Value for: " << result << 
-			" time: " << *eval_duration_  << " count: "
-				<< *eval_count_ << "\n";
+                //std::cout << primitive_name_ + " Counter current Value for: " << result << 
+		//	" time: " << *eval_duration_  << " count: "
+		//		<< *eval_count_ << "\n";
 
             return result;
             };
 
-            request = new apex_tuning_request(policy_name_);
+	    int num_inputs_2 = 1;
+    	    long * inputs_2[1] = {0L};
+    	    long mins_2[1] = {100000};
+    	    long maxs_2[1] = {800000};
+   	    long steps_2[1] = {100000};
+    	    inputs_2[0] = &threshold_;
+            my_custom_event_2 = apex::register_custom_event(policy_name_);
+            tuning_session_handle = apex::setup_custom_tuning(metric, my_custom_event_2, 
+		num_inputs_2, inputs_2, mins_2, maxs_2, steps_2);
+
+            /*request = new apex_tuning_request(policy_name_);
             request->set_metric(metric);
-            request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
-            //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
-            request->add_param_long("threshold", 100000, 100000, 600000, 100000);
+            //request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
+            request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
+            request->add_param_long("threshold", 400000, 100000, 600000, 100000);
             //request->add_param_long("hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
-            tuning_session_handle = apex::setup_custom_tuning(*request);
+            tuning_session_handle = apex::setup_custom_tuning(*request);*/
 
 
 
@@ -233,7 +248,7 @@ namespace phylanx { namespace util
             {
                 std::cerr << "Error registering policy!" << std::endl;
             }
-            else std::cout <<" Done registering policy: " << primitive_name_ << "\n";
+            //else std::cout <<" Done registering policy: " << primitive_name_ << "\n";
         }
 
         apex_event_type return_apex_direct_vs_nondirect_event()
