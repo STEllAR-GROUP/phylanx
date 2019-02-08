@@ -297,26 +297,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        std::string extract_function_name(std::string const& name)
-        {
-            compiler::primitive_name_parts name_parts;
-            if (!compiler::parse_primitive_name(name, name_parts))
-            {
-                return name;
-            }
-
-            return name_parts.primitive;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     linear_solver::linear_solver(primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
-        std::string func_name = detail::extract_function_name(name);
+        std::string func_name = extract_function_name(name);
 
         func_ = get_lin_solver_map(func_name);
         func_ul_ = get_lin_solver_map_ul(func_name);
