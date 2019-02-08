@@ -116,7 +116,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , func_name_(detail::extract_function_name_generic(name))
       , dtype_(extract_dtype(name_))
     {
-        std::cout << name << " -> " << func_name_ << std::endl;
     }
 
     ///////////////////////////////////////////////////////////////////////////
