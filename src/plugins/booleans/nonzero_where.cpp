@@ -67,23 +67,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     };
 
-    ///////////////////////////////////////////////////////////////////////////
-    std::string nonzero_where::extract_function_name(
-        std::string const& name)
-    {
-        compiler::primitive_name_parts name_parts;
-        if (!compiler::parse_primitive_name(name, name_parts))
-        {
-            std::string::size_type p = name.find_first_of("$");
-            if (p != std::string::npos)
-            {
-                return name.substr(0, p);
-            }
-        }
-
-        return name_parts.primitive;
-    }
-
     nonzero_where::nonzero_where(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)

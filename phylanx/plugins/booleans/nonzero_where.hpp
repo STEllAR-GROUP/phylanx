@@ -46,8 +46,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_nonzero;
         struct visit_where;
 
-        static std::string extract_function_name(std::string const& name);
-
         template <typename T>
         primitive_argument_type nonzero_elements(ir::node_data<T>&& op) const;
 

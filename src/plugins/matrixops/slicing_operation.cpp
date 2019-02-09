@@ -111,23 +111,6 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 #endif
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    std::string slicing_operation::extract_function_name(
-        std::string const& name)
-    {
-        compiler::primitive_name_parts name_parts;
-        if (!compiler::parse_primitive_name(name, name_parts))
-        {
-            std::string::size_type p = name.find_first_of("$");
-            if (p != std::string::npos)
-            {
-                return name.substr(0, p);
-            }
-        }
-
-        return name_parts.primitive;
-    }
-
     hpx::future<primitive_argument_type> slicing_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const

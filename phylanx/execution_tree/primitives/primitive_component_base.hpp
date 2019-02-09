@@ -110,6 +110,8 @@ namespace phylanx { namespace execution_tree
                     noargs : operands_;
             }
 
+            std::string extract_function_name(std::string const& name);
+
         protected:
             std::string generate_error_message(std::string const& msg) const;
             static bool get_sync_execution();
