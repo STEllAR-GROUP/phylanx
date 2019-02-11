@@ -384,7 +384,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-	if( eval_count_ > 5 && policy_initialized_ == false /*&& name_ == "/phylanx/transpose$2/0$53$46"*/ )
+
+//if( name_ == "/phylanx/transpose$2/0$53$46") 
+{
+	if( eval_count_ > 5 && policy_initialized_ == false  )
         {
 		//std::cout << name_ << " " << std::endl;
         	direct_vs_nondirect_policy_instance = 
@@ -392,6 +395,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 			, exec_threshold_, execute_directly_);
 		policy_initialized_ = true;
 		enable_measurements();
+
 	}
 
  	/*if( eval_count_ > 100 )
@@ -400,42 +404,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 	}*/
 
- 	if( eval_count_ > 50 /*&& name_ == "/phylanx/transpose$2/0$53$46" */ )
+ 	if( eval_count_ > 50 )
         {
+
 		//std::cout << name_ << " more than 50" << std::endl;
             if (!apex::has_session_converged(direct_vs_nondirect_policy_instance->tuning_session_handle)){
 
 		apex::custom_event(
-			direct_vs_nondirect_policy_instance->return_apex_direct_vs_nondirect_event(),
+			direct_vs_nondirect_policy_instance->
+			return_apex_direct_vs_nondirect_event(),
 		 	NULL);
-	    }
 
-            {
-            	// check whether execution status needs to be changed (with some
-            	// hysteresis)
-            	std::int64_t exec_time = (eval_duration_ / eval_count_);
-
-            	if (exec_time > (get_exec_threshold() + get_exec_hysteresis()))
-            	{
-                	execute_directly_ = 0;
-            	}
-            	else if (exec_time < (get_exec_threshold() - get_exec_hysteresis()))
-            	{
-                	execute_directly_ = 1;
-            	}
-            	else
-            	{
-                	execute_directly_ = -1;
-            	}
-            }
 	    //std::int64_t count = get_eval_count(true);
 	    //std::int64_t duration = get_eval_duration(true);
+    	    //std::cout << " eval count and duration" << eval_count_ << " " << eval_duration_
+	    //	<< " exectime: " << eval_duration_/eval_count_  << std::endl;
 	    eval_count_ = 0;
 	    eval_duration_ = 0;
-	    //std::cout << " eval count and duration" << count << " " << duration 
-	    //	<< " measurement: " << measurements_enabled_ << std::endl;
-	    
+	
+	    }
+	    else if( measurements_enabled_) 
+	    {
+        	measurements_enabled_ = false;
+	    }	
+
+        }
+
+        if (eval_count_ > get_ec_threshold())
+        {
+	    // check whether execution status needs to be changed (with some
+            // hysteresis)
+            std::int64_t exec_time = (eval_duration_ / eval_count_);
+
+
+            if (exec_time > (get_exec_threshold() + get_exec_hysteresis()))
+            {
+               	execute_directly_ = 0;
+            }
+            else if (exec_time < (get_exec_threshold() - get_exec_hysteresis()))
+            {
+               	execute_directly_ = 1;
+            }
+            else
+            {
+               	execute_directly_ = -1;
+            }
 	}
+
+}
  
         if (execute_directly_ == 1)
         {
@@ -466,39 +482,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-#if defined(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY) && defined(HPX_HAVE_APEX)
-
- 	if( name_ == "/phylanx/store$0/0$14$21" )
-        {
-            if (!apex::has_session_converged(direct_vs_nondirect_policy_instance->tuning_session_handle)){
-
-		apex::custom_event(
-			direct_vs_nondirect_policy_instance->return_apex_direct_vs_nondirect_event(),
-		 	NULL);
-	    }
-
-            if ((eval_count_ != 0 && measurements_enabled_) ||
-            	(eval_count_ > get_ec_threshold()))
-            {
-            	// check whether execution status needs to be changed (with some
-            	// hysteresis)
-            	std::int64_t exec_time = (eval_duration_ / eval_count_);
-
-            	if (exec_time > (get_exec_threshold() + get_exec_hysteresis()))
-            	{
-                	execute_directly_ = 0;
-            	}
-            	else if (exec_time < (get_exec_threshold() - get_exec_hysteresis()))
-            	{
-                	execute_directly_ = 1;
-            	}
-            	else
-            	{
-                	execute_directly_ = -1;
-            	}
-            }
-	}
-#else
         if ((eval_count_ != 0 && measurements_enabled_) ||
             (eval_count_ > get_ec_threshold()))
         {
@@ -519,7 +502,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-#endif
  
         if (execute_directly_ == 1)
         {
