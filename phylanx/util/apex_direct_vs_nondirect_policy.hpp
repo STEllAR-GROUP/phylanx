@@ -144,7 +144,7 @@ namespace phylanx { namespace util
                 
             	//apex::custom_event(my_custom_event_2, NULL);
             	
-                //this->set_direct_vs_nondirect_params_directly_for_threshold();
+                //this->set_direct_vs_nondirect_params_for_threshold();
                 this->set_direct_vs_nondirect_params_for_execute_directly();
             }
             //else {
