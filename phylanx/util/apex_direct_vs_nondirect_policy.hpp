@@ -110,7 +110,7 @@ namespace phylanx { namespace util
  
        }
 
-	void set_direct_vs_nondirect_params_directly()
+	void set_direct_vs_nondirect_params_for_threshold()
         {
             std::shared_ptr<apex_param_long> chunk_threshold_param =
                 std::static_pointer_cast<apex_param_long>(
@@ -124,12 +124,28 @@ namespace phylanx { namespace util
  
        }
 
+	void set_direct_vs_nondirect_params_for_execute_directly()
+        {
+            std::shared_ptr<apex_param_long> execute_directly_param =
+                std::static_pointer_cast<apex_param_long>(
+                    request->get_param("execute_directly")); 
+
+            *execute_directly_ = execute_directly_param->get_value();
+
+            //std::cout << primitive_name_ + " policy is setting execute directly: " 
+		//<< *execute_directly_ << "\n";
+ 
+       }
+
         int direct_policy(const apex_context context)
         {
 	    if (!apex::has_session_converged(tuning_session_handle)){
             	apex::custom_event(request->get_trigger(), NULL);
+                
             	//apex::custom_event(my_custom_event_2, NULL);
-                this->set_direct_vs_nondirect_params_directly();
+            	
+                //this->set_direct_vs_nondirect_params_directly_for_threshold();
+                this->set_direct_vs_nondirect_params_for_execute_directly();
             }
             //else {
  		//apex::deregister_policy(policy_handle);
@@ -221,7 +237,11 @@ namespace phylanx { namespace util
             request->set_metric(metric);
             request->set_strategy(apex_ah_tuning_strategy::EXHAUSTIVE);
             //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
-            request->add_param_long("threshold", 100000, 100000, 1000000, 100000);
+
+            //for threshold based policy
+            //request->add_param_long("threshold", 100000, 100000, 1000000, 100000);
+            //for direct vs nondirect execution policy
+            request->add_param_long("execute_directly", 0, 0, 1, 1);
             //request->add_param_long("hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
             tuning_session_handle = apex::setup_custom_tuning(*request);
