@@ -22,7 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 using custom_vector_type = blaze::CustomVector<double, true, true>;
 using custom_matrix_type = blaze::CustomMatrix<double, true, true>;
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 using custom_tensor_type = blaze::CustomTensor<double, true, true>;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_generic_operation_0d(std::string const& func_name,
@@ -291,8 +293,6 @@ void test_generic_operation_3d_greater1(std::string const& func_name,
 ///////////////////////////////////////////////////////////////////////////////
 void test_0d_operations()
 {
-    test_generic_operation_0d("amin", [](double m) -> double { return m; });
-    test_generic_operation_0d("amax", [](double m) -> double { return m; });
     test_generic_operation_0d("absolute", std::abs);
     test_generic_operation_0d("floor", std::floor);
     test_generic_operation_0d("ceil", std::ceil);
@@ -330,14 +330,6 @@ void test_0d_operations()
 
 void test_1d_operations()
 {
-    test_generic_operation_1d(
-        "amin", [](custom_vector_type m) -> double {
-            return (blaze::min)(m);
-        });
-    test_generic_operation_1d(
-        "amax", [](custom_vector_type m) -> double {
-            return (blaze::max)(m);
-        });
     test_generic_operation_1d(
         "absolute", [](custom_vector_type m) -> blaze::DynamicVector<double> {
             return blaze::abs(m);
@@ -464,14 +456,6 @@ void test_1d_operations()
 
 void test_2d_operations()
 {
-    test_generic_operation_2d(
-        "amin", [](custom_matrix_type m) -> double {
-            return (blaze::min)(m);
-        });
-    test_generic_operation_2d(
-        "amax", [](custom_matrix_type m) -> double {
-            return (blaze::max)(m);
-        });
     test_generic_operation_2d(
         "absolute", [](custom_matrix_type m) -> blaze::DynamicMatrix<double> {
             return blaze::abs(m);
@@ -600,14 +584,6 @@ void test_2d_operations()
 void test_3d_operations()
 {
     test_generic_operation_3d(
-        "amin", [](custom_tensor_type m) -> double {
-            return (blaze::min)(m);
-        });
-    test_generic_operation_3d(
-        "amax", [](custom_tensor_type m) -> double {
-            return (blaze::max)(m);
-        });
-    test_generic_operation_3d(
         "absolute", [](custom_tensor_type m) -> blaze::DynamicTensor<double> {
             return blaze::abs(m);
         });
@@ -727,6 +703,29 @@ void test_3d_operations()
 }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_operation(std::string const& code, std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+void test_dtype()
+{
+    test_operation("floor__int(10)", "10");
+    test_operation("floor__int(10.2)", "10");
+}
+
 int main(int argc, char* argv[])
 {
     test_0d_operations();
@@ -736,5 +735,8 @@ int main(int argc, char* argv[])
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_3d_operations();
 #endif
+
+    test_dtype();
+
     return hpx::util::report_errors();
 }

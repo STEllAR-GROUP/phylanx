@@ -38,13 +38,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "Returns:\n"                                                           \
         "\n"                                                                   \
         "This function implements function `" name "` from Python's "          \
-        "math library."                                                        \
+        "math library.",                                                       \
+        true                                                                   \
     }                                                                          \
     /**/
 
     std::vector<match_pattern_type> const generic_operation::match_data = {
-        PHYLANX_GEN_MATCH_DATA("amin"),
-        PHYLANX_GEN_MATCH_DATA("amax"),
         PHYLANX_GEN_MATCH_DATA("absolute"),
         PHYLANX_GEN_MATCH_DATA("floor"),
         PHYLANX_GEN_MATCH_DATA("ceil"),
@@ -84,26 +83,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #undef PHYLANX_GEN_MATCH_DATA
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        std::string extract_function_name(std::string const& name)
-        {
-            compiler::primitive_name_parts name_parts;
-            if (!compiler::parse_primitive_name(name, name_parts))
-            {
-                return name;
-            }
-
-            return name_parts.primitive;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     generic_operation::generic_operation(
-        primitive_arguments_type && operands,
-        std::string const& name, std::string const& codename)
+            primitive_arguments_type && operands,
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , func_name_(detail::extract_function_name(name))
+      , func_name_(extract_function_name(name))
+      , dtype_(extract_dtype(name_))
     {
     }
 
@@ -142,16 +127,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type generic_operation::generic0d(
         primitive_argument_type&& op) const
     {
-        switch (extract_common_type(op))
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
         {
-        case node_data_type_double:
-            return generic0d(
-                extract_numeric_value_strict(std::move(op), name_, codename_));
+            t = node_data_type_double;  // use double by default
+        }
 
+        switch (t)
+        {
         case node_data_type_int64:
             return generic0d(
-                extract_integer_value_strict(std::move(op), name_, codename_));
+                extract_integer_value(std::move(op), name_, codename_));
 
+        case node_data_type_double:
         case node_data_type_bool:
         case node_data_type_unknown:
             return generic0d(
@@ -166,16 +154,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type generic_operation::generic1d(
         primitive_argument_type&& op) const
     {
-        switch (extract_common_type(op))
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
         {
-        case node_data_type_double:
-            return generic1d(
-                extract_numeric_value_strict(std::move(op), name_, codename_));
+            t = node_data_type_double;  // use double by default
+        }
 
+        switch (t)
+        {
         case node_data_type_int64:
             return generic1d(
-                extract_integer_value_strict(std::move(op), name_, codename_));
+                extract_integer_value(std::move(op), name_, codename_));
 
+        case node_data_type_double:
         case node_data_type_bool:
         case node_data_type_unknown:
             return generic1d(
@@ -190,16 +181,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type generic_operation::generic2d(
         primitive_argument_type&& op) const
     {
-        switch (extract_common_type(op))
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
         {
-        case node_data_type_double:
-            return generic2d(
-                extract_numeric_value_strict(std::move(op), name_, codename_));
+            t = node_data_type_double;  // use double by default
+        }
 
+        switch (t)
+        {
         case node_data_type_int64:
             return generic2d(
-                extract_integer_value_strict(std::move(op), name_, codename_));
+                extract_integer_value(std::move(op), name_, codename_));
 
+        case node_data_type_double:
         case node_data_type_bool:
         case node_data_type_unknown:
             return generic2d(
@@ -215,16 +209,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type generic_operation::generic3d(
         primitive_argument_type&& op) const
     {
-        switch (extract_common_type(op))
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
         {
-        case node_data_type_double:
-            return generic3d(
-                extract_numeric_value_strict(std::move(op), name_, codename_));
+            t = node_data_type_double;  // use double by default
+        }
 
+        switch (t)
+        {
         case node_data_type_int64:
             return generic3d(
-                extract_integer_value_strict(std::move(op), name_, codename_));
+                extract_integer_value(std::move(op), name_, codename_));
 
+        case node_data_type_double:
         case node_data_type_bool:
         case node_data_type_unknown:
             return generic3d(

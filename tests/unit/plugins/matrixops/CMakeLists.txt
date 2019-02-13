@@ -7,6 +7,7 @@ set(tests
     arange
     argmin
     argmax
+    clip
     column_slicing
     constant
     count_nonzero
@@ -18,17 +19,20 @@ set(tests
     extract_shape
     eye_operation
     flatten
+    flip_operation
     gradient_operation
+    hsplit_operation
     hstack_operation
     identity
     inverse_operation
     linearmatrix
     linspace
     list_slicing_operation
-    mean_operation
+    ndim
     power_operation
     random
     random_distributions
+    repeat_operation
     reshape_operation
     row_slicing
     shuffle_operation
@@ -38,6 +42,7 @@ set(tests
     tile_operation
     transpose_operation
     unique
+    vsplit_operation
     vstack_operation
    )
 

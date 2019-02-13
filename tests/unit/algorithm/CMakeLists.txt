@@ -20,7 +20,7 @@ foreach(test ${tests})
     SOURCES ${sources}
     ${${test}_FLAGS}
     EXCLUDE_FROM_ALL
-    FOLDER "Tests/Unit/Algorithm/")
+    FOLDER "Tests/Unit/Plugins/Algorithm/")
 
   add_phylanx_unit_test("algorithm" ${test} ${${test}_PARAMETERS})
 

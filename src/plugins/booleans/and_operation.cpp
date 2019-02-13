@@ -30,21 +30,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const and_operation::match_data =
+    static constexpr char const* const help_string = R"(
+        a, b
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+        The logical and of `a` and `b`.
+    )";
+
+    match_pattern_type const and_operation::match_data[2] =
     {
-        hpx::util::make_tuple("__and",
+        match_pattern_type("__and",
             std::vector<std::string>{"_1 && __2", "__and(_1, __2)"},
             &create_and_operation, &create_primitive<and_operation>,
-            "a, b\n"
-            "Args:\n"
-            "\n"
-            "    a (boolean) : a boolean argument\n"
-            "    b (boolean) : a boolean argument\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The logical and of `a` and `b`."
-            )
+            help_string),
+
+        match_pattern_type("logical_and",
+            std::vector<std::string>{"logical_and(_1, __2)"},
+            &create_and_operation, &create_primitive<and_operation>,
+            help_string)
     };
 
     ///////////////////////////////////////////////////////////////////////////

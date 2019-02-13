@@ -110,6 +110,8 @@ namespace phylanx { namespace execution_tree
                     noargs : operands_;
             }
 
+            std::string extract_function_name(std::string const& name);
+
         protected:
             std::string generate_error_message(std::string const& msg) const;
             static bool get_sync_execution();
@@ -202,8 +204,8 @@ namespace phylanx { namespace execution_tree
         std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT void register_pattern(
-        std::string const&, match_pattern_type const& pattern);
+    PHYLANX_EXPORT void register_pattern(std::string const& name,
+        match_pattern_type const& pattern, std::string const& fullpath);
 
     PHYLANX_EXPORT void show_patterns();
     PHYLANX_EXPORT void show_patterns(std::ostream& ostrm);

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <list>
 #include <map>
 #include <string>
@@ -49,16 +50,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 result.define(p.primitive_type_,
                     builtin_function(p.create_primitive_, default_locality));
-            }
 
-            if (p.supports_dtype_)
-            {
-                result.define(p.primitive_type_ + "__bool",
-                    builtin_function(p.create_primitive_, default_locality));
-                result.define(p.primitive_type_ + "__int",
-                    builtin_function(p.create_primitive_, default_locality));
-                result.define(p.primitive_type_ + "__float",
-                    builtin_function(p.create_primitive_, default_locality));
+                if (p.supports_dtype_)
+                {
+                    result.define(p.primitive_type_ + "__bool",
+                        builtin_function(p.create_primitive_, default_locality));
+                    result.define(p.primitive_type_ + "__int",
+                        builtin_function(p.create_primitive_, default_locality));
+                    result.define(p.primitive_type_ + "__float",
+                        builtin_function(p.create_primitive_, default_locality));
+                }
             }
         }
 
@@ -319,7 +320,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compile_lambda(std::vector<ast::expression> const& args,
             ast::expression const& body, ast::tagged const& id)
         {
-            function& f = snippets_.program_.add_empty();
+            function& f = snippets_.program_.add_empty(name_);
 
             static std::string define_lambda_("lambda");
 
@@ -369,7 +370,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined variable
             // and store new function description for later use
-            function& f = snippets_.program_.add_empty();
+            function& f = snippets_.program_.add_empty(name_);
 
             ast::expression name_expr = extract_name(p, define_id);
             std::string name = ast::detail::identifier_name(name_expr);
@@ -791,17 +792,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (ast::detail::is_identifier(expr))
             {
                 std::string name = ast::detail::identifier_name(expr);
-                if (name == "nil")
+                auto it = get_constants().find(name);
+                if (it != get_constants().end())
                 {
-                    return literal_value(primitive_argument_type{});
-                }
-                else if (name == "false")
-                {
-                    return literal_value(primitive_argument_type{false});
-                }
-                else if (name == "true")
-                {
-                    return literal_value(primitive_argument_type{true});
+                    auto arg = it->second;
+                    return literal_value(std::move(arg));
                 }
                 return handle_variable_reference(std::move(name), expr);
             }
@@ -829,6 +824,46 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name_, id));
         }
 
+        static std::map<std::string, primitive_argument_type>
+            initialize_constants()
+        {
+            std::map<std::string, primitive_argument_type> constants =
+            {
+                {"nil", primitive_argument_type{}},
+                {"false", primitive_argument_type{false}},
+                {"true", primitive_argument_type{true}},
+                {"inf",
+                    primitive_argument_type{
+                        std::numeric_limits<double>::infinity()}},
+                {"ninf",
+                    primitive_argument_type{
+                        -std::numeric_limits<double>::infinity()}},
+                {"nan",
+                    primitive_argument_type{
+                        std::numeric_limits<double>::quiet_NaN()}},
+                {"NZERO", primitive_argument_type{-0.0}},
+                {"PZERO", primitive_argument_type{+0.0}},
+                {"euler",
+                    primitive_argument_type{
+                        2.7182818284590452353602874713526624977572}},
+                {"euler_gamma",
+                    primitive_argument_type{
+                        0.5772156649015328606065120900824024310421}},
+                {"pi",
+                    primitive_argument_type{
+                        3.1415926535897932384626433832795028841971}}
+            };
+            return constants;
+        }
+
+        static std::map<std::string, primitive_argument_type> const&
+            get_constants()
+        {
+            static std::map<std::string, primitive_argument_type> constants =
+                initialize_constants();
+            return constants;
+        }
+
     private:
         std::string name_;          // file name of original code
         environment& env_;          // current compilation environment
@@ -853,7 +888,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
-        function& f = snippets.program_.add_empty();
+        function& f = snippets.program_.add_empty(codename);
 
         if (name_parts.instance.empty())
         {

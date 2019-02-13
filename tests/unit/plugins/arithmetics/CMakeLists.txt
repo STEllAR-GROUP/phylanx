@@ -6,13 +6,14 @@
 set(tests
     add_operation
     add_lists
+    cumprod
     cumsum
     div_operation
     generic_operation
+    maximum
+    minimum
     mul_operation
-    prod_operation
     sub_operation
-    sum_operation
     unary_minus_operation
    )
 

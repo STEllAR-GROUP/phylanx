@@ -42,121 +42,121 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::vector<match_pattern_type> const linear_solver::match_data = {
         PHYLANX_LIN_MATCH_DATA("linear_solver_lu",
-        "a, b\n"
-        "Args:\n"
-        "\n"
-        "    a (matrix) : a matrix\n"
-        "    b (vector) : a vector\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "A matrix `x` such that `a x = b`.\n"
+        R"(a, b
+        Args:
+
+            a (matrix) : a matrix
+            b (vector) : a vector
+
+        Returns:
+
+        A matrix `x` such that `a x = b`.)"
         ),
         PHYLANX_LIN_MATCH_DATA("linear_solver_ldlt",
-        "a, b, uplo\n"
-        "Args:\n"
-        "\n"
-        "    a (matrix) : a matrix\n"
-        "    b (vector) : a vector\n"
-        "    uplo (string) : either 'L' or 'U'\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "A matrix `x` such that `a x = b`. If uplo = 'L', solve "
-        "`a` as a lower triangular matrix, otherwise as an upper "
-        "triangular matrix."
+        R"(a, b, uplo
+        Args:
+
+            a (matrix) : a matrix
+            b (vector) : a vector
+            uplo (string) : either 'L' or 'U'
+
+        Returns:
+
+        A matrix `x` such that `a x = b`. If uplo = 'L', solve
+        `a` as a lower triangular matrix, otherwise as an upper
+        triangular matrix.)"
         ),
         PHYLANX_LIN_MATCH_DATA("linear_solver_cholesky",
-        "a, b,uplo\n"
-        "Args:\n"
-        "\n"
-        "    a (matrix) : a matrix\n"
-        "    b (vector) : a vector\n"
-        "    uplo (string) : either 'L' or 'U'\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "A matrix `x` such that `a x = b`, solved using the "
-        "Cholesky (LLH) decomposition. If uplo = 'L', solve "
-        "`a` as a lower triangular matrix, otherwise as an upper "
-        "triangular matrix."
+        R"(a, b,uplo
+        Args:
+
+            a (matrix) : a matrix
+            b (vector) : a vector
+            uplo (string) : either 'L' or 'U'
+
+        Returns:
+
+        A matrix `x` such that `a x = b`, solved using the
+        Cholesky (LLH) decomposition. If uplo = 'L', solve
+        `a` as a lower triangular matrix, otherwise as an upper
+        triangular matrix.)"
         ),
 #ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
         PHYLANX_LIN_MATCH_DATA("iterative_solver_conjugate_gradient",
-         "a, b\n"
-         "Args:\n"
-         "\n"
-         "    a (matrix) : a matrix\n"
-         "    b (vector) : a vector\n"
-         "\n"
-         "Returns:\n"
-         "\n"
-         "A matrix `x` such that `a x = b`, solved using the "
-         "conjugate gradient"
+         R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         conjugate gradient)"
         ),
         PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab",
-         "a, b\n"
-         "Args:\n"
-         "\n"
-         "    a (matrix) : a matrix\n"
-         "    b (vector) : a vector\n"
-         "\n"
-         "Returns:\n"
-         "\n"
-         "A matrix `x` such that `a x = b`, solved using the "
-         "BiCGSTAB solver."
+         R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         BiCGSTAB solver.)"
         ),
         PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_lu",
-         "a, b\n"
-         "Args:\n"
-         "\n"
-         "    a (matrix) : a matrix\n"
-         "    b (vector) : a vector\n"
-         "\n"
-         "Returns:\n"
-         "\n"
-         "A matrix `x` such that `a x = b`, solved using the "
-         "BiCGSTAB solver utilizing the LU decomposition as "
-         "its preconditioner."
+         R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         BiCGSTAB solver utilizing the LU decomposition as
+         its preconditioner.)"
         ),
         PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_rq",
-         "a, b\n"
-         "Args:\n"
-         "\n"
-         "    a (matrix) : a matrix\n"
-         "    b (vector) : a vector\n"
-         "\n"
-         "Returns:\n"
-         "\n"
-         "A matrix `x` such that `a x = b`, solved using the "
-         "BiCGSTAB solver utilizing the RQ decomposition as "
-         "its preconditioner."
+         R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         BiCGSTAB solver utilizing the RQ decomposition as
+         its preconditioner.)"
          ),
          PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_qr",
-         "a, b\n"
-         "Args:\n"
-         "\n"
-         "    a (matrix) : a matrix\n"
-         "    b (vector) : a vector\n"
-         "\n"
-         "Returns:\n"
-         "\n"
-         "A matrix `x` such that `a x = b`, solved using the "
-         "BiCGSTAB solver utilizing the QR decomposition as "
-         "its preconditioner."
+         R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         BiCGSTAB solver utilizing the QR decomposition as
+         its preconditioner.)"
          ),
          PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_cholesky",
-         "a, b\n"
-         "Args:\n"
-         "\n"
-         "    a (matrix) : a matrix\n"
-         "    b (vector) : a vector\n"
-         "\n"
-         "Returns:\n"
-         "\n"
-         "A matrix `x` such that `a x = b`, solved using the "
-         "BiCGSTAB solver utilizing the Cholesky decomposition as "
-         "its preconditioner."
+         R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         BiCGSTAB solver utilizing the Cholesky decomposition as
+         its preconditioner.)"
          )
 #endif
     };
@@ -297,26 +297,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        std::string extract_function_name(std::string const& name)
-        {
-            compiler::primitive_name_parts name_parts;
-            if (!compiler::parse_primitive_name(name, name_parts))
-            {
-                return name;
-            }
-
-            return name_parts.primitive;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     linear_solver::linear_solver(primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
-        std::string func_name = detail::extract_function_name(name);
+        std::string func_name = extract_function_name(name);
 
         func_ = get_lin_solver_map(func_name);
         func_ul_ = get_lin_solver_map_ul(func_name);

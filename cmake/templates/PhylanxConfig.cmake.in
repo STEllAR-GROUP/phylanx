@@ -15,6 +15,14 @@ if (NOT TARGET phylanx)
   include("${CMAKE_CURRENT_LIST_DIR}/PhylanxTargets.cmake")
 endif()
 
+set(PHYLANX_WITH_BLAZE_TENSOR @PHYLANX_WITH_BLAZE_TENSOR@)
+if(PHYLANX_WITH_BLAZE_TENSOR)
+  if (NOT TARGET BlazeTensor::BlazeTensor)
+    include("@BLAZE_TENSOR_CONF_DIR@/BlazeTensorTargets.cmake")
+  endif()
+endif()
+
+
 # include Phylanx cmake utilities
 include("${CMAKE_CURRENT_LIST_DIR}/PhylanxMacros.cmake")
 
@@ -50,10 +58,6 @@ set(PHYLANX_WITH_MALLOC_DEFAULT @PHYLANX_WITH_MALLOC@)
 
 if(NOT PHYLANX_CMAKE_LOGLEVEL)
   set(PHYLANX_CMAKE_LOGLEVEL "WARN")
-endif()
-
-if(NOT LIB)
-  set(LIB "lib")
 endif()
 
 enable_language(C)

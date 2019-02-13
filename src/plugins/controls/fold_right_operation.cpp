@@ -28,35 +28,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"fold_right(_1, _2, _3)"},
             &create_fold_right_operation,
             &create_primitive<fold_right_operation>,
-            "fun, ini, range\n"
-            "\n"
-            "Args:\n"
-            "\n"
-            "    fun (function) : a function that takes a two float arguments\n"
-            "                     and returns a float argument\n"
-            "    ini (float) : an initial value\n"
-            "    range (iterator) : a list or iterator\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "    This function is equivalent to the Python code:\n"
-            "\n"
-            "  def fr(f, i, r):\n"
-            "      c = i\n"
-            "      for n in r:\n"
-            "          c = f(n, c)\n"
-            "      return c\n"
-            "\n"
-            "Example(s):\n"
-            "\n"
-            "  @Phylanx\n"
-            "  def foo():\n"
-            "      v = fold_right(lambda a, b : 2 * a - b, 3, [1, 2, 3])\n"
-            "      print(v)\n"
-            "  foo()\n"
-            "\n"
-            "Result:\n"
-            "  1"
+            R"(fun, ini, range
+
+            Args:
+
+                fun (function) : a function that takes a two float arguments
+                                 and returns a float argument
+                ini (float) : an initial value
+                range (iterator) : a list or iterator
+
+            Returns:
+
+                This function is equivalent to the Python code:
+
+              def fr(f, i, r):
+                  c = i
+                  for n in r:
+                      c = f(n, c)
+                  return c
+
+            Example(s):
+
+              @Phylanx
+              def foo():
+                  v = fold_right(lambda a, b : 2 * a - b, 3, [1, 2, 3])
+                  print(v)
+              foo()
+
+            Result:
+              1)"
             )
     };
 
@@ -103,12 +103,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_), ctx](
-                    primitive_argument_type&& bound_func,
-                    primitive_argument_type&& initial, ir::range&& list)
-            ->  primitive_argument_type
-            {
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping([this_ = std::move(this_), ctx](
+                                      primitive_argument_type&& bound_func,
+                                      primitive_argument_type&& initial,
+                                      ir::range&& list)
+                                      -> primitive_argument_type {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -134,7 +134,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{std::move(initial)};
             }),
             value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
+                add_mode(ctx, eval_mode(eval_dont_evaluate_lambdas |
+                    eval_dont_evaluate_partials))),
             value_operand(operands_[1], args, name_, codename_, ctx),
             list_operand(operands_[2], args, name_, codename_, ctx));
     }

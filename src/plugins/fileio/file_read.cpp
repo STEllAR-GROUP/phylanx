@@ -32,15 +32,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("file_read",
             std::vector<std::string>{"file_read(_1)"},
             &create_file_read, &create_primitive<file_read>,
-            "fname\n"
-            "\n"
-            "Args:\n"
-            "\n"
-            "    fname (string) : a file name\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "An object deserialized from the data in fname.")
+            R"(fname
+
+            Args:
+
+                fname (string) : a file name
+
+            Returns:
+
+            An object deserialized from the data in fname.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////

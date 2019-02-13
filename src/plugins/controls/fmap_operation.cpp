@@ -32,17 +32,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("fmap",
             std::vector<std::string>{"fmap(_1, __2)"},
             &create_fmap_operation, &create_primitive<fmap_operation>,
-            "func, listv\n"
-            "\n"
-            "Args:\n"
-            "\n"
-            "    func (function) : a function that takes one argument\n"
-            "    listv (iterator) : a set of values\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A new list created by applying the function `func` to each \n"
-            "item in list `listv`.\n"
+            R"(func, listv
+
+            Args:
+
+                func (function) : a function that takes one argument
+                listv (iterator) : a set of values
+
+            Returns:
+
+            A new list created by applying the function `func` to each
+            item in list `listv`.)"
             )
     };
 

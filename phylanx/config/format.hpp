@@ -6,7 +6,7 @@
 #if !defined(PHYLANX_CONFIG_FORMAT_HPP)
 #define PHYLANX_CONFIG_FORMAT_HPP
 
-#include <hpx/config.hpp>
+#include <hpx/config/version.hpp>
 
 // the HPX string formatting has changed after V1.1 was released
 #if HPX_VERSION_FULL <= 0x010100

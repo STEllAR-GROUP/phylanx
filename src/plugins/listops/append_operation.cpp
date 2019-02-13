@@ -33,16 +33,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("append",
             std::vector<std::string>{"append(_1, _2)"},
             &create_append_operation, &create_primitive<append_operation>,
-            "li,val\n"
-            "Args:\n"
-            "\n"
-            "    li (list) : a list to which a value may be appended\n"
-            "    val (object) : a value to append\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A new list with the value `val` appended. Note that `li` is "
-            "not modified by this operation."
+            R"(li,val
+            Args:
+
+                li (list) : a list to which a value may be appended
+                val (object) : a value to append
+
+            Returns:
+
+            A new list with the value `val` appended. Note that `li` is
+            not modified by this operation.)"
             )
     };
 

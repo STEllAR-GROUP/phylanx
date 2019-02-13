@@ -90,7 +90,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
       , slice_rows_(false)
       , slice_columns_(false)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , slice_pages_(false)
+#endif
     {
         auto func_name = extract_function_name(name_);
         if (func_name == "slice_row")
@@ -107,23 +109,6 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             slice_pages_ = true;
         }
 #endif
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    std::string slicing_operation::extract_function_name(
-        std::string const& name)
-    {
-        compiler::primitive_name_parts name_parts;
-        if (!compiler::parse_primitive_name(name, name_parts))
-        {
-            std::string::size_type p = name.find_first_of("$");
-            if (p != std::string::npos)
-            {
-                return name.substr(0, p);
-            }
-        }
-
-        return name_parts.primitive;
     }
 
     hpx::future<primitive_argument_type> slicing_operation::eval(

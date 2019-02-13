@@ -35,16 +35,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
             nullptr, nullptr,
-            "name,args,body\n"
-            "Args:\n"
-            "\n"
-            "    name (string) : name of symbol to define\n"
-            "    args (optional,list of symbols) : if  present, "
-            "                         this defines a function.\n"
-            "    body (expression) : value to bind to symbol `name` "
-            "                      or body of lambda function.\n"
-            "\n"
-            "Returns:\n"
+            R"(name,args,body
+            Args:
+
+                name (string) : name of symbol to define
+                args (optional,list of symbols) : if  present,
+                                     this defines a function.
+                body (expression) : value to bind to symbol `name`
+                                  or body of lambda function.
+
+            Returns:)"
             )
     };
 
@@ -53,15 +53,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
             nullptr, nullptr,
-            "args,body\n"
-            "Args:\n"
-            "\n"
-            "    *args (argument list): the list of arguments\n"
-            "    body (statemt): the body of the lambda function\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A function object with the arguments and body specified."
+            R"(args,body
+            Args:
+
+                *args (argument list): the list of arguments
+                body (statemt): the body of the lambda function
+
+            Returns:
+
+            A function object with the arguments and body specified.)"
             )
     };
 

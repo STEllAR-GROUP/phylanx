@@ -48,6 +48,9 @@ endforeach()
 
 # Configure config for the install dir ...
 set(BLAZE_CONF_DIR ${blaze_DIR})
+if(PHYLANX_WITH_BLAZE_TENSOR)
+  set(BLAZE_TENSOR_CONF_DIR ${BlazeTensor_DIR})
+endif()
 set(HPX_CONF_DIR ${HPX_DIR})
 
 set(PHYLANX_CONF_PREFIX ${CMAKE_INSTALL_PREFIX})
@@ -93,7 +96,7 @@ install(
   EXPORT PhylanxTargets
   FILE PhylanxTargets.cmake
 #  NAMESPACE phylanx::
-  DESTINATION ${LIB}/cmake/${PHYLANX_PACKAGE_NAME}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PHYLANX_PACKAGE_NAME}
 )
 
 install(
@@ -101,7 +104,7 @@ install(
     "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${PHYLANX_PACKAGE_NAME}Config.cmake"
     "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PhylanxMacros.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${PHYLANX_PACKAGE_NAME}/${PHYLANX_PACKAGE_NAME}ConfigVersion.cmake"
-    DESTINATION ${LIB}/cmake/${PHYLANX_PACKAGE_NAME}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PHYLANX_PACKAGE_NAME}
   COMPONENT cmake
 )
 

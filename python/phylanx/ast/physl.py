@@ -26,19 +26,70 @@ mapped_methods = {
     "subtract": "__sub",
 }
 
+numpy_constants = {
+    "inf": 'inf',
+    "Inf": 'inf',
+    "Infinity": 'inf',
+    "PINF": 'inf',
+    "infty": 'inf',
+    "NINF": 'ninf',
+    "nan": 'nan',
+    "NaN": 'nan',
+    "NAN": 'nan',
+    "PZERO": 'PZERO',
+    "NZERO": 'NZERO',
+    "e": 'euler',
+    "euler_gamma": 'euler_gamma',
+    "pi": 'pi'
+}
+
 methods_supporting_dtype = [
+    'absolute',
     'arange',
+    'arccos',
+    'arccosh',
+    'arcsin',
+    'arcsinh',
+    'arctan',
+    'arctanh',
+    'cbrt',
+    'ceil',
+    'conj',
+    'cos',
+    'cosh',
     'cumsum',
     'dstack',
+    'erf',
+    'erfc',
+    'exp',
+    'exp2',
+    'exp10',
     'eye',
+    'floor',
     'hstack',
     'identity',
+    'imag',
+    'invcbrt',
+    'invsqrt',
     'linearmatrix',
     'linspace',
+    'log',
+    'log2',
+    'log10',
     'mean',
+    'normalize',
     'power',
     'prod',
+    'real',
+    'rint',
+    'sin',
+    'sinh',
+    'sqrt',
     'stack',
+    'tan',
+    'tanh',
+    'trace'
+    'trunc',
     'vstack',
 ]
 
@@ -52,10 +103,14 @@ def primitive_name(method_name):
     """
 
     primitive_name = mapped_methods.get(method_name)
-    if primitive_name is None:
-        primitive_name = method_name
+    if primitive_name:
+        return primitive_name
 
-    return primitive_name
+    constant_name = numpy_constants.get(method_name)
+    if constant_name:
+        return constant_name
+
+    return method_name
 
 
 def print_physl_src(src, with_symbol_info=False, tag=4):
@@ -99,7 +154,10 @@ def print_physl_src(src, with_symbol_info=False, tag=4):
 def get_symbol_info(symbol, name):
     """Adds symbol info (line and column number) to the symbol."""
 
-    return '%s$%d$%d' % (name, symbol.lineno, symbol.col_offset)
+    if name in numpy_constants.keys():
+        return name
+    else:
+        return '%s$%d$%d' % (name, symbol.lineno, symbol.col_offset)
 
 
 def remove_line(a):
@@ -480,7 +538,7 @@ class PhySL:
         }
         dtype = ''
         for k in node.keywords:
-            if k.arg is 'dtype':
+            if k.arg == 'dtype':
                 if isinstance(k.value, ast.Name):
                     type_str = phylanx_dtype.get(k.value.id)
                 if isinstance(k.value, ast.Str):

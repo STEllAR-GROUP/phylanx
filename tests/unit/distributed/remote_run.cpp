@@ -37,12 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "locality_id", std::vector<std::string>{"locality_id()"},
             &create_generic_function<locality_id_action>,
             &create_primitive<generic_function<locality_id_action>>,
-            "\n"
-            "Args:\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The locality of the currently executing code")
+            R"(
+            Args:
+
+            Returns:
+
+            The locality of the currently executing code)")
     };
 
     hpx::future<primitive_argument_type> locality_id(
@@ -116,7 +116,8 @@ int hpx_main(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::register_pattern("locality_id_action",
-        phylanx::execution_tree::primitives::locality_id_match_data);
+        phylanx::execution_tree::primitives::locality_id_match_data,
+        argv[0]);
 
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
