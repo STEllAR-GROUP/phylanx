@@ -41,8 +41,6 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             self.remote = None
             if 'cluster' in kwargs.keys():
                 self.remote = create_cluster(kwargs['cluster'])
-            else:
-                raise NotImplementedError("Unknown Phylanx argument '%s'" % (kwargs['cluster'],))
 
             python_src = self.get_python_src(f)
             python_ast = self.get_python_ast(python_src, f)
