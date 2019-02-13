@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     If given `(axes_a,axes_b)`, sum the products of two arrays
                     elements (components) over the axes specified by `a_axes`
                     and `b_axes`.
-                    The default is 2.
+                    The default is 2 (scalar axis).
 
             Returns:
 
