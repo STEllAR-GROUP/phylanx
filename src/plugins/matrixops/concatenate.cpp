@@ -382,8 +382,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return concatenate_flatten1d<T>(std::move(args));
         case 2:
             return concatenate_flatten2d<T>(std::move(args));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return concatenate_flatten3d<T>(std::move(args));
+#endif
         default:
             break;
         }
