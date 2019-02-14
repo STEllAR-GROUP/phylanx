@@ -751,7 +751,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ops = lhs.copy();
                 }
                 else
-                    ops = lhs.args();
+                    ops = std::move(lhs.args());
 
                 for (auto const& op : ops)
                 {
