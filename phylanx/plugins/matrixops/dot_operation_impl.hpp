@@ -44,8 +44,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return arr.vector();
         //case 2:
         //    return blaze::ravel(arr.matrix());
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         //case 3:
         //    return blaze::ravel(arr.tensor());
+#endif
         default:
              HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dot_operation::convert_to_1d",
@@ -711,7 +713,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (std::size_t j = 0UL; j != t2.columns(); ++j)
             {
                 auto slice2 = blaze::columnslice(t2, j);
-                result(i, j) = contraction2d2d(std::move(slice1), std::move(slice2));
+                result(i, j) =
+                    contraction2d2d(std::move(slice1), std::move(slice2));
             }
         }
         return primitive_argument_type{std::move(result)};
