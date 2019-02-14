@@ -47,8 +47,12 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(eye_operation_plugin,
     phylanx::execution_tree::primitives::eye_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(flatten_plugin,
     phylanx::execution_tree::primitives::flatten::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(flipud_operation_plugin,
+    phylanx::execution_tree::primitives::flip_operation::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(fliplr_operation_plugin,
+    phylanx::execution_tree::primitives::flip_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(flip_operation_plugin,
-    phylanx::execution_tree::primitives::flip_operation::match_data);
+    phylanx::execution_tree::primitives::flip_operation::match_data[2]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(gradient_operation_plugin,
     phylanx::execution_tree::primitives::gradient_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(hsplit_operation_plugin,

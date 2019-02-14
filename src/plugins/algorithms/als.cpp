@@ -30,24 +30,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::string>{
             "als(_1, _2, _3, _4, _5, _6)", "als(_1, _2, _3, _4, _5)"},
         &create_als, &create_primitive<als>,
-        "ratings, reg, num, iters, alpha, enable_output\n"
-        "Args:\n"
-        "\n"
-        "    ratings (matrix): the matrix representing user feedback over\n"
-        "                     different items\n"
-        "    reg (float): the regularization parameter\n"
-        "    num (integer): the number of factors\n"
-        "    iters (integer): the number of iterations\n"
-        "    alpha (float): the scaling factor\n"
-        "    enable_output(boolean): whether output should be enabled.\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "The algorithm returns a list of two matrices: [X, Y] :\n"
-        "X: user-factors matrix\n"
-        "Y: item-factors matrix\n"
-        "\n"
-        "Of possible interest: http://yifanhu.net/PUB/cf.pdf"
+        R"(ratings, reg, num, iters, alpha, enable_output
+        Args:
+
+            ratings (matrix): the matrix representing user feedback over
+                             different items
+            reg (float): the regularization parameter
+            num (integer): the number of factors
+            iters (integer): the number of iterations
+            alpha (float): the scaling factor
+            enable_output(boolean): whether output should be enabled.
+
+        Returns:
+
+        The algorithm returns a list of two matrices: [X, Y] :
+        X: user-factors matrix
+        Y: item-factors matrix
+
+        Of possible interest: http://yifanhu.net/PUB/cf.pdf)"
         )};
 
     ///////////////////////////////////////////////////////////////////////////

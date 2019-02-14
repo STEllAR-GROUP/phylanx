@@ -36,15 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("string",
             std::vector<std::string>{"string(__1)"},
             &create_string_output, &create_primitive<string_output>,
-            "args\n"
-            "Args:\n"
-            "\n"
-            "    *args (object list) : any objects\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A string created by concatenating the string "
-            "representations of the objects in `args`."
+            R"(args
+            Args:
+
+                *args (object list) : any objects
+
+            Returns:
+
+            A string created by concatenating the string
+            representations of the objects in `args`.)"
             )
     };
 

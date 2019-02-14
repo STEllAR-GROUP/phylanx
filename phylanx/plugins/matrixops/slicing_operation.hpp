@@ -70,7 +70,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        static std::string extract_function_name(std::string const& name);
 
         bool slice_rows_;
         bool slice_columns_;

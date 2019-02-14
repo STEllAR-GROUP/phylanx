@@ -28,20 +28,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("apply",
             std::vector<std::string>{"apply(_1, _2)"},
             &create_apply, &create_primitive<apply>,
-            "func, range\n"
-            "Call function `func` one time using the values in `range` "
-            "as the argument list.\n"
-            "\n"
-            "Args:\n"
-            "\n"
-            "    func(function) : a function\n"
-            "    range(iter) : an iterator with at least as many values \n"
-            "                  as function `func` has arguments.\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The return value of function `func` when called with the \n"
-            "arguments supplied by `range`."
+            R"(func, range
+            Call function `func` one time using the values in `range`
+            as the argument list.
+
+            Args:
+
+                func(function) : a function
+                range(iter) : an iterator with at least as many values
+                              as function `func` has arguments.
+
+            Returns:
+
+            The return value of function `func` when called with the
+            arguments supplied by `range`.)"
             )
     };
 
