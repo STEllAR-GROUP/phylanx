@@ -1,0 +1,30 @@
+# Copyright (c) 2019 Steven R. Brandt
+# Copyright (c) 2019 Bibek Wagle
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+from phylanx import PhylanxSession
+import subprocess as sub
+import re, os
+from phylanx.util import phyhelpex
+
+PhylanxSession.init(1)
+
+os.environ["PAGER"] = "cat"
+
+f= open("sphinx/reference/phyhelp.rst","w")
+
+p = sub.Popen(["../bin/physl","--docs"],stdout=sub.PIPE)
+for bline in p.stdout.readlines():
+    line = str(bline,'ASCII').strip()
+    g = re.match(r'pattern:\s*(\w+)',line)
+    if g:
+        pat = g.group(1)
+        try:
+            print("\nPrimitive:",pat,end='', file=f)
+            print("\n==========================================================", file=f)
+            print(re.sub(r'^(.*)',r'(\1)',re.sub('^\s*','',phyhelpex(pat))), file=f)
+            print('\n', file=f)
+        except:
+            print("")
