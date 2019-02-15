@@ -180,22 +180,12 @@
 <span id="phylanx::execution_tree::primitives::diag_operation::diag_operation__primitive_arguments_typeRR.ssCR.ssCR"></span><span class="target" id="classphylanx_1_1execution__tree_1_1primitives_1_1diag__operation_1af2dfdac54978f2c0bd1e930dfabc835f"></span><code class="descname">diag_operation</code><span class="sig-paren">(</span>primitive_arguments_type &amp;&amp;<em>operands</em>, std::string <em class="property">const</em> &amp;<em>name</em>, std::string <em class="property">const</em> &amp;<em>codename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N7phylanx14execution_tree10primitives14diag_operation14diag_operationERR24primitive_arguments_typeRNSt6stringERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Diag Operation Primitive. </p>
 <p>Constructs a diagonal matrix if the input is a vector, extracts the diagonal if the input is a matrix and returns unchanged input if the input is a scalar.</p>
-<p><p>If used inside PhySL: </p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span> <span class="n">diag</span> <span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">0</span> <span class="p">)</span>
+<p>If used inside PhySL: <div class="highlight-cpp"><div class="highlight"><pre><span></span> <span class="n">diag</span> <span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">0</span> <span class="p">)</span>
 
      <span class="nl">input</span> <span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">Vector</span> <span class="n">or</span> <span class="n">a</span> <span class="n">Matrix</span>
      <span class="nl">k</span>     <span class="p">:</span> <span class="n">Which</span> <span class="n">diagonal</span> <span class="n">to</span> <span class="n">extract</span> <span class="n">or</span> <span class="n">create</span><span class="p">,</span> <span class="k">default</span> <span class="n">being</span> <span class="mi">0</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal"><span class="pre">operands</span></code>: Vector of phylanx node data objects of size either one or two </li>
-<li><code class="docutils literal"><span class="pre">name</span></code>: The name of the primitive </li>
-<li><code class="docutils literal"><span class="pre">codename</span></code>: The codename of the primitive</li>
-</ul>
-</dd>
-</dl>
 </p>
 <p>This primitives replicates the functionality of <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.diag.html">numpy.diag</a> </p>
 </dd></dl>
