@@ -16,10 +16,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // explicitly instantiate the required functions
 
     ///////////////////////////////////////////////////////////////////////////
-    template blaze::DynamicVector<double> dot_operation::convert_to_1d(
-        ir::node_data<double>&&) const;
-
-    ///////////////////////////////////////////////////////////////////////////
     template primitive_argument_type dot_operation::dot0d(
         ir::node_data<double>&&, ir::node_data<double>&&) const;
 

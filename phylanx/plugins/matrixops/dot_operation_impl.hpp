@@ -42,11 +42,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return blaze::DynamicVector<T>(1, arr.scalar());
         case 1:
             return arr.vector();
-        //case 2:
-        //    return blaze::ravel(arr.matrix());
+        case 2:
+            return blaze::trans(blaze::ravel(arr.matrix()));
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        //case 3:
-        //    return blaze::ravel(arr.tensor());
+        case 3:
+            return blaze::trans(blaze::ravel(arr.tensor()));
 #endif
         default:
              HPX_THROW_EXCEPTION(hpx::bad_parameter,

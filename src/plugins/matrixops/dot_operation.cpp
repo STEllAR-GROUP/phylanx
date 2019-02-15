@@ -635,7 +635,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dot_operation::tensordot_range_axes",
-            generate_error_message("other cases"));
+            generate_error_message(
+                "range of ranges is not supportedby this version"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
