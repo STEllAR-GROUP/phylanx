@@ -9,6 +9,7 @@ set(tests
     argmax
     clip
     column_slicing
+    concatenate
     constant
     count_nonzero
     cross_operation
