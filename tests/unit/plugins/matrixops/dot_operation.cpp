@@ -751,11 +751,13 @@ int main(int argc, char* argv[])
 {
     // outer product
     test_dot_operation("outer(6., 7.)", "[[42.]]");
-    test_dot_operation("outer(6., [1, 2, 7])", "[[6., 12., 42.]]");
-    test_dot_operation("outer(3., [[1, 2, 7]])", "[[3., 6., 21.]]");
     test_dot_operation("outer([0, 7, 1], 6)", "[[ 0], [42], [ 6]]");
     test_dot_operation("outer([1, 2, 3], [4, 5, 6, 7])",
         "[[ 4,  5,  6,  7],[ 8, 10, 12, 14],[12, 15, 18, 21]]");
+    test_dot_operation("outer(6., [1, 2, 7])", "[[6., 12., 42.]]");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_dot_operation("outer(3., [[1, 2, 7]])", "[[3., 6., 21.]]");
     test_dot_operation("outer([1, 2, 3], [[42, 1, 1],[4, 5, 6]])",
         "[[ 42,   1,   1,   4,   5,   6],[ 84,   2,   2,   8,  10,  12],"
         "[126,   3,   3,  12,  15,  18]]");
@@ -765,7 +767,6 @@ int main(int argc, char* argv[])
     test_dot_operation("outer([[1, 1],[2, 3]], [[1, 4, 5]])",
         "[[ 1,  4,  5],[ 1,  4,  5],[ 2,  8, 10],[ 3, 12, 15]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation("outer(3, [[[1,2],[2,3]]])", "[[3, 6, 6, 9]]");
     test_dot_operation("outer([1, 2, 3], [[[42, 1]],[[4, 5]]])",
         "[[ 42,   1,   4,   5], [ 84,   2,   8,  10], [126,   3,  12,  15]]");
