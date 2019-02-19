@@ -19,6 +19,8 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/process/env.hpp>
+#include <boost/beast/core/detail/base64.hpp>
 
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
@@ -43,6 +45,14 @@ std::string read_user_code(std::string const& path)
     }
 
     return str_stream.str();
+}
+
+std::tuple<bool, std::string> get_env_physl_ir() {
+    auto e = boost::this_process::environment();
+    auto env_physl_ir = e.find("PHYSL_IR");
+    if(env_physl_ir == e.end()) { return std::make_tuple(false, std::string{}); }
+    auto physl_ir_str = boost::beast::detail::base64_decode(env_physl_ir.second);
+    return std::make_tuple(true, physl_ir_str);
 }
 
 void dump_ast(std::vector<phylanx::ast::expression> const& ast, std::string path)
@@ -240,10 +250,21 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
     // name for the AST dump file, if requested and a name is not provided
     bool code_is_file = false;
     fs::path code_source_path;
+    bool physl_ir_env_found = false;
+
+    if (vm.count("no-ast-env") < 1) {
+        auto physl_ir = get_env_physl_ir();
+        physl_ir_env_found = std::get<0>(phsyl_ir);
+        if(physl_ir_env_found) {
+            ast = load_ast_dump(std::get<1>(physl_ir));
+            code_source_name = "<environment_variable>";
+        }
+    }
 
     // Determine if an AST dump is to be loaded
-    if (vm.count("load-ast") != 0)
+    if (vm.count("load-ast") != 0 && physl_ir_env_found == false)
     {
+
         if (vm.count("code"))
         {
             HPX_THROW_EXCEPTION(hpx::commandline_option_error,
@@ -257,7 +278,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
         code_source_name = fs::path(ast_dump_file).filename().string();
     }
     // Read PhySL source code from a file or the provided argument
-    else
+    else if(physl_ir_env_found == false)
     {
         // PhySL source code
         std::string user_code;
@@ -474,7 +495,7 @@ void interpreter(po::variables_map const& vm)
         positional_args = vm["positional"].as<std::vector<std::string>>();
     }
 
-    // Origin of PhySL code. It is either file name or <command_line>
+    // Origin of PhySL code. It is either file name, <command_line>, or <environment variable>
     std::string code_source_name;
 
     // The AST that is either generated from PhySL code or loaded from an AST
