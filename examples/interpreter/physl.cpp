@@ -221,6 +221,9 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "file to read transformation rules from")
             ("no-ast-env,e", po::value<std::string>()->implicit_value("<none>"),
                 "do not check PHYSL_IR for PhySL code")
+            ("b64-physl,b", po::value<std::string>()->implicit_value("<none>"),
+                "PhySL code is provided to the interpreter at the commandline, "
+                "as a base64 encoded string")
             ("dump-ast,d", po::value<std::string>()->implicit_value("<none>"),
                 "file to dump AST to")
             ("load-ast,l", po::value<std::string>(),
@@ -312,8 +315,15 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
         }
     }
 
+    // Determine if an AST dump is to be loaded from command line
+    if (vm.count("b64-physl") != 0 && physl_ir_env_found == false)
+    {
+        std::string user_code = vm["b64-physl"].as<std::string>();
+        ast = phylanx::ast::generate_ast(user_code);
+        code_source_name = "<command_line>";
+    }
     // Determine if an AST dump is to be loaded
-    if (vm.count("load-ast") != 0 && physl_ir_env_found == false)
+    else if (vm.count("load-ast") != 0 && physl_ir_env_found == false)
     {
 
         if (vm.count("code"))
