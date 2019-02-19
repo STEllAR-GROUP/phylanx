@@ -170,6 +170,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "of the created execution tree as a Newick tree to a file")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
+            ("no-ast-env,e", po::value<std::string>()->implicit_value("<none>"),
+                "do not check PHYSL_IR for PhySL code")
             ("dump-ast,d", po::value<std::string>()->implicit_value("<none>"),
                 "file to dump AST to")
             ("load-ast,l", po::value<std::string>(),
