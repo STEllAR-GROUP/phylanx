@@ -1,0 +1,2307 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Primitives &mdash; Phylanx auto_docs_from_helptext documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="Phylanx auto_docs_from_helptext documentation" href="../index.html"/>
+        <link rel="up" title="References" href="../reference.html"/>
+        <link rel="next" title="Acknowledgements" href="../acknowledgement.html"/>
+        <link rel="prev" title="API reference" href="api.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Phylanx
+          
+
+          
+            
+            <img src="../_static/PHYLANX_STELLAR.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                auto_docs_from_helptext
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">References</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api.html">API reference</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Primitives</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#add">__add</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#and">__and</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#div">__div</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#eq">__eq</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ge">__ge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gen">__gen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gt">__gt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#le">__le</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lt">__lt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minus">__minus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mul">__mul</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ne">__ne</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#not">__not</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#or">__or</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sub">__sub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xor">__xor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decomposition">_decomposition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linear-solver">_linear_solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#all">all</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#als">als</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#amax">amax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#amin">amin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#any">any</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#append">append</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apply">apply</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#arange">arange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#argmax">argmax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#argmin">argmin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#car-cdr">car_cdr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clip">clip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#concatenate">concatenate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#constant">constant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#constant-like">constant_like</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#count-nonzero">count_nonzero</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cout">cout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cross">cross</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cumprod">cumprod</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cumsum">cumsum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#debug">debug</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#define">define</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#determinant">determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#diag">diag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dict">dict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dot">dot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dstack">dstack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enable-tracing">enable_tracing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#expand-dims">expand_dims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#eye">eye</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-read">file_read</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-read-csv">file_read_csv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-read-hdf5">file_read_hdf5</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-write">file_write</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-write-csv">file_write_csv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-write-hdf5">file_write_hdf5</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filter">filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flatten">flatten</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flip">flip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fliplr">fliplr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flipud">flipud</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fmap">fmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fold-left">fold_left</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fold-right">fold_right</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#for">for</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#for-each">for_each</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#format">format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-seed-action">get_seed_action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gradient">gradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hsplit">hsplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hstack">hstack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#identity">identity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#if">if</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inverse">inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lambda">lambda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#len">len</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linearmatrix">linearmatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linspace">linspace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list">list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logical-and">logical_and</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logical-not">logical_not</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logical-or">logical_or</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logical-xor">logical_xor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logsumexp">logsumexp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lra">lra</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-list">make_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#maximum">maximum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mean">mean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minimum">minimum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ndim">ndim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nonzero">nonzero</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-block">parallel_block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-map">parallel_map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#power">power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prod">prod</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random">random</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#range">range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#repeat">repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reshape">reshape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-seed-action">set_seed_action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shape">shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shuffle">shuffle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slice">slice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slice-column">slice_column</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slice-page">slice_page</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slice-row">slice_row</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softmax">softmax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#squeeze">squeeze</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stack">stack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#std">std</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#store">store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#string">string</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sum">sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tile">tile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transpose">transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unique">unique</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#var">var</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vsplit">vsplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vstack">vstack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#where">where</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#while">while</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Phylanx</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../reference.html">References</a> &raquo;</li>
+        
+      <li>Primitives</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/STEllAR-GROUP/phylanx/blob/master/docs/sphinx/reference/phyhelp.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="primitives">
+<h1>Primitives<a class="headerlink" href="#primitives" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="add">
+<h2>__add<a class="headerlink" href="#add" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__add (x0, x1)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><blockquote>
+<div>x0 (number): An addendn”</div></blockquote>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>x1 (number list): A list of one or more addends.n”</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The sum of all addends.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="and">
+<h2>__and<a class="headerlink" href="#and" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__and (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument
+<a href="#id3"><span class="problematic" id="id4">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<p>Returns:</p>
+<p class="last">The logical and of <cite>a</cite> and <cite>b</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="div">
+<h2>__div<a class="headerlink" href="#div" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__div (num, den)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><blockquote>
+<div>x0 (number): The numerator valuen”</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>x1 (number list): A list of denominator values.n”</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The result of dividing all arguments.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="eq">
+<h2>__eq<a class="headerlink" href="#eq" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__eq (arg1, arg2, arg3)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (number) : A value to compare
+arg2 (number) : Another value to compare
+arg3 (boolean, optional) : whether to use a</p>
+<blockquote>
+<div>numeric return value.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>if arg3 is true</dt>
+<dd>return 1 if arg1 == arg2, 0 otherwise.</dd>
+<dt>else</dt>
+<dd>return True if arg1 == arg2, False otherwise.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="ge">
+<h2>__ge<a class="headerlink" href="#ge" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__ge (arg1, arg2, arg3)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (number) : A value to compare
+arg2 (number) : Another value to compare
+arg3 (boolean, optional) : whether to use a</p>
+<blockquote>
+<div>numeric return value.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>if arg3 is true</dt>
+<dd>return 1 if arg1 &gt;= arg2, 0 otherwise.</dd>
+<dt>else</dt>
+<dd>return True if arg1 &gt;= arg2, False otherwise.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="gen">
+<h2>__gen<a class="headerlink" href="#gen" title="Permalink to this headline">¶</a></h2>
+<p>__gen (arg)
+Args:</p>
+<blockquote>
+<div>arg (float) : a floating point number</div></blockquote>
+<p>Returns:</p>
+<p>This function implements function <cite>absolute</cite> from Python’s math library.</p>
+</div>
+<div class="section" id="gt">
+<h2>__gt<a class="headerlink" href="#gt" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__gt (arg1, arg2, arg3)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (number) : A value to compare
+arg2 (number) : Another value to compare
+arg3 (boolean, optional) : whether to use a</p>
+<blockquote>
+<div>numeric return value.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>if arg3 is true</dt>
+<dd>return 1 if arg1 &gt; arg2, 0 otherwise.</dd>
+<dt>else</dt>
+<dd>return True if arg1 &gt; arg2, False otherwise.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="le">
+<h2>__le<a class="headerlink" href="#le" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__le (arg1, arg2, arg3)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (number) : A value to compare
+arg2 (number) : Another value to compare
+arg3 (boolean, optional) : whether to use a</p>
+<blockquote>
+<div>numeric return value.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>if arg3 is true</dt>
+<dd>return 1 if arg1 &lt;= arg2, 0 otherwise.</dd>
+<dt>else</dt>
+<dd>return True if arg1 &lt;= arg2, False otherwise.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="lt">
+<h2>__lt<a class="headerlink" href="#lt" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__lt (arg1, arg2, arg3)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (number) : A value to compare
+arg2 (number) : Another value to compare
+arg3 (boolean, optional) : whether to use a</p>
+<blockquote>
+<div>numeric return value.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>if arg3 is true</dt>
+<dd>return 1 if arg1 &lt; arg2, 0 otherwise.</dd>
+<dt>else</dt>
+<dd>return True if arg1 &lt; arg2, False otherwise.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="minus">
+<h2>__minus<a class="headerlink" href="#minus" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__minus (arg)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (number): a numeric valuen”</div></blockquote>
+<p>Returns:</p>
+<p class="last">The negated value arg.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="mul">
+<h2>__mul<a class="headerlink" href="#mul" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__mul (x0, x1)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><blockquote>
+<div>x0 (number): The factorn”</div></blockquote>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>x1 (number list): A list of one or more factors.n”</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The product of all factors.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="ne">
+<h2>__ne<a class="headerlink" href="#ne" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__ne (arg1, arg2, arg3)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (number) : A value to compare
+arg2 (number) : Another value to compare
+arg3 (boolean, optional) : whether to use a</p>
+<blockquote>
+<div>numeric return value.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>if arg3 is true</dt>
+<dd>return 1 if arg1 != arg2, 0 otherwise.</dd>
+<dt>else</dt>
+<dd>return True if arg1 != arg2, False otherwise.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="not">
+<h2>__not<a class="headerlink" href="#not" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__not (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument</div></blockquote>
+<p>Returns:</p>
+<p class="last">The opposite of <cite>a</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="or">
+<h2>__or<a class="headerlink" href="#or" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__or (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument
+<a href="#id9"><span class="problematic" id="id10">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The logical or of <cite>a</cite> and <cite>b</cite>.</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="sub">
+<h2>__sub<a class="headerlink" href="#sub" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__sub (x0, x1)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><blockquote>
+<div>x0 (number): The value to subtract fromn”</div></blockquote>
+<p><a href="#id11"><span class="problematic" id="id12">*</span></a>x1 (number list): A list of values to subtract.n”</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The difference of all arguments.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="xor">
+<h2>__xor<a class="headerlink" href="#xor" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__xor (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument
+<a href="#id13"><span class="problematic" id="id14">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The logical xor of <cite>a</cite> and <cite>b</cite>.</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="decomposition">
+<h2>_decomposition<a class="headerlink" href="#decomposition" title="Permalink to this headline">¶</a></h2>
+<p>_decomposition (m)
+Args:</p>
+<blockquote>
+<div>m (matrix): a matrix</div></blockquote>
+<p>Returns:</p>
+<p>Computes LU decomposition of a general matrix in form of A = L*U*P where P is a permutation matrix, L is a lower triangular matrix, and U is an upper triangular matrix.</p>
+</div>
+<div class="section" id="linear-solver">
+<h2>_linear_solver<a class="headerlink" href="#linear-solver" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>_linear_solver (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (matrix) : a matrix
+b (vector) : a vector</div></blockquote>
+<p>Returns:</p>
+<p class="last">A matrix <cite>x</cite> such that <cite>a x = b</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="all">
+<h2>all<a class="headerlink" href="#all" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>all (a, axis, keepdims, initial)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (matrix or vector of numbers) : the input values</div></blockquote>
+<p>Returns:</p>
+<p class="last">True if all values in the matrix/vector are nonzero, False
+otherwise.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="als">
+<h2>als<a class="headerlink" href="#als" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>als (ratings, reg, num, iters, alpha, enable_output)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>ratings (matrix): the matrix representing user feedback over</dt>
+<dd>different items</dd>
+</dl>
+<p>reg (float): the regularization parameter
+num (integer): the number of factors
+iters (integer): the number of iterations
+alpha (float): the scaling factor
+enable_output(boolean): whether output should be enabled.</p>
+</div></blockquote>
+<p>Returns:</p>
+<p>The algorithm returns a list of two matrices: [X, Y] :
+X: user-factors matrix
+Y: item-factors matrix</p>
+<p class="last">Of possible interest: <a class="reference external" href="http://yifanhu.net/PUB/cf.pdf">http://yifanhu.net/PUB/cf.pdf</a></p>
+</dd>
+</dl>
+</div>
+<div class="section" id="amax">
+<h2>amax<a class="headerlink" href="#amax" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>amax (a, axis, keepdims, initial)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (vector or matrix): a scalar, a vector or a matrix
+axis (optional, integer): an axis to max along. By default, “</p>
+<blockquote>
+<div>flattened input is used.</div></blockquote>
+<dl class="docutils">
+<dt>keepdims (optional, bool): If this is set to True, the axes which “</dt>
+<dd>are reduced are left in the result as dimensions with size ”
+one. False by default</dd>
+<dt>initial (optional, scalar): The minimum value of an output</dt>
+<dd>element.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns the maximum of an array or maximum along an axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="amin">
+<h2>amin<a class="headerlink" href="#amin" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>amin (a, axis, keepdims, initial)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (vector or matrix): a scalar, a vector or a matrix
+axis (optional, integer): an axis to min along. By default, “</p>
+<blockquote>
+<div>flattened input is used.</div></blockquote>
+<dl class="docutils">
+<dt>keepdims (optional, bool): If this is set to True, the axes which “</dt>
+<dd>are reduced are left in the result as dimensions with size ”
+one. False by default</dd>
+<dt>initial (optional, scalar): The maximum value of an output</dt>
+<dd>element.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns the minimum of an array or minimum along an axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="any">
+<h2>any<a class="headerlink" href="#any" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>any (a, axis, keepdims, initial)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (matrix or vector of numbers) : the input values</div></blockquote>
+<p>Returns:</p>
+<p class="last">True if any values in the matrix/vector are nonzero, False
+otherwise.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="append">
+<h2>append<a class="headerlink" href="#append" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>append (li,val)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>li (list) : a list to which a value may be appended
+val (object) : a value to append</div></blockquote>
+<p>Returns:</p>
+<p class="last">A new list with the value <cite>val</cite> appended. Note that <cite>li</cite> is
+not modified by this operation.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="apply">
+<h2>apply<a class="headerlink" href="#apply" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>apply (func, range)</dt>
+<dd><p class="first">Call function <cite>func</cite> one time using the values in <cite>range</cite>
+as the argument list.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>func(function) : a function
+range(iter) : an iterator with at least as many values</p>
+<blockquote>
+<div>as function <cite>func</cite> has arguments.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The return value of function <cite>func</cite> when called with the
+arguments supplied by <cite>range</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="arange">
+<h2>arange<a class="headerlink" href="#arange" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>arange (start, stop, step)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>start (number) <span class="classifier-delimiter">:</span> <span class="classifier">Start of interval. The interval includes this</span></dt>
+<dd>value. The default start value is 0.</dd>
+<dt>stop (number) <span class="classifier-delimiter">:</span> <span class="classifier">End of interval. The interval does not include</span></dt>
+<dd>this value, except in some cases where step is
+not an integer and floating point round-off
+affects the length of out.</dd>
+<dt>step (number, optional) <span class="classifier-delimiter">:</span> <span class="classifier">Spacing between values. For any</span></dt>
+<dd>output out, this is the distance between two adjacent
+values, <cite>out[i+1] - out[i]</cite>. The default step size is <cite>1</cite>.
+If step is specified as a position argument, start must
+also be given.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Array of evenly spaced values. For floating point arguments, the
+length of the result is <cite>ceil((stop - start)/step)</cite>. Because of
+floating point overflow, this rule may result in the last element
+of out being greater than stop.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="argmax">
+<h2>argmax<a class="headerlink" href="#argmax" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>argmax (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array) : a vector, matrix, or tensor
+axis (optional, int): the axis along which to find the max</div></blockquote>
+<p>Returns:</p>
+<p class="last">The index of the maximum value in the array. If an axis is
+specified, a vector of maxima along the axis is returned.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="argmin">
+<h2>argmin<a class="headerlink" href="#argmin" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>argmin (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array) : a vector, matrix, or tensor
+axis (optional, int) : the axis along which to find the min</div></blockquote>
+<p>Returns:</p>
+<p class="last">The index of the minimum value in the array. If an axis is
+specified, a vector of minima along the axis is returned.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="assert">
+<h2>assert<a class="headerlink" href="#assert" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>assert (cond)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>cond (boolean expression) : if not true, raise an AssertionError</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="block">
+<h2>block<a class="headerlink" href="#block" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>block (stmt)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id15"><span class="problematic" id="id16">*</span></a>stmt (statement list) :  a list of statements.</div></blockquote>
+<p>Returns:</p>
+<p class="last">The value of the last statement.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="car-cdr">
+<h2>car_cdr<a class="headerlink" href="#car-cdr" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>car_cdr (li)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>li (list) : a list</div></blockquote>
+<p>Returns:</p>
+<p class="last">car returns the head of a list, e.g. car([1 ,2, 3]) returns 1
+cdr returns the tail of a list, e.g. cdr([1, 2, 3]) returns [2, 3]
+caar() is the same as car(car())
+cadr() is the same as car(cdr())
+etc.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="clip">
+<h2>clip<a class="headerlink" href="#clip" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>clip (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : array containing elements to clip
+a_min : Minimum value, it may be scalar or array_like or None
+a_max : Maximum valus, it may be scalar or array_like or None</div></blockquote>
+<p>Returns:</p>
+<p class="last">An array with the elements of a, but where values &lt; a_min are replaced with
+a_min, and those &gt; a_max with a_max.”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="concatenate">
+<h2>concatenate<a class="headerlink" href="#concatenate" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>concatenate (ar, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>ar (array) : sequence of array_like
+axis (optional, int) : the axis along which the arrays will be joined,</p>
+<blockquote>
+<div>default is 0, if axis is None arrays are flattened
+before use</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The joined sequence of arrays along an existing axis.”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="constant">
+<h2>constant<a class="headerlink" href="#constant" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>constant (arg1, arg2)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg1 (float): a constant value
+arg2 (int or shape, optional): the number of values</div></blockquote>
+<p>Returns:</p>
+<p class="last">An array of size arg2 with each element equal to arg1.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="constant-like">
+<h2>constant_like<a class="headerlink" href="#constant-like" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>constant_like (arg1, arg2)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg1 (float): a constant value
+arg2 (array-like): the shape of this array-like will be used as</p>
+<blockquote>
+<div>to determine the shape of the result</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">An array of the same size as arg2 with each element equal to arg1.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="count-nonzero">
+<h2>count_nonzero<a class="headerlink" href="#count-nonzero" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>count_nonzero (ar)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>ar (array) : a numeric array of values</div></blockquote>
+<p>Returns:</p>
+<p class="last">The number of array elements that are not zero.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="cout">
+<h2>cout<a class="headerlink" href="#cout" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>cout (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><a href="#id17"><span class="problematic" id="id18">*</span></a>args (list of variables) <span class="classifier-delimiter">:</span> <span class="classifier">print a string representation</span></dt>
+<dd>of the variables to stdout.</dd>
+</dl>
+</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="cross">
+<h2>cross<a class="headerlink" href="#cross" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>cross (v1, v2)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v1 (vector) : a vector
+v2 (vector) : a vector</div></blockquote>
+<p>Returns:</p>
+<p class="last">The cross product of <cite>v1</cite> and <cite>v2</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="cumprod">
+<h2>cumprod<a class="headerlink" href="#cumprod" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>cumprod (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array_like) : input array
+axis (int, optional) : Axis along which the cumulative product is</p>
+<blockquote>
+<div>computed. The default (None) is to compute the cumprod over
+the flattened array.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Return the cumulative product of the elements along a given axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="cumsum">
+<h2>cumsum<a class="headerlink" href="#cumsum" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>cumsum (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array_like) : input array
+axis (int, optional) : Axis along which the cumulative sum is</p>
+<blockquote>
+<div>computed. The default (None) is to compute the cumsum over
+the flattened array.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Return the cumulative sum of the elements along a given axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="debug">
+<h2>debug<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>debug (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><a href="#id19"><span class="problematic" id="id20">*</span></a>args (list of variables) <span class="classifier-delimiter">:</span> <span class="classifier">print a string representation</span></dt>
+<dd>of the variables to stderr.</dd>
+</dl>
+</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="define">
+<h2>define<a class="headerlink" href="#define" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>define (name,args,body)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>name (string) : name of symbol to define
+args (optional,list of symbols) : if  present,</p>
+<blockquote>
+<div>this defines a function.</div></blockquote>
+<dl class="docutils">
+<dt>body (expression) <span class="classifier-delimiter">:</span> <span class="classifier">value to bind to symbol <cite>name</cite></span></dt>
+<dd>or body of lambda function.</dd>
+</dl>
+</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="determinant">
+<h2>determinant<a class="headerlink" href="#determinant" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>determinant (arg)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (matrix) : a square matrix of numbers</div></blockquote>
+<p>Returns:</p>
+<p class="last">The determinant of the matrix represented by <cite>arg</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="diag">
+<h2>diag<a class="headerlink" href="#diag" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>diag (m)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>m (matrix) : a square matrix</div></blockquote>
+<p>Returns:</p>
+<p class="last">A vector created from the diagonal elements of <cite>m</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="dict">
+<h2>dict<a class="headerlink" href="#dict" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>dict (lili)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>lili (list of lists, optional) : a list of 2-element lists</div></blockquote>
+<p>Returns:</p>
+<p class="last">The dict primitive returns a dictionary object constructed
+from a list of 2-element lists. The 2-element lists provide
+a key in the first element and a value in the second.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="dot">
+<h2>dot<a class="headerlink" href="#dot" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>dot (v1, v2)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v1 (array) : a scalar, vector, matrix or a tensor
+v2 (array) : a scalar, vector, matrix or a tensor</div></blockquote>
+<p>Returns:</p>
+<p class="last">The dot product of two arrays: <cite>v1</cite> and <cite>v2</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="dstack">
+<h2>dstack<a class="headerlink" href="#dstack" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>dstack (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id21"><span class="problematic" id="id22">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
+<p>Returns:</p>
+<p class="last">A vertically (depth wise) stacked sequence of array-like objects</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="enable-tracing">
+<h2>enable_tracing<a class="headerlink" href="#enable-tracing" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>enable_tracing (eon)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>eon (boolean) : set to true/false to enable/disable tracing.</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="expand-dims">
+<h2>expand_dims<a class="headerlink" href="#expand-dims" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>expand_dims (arg, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (number or list of numbers): number or list of numbers
+axis (integer): an axis to expand along</div></blockquote>
+<p>Returns:</p>
+<p class="last">Expand the shape of an array by adding a dimension.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="eye">
+<h2>eye<a class="headerlink" href="#eye" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>eye (N, M, k)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>N (integer) : number of rows in the output.
+M (optional, integer) : number of columns in the output. If</p>
+<blockquote>
+<div>None, defaults to N.</div></blockquote>
+<dl class="docutils">
+<dt>k (optional, integer) <span class="classifier-delimiter">:</span> <span class="classifier">index of the diagonal: 0 (the default)</span></dt>
+<dd>refers to the main diagonal, a positive value refers to an
+upper diagonal, and a negative value to a lower diagonal.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Return an N x M matrix with ones on the k-th diagonal and zeros
+elsewhere.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="file-read">
+<h2>file_read<a class="headerlink" href="#file-read" title="Permalink to this headline">¶</a></h2>
+<p>file_read (fname)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>fname (string) : a file name</div></blockquote>
+<p>Returns:</p>
+<p>An object deserialized from the data in fname.</p>
+</div></blockquote>
+</div>
+<div class="section" id="file-read-csv">
+<h2>file_read_csv<a class="headerlink" href="#file-read-csv" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>file_read_csv (fname)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>fname (string) : file name</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns a matrix representation of the contents of a
+csv file.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="file-read-hdf5">
+<h2>file_read_hdf5<a class="headerlink" href="#file-read-hdf5" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>file_read_hdf5 (fname,dsetname)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>fname (string) : a file name
+dsetname (string) : a dataset name</div></blockquote>
+<p>Returns:</p>
+<p class="last">The dataset, either a matrix or vector.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="file-write">
+<h2>file_write<a class="headerlink" href="#file-write" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>file_write (fname, obj)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>fname (string): the file in which to save the data
+obj (object): the object to serialize</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="file-write-csv">
+<h2>file_write_csv<a class="headerlink" href="#file-write-csv" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>file_write_csv (fname, m)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>fname (string): a file name
+m (array or matrix): an object to store in the file.</div></blockquote>
+<p>Returns:</p>
+<p class="last">The matrix written.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="file-write-hdf5">
+<h2>file_write_hdf5<a class="headerlink" href="#file-write-hdf5" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>file_write_hdf5 (fname,dsetname,data)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>fname (string) : a file name
+dsetname (string) : a dataset name
+data (matrix or vector) : a data set</div></blockquote>
+<p>Returns:</p>
+<p class="last">Zero on success.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="filter">
+<h2>filter<a class="headerlink" href="#filter" title="Permalink to this headline">¶</a></h2>
+<p>filter (func, iter)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>func (function) : a function that takes one arg and returns a boolean
+iter (iterator) : an iterator</div></blockquote>
+<p>Returns:</p>
+<p>filter applies <cite>func</cite> to each item in iter and creates a list consisting
+of the values for which <cite>func</cite> evaluated to true.</p>
+<p>Example:</p>
+<blockquote>
+<div><p>from phylanx.ast import Phylanx</p>
+<p>&#64;Phylanx
+def foo():</p>
+<blockquote>
+<div>print(filter(lambda a : a &gt; 1, [1, 2, 3, 4]))</div></blockquote>
+<p>foo()</p>
+</div></blockquote>
+<p>Prints [2, 3, 4]</p>
+</div></blockquote>
+</div>
+<div class="section" id="flatten">
+<h2>flatten<a class="headerlink" href="#flatten" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>flatten (a, order)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array) : a scalar, vector, matrix or a tensor
+order (optional, char): ‘C’ means row-major(C-style),</p>
+<blockquote>
+<div>‘F’ means column-major(Fortran-style),
+The default is ‘C’.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">A copy of the array collapsed into one dimension.”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="flip">
+<h2>flip<a class="headerlink" href="#flip" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>flip (a, axes)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array) : a scalar, a vector a matrix or a tensor
+axes (optional, integer or tuple of integers): an axis to flip</p>
+<blockquote>
+<div>over. The default, axis=None, will flip over all of the axes
+of the input array.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Reverses the order of elements in an array along the given axes</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="fliplr">
+<h2>fliplr<a class="headerlink" href="#fliplr" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>fliplr (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array) : a matrix or a tensor</div></blockquote>
+<p>Returns:</p>
+<p class="last">Flip array in the left/right direction</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="flipud">
+<h2>flipud<a class="headerlink" href="#flipud" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>flipud (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array) : a vector a matrix or a tensor</div></blockquote>
+<p>Returns:</p>
+<p class="last">Flip array in the up/down direction</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="fmap">
+<h2>fmap<a class="headerlink" href="#fmap" title="Permalink to this headline">¶</a></h2>
+<p>fmap (func, listv)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>func (function) : a function that takes one argument
+listv (iterator) : a set of values</div></blockquote>
+<p>Returns:</p>
+<p>A new list created by applying the function <cite>func</cite> to each
+item in list <cite>listv</cite>.</p>
+</div></blockquote>
+</div>
+<div class="section" id="fold-left">
+<h2>fold_left<a class="headerlink" href="#fold-left" title="Permalink to this headline">¶</a></h2>
+<p>fold_left (fun, ini, range)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>fun (function) <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes a two float arguments</span></dt>
+<dd>and returns a float argument</dd>
+</dl>
+<p>ini (float) : an initial value
+range (iterator) : a list or iterator</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><blockquote>
+<div>This function is equivalent to the Python code:</div></blockquote>
+<dl class="docutils">
+<dt>def fl(f, i, r):</dt>
+<dd><p class="first">c = i
+for n in r:</p>
+<blockquote>
+<div>c = f(c, n)</div></blockquote>
+<p class="last">return c</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Example(s):</p>
+<blockquote>
+<div><p>&#64;Phylanx
+def foo():</p>
+<blockquote>
+<div>v = fold_left(lambda a, b : 2 * a - b, 3, [1, 2, 3])
+print(v)</div></blockquote>
+<p>foo()</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>Result:</dt>
+<dd>13</dd>
+</dl>
+</div></blockquote>
+</div>
+<div class="section" id="fold-right">
+<h2>fold_right<a class="headerlink" href="#fold-right" title="Permalink to this headline">¶</a></h2>
+<p>fold_right (fun, ini, range)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>fun (function) <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes a two float arguments</span></dt>
+<dd>and returns a float argument</dd>
+</dl>
+<p>ini (float) : an initial value
+range (iterator) : a list or iterator</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><blockquote>
+<div>This function is equivalent to the Python code:</div></blockquote>
+<dl class="docutils">
+<dt>def fr(f, i, r):</dt>
+<dd><p class="first">c = i
+for n in r:</p>
+<blockquote>
+<div>c = f(n, c)</div></blockquote>
+<p class="last">return c</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Example(s):</p>
+<blockquote>
+<div><p>&#64;Phylanx
+def foo():</p>
+<blockquote>
+<div>v = fold_right(lambda a, b : 2 * a - b, 3, [1, 2, 3])
+print(v)</div></blockquote>
+<p>foo()</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>Result:</dt>
+<dd>1</dd>
+</dl>
+</div></blockquote>
+</div>
+<div class="section" id="for">
+<h2>for<a class="headerlink" href="#for" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>for (init, cond, reinit, body)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>init (statements) : initialize loop variables
+cond (expression) : boolean expression, if true the loop continues
+reinit (statements) : update variables evaluated by <cite>cond</cite>
+body (statements) : code to execute as the body of the loop</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The value returned from the last iteration, <cite>nil</cite> otherwise.</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="for-each">
+<h2>for_each<a class="headerlink" href="#for-each" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>for_each (func, range)</dt>
+<dd><p class="first">The for_each primitive calls a function <cite>func</cite> for
+each item in the iterator.
+Args:</p>
+<blockquote>
+<div>func (function): a function that takes one argument
+range (iter): an iterator</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>The value returned from the last iteration, <cite>nil</cite> otherwise.</div></blockquote>
+<p>Examples:</p>
+<blockquote>
+<div><p>&#64;Phylanx
+def foo():</p>
+<blockquote>
+<div>for_each(lambda a : print(a), [1, 2])</div></blockquote>
+<p>foo()</p>
+</div></blockquote>
+<p class="last">Prints 1 and 2 on individual lines.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="format">
+<h2>format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h2>
+<p>format (s,args)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>s (string) : a format string
+<a href="#id23"><span class="problematic" id="id24">*</span></a>args (arg list, optional) : a list of arguments</div></blockquote>
+<p>Returns:</p>
+<p>A formatted string, with each <cite>{}</cite> in s replaced by
+a value from <cite>*args</cite>.</p>
+</div></blockquote>
+</div>
+<div class="section" id="get-seed-action">
+<h2>get_seed_action<a class="headerlink" href="#get-seed-action" title="Permalink to this headline">¶</a></h2>
+<p>get_seed_action (Args:)</p>
+<blockquote>
+<div><p>Returns:</p>
+<p>The seed used to generate random numbers.</p>
+</div></blockquote>
+</div>
+<div class="section" id="gradient">
+<h2>gradient<a class="headerlink" href="#gradient" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>gradient (m, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>m (vector or matrix) : values to take the gradient of
+axis (optional, integer) : the axis along which to take the gradient</div></blockquote>
+<p>Returns:</p>
+<p class="last">The numerical gradient, i.e., differences of adjacent values
+along the specified axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="hsplit">
+<h2>hsplit<a class="headerlink" href="#hsplit" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>hsplit (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id25"><span class="problematic" id="id26">*</span></a>args (m - matrix or row vector, N - number of blocks)</div></blockquote>
+<p>Returns:</p>
+<p class="last">An N by 1 matrix of horizontal partitions of m</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="hstack">
+<h2>hstack<a class="headerlink" href="#hstack" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>hstack (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id27"><span class="problematic" id="id28">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
+<p>Returns:</p>
+<p class="last">A horizontally (column wise) stacked sequence of array-like objects</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="identity">
+<h2>identity<a class="headerlink" href="#identity" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>identity (n)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>n (int) : the size of a created (n x n) matrix</div></blockquote>
+<p>Returns:</p>
+<p class="last">An identity matrix of size <cite>sz</cite> by <cite>sz</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="if">
+<h2>if<a class="headerlink" href="#if" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>if (cond, thenf, elsef)</dt>
+<dd><p class="first">This primitive implements the if statement in Python.
+The statement <cite>thenf</cite> is evaluated if <cite>cond</cite> is True and
+the statement <cite>elsef</cite> is evaluated otherwise.</p>
+<p>Args:</p>
+<blockquote>
+<div>cond (boolean expression) : a boolean expression
+thenf (statement) : a statement
+elsef (statement, optional) : a statement</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The value returned by the statement that was executed, <cite>nil</cite>
+otherwise</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="inverse">
+<h2>inverse<a class="headerlink" href="#inverse" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>inverse (m)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>m (matrix): a scalar, matrix, or tensor</div></blockquote>
+<p>Returns:</p>
+<p class="last">The multiplicative inverse of m.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="lambda">
+<h2>lambda<a class="headerlink" href="#lambda" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>lambda (args, body)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id29"><span class="problematic" id="id30">*</span></a>args (argument list): the list of arguments
+body (statement): the body of the lambda function</div></blockquote>
+<p>Returns:</p>
+<p class="last">A function object with the arguments and body specified.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="len">
+<h2>len<a class="headerlink" href="#len" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>len (li)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>li (object) : a list, vector, or matrix</div></blockquote>
+<p>Returns:</p>
+<p class="last">The size of the given object.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="linearmatrix">
+<h2>linearmatrix<a class="headerlink" href="#linearmatrix" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>linearmatrix (nx, ny, x0, dx, dy)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>nx (int) : number of rows
+ny (int) : number of columns
+x0 (number) : value of the 0,0 element
+dx (number) : increment in value in the x-direction
+dy (number) : increment in value in the y-direction</div></blockquote>
+<p>Returns:</p>
+<p class="last">A matrix of size <cite>nx</cite> by <cite>ny</cite> with values beginning at <cite>x0</cite>
+and increasing by <cite>dx</cite> (or <cite>dy</cite>) as x (or y) is increased.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="linspace">
+<h2>linspace<a class="headerlink" href="#linspace" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>linspace (start, end, nelements)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>start (number) : the start of the numeric range
+end (number) : the end of the numeric range
+nelements (int) : the number of elements</div></blockquote>
+<p>Returns:</p>
+<p class="last">An array with the requested number of elements, the first ”
+of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="list">
+<h2>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>list (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id31"><span class="problematic" id="id32">*</span></a>args (list of values, optional): a list of values</div></blockquote>
+<p>Returns:</p>
+<p class="last">A Phylanx list populated by the values supplied.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="logical-and">
+<h2>logical_and<a class="headerlink" href="#logical-and" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>logical_and (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument
+<a href="#id33"><span class="problematic" id="id34">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<p>Returns:</p>
+<p class="last">The logical and of <cite>a</cite> and <cite>b</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="logical-not">
+<h2>logical_not<a class="headerlink" href="#logical-not" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>logical_not (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument</div></blockquote>
+<p>Returns:</p>
+<p class="last">The opposite of <cite>a</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="logical-or">
+<h2>logical_or<a class="headerlink" href="#logical-or" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>logical_or (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument
+<a href="#id35"><span class="problematic" id="id36">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The logical or of <cite>a</cite> and <cite>b</cite>.</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="logical-xor">
+<h2>logical_xor<a class="headerlink" href="#logical-xor" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>logical_xor (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (boolean) : a boolean argument
+<a href="#id37"><span class="problematic" id="id38">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The logical xor of <cite>a</cite> and <cite>b</cite>.</div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="logsumexp">
+<h2>logsumexp<a class="headerlink" href="#logsumexp" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>logsumexp (a, axis, keepdims)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array) : a scalar, a vector, a matrix or a tensor
+axis (optional, integer): Axis over which the sum is taken.</p>
+<blockquote>
+<div>By default axis is None, and all elements are summed.</div></blockquote>
+<p>keepdims (optional, boolean): keep dimension of input</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The log of the sum of exponentials of input elements.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="lra">
+<h2>lra<a class="headerlink" href="#lra" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>lra (x, y, alpha, iters, enable_output)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>x (matrix) : a matrix
+y (vector) : a vector</div></blockquote>
+<dl class="docutils">
+<dt>the data</dt>
+<dd>alpha (float): It is the learning rate
+iters (int): The number of iterations
+enable_output (optional, boolean): If enabled, prints out the step</dd>
+</dl>
+<p>number and weights during each iteration</p>
+<p>Returns:</p>
+<p class="last">The Calculated weights</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="make-list">
+<h2>make_list<a class="headerlink" href="#make-list" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>make_list (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id39"><span class="problematic" id="id40">*</span></a>args (list of values, optional): a list of values</div></blockquote>
+<p>Returns:</p>
+<p class="last">A Phylanx list populated by the values supplied.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="maximum">
+<h2>maximum<a class="headerlink" href="#maximum" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>maximum (x0, x1)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><blockquote>
+<div>x0 (number): An addendn”</div></blockquote>
+<p><a href="#id41"><span class="problematic" id="id42">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The element-wise maximum of all input arrays.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="mean">
+<h2>mean<a class="headerlink" href="#mean" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>mean (ar, axis, keepdims)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>ar (array) : an array of values
+axis (optional, int) : the axis along which to calculate the mean
+keepdims (optional, boolean): keep dimension of input</div></blockquote>
+<p>Returns:</p>
+<p class="last">The mean of the array. If an axis is specified, the result is the
+vector created when the mean is taken along the specified axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="minimum">
+<h2>minimum<a class="headerlink" href="#minimum" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>minimum (x0, x1)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><blockquote>
+<div>x0 (number): An addendn”</div></blockquote>
+<p><a href="#id43"><span class="problematic" id="id44">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The element-wise minimum of all input arrays.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="ndim">
+<h2>ndim<a class="headerlink" href="#ndim" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>ndim (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array type): array to extract the number of dimensions for</div></blockquote>
+<p>Returns:</p>
+<p class="last">Number of array dimensions.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="nonzero">
+<h2>nonzero<a class="headerlink" href="#nonzero" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>nonzero (arg)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (vector or matrix) : a vector or matrix</div></blockquote>
+<p>Returns:</p>
+<p class="last">A 1D array containing the indices of the elements of <cite>arg</cite> that are
+non-zero.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="parallel-block">
+<h2>parallel_block<a class="headerlink" href="#parallel-block" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>parallel_block (<a href="#id45"><span class="problematic" id="id46">*</span></a>args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><a href="#id47"><span class="problematic" id="id48">*</span></a>args (list) <span class="classifier-delimiter">:</span> <span class="classifier">a list of zero or more statements</span></dt>
+<dd>to be evaluated in parallel.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The result as returned from the last statement in the list <cite>args</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="parallel-map">
+<h2>parallel_map<a class="headerlink" href="#parallel-map" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>parallel_map (func, listv)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>func (function) : A function that takes a single argument
+listv (iterator) : A sequence of values to apply the function to</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>A list of values obtained by apply <cite>func</cite> to every value it
+<cite>listv</cite> in parallel.</div></blockquote>
+<p>Examples:</p>
+<blockquote>
+<div>print(parallel_map(lambda a : a * a, [1, 2, 3]))</div></blockquote>
+<p class="last">Evaluates to [1, 4, 9]</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="power">
+<h2>power<a class="headerlink" href="#power" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>power (base, pow)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>base (float) : the base of the exponent
+pow (float) : the power of the exponent</div></blockquote>
+<p>Returns:</p>
+<p class="last">The value <cite>base`**`pow</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="prod">
+<h2>prod<a class="headerlink" href="#prod" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>prod (v, axis, keepdims, initial)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (vector or matrix) : a vector or matrix
+axis (optional, integer): a axis to sum along
+keepdims (optional, boolean): keep dimension of input
+initial (optional, scalar): The starting value for the product</div></blockquote>
+<p>Returns:</p>
+<p class="last">The product of all values along the specified axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="random">
+<h2>random<a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>random (size, distribution)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>size (int) : the size of the array of random numbers
+distribution (optional, string or list) : the name of the</p>
+<blockquote>
+<div>distribution, or a list that begins with the name and is
+followed by up to two numeric parameters.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">An array of random numbers.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="range">
+<h2>range<a class="headerlink" href="#range" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>range (start, end, step)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>start (number) : a starting value
+end (optional, number) : an ending value
+step (optional, number) : a step size</div></blockquote>
+<p>Returns:</p>
+<p class="last">An iterator of values less than <cite>end</cite> where the values
+are equal to <cite>start+step*n</cite> where n is 0, 1, 2, …
+This function works like the Python range function.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="repeat">
+<h2>repeat<a class="headerlink" href="#repeat" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>repeat (a, repeats, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>a (array) <span class="classifier-delimiter">:</span> <span class="classifier">a scalar, a vector, a</span></dt>
+<dd>matrix or a tensor</dd>
+<dt>repeats (integer or a vector of integers) <span class="classifier-delimiter">:</span> <span class="classifier">The number of</span></dt>
+<dd>repetitions for each element. repeats is broadcasted to
+fit the shape of the given axis.</dd>
+<dt>axis (optional, integer): an axis to repeat along. By default,</dt>
+<dd>flattened input is used.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Repeated array which has the same shape as a, except along the
+given axis. In case of no axis for matrices flatten result is
+returned</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="reshape">
+<h2>reshape<a class="headerlink" href="#reshape" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>reshape (a, newshape)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array_like) : input array
+newshape (integer or tuple of integers): The new shape should be</p>
+<blockquote>
+<div>compatible with the original shape (number of elements in
+both arrays are the same). If an integer, then the result
+will be a 1-D array of that length. The last parameter of
+the newshape can be -1. In this case, the value is inferred
+from the length of the array and remaining dimensions.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns a new shape to an array without changing its data.”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="set-seed-action">
+<h2>set_seed_action<a class="headerlink" href="#set-seed-action" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>set_seed_action (seed)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>seed (int) : the seed of a random number generator</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="shape">
+<h2>shape<a class="headerlink" href="#shape" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>shape (m, dim)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>m (object): a vector or matrix
+dim (optional, int): the dimension to get the size of</div></blockquote>
+<p>Returns:</p>
+<p class="last">Without the optional argument, it returns a list of integers
+corresponding to the size of each dimension of the vector or
+matrix. If the optional <cite>dim</cite> argument is supplied, then the
+size for that dimension is returned as an integer.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="shuffle">
+<h2>shuffle<a class="headerlink" href="#shuffle" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>shuffle (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>args (list) : a list of values</div></blockquote>
+<p>Returns:</p>
+<p class="last">A shuffled version of the list. Note that <cite>args</cite> itself will be ”
+shuffled by this call.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="slice">
+<h2>slice<a class="headerlink" href="#slice" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>slice (v, ind)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (list) : a list to take a slice from
+ind (int or list) : index or slice range</div></blockquote>
+<p>Returns:</p>
+<p class="last">If <cite>ind</cite> is an integer, this operation returns an element of the
+list. If it is negative, indexing is done from the back of the list.
+Alternatively, <cite>ind</cite> may consist of a list of values which serve as
+the <cite>start</cite>, <cite>stop</cite>, and (optionally) <cite>step</cite> of a Python range. In this
+case, the return value is a new list with the values of <cite>v</cite> described
+by the range.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="slice-column">
+<h2>slice_column<a class="headerlink" href="#slice-column" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>slice_column (v, ind)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (list) : a list to take a slice from
+ind (int or list) : index or slice range</div></blockquote>
+<p>Returns:</p>
+<p class="last">If <cite>ind</cite> is an integer, this operation returns an element of the
+list. If it is negative, indexing is done from the back of the list.
+Alternatively, <cite>ind</cite> may consist of a list of values which serve as
+the <cite>start</cite>, <cite>stop</cite>, and (optionally) <cite>step</cite> of a Python range. In this
+case, the return value is a new list with the values of <cite>v</cite> described
+by the range.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="slice-page">
+<h2>slice_page<a class="headerlink" href="#slice-page" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>slice_page (v, ind)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (list) : a list to take a slice from
+ind (int or list) : index or slice range</div></blockquote>
+<p>Returns:</p>
+<p class="last">If <cite>ind</cite> is an integer, this operation returns an element of the
+list. If it is negative, indexing is done from the back of the list.
+Alternatively, <cite>ind</cite> may consist of a list of values which serve as
+the <cite>start</cite>, <cite>stop</cite>, and (optionally) <cite>step</cite> of a Python range. In this
+case, the return value is a new list with the values of <cite>v</cite> described
+by the range.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="slice-row">
+<h2>slice_row<a class="headerlink" href="#slice-row" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>slice_row (v, ind)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (list) : a list to take a slice from
+ind (int or list) : index or slice range</div></blockquote>
+<p>Returns:</p>
+<p class="last">If <cite>ind</cite> is an integer, this operation returns an element of the
+list. If it is negative, indexing is done from the back of the list.
+Alternatively, <cite>ind</cite> may consist of a list of values which serve as
+the <cite>start</cite>, <cite>stop</cite>, and (optionally) <cite>step</cite> of a Python range. In this
+case, the return value is a new list with the values of <cite>v</cite> described
+by the range.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="softmax">
+<h2>softmax<a class="headerlink" href="#softmax" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>softmax (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array_like) : input array
+axis (optional, integer): an axis to softmax along. The</p>
+<blockquote>
+<div>default is the last axis (axis == -1) of an array. Axis
+is effective for &gt;1d arrays.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns an array of the same shape which is the normalized exponential
+function of the given array.  The resulting array consists of real
+values in the range (0..1], which add up to 1 in direction of the given axis</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="squeeze">
+<h2>squeeze<a class="headerlink" href="#squeeze" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>squeeze (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (vector or matrix) : a vector or matrix
+axis (optional, integer): an axis to squeeze along</div></blockquote>
+<p>Returns:</p>
+<p class="last">Remove single-dimensional entries from the shape of an array</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="stack">
+<h2>stack<a class="headerlink" href="#stack" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>stack (args, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id49"><span class="problematic" id="id50">*</span></a>args (list, optional) : a list of array-like objects
+axis (int, optional) : the axis along which to stack input values</div></blockquote>
+<p>Returns:</p>
+<p class="last">A joined sequence of array-like objects along a new axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="std">
+<h2>std<a class="headerlink" href="#std" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>std (v, axis, keepdims)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (vector or matrix) : a vector or matrix
+axis (optional, integer): a axis to sum along
+keepdims (optional, boolean): keep dimension of input</div></blockquote>
+<p>Returns:</p>
+<p class="last">The standard deviation of all values along the specified axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="store">
+<h2>store<a class="headerlink" href="#store" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>store (var, value)</dt>
+<dd><p class="first">Update the definition of variable <cite>var</cite> with value <cite>value</cite>.
+This primitive is used to implement the assignment operator.
+Note that the variable should first be created with define.
+Args:</p>
+<blockquote>
+<div>var (symbol) : a variable to be defined
+value (expression) : a value to assign</div></blockquote>
+<p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="string">
+<h2>string<a class="headerlink" href="#string" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>string (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id51"><span class="problematic" id="id52">*</span></a>args (object list) : any objects</div></blockquote>
+<p>Returns:</p>
+<p class="last">A string created by concatenating the string
+representations of the objects in <cite>args</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="sum">
+<h2>sum<a class="headerlink" href="#sum" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>sum (v, axis, keepdims, initial)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (vector or matrix) : a vector or matrix
+axis (optional, integer): a axis to sum along
+keepdims (optional, boolean): keep dimension of input
+initial (optional, scalar): The starting value for the sum</div></blockquote>
+<p>Returns:</p>
+<p class="last">The sum of all values along the specified axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="tile">
+<h2>tile<a class="headerlink" href="#tile" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>tile (a, reps)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array
+reps (integer or tuple of integers): Number of repetitions of
+a along each axis.</div></blockquote>
+<p>Returns:</p>
+<p class="last">Constructs an array by repeating a, the number of times given by
+reps.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="transpose">
+<h2>transpose<a class="headerlink" href="#transpose" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>transpose (arg, axes)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg (arr) : an array
+axes (optional, integer or a vector of integers) : By default,</p>
+<blockquote>
+<div>reverse the dimensions, otherwise permute the axes according
+to the values given.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The transpose of <cite>arg</cite>. If axes are provided, it returns <cite>arg</cite> with
+its axes permuted.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="unique">
+<h2>unique<a class="headerlink" href="#unique" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>unique (a, axis)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array
+axis (optional, int): which axis of a to use</div></blockquote>
+<p>Returns:</p>
+<p class="last">The sorted unique elements of an array.”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="var">
+<h2>var<a class="headerlink" href="#var" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>var (v, axis, keepdims)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (vector or matrix) : a vector or matrix
+axis (optional, integer): a axis to sum along
+keepdims (optional, boolean): keep dimension of input</div></blockquote>
+<p>Returns:</p>
+<p class="last">The statistical variance of all values along the specified axis.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="vsplit">
+<h2>vsplit<a class="headerlink" href="#vsplit" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>vsplit (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id53"><span class="problematic" id="id54">*</span></a>args (m - matrix or column vector, N - number of blocks)</div></blockquote>
+<p>Returns:</p>
+<p class="last">An N by 1 matrix of vertical partitions of m</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="vstack">
+<h2>vstack<a class="headerlink" href="#vstack" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>vstack (args)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><a href="#id55"><span class="problematic" id="id56">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
+<p>Returns:</p>
+<p class="last">A vertically (row wise) stacked sequence of array-like objects</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="where">
+<h2>where<a class="headerlink" href="#where" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>where (cond, var, val)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>cond (boolean expression): a condition to apply
+var (matrix, optional): a matrix (used if cond is true)
+val (matrix, optional): a value to supply when cond is false</div></blockquote>
+<p>Returns:</p>
+<p>A new matrix in which cells in matrix <cite>var</cite> that have values
+that do not match <cite>cond</cite> are replaced with value <cite>val</cite>.</p>
+<p>Note:</p>
+<p class="last">Either both of or none of <cite>var</cite> and <cite>val</cite> can be provided. If none
+are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="while">
+<h2>while<a class="headerlink" href="#while" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>while (cond, block)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>cond (boolean expression): if it evaluates to True,</dt>
+<dd>execute the loop again.</dd>
+<dt>block (statement) <span class="classifier-delimiter">:</span> <span class="classifier">code to execute as long as <cite>cond</cite></span></dt>
+<dd>is true.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The value returned from the last iteration, <cite>nil</cite> otherwise.</div></blockquote>
+</dd>
+</dl>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <!-- Copyright (c) 2018 Mikael Simberg
+     Copyright (c) 2018 Bibek Wagle
+
+     Distributed under the Boost Software License, Version 1.0. (See accompanying
+     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<!-- Make Phylanx inspect tool happy: phylanx-no-inspect -->
+
+<footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../acknowledgement.html" class="btn btn-neutral float-right" title="Acknowledgements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api.html" class="btn btn-neutral" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017-2019, The STE||AR-Group..
+      Last updated on Feb 20, 2019.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+ 
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying file
+LICENSE_1_0.txt or copy at
+<a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)
+
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'auto_docs_from_helptext',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

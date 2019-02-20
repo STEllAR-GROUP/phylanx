@@ -1,0 +1,1816 @@
+=========================
+Primitives 
+=========================
+__add
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__add (x0, x1)
+            Args:
+
+                 x0 (number): An addend\n"
+                *x1 (number list): A list of one or more addends.\n"
+
+            Returns:
+
+            The sum of all addends.
+
+
+__and
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__and (a, b)
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+        The logical and of `a` and `b`.
+    
+
+
+__div
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__div (num, den)
+            Args:
+
+                 x0 (number): The numerator value\n"
+                *x1 (number list): A list of denominator values.\n"
+
+            Returns:
+
+            The result of dividing all arguments.
+
+
+__eq
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__eq (arg1, arg2, arg3)
+                Args:
+
+                    arg1 (number) : A value to compare
+                    arg2 (number) : Another value to compare
+                    arg3 (boolean, optional) : whether to use a
+                                           numeric return value.
+
+                Returns:
+
+                    if arg3 is true
+                      return 1 if arg1 == arg2, 0 otherwise.
+                    else
+                      return True if arg1 == arg2, False otherwise.
+
+
+__ge
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__ge (arg1, arg2, arg3)
+                Args:
+
+                    arg1 (number) : A value to compare
+                    arg2 (number) : Another value to compare
+                    arg3 (boolean, optional) : whether to use a
+                                           numeric return value.
+
+                Returns:
+
+                    if arg3 is true
+                      return 1 if arg1 >= arg2, 0 otherwise.
+                    else
+                      return True if arg1 >= arg2, False otherwise.
+
+
+__gen
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__gen (arg)
+Args:
+
+    arg (float) : a floating point number
+
+Returns:
+
+This function implements function `absolute` from Python's math library.
+
+
+__gt
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__gt (arg1, arg2, arg3)
+                Args:
+
+                    arg1 (number) : A value to compare
+                    arg2 (number) : Another value to compare
+                    arg3 (boolean, optional) : whether to use a
+                                           numeric return value.
+
+                Returns:
+
+                    if arg3 is true
+                      return 1 if arg1 > arg2, 0 otherwise.
+                    else
+                      return True if arg1 > arg2, False otherwise.
+
+
+__le
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__le (arg1, arg2, arg3)
+                Args:
+
+                    arg1 (number) : A value to compare
+                    arg2 (number) : Another value to compare
+                    arg3 (boolean, optional) : whether to use a
+                                           numeric return value.
+
+                Returns:
+
+                    if arg3 is true
+                      return 1 if arg1 <= arg2, 0 otherwise.
+                    else
+                      return True if arg1 <= arg2, False otherwise.
+
+
+__lt
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__lt (arg1, arg2, arg3)
+                Args:
+
+                    arg1 (number) : A value to compare
+                    arg2 (number) : Another value to compare
+                    arg3 (boolean, optional) : whether to use a
+                                           numeric return value.
+
+                Returns:
+
+                    if arg3 is true
+                      return 1 if arg1 < arg2, 0 otherwise.
+                    else
+                      return True if arg1 < arg2, False otherwise.
+
+
+__minus
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__minus (arg)
+            Args:
+
+                 arg (number): a numeric value\n"
+
+            Returns:
+
+            The negated value arg.
+
+
+__mul
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__mul (x0, x1)
+            Args:
+
+                 x0 (number): The factor\n"
+                *x1 (number list): A list of one or more factors.\n"
+
+            Returns:
+
+            The product of all factors.
+
+
+__ne
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__ne (arg1, arg2, arg3)
+                Args:
+
+                    arg1 (number) : A value to compare
+                    arg2 (number) : Another value to compare
+                    arg3 (boolean, optional) : whether to use a
+                                           numeric return value.
+
+                Returns:
+
+                    if arg3 is true
+                      return 1 if arg1 != arg2, 0 otherwise.
+                    else
+                      return True if arg1 != arg2, False otherwise.
+
+
+__not
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__not (a)
+        Args:
+
+            a (boolean) : a boolean argument
+
+        Returns:
+
+        The opposite of `a`.
+    
+
+
+__or
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__or (a, b)
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+            The logical or of `a` and `b`.
+    
+
+
+__sub
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__sub (x0, x1)
+            Args:
+
+                 x0 (number): The value to subtract from\n"
+                *x1 (number list): A list of values to subtract.\n"
+
+            Returns:
+
+            The difference of all arguments.
+
+
+__xor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__xor (a, b)
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+            The logical xor of `a` and `b`.
+    
+
+
+_decomposition
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_decomposition (m)
+Args:
+
+    m (matrix): a matrix
+Returns:
+
+Computes LU decomposition of a general matrix in form of A = L*U*P where P is a permutation matrix, L is a lower triangular matrix, and U is an upper triangular matrix. 
+
+
+_linear_solver
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_linear_solver (a, b)
+        Args:
+
+            a (matrix) : a matrix
+            b (vector) : a vector
+
+        Returns:
+
+        A matrix `x` such that `a x = b`.
+
+
+all
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+all (a, axis, keepdims, initial)
+            Args:
+
+                arg (matrix or vector of numbers) : the input values
+
+            Returns:
+
+            True if all values in the matrix/vector are nonzero, False
+            otherwise.
+
+
+als
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+als (ratings, reg, num, iters, alpha, enable_output)
+        Args:
+
+            ratings (matrix): the matrix representing user feedback over
+                             different items
+            reg (float): the regularization parameter
+            num (integer): the number of factors
+            iters (integer): the number of iterations
+            alpha (float): the scaling factor
+            enable_output(boolean): whether output should be enabled.
+
+        Returns:
+
+        The algorithm returns a list of two matrices: [X, Y] :
+        X: user-factors matrix
+        Y: item-factors matrix
+
+        Of possible interest: http://yifanhu.net/PUB/cf.pdf
+
+
+amax
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+amax (a, axis, keepdims, initial)
+            Args:
+
+                a (vector or matrix): a scalar, a vector or a matrix
+                axis (optional, integer): an axis to max along. By default, "
+                   flattened input is used.
+                keepdims (optional, bool): If this is set to True, the axes which "
+                   are reduced are left in the result as dimensions with size "
+                   one. False by default
+                initial (optional, scalar): The minimum value of an output
+                   element.
+
+            Returns:
+
+            Returns the maximum of an array or maximum along an axis.
+
+
+amin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+amin (a, axis, keepdims, initial)
+            Args:
+
+                a (vector or matrix): a scalar, a vector or a matrix
+                axis (optional, integer): an axis to min along. By default, "
+                   flattened input is used.
+                keepdims (optional, bool): If this is set to True, the axes which "
+                   are reduced are left in the result as dimensions with size "
+                   one. False by default
+                initial (optional, scalar): The maximum value of an output
+                   element.
+            Returns:
+
+            Returns the minimum of an array or minimum along an axis.
+
+
+any
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+any (a, axis, keepdims, initial)
+            Args:
+
+                arg (matrix or vector of numbers) : the input values
+
+            Returns:
+
+            True if any values in the matrix/vector are nonzero, False
+            otherwise.
+
+
+append
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+append (li,val)
+            Args:
+
+                li (list) : a list to which a value may be appended
+                val (object) : a value to append
+
+            Returns:
+
+            A new list with the value `val` appended. Note that `li` is
+            not modified by this operation.
+
+
+apply
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apply (func, range)
+            Call function `func` one time using the values in `range`
+            as the argument list.
+
+            Args:
+
+                func(function) : a function
+                range(iter) : an iterator with at least as many values
+                              as function `func` has arguments.
+
+            Returns:
+
+            The return value of function `func` when called with the
+            arguments supplied by `range`.
+
+
+arange
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+arange (start, stop, step)
+            Args:
+
+                start (number) : Start of interval. The interval includes this
+                    value. The default start value is 0.
+                stop (number) : End of interval. The interval does not include
+                    this value, except in some cases where step is
+                    not an integer and floating point round-off
+                    affects the length of out.
+                step (number, optional) : Spacing between values. For any
+                    output out, this is the distance between two adjacent
+                    values, `out[i+1] - out[i]`. The default step size is `1`.
+                    If step is specified as a position argument, start must
+                    also be given.
+
+            Returns:
+
+            Array of evenly spaced values. For floating point arguments, the
+            length of the result is `ceil((stop - start)/step)`. Because of
+            floating point overflow, this rule may result in the last element
+            of out being greater than stop.
+
+
+argmax
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+argmax (a, axis)
+            Args:
+
+                a (array) : a vector, matrix, or tensor
+                axis (optional, int): the axis along which to find the max
+
+            Returns:
+
+            The index of the maximum value in the array. If an axis is
+            specified, a vector of maxima along the axis is returned.
+
+
+argmin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+argmin (a, axis)
+            Args:
+
+                a (array) : a vector, matrix, or tensor
+                axis (optional, int) : the axis along which to find the min
+
+            Returns:
+
+            The index of the minimum value in the array. If an axis is
+            specified, a vector of minima along the axis is returned.
+
+
+assert
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+assert (cond)
+            Args:
+
+                cond (boolean expression) : if not true, raise an AssertionError
+            Returns:
+
+
+block
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+block (stmt)
+            Args:
+
+                *stmt (statement list) :  a list of statements.
+
+            Returns:
+
+            The value of the last statement.
+
+
+car_cdr
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+car_cdr (li)
+        Args:
+
+            li (list) : a list
+
+        Returns:
+
+        car returns the head of a list, e.g. car([1 ,2, 3]) returns 1
+        cdr returns the tail of a list, e.g. cdr([1, 2, 3]) returns [2, 3]
+        caar() is the same as car(car())
+        cadr() is the same as car(cdr())
+        etc.
+    
+
+
+clip
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+clip (a, axis)
+            Args:
+
+                a (array_like) : array containing elements to clip
+                a_min : Minimum value, it may be scalar or array_like or None
+                a_max : Maximum valus, it may be scalar or array_like or None
+
+            Returns:
+
+            An array with the elements of a, but where values < a_min are replaced with
+            a_min, and those > a_max with a_max."
+            
+
+
+concatenate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+concatenate (ar, axis)
+            Args:
+
+                ar (array) : sequence of array_like
+                axis (optional, int) : the axis along which the arrays will be joined,
+                    default is 0, if axis is None arrays are flattened
+                    before use
+
+            Returns:
+
+            The joined sequence of arrays along an existing axis."
+
+            
+
+
+constant
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+constant (arg1, arg2)
+            Args:
+
+                arg1 (float): a constant value
+                arg2 (int or shape, optional): the number of values
+
+            Returns:
+
+            An array of size arg2 with each element equal to arg1.
+
+
+constant_like
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+constant_like (arg1, arg2)
+            Args:
+
+                arg1 (float): a constant value
+                arg2 (array-like): the shape of this array-like will be used as
+                                   to determine the shape of the result
+
+            Returns:
+
+            An array of the same size as arg2 with each element equal to arg1.
+
+
+count_nonzero
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+count_nonzero (ar)
+            Args:
+
+                ar (array) : a numeric array of values
+
+            Returns:
+
+            The number of array elements that are not zero.
+
+
+cout
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cout (args)
+            Args:
+
+                *args (list of variables) : print a string representation
+                                            of the variables to stdout.
+
+            Returns:
+
+
+cross
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cross (v1, v2)
+            Args:
+
+                v1 (vector) : a vector
+                v2 (vector) : a vector
+
+            Returns:
+
+            The cross product of `v1` and `v2`.
+
+
+cumprod
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cumprod (a, axis)
+            Args:
+
+                a (array_like) : input array
+                axis (int, optional) : Axis along which the cumulative product is
+                    computed. The default (None) is to compute the cumprod over
+                    the flattened array.
+
+            Returns:
+
+            Return the cumulative product of the elements along a given axis.
+
+
+cumsum
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cumsum (a, axis)
+            Args:
+
+                a (array_like) : input array
+                axis (int, optional) : Axis along which the cumulative sum is
+                    computed. The default (None) is to compute the cumsum over
+                    the flattened array.
+
+            Returns:
+
+            Return the cumulative sum of the elements along a given axis.
+
+
+debug
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+debug (args)
+            Args:
+
+                *args (list of variables) : print a string representation
+                                            of the variables to stderr.
+
+            Returns:
+
+
+define
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+define (name,args,body)
+            Args:
+
+                name (string) : name of symbol to define
+                args (optional,list of symbols) : if  present,
+                                     this defines a function.
+                body (expression) : value to bind to symbol `name`
+                                  or body of lambda function.
+
+            Returns:
+
+
+determinant
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+determinant (arg)
+            Args:
+
+                arg (matrix) : a square matrix of numbers
+
+            Returns:
+
+            The determinant of the matrix represented by `arg`.
+
+
+diag
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+diag (m)
+            Args:
+
+                m (matrix) : a square matrix
+
+            Returns:
+
+            A vector created from the diagonal elements of `m`.
+
+
+dict
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dict (lili)
+            Args:
+
+                lili (list of lists, optional) : a list of 2-element lists
+
+            Returns:
+
+            The dict primitive returns a dictionary object constructed
+            from a list of 2-element lists. The 2-element lists provide
+            a key in the first element and a value in the second.
+
+
+dot
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dot (v1, v2)
+            Args:
+
+                v1 (array) : a scalar, vector, matrix or a tensor
+                v2 (array) : a scalar, vector, matrix or a tensor
+
+            Returns:
+
+            The dot product of two arrays: `v1` and `v2`.
+
+
+dstack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dstack (args)
+            Args:
+
+                *args (list, optional) : a list of array-like objects
+
+            Returns:
+
+            A vertically (depth wise) stacked sequence of array-like objects
+
+
+enable_tracing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+enable_tracing (eon)
+            Args:
+
+                eon (boolean) : set to true/false to enable/disable tracing.
+
+            Returns:
+
+
+expand_dims
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+expand_dims (arg, axis)
+            Args:
+
+                arg (number or list of numbers): number or list of numbers
+                axis (integer): an axis to expand along
+
+            Returns:
+
+            Expand the shape of an array by adding a dimension.
+            
+
+
+eye
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+eye (N, M, k)
+            Args:
+
+                N (integer) : number of rows in the output.
+                M (optional, integer) : number of columns in the output. If
+                   None, defaults to N.
+                k (optional, integer) : index of the diagonal: 0 (the default)
+                  refers to the main diagonal, a positive value refers to an
+                  upper diagonal, and a negative value to a lower diagonal.
+
+            Returns:
+
+            Return an N x M matrix with ones on the k-th diagonal and zeros
+            elsewhere.
+
+
+file_read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_read (fname)
+
+            Args:
+
+                fname (string) : a file name
+
+            Returns:
+
+            An object deserialized from the data in fname.
+
+
+file_read_csv
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_read_csv (fname)
+            Args:
+
+                fname (string) : file name
+
+            Returns:
+
+            Returns a matrix representation of the contents of a
+            csv file.
+
+
+file_read_hdf5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_read_hdf5 (fname,dsetname)
+            Args:
+
+                fname (string) : a file name
+                dsetname (string) : a dataset name
+
+            Returns:
+
+            The dataset, either a matrix or vector.
+
+
+file_write
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_write (fname, obj)
+            Args:
+
+                fname (string): the file in which to save the data
+                obj (object): the object to serialize
+
+            Returns:
+
+
+file_write_csv
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_write_csv (fname, m)
+            Args:
+
+                fname (string): a file name
+                m (array or matrix): an object to store in the file.
+
+            Returns:
+
+            The matrix written.
+
+
+file_write_hdf5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_write_hdf5 (fname,dsetname,data)
+            Args:
+
+                fname (string) : a file name
+                dsetname (string) : a dataset name
+                data (matrix or vector) : a data set
+
+            Returns:
+
+            Zero on success.
+
+
+filter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+filter (func, iter)
+
+            Args:
+
+                func (function) : a function that takes one arg and returns a boolean
+                iter (iterator) : an iterator
+
+            Returns:
+
+            filter applies `func` to each item in iter and creates a list consisting
+            of the values for which `func` evaluated to true.
+
+            Example:
+
+                from phylanx.ast import Phylanx
+
+                @Phylanx
+                def foo():
+                    print(filter(lambda a : a > 1, [1, 2, 3, 4]))
+
+                foo()
+
+            Prints [2, 3, 4]
+
+
+flatten
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+flatten (a, order)
+            Args:
+
+                a (array) : a scalar, vector, matrix or a tensor
+                order (optional, char): 'C' means row-major(C-style),
+                                        'F' means column-major(Fortran-style),
+                                        The default is 'C'.
+
+            Returns:
+
+            A copy of the array collapsed into one dimension."
+            
+
+
+flip
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+flip (a, axes)
+        Args:
+
+            a (array) : a scalar, a vector a matrix or a tensor
+            axes (optional, integer or tuple of integers): an axis to flip
+               over. The default, axis=None, will flip over all of the axes
+               of the input array.
+
+        Returns:
+
+        Reverses the order of elements in an array along the given axes
+
+
+fliplr
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fliplr (a)
+        Args:
+
+            a (array) : a matrix or a tensor
+
+        Returns:
+
+        Flip array in the left/right direction
+
+
+flipud
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+flipud (a)
+        Args:
+
+            a (array) : a vector a matrix or a tensor
+
+        Returns:
+
+        Flip array in the up/down direction
+
+
+fmap
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fmap (func, listv)
+
+            Args:
+
+                func (function) : a function that takes one argument
+                listv (iterator) : a set of values
+
+            Returns:
+
+            A new list created by applying the function `func` to each
+            item in list `listv`.
+
+
+fold_left
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fold_left (fun, ini, range)
+
+            Args:
+
+                fun (function) : a function that takes a two float arguments
+                                 and returns a float argument
+                ini (float) : an initial value
+                range (iterator) : a list or iterator
+
+            Returns:
+
+                This function is equivalent to the Python code:
+
+              def fl(f, i, r):
+                  c = i
+                  for n in r:
+                      c = f(c, n)
+                  return c
+
+            Example(s):
+
+              @Phylanx
+              def foo():
+                  v = fold_left(lambda a, b : 2 * a - b, 3, [1, 2, 3])
+                  print(v)
+              foo()
+
+            Result:
+              13
+
+
+fold_right
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fold_right (fun, ini, range)
+
+            Args:
+
+                fun (function) : a function that takes a two float arguments
+                                 and returns a float argument
+                ini (float) : an initial value
+                range (iterator) : a list or iterator
+
+            Returns:
+
+                This function is equivalent to the Python code:
+
+              def fr(f, i, r):
+                  c = i
+                  for n in r:
+                      c = f(n, c)
+                  return c
+
+            Example(s):
+
+              @Phylanx
+              def foo():
+                  v = fold_right(lambda a, b : 2 * a - b, 3, [1, 2, 3])
+                  print(v)
+              foo()
+
+            Result:
+              1
+
+
+for
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+for (init, cond, reinit, body)
+            Args:
+
+                init (statements) : initialize loop variables
+                cond (expression) : boolean expression, if true the loop continues
+                reinit (statements) : update variables evaluated by `cond`
+                body (statements) : code to execute as the body of the loop
+
+            Returns:
+
+              The value returned from the last iteration, `nil` otherwise.
+
+
+for_each
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+for_each (func, range)
+            The for_each primitive calls a function `func` for
+            each item in the iterator.
+            Args:
+
+                func (function): a function that takes one argument
+                range (iter): an iterator
+
+            Returns:
+
+              The value returned from the last iteration, `nil` otherwise.
+
+            Examples:
+
+                @Phylanx
+                def foo():
+                    for_each(lambda a : print(a), [1, 2])
+                foo()
+
+            Prints 1 and 2 on individual lines.
+
+
+format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+format (s,args)
+
+            Args:
+
+                s (string) : a format string
+                *args (arg list, optional) : a list of arguments
+
+            Returns:
+
+            A formatted string, with each `{}` in s replaced by
+            a value from `*args`.
+
+
+get_seed_action
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+get_seed_action (Args:)
+
+            Returns:
+
+            The seed used to generate random numbers.
+
+
+gradient
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+gradient (m, axis)
+            Args:
+
+                m (vector or matrix) : values to take the gradient of
+                axis (optional, integer) : the axis along which to take the gradient
+
+            Returns:
+
+            The numerical gradient, i.e., differences of adjacent values
+            along the specified axis.
+
+
+hsplit
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+hsplit (args)
+            Args:
+
+                *args (m - matrix or row vector, N - number of blocks)
+
+            Returns:
+
+            An N by 1 matrix of horizontal partitions of m
+
+
+hstack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+hstack (args)
+            Args:
+
+                *args (list, optional) : a list of array-like objects
+
+            Returns:
+
+            A horizontally (column wise) stacked sequence of array-like objects
+
+
+identity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+identity (n)
+            Args:
+
+                n (int) : the size of a created (n x n) matrix
+
+            Returns:
+
+            An identity matrix of size `sz` by `sz`.
+            
+
+
+if
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+if (cond, thenf, elsef)
+            This primitive implements the if statement in Python.
+            The statement `thenf` is evaluated if `cond` is True and
+            the statement `elsef` is evaluated otherwise.
+
+            Args:
+
+                cond (boolean expression) : a boolean expression
+                thenf (statement) : a statement
+                elsef (statement, optional) : a statement
+
+            Returns:
+
+              The value returned by the statement that was executed, `nil`
+              otherwise
+
+
+inverse
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+inverse (m)
+            Args:
+
+                m (matrix): a scalar, matrix, or tensor
+
+            Returns:
+
+            The multiplicative inverse of m.
+
+
+lambda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lambda (args, body)
+            Args:
+
+                *args (argument list): the list of arguments
+                body (statement): the body of the lambda function
+
+            Returns:
+
+            A function object with the arguments and body specified.
+
+
+len
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+len (li)
+            Args:
+
+                li (object) : a list, vector, or matrix
+
+            Returns:
+
+            The size of the given object.
+
+
+linearmatrix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+linearmatrix (nx, ny, x0, dx, dy)
+            Args:
+
+                nx (int) : number of rows
+                ny (int) : number of columns
+                x0 (number) : value of the 0,0 element
+                dx (number) : increment in value in the x-direction
+                dy (number) : increment in value in the y-direction
+
+            Returns:
+
+            A matrix of size `nx` by `ny` with values beginning at `x0`
+            and increasing by `dx` (or `dy`) as x (or y) is increased.
+
+
+linspace
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+linspace (start, end, nelements)
+            Args:
+
+                start (number) : the start of the numeric range
+                end (number) : the end of the numeric range
+                nelements (int) : the number of elements
+
+            Returns:
+
+            An array with the requested number of elements, the first "
+            of which is `start`, and the last is `end`.
+
+
+list
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+list (args)
+        Args:
+
+            *args (list of values, optional): a list of values
+
+        Returns:
+
+        A Phylanx list populated by the values supplied.
+    
+
+
+logical_and
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+logical_and (a, b)
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+        The logical and of `a` and `b`.
+    
+
+
+logical_not
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+logical_not (a)
+        Args:
+
+            a (boolean) : a boolean argument
+
+        Returns:
+
+        The opposite of `a`.
+    
+
+
+logical_or
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+logical_or (a, b)
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+            The logical or of `a` and `b`.
+    
+
+
+logical_xor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+logical_xor (a, b)
+        Args:
+
+            a (boolean) : a boolean argument
+            *b (boolean list) : a list of boolean arguments
+
+        Returns:
+
+            The logical xor of `a` and `b`.
+    
+
+
+logsumexp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+logsumexp (a, axis, keepdims)
+            Args:
+
+                a (array) : a scalar, a vector, a matrix or a tensor
+                axis (optional, integer): Axis over which the sum is taken.
+                    By default axis is None, and all elements are summed.
+                keepdims (optional, boolean): keep dimension of input
+
+            Returns:
+
+            The log of the sum of exponentials of input elements.
+
+
+lra
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lra (x, y, alpha, iters, enable_output)
+            Args:
+
+                x (matrix) : a matrix
+                y (vector) : a vector
+            the data
+                alpha (float): It is the learning rate
+                iters (int): The number of iterations
+                enable_output (optional, boolean): If enabled, prints out the step
+            number and weights during each iteration
+
+            Returns:
+
+            The Calculated weights
+
+
+make_list
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+make_list (args)
+        Args:
+
+            *args (list of values, optional): a list of values
+
+        Returns:
+
+        A Phylanx list populated by the values supplied.
+    
+
+
+maximum
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+maximum (x0, x1)
+            Args:
+
+                 x0 (number): An addend\n"
+                *x1 (number list): A list of one or more arrays.\n"
+
+            Returns:
+
+            The element-wise maximum of all input arrays.
+
+
+mean
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+mean (ar, axis, keepdims)
+            Args:
+
+                ar (array) : an array of values
+                axis (optional, int) : the axis along which to calculate the mean
+                keepdims (optional, boolean): keep dimension of input
+
+            Returns:
+
+            The mean of the array. If an axis is specified, the result is the
+            vector created when the mean is taken along the specified axis.
+
+
+minimum
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+minimum (x0, x1)
+            Args:
+
+                 x0 (number): An addend\n"
+                *x1 (number list): A list of one or more arrays.\n"
+
+            Returns:
+
+            The element-wise minimum of all input arrays.
+
+
+ndim
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ndim (a)
+            Args:
+
+                a (array type): array to extract the number of dimensions for
+
+            Returns:
+
+            Number of array dimensions.
+
+
+nonzero
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+nonzero (arg)
+            Args:
+
+                arg (vector or matrix) : a vector or matrix
+
+            Returns:
+
+            A 1D array containing the indices of the elements of `arg` that are
+            non-zero.
+            
+
+
+parallel_block
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+parallel_block (*args)
+            Args:
+
+                *args (list) : a list of zero or more statements
+                        to be evaluated in parallel.
+            Returns:
+
+            The result as returned from the last statement in the list `args`.
+
+
+parallel_map
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+parallel_map (func, listv)
+            Args:
+
+                func (function) : A function that takes a single argument
+                listv (iterator) : A sequence of values to apply the function to
+
+            Returns:
+
+                A list of values obtained by apply `func` to every value it
+                `listv` in parallel.
+
+            Examples:
+
+               print(parallel_map(lambda a : a * a, [1, 2, 3]))
+
+            Evaluates to [1, 4, 9]
+
+
+power
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+power (base, pow)
+            Args:
+
+                base (float) : the base of the exponent
+                pow (float) : the power of the exponent
+
+            Returns:
+
+            The value `base`**`pow`.
+
+
+prod
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+prod (v, axis, keepdims, initial)
+            Args:
+
+                v (vector or matrix) : a vector or matrix
+                axis (optional, integer): a axis to sum along
+                keepdims (optional, boolean): keep dimension of input
+                initial (optional, scalar): The starting value for the product
+
+            Returns:
+
+            The product of all values along the specified axis.
+
+
+random
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+random (size, distribution)
+            Args:
+
+                size (int) : the size of the array of random numbers
+                distribution (optional, string or list) : the name of the
+                    distribution, or a list that begins with the name and is
+                    followed by up to two numeric parameters.
+
+            Returns:
+
+            An array of random numbers.
+
+
+range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+range (start, end, step)
+            Args:
+
+                start (number) : a starting value
+                end (optional, number) : an ending value
+                step (optional, number) : a step size
+
+            Returns:
+
+            An iterator of values less than `end` where the values
+            are equal to `start+step*n` where n is 0, 1, 2, ...
+            This function works like the Python range function. 
+
+
+repeat
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+repeat (a, repeats, axis)
+            Args:
+
+                a (array) : a scalar, a vector, a
+                   matrix or a tensor
+                repeats (integer or a vector of integers) : The number of
+                   repetitions for each element. repeats is broadcasted to
+                   fit the shape of the given axis.
+                axis (optional, integer): an axis to repeat along. By default,
+                   flattened input is used.
+
+            Returns:
+
+            Repeated array which has the same shape as a, except along the
+            given axis. In case of no axis for matrices flatten result is
+            returned
+
+
+reshape
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reshape (a, newshape)
+            Args:
+
+                a (array_like) : input array
+                newshape (integer or tuple of integers): The new shape should be
+                     compatible with the original shape (number of elements in
+                     both arrays are the same). If an integer, then the result
+                     will be a 1-D array of that length. The last parameter of
+                     the newshape can be -1. In this case, the value is inferred
+                     from the length of the array and remaining dimensions.
+
+            Returns:
+
+            Returns a new shape to an array without changing its data."
+            
+
+
+set_seed_action
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+set_seed_action (seed)
+            Args:
+
+                seed (int) : the seed of a random number generator
+
+            Returns:
+
+
+shape
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+shape (m, dim)
+            Args:
+
+                m (object): a vector or matrix
+                dim (optional, int): the dimension to get the size of
+
+            Returns:
+
+            Without the optional argument, it returns a list of integers
+            corresponding to the size of each dimension of the vector or
+            matrix. If the optional `dim` argument is supplied, then the
+            size for that dimension is returned as an integer.
+
+
+shuffle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+shuffle (args)
+            Args:
+
+                args (list) : a list of values
+
+            Returns:
+
+            A shuffled version of the list. Note that `args` itself will be "
+            shuffled by this call.
+
+
+slice
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+slice (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
+slice_column
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+slice_column (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
+slice_page
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+slice_page (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
+slice_row
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+slice_row (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
+softmax
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+softmax (a, axis)
+        Args:
+
+            a (array_like) : input array
+            axis (optional, integer): an axis to softmax along. The
+                default is the last axis (axis == -1) of an array. Axis
+                is effective for >1d arrays.
+
+        Returns:
+
+        Returns an array of the same shape which is the normalized exponential
+        function of the given array.  The resulting array consists of real
+        values in the range (0..1], which add up to 1 in direction of the given axis
+
+
+squeeze
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+squeeze (a, axis)
+        Args:
+
+            a (vector or matrix) : a vector or matrix
+            axis (optional, integer): an axis to squeeze along
+
+        Returns:
+
+        Remove single-dimensional entries from the shape of an array
+
+
+stack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+stack (args, axis)
+            Args:
+
+                *args (list, optional) : a list of array-like objects
+                axis (int, optional) : the axis along which to stack input values
+
+            Returns:
+
+            A joined sequence of array-like objects along a new axis.
+
+
+std
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+std (v, axis, keepdims)
+            Args:
+
+                v (vector or matrix) : a vector or matrix
+                axis (optional, integer): a axis to sum along
+                keepdims (optional, boolean): keep dimension of input
+
+            Returns:
+
+            The standard deviation of all values along the specified axis.
+
+
+store
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+store (var, value)
+            Update the definition of variable `var` with value `value`.
+            This primitive is used to implement the assignment operator.
+            Note that the variable should first be created with define.
+            Args:
+
+                var (symbol) : a variable to be defined
+                value (expression) : a value to assign
+
+            Returns:
+
+
+string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+string (args)
+            Args:
+
+                *args (object list) : any objects
+
+            Returns:
+
+            A string created by concatenating the string
+            representations of the objects in `args`.
+
+
+sum
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sum (v, axis, keepdims, initial)
+            Args:
+
+                v (vector or matrix) : a vector or matrix
+                axis (optional, integer): a axis to sum along
+                keepdims (optional, boolean): keep dimension of input
+                initial (optional, scalar): The starting value for the sum
+
+            Returns:
+
+            The sum of all values along the specified axis.
+
+
+tile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tile (a, reps)
+            Args:
+
+                a (array_like) : input array
+                reps (integer or tuple of integers): Number of repetitions of
+                a along each axis.
+
+            Returns:
+
+            Constructs an array by repeating a, the number of times given by
+            reps.
+
+
+transpose
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+transpose (arg, axes)
+            Args:
+
+                arg (arr) : an array
+                axes (optional, integer or a vector of integers) : By default,
+                   reverse the dimensions, otherwise permute the axes according
+                   to the values given.
+
+            Returns:
+
+            The transpose of `arg`. If axes are provided, it returns `arg` with
+            its axes permuted.
+
+
+unique
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+unique (a, axis)
+            Args:
+
+                a (array_like) : input array
+                axis (optional, int): which axis of a to use
+
+            Returns:
+
+            The sorted unique elements of an array."
+            
+
+
+var
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+var (v, axis, keepdims)
+            Args:
+
+                v (vector or matrix) : a vector or matrix
+                axis (optional, integer): a axis to sum along
+                keepdims (optional, boolean): keep dimension of input
+
+            Returns:
+
+            The statistical variance of all values along the specified axis.
+
+
+vsplit
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vsplit (args)
+            Args:
+
+                *args (m - matrix or column vector, N - number of blocks)
+
+            Returns:
+
+            An N by 1 matrix of vertical partitions of m
+
+
+vstack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vstack (args)
+            Args:
+
+                *args (list, optional) : a list of array-like objects
+
+            Returns:
+
+            A vertically (row wise) stacked sequence of array-like objects
+
+
+where
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+where (cond, var, val)
+            Args:
+
+                cond (boolean expression): a condition to apply
+                var (matrix, optional): a matrix (used if cond is true)
+                val (matrix, optional): a value to supply when cond is false
+
+            Returns:
+
+            A new matrix in which cells in matrix `var` that have values
+            that do not match `cond` are replaced with value `val`.
+
+            Note:
+
+            Either both of or none of `var` and `val` can be provided. If none
+            are provided, then `where` is equivalent to `cond.nonzero()`.
+            
+
+
+while
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+while (cond, block)
+            Args:
+
+                cond (boolean expression): if it evaluates to True,
+                                    execute the loop again.
+                block (statement) : code to execute as long as `cond`
+                                    is true.
+
+            Returns:
+
+              The value returned from the last iteration, `nil` otherwise.
+
+
