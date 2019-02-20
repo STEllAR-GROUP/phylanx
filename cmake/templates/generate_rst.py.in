@@ -4,6 +4,8 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+# flake8: noqa
+
 import subprocess as sub
 import sys, re, os
 sys.path.append('@PHYLANX_PYTHON_EXTENSION_LOCATION@')
@@ -12,8 +14,6 @@ from phylanx import PhylanxSession
 PhylanxSession.init(1)
 
 from phylanx.util import phyhelpex
-
-os.environ["PAGER"] = "cat"
 
 file_name = sys.argv[1]
 f= open(file_name,"w")
