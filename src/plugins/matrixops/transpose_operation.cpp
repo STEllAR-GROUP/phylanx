@@ -22,6 +22,10 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -111,6 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(arg)};       // no-op
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type transpose_operation::transpose2d(
         ir::node_data<T>&& arg) const
@@ -163,8 +168,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 *it += 2;
         if (v[0] == 0 && v[1] == 1)
             return primitive_argument_type{std::move(arg)};
-        else
-            return transpose2d(std::move(arg));
+
+        return transpose2d(std::move(arg));
     }
 
     primitive_argument_type transpose_operation::transpose2d(
@@ -196,6 +201,153 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the transpose primitive requires for its argument to "
                 "be numeric data type"));
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type transpose_operation::transpose3d(
+        ir::node_data<T>&& arg) const
+    {
+        if (arg.is_ref())
+            arg = blaze::trans(arg.tensor(), {2, 1, 0});
+
+        else
+            blaze::transpose(arg.tensor_non_ref(), {2, 1, 0});
+
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    template <typename T>
+    primitive_argument_type transpose_operation::transpose3d_axes102(
+        ir::node_data<T>&& arg) const
+    {
+        if (arg.is_ref())
+            arg = blaze::trans(arg.tensor(), {1, 0, 2});
+
+        else
+            blaze::transpose(arg.tensor_non_ref(), {1, 0, 2});
+
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    template <typename T>
+    primitive_argument_type transpose_operation::transpose3d_axes021(
+        ir::node_data<T>&& arg) const
+    {
+        if (arg.is_ref())
+            arg = blaze::trans(arg.tensor(), {0, 2, 1});
+
+        else
+            blaze::transpose(arg.tensor_non_ref(), {0, 2, 1});
+
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    template <typename T>
+    primitive_argument_type transpose_operation::transpose3d_axes120(
+        ir::node_data<T>&& arg) const
+    {
+        if (arg.is_ref())
+            arg = blaze::trans(arg.tensor(), {1, 2, 0});
+
+        else
+            blaze::transpose(arg.tensor_non_ref(), {1, 2, 0});
+
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    template <typename T>
+    primitive_argument_type transpose_operation::transpose3d_axes201(
+        ir::node_data<T>&& arg) const
+    {
+        if (arg.is_ref())
+            arg = blaze::trans(arg.tensor(), {2, 0, 1});
+
+        else
+            blaze::transpose(arg.tensor_non_ref(), {2, 0, 1});
+
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    primitive_argument_type transpose_operation::transpose3d(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return transpose3d(extract_boolean_value_strict(std::move(arg)));
+
+        case node_data_type_int64:
+            return transpose3d(extract_integer_value_strict(std::move(arg)));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return transpose3d(extract_numeric_value(std::move(arg)));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "transpose_operation::transpose3d",
+            generate_error_message(
+                "the transpose primitive requires for its argument to "
+                    "be numeric data type"));
+    }
+
+    template <typename T>
+    primitive_argument_type transpose_operation::transpose3d(
+        ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes) const
+    {
+        auto v = axes.vector();
+        for (auto it = v.begin(); it != v.end(); ++it)
+            if (*it < 0)
+                *it += 3;
+        if (v[0] == 0 && v[1] == 1 && v[2] == 2)
+            return primitive_argument_type{std::move(arg)};
+        else if (v[0] == 2 && v[1] == 1 && v[2] == 0)
+            return transpose3d(std::move(arg));
+        else if (v[0] == 1 && v[1] == 0 && v[2] == 2)
+            return transpose3d_axes102(std::move(arg));
+        else if (v[0] == 0 && v[1] == 2 && v[2] == 1)
+            return transpose3d_axes021(std::move(arg));
+        else if (v[0] == 1 && v[1] == 2 && v[2] == 0)
+            return transpose3d_axes120(std::move(arg));
+
+        return transpose3d_axes201(std::move(arg));
+    }
+
+    primitive_argument_type transpose_operation::transpose3d(
+        primitive_argument_type&& arg, ir::node_data<std::int64_t>&& axes) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return transpose3d(
+                extract_boolean_value_strict(std::move(arg)), std::move(axes));
+
+        case node_data_type_int64:
+            return transpose3d(
+                extract_integer_value_strict(std::move(arg)), std::move(axes));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return transpose3d(
+                extract_numeric_value(std::move(arg)), std::move(axes));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "transpose_operation::transpose3d",
+            generate_error_message(
+                "the transpose primitive requires for its argument to "
+                "be numeric data type"));
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> transpose_operation::eval(
         primitive_arguments_type const& operands,
@@ -238,6 +390,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->transpose2d(std::move(arg));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->transpose3d(std::move(arg));
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "transpose_operation::eval",
@@ -255,6 +411,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto a_dims = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
 
+                // converting a range axes to a vector
+                if (is_list_operand_strict(args[1]))
+                {
+                    ir::range axes =
+                        extract_list_value_strict(std::move(args[1]));
+                    blaze::DynamicVector<std::int64_t> ops(axes.size());
+
+                    auto&& list = axes.args();
+                    for (std::size_t i = 0; i != axes.size(); ++i)
+                        ops[i] = extract_scalar_integer_value_strict(list[i]);
+
+                    args[1] = primitive_argument_type{std::move(ops)};
+                }
+
                 if (this_->validate_axes(
                         a_dims, extract_integer_value_strict(args[1])))
                 {
@@ -268,6 +438,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return this_->transpose2d(std::move(args[0]),
                             extract_integer_value_strict(std::move(args[1])));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                    case 3:
+                        return this_->transpose3d(std::move(args[0]),
+                            extract_integer_value_strict(std::move(args[1])));
+#endif
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "transpose_operation::eval",
