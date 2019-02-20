@@ -46,9 +46,22 @@ std::string read_user_code(std::string const& path)
     return str_stream.str();
 }
 
-// code taken from boost::beast::detail namespace
-// #include <boost/beast/core/detail/base64.hpp>
+// code taken from https://github.com/ReneNyffenegger/cpp-base64/blob/master/base64.cpp
 //
+// Copyright (C) 2004-2017 René Nyffenegger
+//
+// zlib https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
+//
+
+static const std::string base64_chars = 
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+             "abcdefghijklmnopqrstuvwxyz"
+             "0123456789+/";
+
+static inline bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
 std::string base64_decode(std::string const& encoded_string)
 {
     int in_len = encoded_string.size();
@@ -98,7 +111,7 @@ std::string base64_decode(std::string const& encoded_string)
 }
 
 std::tuple<bool, std::string> get_env_physl_ir() {
-    const char * env_physl_ir = e.find("PHYSL_IR");
+    const char * env_physl_ir = std::getenv("PHYSL_IR");
     if(env_physl_ir == nullptr) { return std::make_tuple(false, std::string{}); }
     auto physl_ir_str = base64_decode(std::string{env_physl_ir});
     return std::make_tuple(true, physl_ir_str);
@@ -221,7 +234,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "file to read transformation rules from")
             ("no-ast-env,e", po::value<std::string>()->implicit_value("<none>"),
                 "do not check PHYSL_IR for PhySL code")
-            ("b64-physl,b", po::value<std::string>()->implicit_value("<none>"),
+            ("base64,b", po::value<std::string>()->implicit_value("<none>"),
                 "PhySL code is provided to the interpreter at the commandline, "
                 "as a base64 encoded string")
             ("dump-ast,d", po::value<std::string>()->implicit_value("<none>"),
@@ -308,7 +321,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
 
     if (vm.count("no-ast-env") < 1) {
         auto physl_ir = get_env_physl_ir();
-        physl_ir_env_found = std::get<0>(phsyl_ir);
+        physl_ir_env_found = std::get<0>(physl_ir);
         if(physl_ir_env_found) {
             ast = load_ast_dump(std::get<1>(physl_ir));
             code_source_name = "<environment_variable>";
@@ -316,7 +329,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
     }
 
     // Determine if an AST dump is to be loaded from command line
-    if (vm.count("b64-physl") != 0 && physl_ir_env_found == false)
+    if (vm.count("base64") != 0 && physl_ir_env_found == false)
     {
         std::string user_code = vm["b64-physl"].as<std::string>();
         ast = phylanx::ast::generate_ast(user_code);
