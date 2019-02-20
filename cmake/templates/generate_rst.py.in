@@ -10,13 +10,16 @@ sys.path.append('@PHYLANX_PYTHON_EXTENSION_LOCATION@')
 
 from phylanx import PhylanxSession
 PhylanxSession.init(1)
+
 from phylanx.util import phyhelpex
 
 os.environ["PAGER"] = "cat"
 
 file_name = sys.argv[1]
 f= open(file_name,"w")
-print("\nPrimitives ", file=f)
+print("=========================",file=f)
+print("Primitives ", file=f)
+print("=========================",file=f)
 
 p = sub.Popen(["@CMAKE_BINARY_DIR@/bin/physl","--docs"],stdout=sub.PIPE)
 for bline in p.stdout.readlines():
@@ -25,9 +28,9 @@ for bline in p.stdout.readlines():
     if g:
         pat = g.group(1)
         try:
-            print("\nPrimitive:",pat,end='', file=f)
-            print("\n==========================================================", file=f)
-            print(re.sub(r'^(.*)',r'(\1)',re.sub('^\s*','',phyhelpex(pat))), file=f)
+            print(pat, file=f)
+            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^", file=f)
+            print(pat,re.sub(r'^(.*)',r'(\1)',re.sub('^\s*','',phyhelpex(pat))), file=f)
             print('\n', file=f)
         except:
             print("")
