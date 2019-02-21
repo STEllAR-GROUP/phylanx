@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ++eval_count_;
         }
 
-        auto f = this->eval(params, ctx);
+        auto f = this->eval(params, std::move(ctx));
 
         if (enable_timer && !f.is_ready())
         {
