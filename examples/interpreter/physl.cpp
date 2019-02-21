@@ -46,14 +46,15 @@ std::string read_user_code(std::string const& path)
     return str_stream.str();
 }
 
-// code taken from https://github.com/ReneNyffenegger/cpp-base64/blob/master/base64.cpp
+// code taken from
+// https://github.com/ReneNyffenegger/cpp-base64/blob/master/base64.cpp
 //
 // Copyright (C) 2004-2017 René Nyffenegger
 //
 // zlib https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
 //
 
-static const std::string base64_chars = 
+static const std::string base64_chars =
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
              "abcdefghijklmnopqrstuvwxyz"
              "0123456789+/";
