@@ -456,6 +456,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     return arg_type<T>(std::move(t));
                 }},
+            {"square",
+                [](arg_type<T>&& t) -> arg_type<T> {
+                    if (t.is_ref())
+                    {
+                        t = t.tensor() % t.tensor();
+                    }
+                    else
+                    {
+                        t.tensor() %= t.tensor();
+                    }
+                    return arg_type<T>(std::move(t));
+                }},
+            {"sign",
+                [](arg_type<T>&& t) -> arg_type<T> {
+                    if (t.is_ref())
+                    {
+                        t = blaze::sign(t.tensor());
+                    }
+                    else
+                    {
+                        t.tensor() = blaze::sign(t.tensor());
+                    }
+                    return arg_type<T>(std::move(t));
+                }},
             {"normalize",
                 [](arg_type<T>&& t) -> arg_type<T> {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
