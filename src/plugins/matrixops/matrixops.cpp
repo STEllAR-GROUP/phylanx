@@ -63,6 +63,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(hstack_operation_plugin,
     phylanx::execution_tree::primitives::stack_operation::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     identity_plugin, phylanx::execution_tree::primitives::identity::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(insert_plugin,
+    phylanx::execution_tree::primitives::insert::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(inverse_operation_plugin,
     phylanx::execution_tree::primitives::inverse_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(linearmatrix_plugin,
