@@ -61,6 +61,8 @@ methods_supporting_dtype = [
     'dstack',
     'erf',
     'erfc',
+    'square',
+    'sign',
     'exp',
     'exp2',
     'exp10',

@@ -440,6 +440,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     return arg_type<T>(std::move(m));
                 }},
+            {"square",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = m.vector()*m.vector();
+                    }
+                    else
+                    {
+                        m.vector() *= m.vector();
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
+            {"sign",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::sign(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::sign(m.vector());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
 //             {"normalize",
 //                 [](arg_type<T>&& m) -> arg_type<T> {
 //                     if (m.is_ref())
