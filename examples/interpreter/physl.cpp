@@ -1,8 +1,9 @@
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
 //
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at 
+//   http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
@@ -47,9 +48,11 @@ std::string read_user_code(std::string const& path)
 }
 
 // code taken from
-// https://github.com/ReneNyffenegger/cpp-base64/blob/master/base64.cpp
 //
-// Copyright (C) 2004-2017 René Nyffenegger
+// https://github.com/ReneNyffenegger/cpp-base64/
+//     blob/master/base64.cpp
+//
+// Copyright (C) 2004-2017 Rene Nyffenegger
 //
 // zlib https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
 //
