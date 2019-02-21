@@ -2,7 +2,7 @@
 // Copyright (c) 2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0.
-//  (See accompanying file LICENSE_1_0.txt or copy at 
+//  (See accompanying file LICENSE_1_0.txt or copy at
 //   http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
@@ -54,7 +54,8 @@ std::string read_user_code(std::string const& path)
 //
 // Copyright (C) 2004-2017 Rene Nyffenegger
 //
-// zlib https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
+// license zlib
+// https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
 //
 
 static const std::string base64_chars =
@@ -573,7 +574,8 @@ void interpreter(po::variables_map const& vm)
         positional_args = vm["positional"].as<std::vector<std::string>>();
     }
 
-    // Origin of PhySL code. It is either file name, <command_line>, or <environment variable>
+    // Origin of PhySL code. It is either file name
+    // , <command_line>, or <environment variable>
     std::string code_source_name;
 
     // The AST that is either generated from PhySL code or loaded from an AST
