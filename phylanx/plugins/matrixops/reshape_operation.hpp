@@ -82,6 +82,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type reshape2d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type reshape3d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
+
+        template <typename T>
+        primitive_argument_type reshape3d_1d(ir::node_data<T>&& arr) const;
+        template <typename T>
+        primitive_argument_type reshape3d_2d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type reshape3d_3d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+
+        template <typename T>
+        primitive_argument_type reshape3d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
+#endif
     };
 
     inline primitive create_reshape_operation(hpx::id_type const& locality,
