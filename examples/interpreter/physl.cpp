@@ -1,8 +1,9 @@
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
 //
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//   http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
@@ -16,6 +17,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstdlib>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -43,6 +45,81 @@ std::string read_user_code(std::string const& path)
     }
 
     return str_stream.str();
+}
+
+// code taken from
+//
+// https://github.com/ReneNyffenegger/cpp-base64/
+//     blob/master/base64.cpp
+//
+// Copyright (C) 2004-2017 Rene Nyffenegger
+//
+// license zlib
+// https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
+//
+
+static const std::string base64_chars =
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+             "abcdefghijklmnopqrstuvwxyz"
+             "0123456789+/";
+
+static inline bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string base64_decode(std::string const& encoded_string)
+{
+    int in_len = encoded_string.size();
+    int i = 0;
+    int j = 0;
+    int in_ = 0;
+    unsigned char char_array_4[4], char_array_3[3];
+    std::string ret;
+
+    while (in_len-- && (encoded_string[in_] != '=') &&
+        is_base64(encoded_string[in_]))
+    {
+        char_array_4[i++] = encoded_string[in_];
+        in_++;
+        if (i == 4)
+        {
+            for (i = 0; i < 4; i++)
+                char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+            char_array_3[0] =
+                (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) +
+                ((char_array_4[2] & 0x3c) >> 2);
+            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+            for (i = 0; (i < 3); i++)
+                ret += char_array_3[i];
+            i = 0;
+        }
+    }
+
+    if (i)
+    {
+        for (j = 0; j < i; j++)
+            char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+        char_array_3[0] =
+            (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] =
+            ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+
+        for (j = 0; (j < i - 1); j++)
+            ret += char_array_3[j];
+    }
+
+    return ret;
+}
+
+std::tuple<bool, std::string> get_env_physl_ir() {
+    const char * env_physl_ir = std::getenv("PHYSL_IR");
+    if(env_physl_ir == nullptr) { return std::make_tuple(false, std::string{}); }
+    auto physl_ir_str = base64_decode(std::string{env_physl_ir});
+    return std::make_tuple(true, physl_ir_str);
 }
 
 void dump_ast(std::vector<phylanx::ast::expression> const& ast, std::string path)
@@ -160,6 +237,11 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "of the created execution tree as a Newick tree to a file")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
+            ("no-ast-env,e", po::value<std::string>()->implicit_value("<none>"),
+                "do not check PHYSL_IR for PhySL code")
+            ("base64,b", po::value<std::string>()->implicit_value("<none>"),
+                "PhySL code is provided to the interpreter at the commandline, "
+                "as a base64 encoded string")
             ("dump-ast,d", po::value<std::string>()->implicit_value("<none>"),
                 "file to dump AST to")
             ("load-ast,l", po::value<std::string>(),
@@ -240,10 +322,28 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
     // name for the AST dump file, if requested and a name is not provided
     bool code_is_file = false;
     fs::path code_source_path;
+    bool physl_ir_env_found = false;
 
-    // Determine if an AST dump is to be loaded
-    if (vm.count("load-ast") != 0)
+    if (vm.count("no-ast-env") < 1) {
+        auto physl_ir = get_env_physl_ir();
+        physl_ir_env_found = std::get<0>(physl_ir);
+        if(physl_ir_env_found) {
+            ast = load_ast_dump(std::get<1>(physl_ir));
+            code_source_name = "<environment_variable>";
+        }
+    }
+
+    // Determine if an AST dump is to be loaded from command line
+    if (vm.count("base64") != 0 && physl_ir_env_found == false)
     {
+        std::string user_code = vm["b64-physl"].as<std::string>();
+        ast = phylanx::ast::generate_ast(user_code);
+        code_source_name = "<command_line>";
+    }
+    // Determine if an AST dump is to be loaded
+    else if (vm.count("load-ast") != 0 && physl_ir_env_found == false)
+    {
+
         if (vm.count("code"))
         {
             HPX_THROW_EXCEPTION(hpx::commandline_option_error,
@@ -257,7 +357,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
         code_source_name = fs::path(ast_dump_file).filename().string();
     }
     // Read PhySL source code from a file or the provided argument
-    else
+    else if(physl_ir_env_found == false)
     {
         // PhySL source code
         std::string user_code;
@@ -474,7 +574,8 @@ void interpreter(po::variables_map const& vm)
         positional_args = vm["positional"].as<std::vector<std::string>>();
     }
 
-    // Origin of PhySL code. It is either file name or <command_line>
+    // Origin of PhySL code. It is either file name
+    // , <command_line>, or <environment variable>
     std::string code_source_name;
 
     // The AST that is either generated from PhySL code or loaded from an AST
