@@ -137,10 +137,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for (int i = 0; i < result.size(); ++i)
         {
             if (mask[i] == 1)
+            {
                 if (flattened_result.size() == 1)
                     result[i] = flattened_result[0];
                 else
                     result[i] = *d++;
+            }
         }
 
         return primitive_argument_type{std::move(result)};
