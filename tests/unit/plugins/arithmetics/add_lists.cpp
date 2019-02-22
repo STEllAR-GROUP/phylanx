@@ -34,24 +34,24 @@ void test_add_list_operation(std::string const& code,
 int main(int argc, char* argv[])
 {
     test_add_list_operation(
-        "make_list(1, 2, 3, 4) + 5",
-        "make_list(1, 2, 3, 4, 5)");
+        "list(1, 2, 3, 4) + 5",
+        "list(1, 2, 3, 4, 5)");
 
     test_add_list_operation(
-        "make_list(1, 2, 3, 4) + make_list(5)",
-        "make_list(1, 2, 3, 4, 5)");
+        "list(1, 2, 3, 4) + list(5)",
+        "list(1, 2, 3, 4, 5)");
 
     test_add_list_operation(
-        "make_list(1, 2, 3, 4) + make_list(make_list(5))",
-        "make_list(1, 2, 3, 4, make_list(5))");
+        "list(1, 2, 3, 4) + list(list(5))",
+        "list(1, 2, 3, 4, list(5))");
 
     test_add_list_operation(
-        "make_list(1, 2, 3, 4) + make_list(5, 6, 7, 8)",
-        "make_list(1, 2, 3, 4, 5, 6, 7, 8)");
+        "list(1, 2, 3, 4) + list(5, 6, 7, 8)",
+        "list(1, 2, 3, 4, 5, 6, 7, 8)");
 
     test_add_list_operation(
-        "make_list(1, 2, 3, 4) + make_list(make_list(5, 6, 7, 8))",
-        "make_list(1, 2, 3, 4, make_list(5, 6, 7, 8))");
+        "list(1, 2, 3, 4) + list(list(5, 6, 7, 8))",
+        "list(1, 2, 3, 4, list(5, 6, 7, 8))");
 
     return hpx::util::report_errors();
 }

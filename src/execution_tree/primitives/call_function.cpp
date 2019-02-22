@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     return value_operand_sync(std::move(func),
                         std::move(args), this_->name_, this_->codename_,
-                        ctx.set_mode(eval_default));
+                        set_mode(std::move(ctx), eval_default));
                 }),
             value_operand(operands_[0], params, name_, codename_,
                 add_mode(ctx, eval_mode(eval_dont_wrap_functions |
@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void call_function::store(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (valid(operands_[0]))
         {

@@ -14,57 +14,59 @@
 void test_generate_tree(
     std::string const& exprstr, char const* variables, double expected_result)
 {
+    phylanx::execution_tree::eval_context ctx;
+
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto const& vars =
         phylanx::execution_tree::compile(variables, snippets, env);
-    vars.run();
+    vars.run(ctx);
 
     auto const& code = phylanx::execution_tree::compile(exprstr, snippets, env);
-    auto f = code.run();
+    auto f = code.run(ctx);
 
     HPX_TEST_EQ(expected_result,
-        phylanx::execution_tree::extract_numeric_value(
-            f()
-        )[0]);
+        phylanx::execution_tree::extract_scalar_numeric_value(f(ctx)));
 }
 
 void test_generate_tree(
     std::string const& exprstr, char const* variables, bool expected_result)
 {
+    phylanx::execution_tree::eval_context ctx;
+
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto const& vars =
         phylanx::execution_tree::compile(variables, snippets, env);
-    vars.run();
+    vars.run(ctx);
 
     auto const& code = phylanx::execution_tree::compile(exprstr, snippets, env);
-    auto f = code.run();
+    auto f = code.run(ctx);
 
     HPX_TEST_EQ(expected_result,
-        phylanx::execution_tree::extract_scalar_boolean_value(
-            f()
-        ) != 0);
+        phylanx::execution_tree::extract_scalar_boolean_value(f(ctx)) != 0);
 }
 
 void test_generate_tree_nil(std::string const& exprstr, char const* variables)
 {
+    phylanx::execution_tree::eval_context ctx;
+
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto const& vars =
         phylanx::execution_tree::compile(variables, snippets, env);
-    vars.run();
+    vars.run(ctx);
 
     auto const& code = phylanx::execution_tree::compile(exprstr, snippets, env);
-    auto f = code.run();
+    auto f = code.run(ctx);
 
-    HPX_TEST(!phylanx::execution_tree::valid(f()));
+    HPX_TEST(!phylanx::execution_tree::valid(f(ctx)));
 }
 
 phylanx::execution_tree::primitive create_literal_value(double value)
@@ -221,7 +223,8 @@ void test_store_primitive()
     test_generate_tree_nil("store(C, A)", variables);
     test_generate_tree_nil("store(C, A + B)", variables);
 
-    test_generate_tree("block(store(B, constant(0, A)), B)", variables, 0.0);
+    test_generate_tree(
+        "block(store(B, constant_like(0.0, A)), B)", variables, 0.0);
     test_generate_tree_nil("store(D, 0)", variables);
 }
 

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License}, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -141,7 +141,8 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define),
                 PHYLANX_MATCH_DATA(function),
                 PHYLANX_MATCH_DATA(lambda),
-                PHYLANX_MATCH_DATA(variable)
+                PHYLANX_MATCH_DATA(variable),
+                PHYLANX_MATCH_DATA(variable_factory)
             };
 
             // patterns registered from external primitive plugins

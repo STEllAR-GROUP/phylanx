@@ -26,18 +26,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("filter",
             std::vector<std::string>{"filter(_1, _2)"},
-            &create_filter_operation, &create_primitive<filter_operation>,
-            R"(func, iter
+            &create_filter_operation, &create_primitive<filter_operation>, R"(
+            func, iter
 
             Args:
 
-                func (function) : a function that takes one arg and returns a boolean
-                iter (iterator) : an iterator
+                func (function): a function that takes one arg and returns a
+                                 boolean
+                iter (iterator): an iterator
 
-            Returns:
+            Returns:\n"
 
-            filter applies `func` to each item in iter and creates a list consisting
-            of the values for which `func` evaluated to true.
+            Filter applies `func` to each item in iter and creates a list
+            consisting of the values for which `func` evaluated to true.
 
             Example:
 
@@ -49,8 +50,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 foo()
 
-            Prints [2, 3, 4])"
-            )
+            Prints [2, 3, 4])")
     };
 
     ///////////////////////////////////////////////////////////////////////////

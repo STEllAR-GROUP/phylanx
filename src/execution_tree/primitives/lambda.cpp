@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -94,9 +94,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return hpx::make_ready_future(primitive_argument_type{
                     create_primitive_component(hpx::find_here(),
-                        name_parts.primitive, std::move(fargs),
-                        compiler::compose_primitive_name(name_parts), codename_)
-                    });
+                        name_parts.primitive, std::move(fargs), std::move(ctx),
+                        compiler::compose_primitive_name(name_parts),
+                        codename_)});
             }
 
             return hpx::make_ready_future(
@@ -104,14 +104,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // simply invoke the given body with the given arguments
+        eval_context next_ctx = set_mode(std::move(ctx),
+            eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
+
         return value_operand(operands_[0], args, name_, codename_,
-            add_mode(std::move(ctx),
-                eval_mode(
-                    eval_dont_evaluate_lambdas | eval_dont_wrap_functions)));
+            add_frame(std::move(next_ctx)));
     }
 
     void lambda::store(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (valid(operands_[0]))
         {

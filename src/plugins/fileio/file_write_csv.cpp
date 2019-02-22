@@ -137,10 +137,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         std::string filename = string_operand_sync(
-            operands[0], args, name_, codename_, std::move(ctx));
+            operands[0], args, name_, codename_, ctx);
 
         auto this_ = this->shared_from_this();
-        return numeric_operand(operands[1], args, name_, codename_)
+        return numeric_operand(
+                operands[1], args, name_, codename_, std::move(ctx))
             .then(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_), filename = std::move(filename)](
                         ir::node_data<double> && val) mutable

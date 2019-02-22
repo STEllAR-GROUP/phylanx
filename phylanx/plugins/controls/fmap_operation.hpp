@@ -44,22 +44,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args, eval_context ctx) const;
 
-        primitive_argument_type fmap_1_scalar(
-            primitive const* p, primitive_argument_type&& arg) const;
-        primitive_argument_type fmap_1_vector(
-            primitive const* p, primitive_argument_type&& arg) const;
-        primitive_argument_type fmap_1_matrix(
-            primitive const* p, primitive_argument_type&& arg) const;
+        primitive_argument_type fmap_1_scalar(primitive const* p,
+            primitive_argument_type&& arg, eval_context ctx) const;
+        primitive_argument_type fmap_1_vector(primitive const* p,
+            primitive_argument_type&& arg, eval_context ctx) const;
+        primitive_argument_type fmap_1_matrix(primitive const* p,
+            primitive_argument_type&& arg, eval_context ctx) const;
 
         primitive_argument_type fmap_n_lists(primitive const* p,
-            primitive_arguments_type&& args) const;
+            primitive_arguments_type&& args, eval_context ctx) const;
 
         primitive_argument_type fmap_n_scalar(primitive const* p,
-            primitive_arguments_type&& args) const;
+            primitive_arguments_type&& args, eval_context ctx) const;
         primitive_argument_type fmap_n_vector(primitive const* p,
-            primitive_arguments_type&& args) const;
+            primitive_arguments_type&& args, eval_context ctx) const;
         primitive_argument_type fmap_n_matrix(primitive const* p,
-            primitive_arguments_type&& args) const;
+            primitive_arguments_type&& args, eval_context ctx) const;
     };
 
     inline primitive create_fmap_operation(hpx::id_type const& locality,

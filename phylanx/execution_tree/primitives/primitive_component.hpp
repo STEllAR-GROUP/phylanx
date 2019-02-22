@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -35,8 +35,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         PHYLANX_EXPORT static std::shared_ptr<primitive_component_base>
         create_primitive(std::string const& type,
-            primitive_arguments_type&& params,
-            std::string const& name, std::string const& codename);
+            primitive_arguments_type&& params, std::string const& name,
+            std::string const& codename);
 
     public:
         primitive_component() = default;
@@ -49,6 +49,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         }
 
+        primitive_component(std::string const& type,
+                primitive_arguments_type&& operands, eval_context ctx,
+                std::string const& name, std::string const& codename)
+          : primitive_(
+                create_primitive(type, std::move(operands), name, codename))
+        {
+            primitive_->set_eval_context(std::move(ctx));
+        }
+
         // eval_action
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& params,
@@ -59,10 +68,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // store_action
         PHYLANX_EXPORT void store(primitive_arguments_type&&,
-            primitive_arguments_type&&);
+            primitive_arguments_type&&, eval_context ctx);
 
         PHYLANX_EXPORT void store_single(primitive_argument_type&&,
-            primitive_arguments_type&&);
+            primitive_arguments_type&&, eval_context ctx);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
