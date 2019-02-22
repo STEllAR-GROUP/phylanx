@@ -223,7 +223,8 @@ def estimate(training, numTopics, alpha_, beta_
         cachedCoefficients = alpha/denom
 
         for j in range(training.shape[0]):
-            localTopicCounts, localTopicIndex = (np.zeros(numTopics), np.zeros(numTopics, dtype=np.int))
+            localTopicCounts, localTopicIndex = \
+                (np.zeros(numTopics), np.zeros(numTopics, dtype=np.int))
             (old_topic, new_Topic, topicWeightSum) = (-1, -1, 0.)
             docLen = docLength[j]
 
@@ -241,7 +242,8 @@ def estimate(training, numTopics, alpha_, beta_
 
             denom = tokensPerTopic[localTopicIndex] + betaSum
             topicBetaMass += np.sum( (beta * localTopicCounts[localTopicIndex]) / denom)
-            cachedCoefficients[localTopicIndex] = (alpha[localTopicIndex] + localTopicCounts[localTopicIndex]) / denom
+            cachedCoefficients[localTopicIndex] = \
+                (alpha[localTopicIndex] + localTopicCounts[localTopicIndex]) / denom
             topicTermMass = 0.0
             topicTermScores = np.zeros(numTopics)
             denseIdx = 0
@@ -262,11 +264,14 @@ def estimate(training, numTopics, alpha_, beta_
                     if old_topic != UNASSIGNED_TOPIC:
                         denom = (tokensPerTopic[old_topic] + betaSum)
                         smoothingOnlyMass -= alpha[old_topic] * beta / denom
-                        topicBetaMass -= beta * localTopicCounts[old_topic] / denom
+                        topicBetaMass -= \
+                            beta * localTopicCounts[old_topic] / denom
                         localTopicCounts[old_topic] -= 1
                         if localTopicCounts[old_topic] == 0:
                             denseIdx = 0
-                            denseIdx = len(list(zip(*np.where(localTopicIndex != old_topic))))
+                            denseIdx = len(list( \
+                                zip(*np.where(localTopicIndex != old_topic))\
+                            ))
                             while denseIdx < nonZeroTopics:
                                 if denseIdx < len(localTopicIndex)-1:
                                     localTopicIndex[denseIdx] = localTopicIndex[denseIdx+1]
@@ -277,13 +282,16 @@ def estimate(training, numTopics, alpha_, beta_
                         denom = tokensPerTopic[old_topic] + betaSum
                         smoothingOnlyMass += alpha[old_topic] * beta / denom
                         topicBetaMass += beta * localTopicCounts[old_topic] / denom
-                        cachedCoefficients[old_topic] = (alpha[old_topic] + localTopicCounts[old_topic]) / denom
+                        cachedCoefficients[old_topic] = \
+                            (alpha[old_topic] + localTopicCounts[old_topic]) / denom
 
                     alreadyDecremented = (old_topic == UNASSIGNED_TOPIC)
                     topicTermMass = 0.0
 
                     idx_ = 0
-                    while idx_ < currentTypeTopicCounts.shape[0] and currentTypeTopicCounts[idx_] > 0:
+                    while idx_ < currentTypeTopicCounts.shape[0] and \
+                        currentTypeTopicCounts[idx_] > 0:
+
                         currentTopic = idx_
                         currentValue = currentTypeTopicCounts[idx_]
                         if not alreadyDecremented and currentTopic == old_topic:
@@ -295,9 +303,12 @@ def estimate(training, numTopics, alpha_, beta_
                             subidx = idx_
                             tmp = 0
                             while subidx < len(currentTypeTopicCounts)-1 and \
-                                currentTypeTopicCounts[subidx] < currentTypeTopicCounts[subidx+1]:
+                                currentTypeTopicCounts[subidx] < \
+                                    currentTypeTopicCounts[subidx+1]:
+
                                 tmp = currentTypeTopicCounts[subidx]
-                                currentTypeTopicCounts[subidx] = currentTypeTopicCounts[subidx+1]
+                                currentTypeTopicCounts[subidx] = \
+                                    currentTypeTopicCounts[subidx+1]
                                 currentTypeTopicCounts[subidx+1] = tmp
                                 subidx += 1
                             alreadyDecremented = True
@@ -307,7 +318,8 @@ def estimate(training, numTopics, alpha_, beta_
                             topicTermScores[idx_] = score
                             idx_+=1
 
-                    sample = np.random.rand() * (smoothingOnlyMass + topicBetaMass + topicTermMass)
+                    sample = np.random.rand() * \
+                        (smoothingOnlyMass + topicBetaMass + topicTermMass)
                     origSample = sample
                     new_topic = -1
 
@@ -327,7 +339,10 @@ def estimate(training, numTopics, alpha_, beta_
                             denseIdx = 0
                             while denseIdx < nonZeroTopics:
                                 tpc = localTopicIndex[denseIdx]
-                                sample -= localTopicCounts[tpc] / (tokensPerTopic[tpc] + betaSum)
+
+                                sample -= localTopicCounts[tpc] / \
+                                    (tokensPerTopic[tpc] + betaSum)
+
                                 if sample <= 0.0:
                                     new_topic = tpc
                                     break
@@ -336,10 +351,13 @@ def estimate(training, numTopics, alpha_, beta_
                             sample -= topicBetaMass
                             sample /= beta
                             new_topic = 0
-                            sample -= alpha[new_topic] / (tokensPerTopic[new_topic] + betaSum)
+                            sample -= alpha[new_topic] / \
+                                (tokensPerTopic[new_topic] + betaSum)
+
                             while sample > 0.0 and new_topic+1 < numTopics:
                                 new_topic+=1
-                                sample -= alpha[new_topic] / (tokensPerTopic[new_topic] + betaSum)
+                                sample -= alpha[new_topic] / \
+                                    (tokensPerTopic[new_topic] + betaSum)
     
                         idx_ = 0
 
@@ -365,7 +383,9 @@ def estimate(training, numTopics, alpha_, beta_
 
                     if localTopicCounts[new_topic] == 1:
                         denseIdx = nonZeroTopics #np.abs(nonZeroTopics) % numTopics
-                        while denseIdx > 0 and localTopicIndex[denseIdx-1] > new_topic:
+                        while denseIdx > 0 and \
+                            localTopicIndex[denseIdx-1] > new_topic:
+
                             localTopicIndex[denseIdx] = localTopicIndex[denseIdx-1]
                             denseIdx -= 1
 
@@ -376,6 +396,7 @@ def estimate(training, numTopics, alpha_, beta_
                     denom = (tokensPerTopic[new_topic] + betaSum)
                     cachedCoefficients[new_topic] = \
                         (alpha[new_topic] + localTopicCounts[new_topic]) / denom
+
                     smoothingOnlyMass += (alpha[new_topic] + beta) / denom
                     topicBetaMass += beta * localTopicCounts[new_topic] / denom
 
@@ -387,13 +408,19 @@ def estimate(training, numTopics, alpha_, beta_
 
             for denseIdx in range(nonZeroTopics):
                 topic = localTopicIndex[denseIdx]
-                cachedCoefficients[topic] = alpha[topic] / (tokensPerTopic[topic] + betaSum)
+                cachedCoefficients[topic] = alpha[topic] / \
+                    (tokensPerTopic[topic] + betaSum)
 
-        if itr > burnInPeriod and optimizeInterval != 0 and itr % optimizeInterval == 0:
+        if itr > burnInPeriod and optimizeInterval != 0 and \
+            itr % optimizeInterval == 0:
+
             alpha_ = optimizeAlpha(topicDocCounts,
                 docLengthCounts, maxTermFreq, numTopics, np.sum(alpha))
             ttc_mx = np.max(typeTopicCounts)
-            optimizeBeta(typeTopicCounts, tokensPerTopic, numTypes, betaSum, ttc_mx)
+
+            optimizeBeta(typeTopicCounts, tokensPerTopic, \
+                numTypes, betaSum, ttc_mx)
+
             beta = initBeta
             betaSum = initBetaSum
 
@@ -429,5 +456,5 @@ if __name__ == "__main__":
     for j in range(N):
         word_doc_mat[d[j],w[j]] += 1
 
-    doclenhist, topicdochist = estimate(word_doc_mat, T, alpha, beta, iters)
-
+    doclenhist, topicdochist = \
+        estimate(word_doc_mat, T, alpha, beta, iters)
