@@ -7,9 +7,9 @@
 
 .. _manual:
 
-=======
+======
 Manual
-=======
+======
 
 The manual is your comprehensive guide to |phylanx|. It contains detailed
 information on how to build and use |phylanx| in different scenarios.
