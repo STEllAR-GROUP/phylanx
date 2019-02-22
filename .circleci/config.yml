@@ -166,6 +166,15 @@ jobs:
             - <<: *attach_phylanx_tree
             # Build Documentation and Push to gh-pages branch
             - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
+            - run:
+                name: Justify build
+                command: ninja -n -d explain git_docs
+            - run:
+                name: Build git_docs
+                command: ninja -j1 git_docs
+            - run:
                 name: Pushing Sphinx Documentation
                 command: |
                     mkdir -p ~/.ssh
@@ -173,10 +182,7 @@ jobs:
                     git config --global user.name "StellarBot"
                     git config --global user.email "stellar@cct.lsu.edu"
                     ninja -j1 git_docs
-            - persist_to_workspace:
-                root: /
-                paths:
-                    - phylanx/build
+
     check.code_format:
         <<: *docker_config
         working_directory: /phylanx/source

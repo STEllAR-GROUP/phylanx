@@ -99,7 +99,6 @@ phylanx_source_to_doxygen(phylanx_autodoc
 set(SPHINX_DOCS_OUTPUT_DIR "${CMAKE_BINARY_DIR}/share/phylanx/docs/html")
 
 add_custom_target(docs
-  ALL
   DEPENDS ${SPHINX_DOCS_OUTPUT_DIR})
 add_dependencies(docs core examples python_setup)
 
