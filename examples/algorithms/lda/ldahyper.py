@@ -46,7 +46,7 @@ def learnParameters(alpha,
                               (parametersSum + np.float64(i) - 1.0) + 1e-100)
             denominator += locDocLengthCounts[i] * currentDigamma
 
-        denominator -= 1.0/scale
+        denominator -= 1.0 / scale
         parametersSum = 0.0
         for k in range(alpha.shape[0]):
             nonZeroLimit = nonZeroLimits[k]
@@ -65,13 +65,13 @@ def learnParameters(alpha,
 def digamma(z):
     EULER_MASCHERONI = -0.5772156649015328606065121
 
-    DIGAMMA_COEF_1 = 1.0/12.0
-    DIGAMMA_COEF_2 = 1.0/120.0
-    DIGAMMA_COEF_3 = 1.0/252.0
-    DIGAMMA_COEF_4 = 1.0/240.0
-    DIGAMMA_COEF_5 = 1.0/132.0
-    DIGAMMA_COEF_6 = 691.0/32760.0
-    DIGAMMA_COEF_7 = 1.0/12.0
+    DIGAMMA_COEF_1 = 1.0 / 12.0
+    DIGAMMA_COEF_2 = 1.0 / 120.0
+    DIGAMMA_COEF_3 = 1.0 / 252.0
+    DIGAMMA_COEF_4 = 1.0 / 240.0
+    DIGAMMA_COEF_5 = 1.0 / 132.0
+    DIGAMMA_COEF_6 = 691.0 / 32760.0
+    DIGAMMA_COEF_7 = 1.0 / 12.0
     # DIGAMMA_COEF_8 = 3617.0/8160.0
     # DIGAMMA_COEF_9 = 43867.0/14364.0
     # DIGAMMA_COEF_10 = 174611.0/6600.0
@@ -79,7 +79,7 @@ def digamma(z):
     DIGAMMA_LARGE = 9.5
     DIGAMMA_SMALL = 0.000001
 
-    invZ = (1.0/z)
+    invZ = (1.0 / np.float64(z))
 
     if z < DIGAMMA_SMALL:
         return EULER_MASCHERONI - invZ
@@ -247,7 +247,7 @@ def estimate(training, numTopics, alpha_, beta_,
 
         denom = tokensPerTopic + betaSum
         smoothingOnlyMass = np.sum(alpha * beta / denom)
-        cachedCoefficients = alpha/denom
+        cachedCoefficients = alpha / denom
 
         for j in range(training.shape[0]):
             localTopicCounts, localTopicIndex = \
@@ -287,8 +287,8 @@ def estimate(training, numTopics, alpha_, beta_,
                 oneDocTypesFreq.shape[0] + 1, dtype=np.uint64
             )
             oneDocIndices[1:] = np.cumsum(oneDocTypesFreq)
-            for pos in range(oneDocIndices.shape[0]-1):
-                pos_rng = oneDocIndices[pos:pos+2]
+            for pos in range(oneDocIndices.shape[0] - 1):
+                pos_rng = oneDocIndices[pos:pos + 2]
                 if pos_rng[1] >= oneDocTopics.shape[0]:
                     break
                 topics = oneDocTopics[pos_rng]
@@ -350,7 +350,9 @@ def estimate(training, numTopics, alpha_, beta_,
                                 ] = currentValue
                             subidx = idx_
                             tmp = 0
-                            while subidx < len(currentTypeTopicCounts)-1 and \
+                            while subidx < len(
+                                currentTypeTopicCounts
+                                ) - 1 and \
                                 currentTypeTopicCounts[subidx] < \
                                     currentTypeTopicCounts[subidx + 1]:
 
@@ -406,7 +408,7 @@ def estimate(training, numTopics, alpha_, beta_,
                             sample -= alpha[new_topic] / \
                                 (tokensPerTopic[new_topic] + betaSum)
 
-                            while sample > 0.0 and new_topic+1 < numTopics:
+                            while sample > 0.0 and new_topic + 1 < numTopics:
                                 new_topic += 1
                                 sample -= alpha[new_topic] / \
                                     (tokensPerTopic[new_topic] + betaSum)
@@ -424,7 +426,7 @@ def estimate(training, numTopics, alpha_, beta_,
                             currentTypeTopicCounts[idx_] = new_topic
 
                     if new_topic < 0:
-                        new_topic = numTopics-1
+                        new_topic = numTopics - 1
 
                     oneDocTopics[pos_range] = new_topic
                     denom = tokensPerTopic[new_topic] + betaSum
@@ -435,7 +437,7 @@ def estimate(training, numTopics, alpha_, beta_,
                     if localTopicCounts[new_topic] == 1:
                         denseIdx = nonZeroTopics
                         while (denseIdx > 0) and \
-                              (localTopicIndex[denseIdx-1] > new_topic):
+                              (localTopicIndex[denseIdx - 1] > new_topic):
                             localTopicIndex[denseIdx] = \
                                 localTopicIndex[denseIdx - 1]
                             denseIdx -= 1
@@ -502,7 +504,7 @@ if __name__ == "__main__":
     w -= 1
     d -= 1
 
-    z = np.random.randint(0, T, size=T*N)
+    z = np.random.randint(0, T, size=T * N)
     beta = 0.01
     alpha = 0.5
     iters = 1000
