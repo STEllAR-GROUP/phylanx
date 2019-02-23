@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     generate_error_message("index out of bound"));
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
-            result[indices_vec[sorted_indices[i]]] = values[sorted_indices[i]];
+            result[indices_vec[sorted_indices[i]]] = values_vec[sorted_indices[i]];
         }
 
         for (int i = 0; i < result.size(); ++i)
@@ -217,7 +217,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             break;
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "insert::insert_flatten_0d",
+            "insert::insert_flatten_nd",
             generate_error_message("index is out of bounds"));
     }
 
@@ -226,9 +226,148 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values,
         std::int64_t axis) const
     {
+        if (axis == 0 || axis == -1)
+            return flatten_nd_helper(
+                std::move(arg), std::move(indices), std::move(values));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "insert::insert_1d",
-            generate_error_message("not implemented yet"));
+            generate_error_message(
+                "axis is out of bound for array of dimension 1"));
+    }
+
+    template <typename T>
+    primitive_argument_type insert::insert_2d_axis0(ir::node_data<T>&& arg,
+        ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
+    {
+        if (indices.num_dimensions() > 1)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "insert::insert_flatten_2d_axis0",
+                generate_error_message("index array argument to insert must be "
+                                       "one dimensional or scalar"));
+        if (arg.num_dimensions() == 0)
+            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+
+        if (indices.num_dimensions() == 0)
+            indices = extract_value_vector<T>(indices, 1, name_, codename_);
+
+        auto m = arg.matrix();
+
+        auto val =
+            extract_value_vector<T>(values, m.columns(), name_, codename_);
+        auto values_vec = val.vector();
+        auto indices_vec = indices.vector();
+
+        std::transform(indices_vec.data(),
+            indices_vec.data() + indices_vec.size(), indices_vec.data(),
+            [&](std::int64_t a) -> std::int64_t {
+                if (a < 0)
+                    a += m.rows();
+                return a;
+            });
+
+        blaze::DynamicVector<T> sorted_indices(indices_vec.size());
+
+        std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+        std::stable_sort(sorted_indices.begin(), sorted_indices.end(),
+            [&](std::int64_t c, std::int64_t b) {
+                return indices_vec[c] < indices_vec[b];
+            });
+
+        blaze::DynamicMatrix<T> result(
+            m.rows() + indices_vec.size(), m.columns());
+        blaze::DynamicVector<std::int64_t> mask(
+            m.rows() + indices_vec.size(), 1);
+
+        for (int i = 0; i < indices_vec.size(); ++i)
+        {
+            if (indices_vec[sorted_indices[i]] < 0)
+                indices_vec[sorted_indices[i]] += result.rows();
+
+            if (indices_vec[sorted_indices[i]] < 0 ||
+                indices_vec[sorted_indices[i]] >= result.rows())
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "insert::insert_2d_axis_0",
+                    generate_error_message("index out of bound"));
+            indices_vec[sorted_indices[i]] += i;
+            mask[indices_vec[sorted_indices[i]]] = 0;
+            blaze::row(result, indices_vec[sorted_indices[i]]) =
+                blaze::trans(values_vec);
+        }
+
+        std::size_t j = 0;
+        for (std::size_t i = 0; i < result.rows(); ++i)
+        {
+            if (mask[i] == 1)
+                blaze::row(result, i) = blaze::row(m, j++);
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type insert::insert_2d_axis1(ir::node_data<T>&& arg,
+        ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
+    {
+        if (indices.num_dimensions() > 1)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "insert::insert_flatten_2d_axis1",
+                generate_error_message("index array argument to insert must be "
+                                       "one dimensional or scalar"));
+        if (arg.num_dimensions() == 0)
+            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+
+        if (indices.num_dimensions() == 0)
+            indices = extract_value_vector<T>(indices, 1, name_, codename_);
+
+        auto m = arg.matrix();
+        auto val =
+            extract_value_vector<T>(values, indices.size(), name_, codename_);
+        auto values_vec = val.vector();
+        auto indices_vec = indices.vector();
+
+        std::transform(indices_vec.data(),
+            indices_vec.data() + indices_vec.size(), indices_vec.data(),
+            [&](std::int64_t a) -> std::int64_t {
+                if (a < 0)
+                    a += m.columns();
+                return a;
+            });
+
+        blaze::DynamicVector<T> sorted_indices(indices_vec.size());
+
+        std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+        std::stable_sort(sorted_indices.begin(), sorted_indices.end(),
+            [&](std::int64_t c, std::int64_t b) {
+                return indices_vec[c] < indices_vec[b];
+            });
+
+        blaze::DynamicMatrix<T> result(
+            m.rows(), m.columns() + indices_vec.size());
+        blaze::DynamicVector<std::int64_t> mask(
+            m.columns() + indices_vec.size(), 1);
+
+        for (int i = 0; i < indices_vec.size(); ++i)
+        {
+            if (indices_vec[sorted_indices[i]] < 0)
+                indices_vec[sorted_indices[i]] += result.columns();
+
+            if (indices_vec[sorted_indices[i]] < 0 ||
+                indices_vec[sorted_indices[i]] >= result.columns())
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "insert::insert_2d_axis_1",
+                    generate_error_message("index out of bound"));
+            indices_vec[sorted_indices[i]] += i;
+            mask[indices_vec[sorted_indices[i]]] = 0;
+            blaze::column(result, indices_vec[sorted_indices[i]]) =
+                values_vec[sorted_indices[i]];
+        }
+
+        std::size_t j = 0;
+        for (std::size_t i = 0; i < result.columns(); ++i)
+        {
+            if (mask[i] == 1)
+                blaze::column(result, i) = blaze::column(m, j++);
+        }
+        return primitive_argument_type{std::move(result)};
     }
 
     template <typename T>
@@ -236,21 +375,239 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values,
         std::int64_t axis) const
     {
+        if (axis == 0 || axis == 2)
+            return insert_2d_axis0(
+                std::move(arg), std::move(indices), std::move(values));
+        if (axis == 1 || axis == -1)
+            return insert_2d_axis1(
+                std::move(arg), std::move(indices), std::move(values));
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "insert::insert_2"
-            "d",
-            generate_error_message("not implemented yet"));
+            "insert::insert_2d",
+            generate_error_message(
+                "axis is out of bounds for array of dimension 2"));
     }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type insert::insert_3d_axis0(ir::node_data<T>&& arg,
+        ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
+    {
+        if (indices.num_dimensions() > 1)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "insert::insert_flatten_3d_axis0",
+                generate_error_message("index array argument to insert must be "
+                                       "one dimensional or scalar"));
+        if (arg.num_dimensions() == 0)
+            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+
+        if (indices.num_dimensions() == 0)
+            indices = extract_value_vector<T>(indices, 1, name_, codename_);
+
+        auto m = arg.tensor();
+        auto val = extract_value_matrix<T>(
+            values, m.rows(), m.columns(), name_, codename_);
+        auto values_mat = val.matrix();
+        auto indices_vec = indices.vector();
+
+        std::transform(indices_vec.data(),
+            indices_vec.data() + indices_vec.size(), indices_vec.data(),
+            [&](std::int64_t a) -> std::int64_t {
+                if (a < 0)
+                    a += m.pages();
+                return a;
+            });
+
+        blaze::DynamicVector<T> sorted_indices(indices_vec.size());
+
+        std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+        std::stable_sort(sorted_indices.begin(), sorted_indices.end(),
+            [&](std::int64_t c, std::int64_t b) {
+                return indices_vec[c] < indices_vec[b];
+            });
+
+        blaze::DynamicTensor<T> result(
+            arg.dimension(0) + indices_vec.size(), m.rows(), m.columns());
+        blaze::DynamicVector<std::int64_t> mask(
+            arg.dimension(0) + indices_vec.size(), 1);
+
+        for (int i = 0; i < indices_vec.size(); ++i)
+        {
+            if (indices_vec[sorted_indices[i]] < 0)
+                indices_vec[sorted_indices[i]] += result.pages();
+
+            if (indices_vec[sorted_indices[i]] < 0 ||
+                indices_vec[sorted_indices[i]] >= result.pages())
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "insert::insert_3d_axis0",
+                    generate_error_message("index out of bound"));
+            indices_vec[sorted_indices[i]] += i;
+            mask[indices_vec[sorted_indices[i]]] = 0;
+            blaze::pageslice(result, indices_vec[sorted_indices[i]]) =
+                values_mat;
+        }
+        std::size_t j = 0;
+        for (std::size_t i = 0; i < result.pages(); ++i)
+        {
+            if (mask[i] == 1)
+                blaze::pageslice(result, i) = blaze::pageslice(m, j++);
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type insert::insert_3d_axis1(ir::node_data<T>&& arg,
+        ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
+    {
+        if (indices.num_dimensions() > 1)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "insert::insert_flatten_3d_axis1",
+                generate_error_message("index array argument to insert must be "
+                                       "one dimensional or scalar"));
+        if (arg.num_dimensions() == 0)
+            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+
+        if (indices.num_dimensions() == 0)
+            indices = extract_value_vector<T>(indices, 1, name_, codename_);
+
+        auto m = arg.tensor();
+        auto val = extract_value_matrix<T>(
+            values, m.pages(), indices.size(), name_, codename_);
+        auto values_vec = val.matrix();
+        auto indices_vec = indices.vector();
+
+        std::transform(indices_vec.data(),
+            indices_vec.data() + indices_vec.size(), indices_vec.data(),
+            [&](std::int64_t a) -> std::int64_t {
+                if (a < 0)
+                    a += m.rows();
+                return a;
+            });
+
+        blaze::DynamicVector<T> sorted_indices(indices_vec.size());
+
+        std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+        std::stable_sort(sorted_indices.begin(), sorted_indices.end(),
+            [&](std::int64_t c, std::int64_t b) {
+                return indices_vec[c] < indices_vec[b];
+            });
+
+        blaze::DynamicTensor<T> result(
+            m.pages(), m.rows() + indices_vec.size(), m.columns());
+        blaze::DynamicVector<std::int64_t> mask(
+            m.rows() + indices_vec.size(), 1);
+
+        for (int i = 0; i < indices_vec.size(); ++i)
+        {
+            if (indices_vec[sorted_indices[i]] < 0)
+                indices_vec[sorted_indices[i]] += result.rows();
+
+            if (indices_vec[sorted_indices[i]] < 0 ||
+                indices_vec[sorted_indices[i]] >= result.rows())
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "insert::insert_3d_axis_1",
+                    generate_error_message("index out of bound"));
+            indices_vec[sorted_indices[i]] += i;
+            mask[indices_vec[sorted_indices[i]]] = 0;
+            blaze::rowslice(result, indices_vec[sorted_indices[i]]) =
+                blaze::trans(values_vec);
+        }
+
+        std::size_t j = 0;
+        for (std::size_t i = 0; i < result.rows(); ++i)
+        {
+            if (mask[i] == 1)
+                blaze::rowslice(result, i) = blaze::rowslice(m, j++);
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type insert::insert_3d_axis2(ir::node_data<T>&& arg,
+        ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
+    {
+        if (indices.num_dimensions() > 1)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "insert::insert_flatten_3d_axis2",
+                generate_error_message("index array argument to insert must be "
+                                       "one dimensional or scalar"));
+        if (arg.num_dimensions() == 0)
+            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+
+        if (indices.num_dimensions() == 0)
+            indices = extract_value_vector<T>(indices, 1, name_, codename_);
+
+        auto m = arg.tensor();
+        auto val =
+            extract_value_vector<T>(values, indices.size(), name_, codename_);
+        auto values_vec = val.vector();
+        auto indices_vec = indices.vector();
+
+        std::transform(indices_vec.data(),
+            indices_vec.data() + indices_vec.size(), indices_vec.data(),
+            [&](std::int64_t a) -> std::int64_t {
+                if (a < 0)
+                    a += m.columns();
+                return a;
+            });
+
+        blaze::DynamicVector<T> sorted_indices(indices_vec.size());
+
+        std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+        std::stable_sort(sorted_indices.begin(), sorted_indices.end(),
+            [&](std::int64_t c, std::int64_t b) {
+                return indices_vec[c] < indices_vec[b];
+            });
+
+        blaze::DynamicTensor<T> result(
+            m.pages(), m.rows(), m.columns() + indices_vec.size());
+        blaze::DynamicVector<std::int64_t> mask(
+            m.columns() + indices_vec.size(), 1);
+
+        for (int i = 0; i < indices_vec.size(); ++i)
+        {
+            if (indices_vec[sorted_indices[i]] < 0)
+                indices_vec[sorted_indices[i]] += result.columns();
+
+            if (indices_vec[sorted_indices[i]] < 0 ||
+                indices_vec[sorted_indices[i]] >= result.columns())
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "insert::insert_3d_axis_2",
+                    generate_error_message("index out of bound"));
+            indices_vec[sorted_indices[i]] += i;
+            mask[indices_vec[sorted_indices[i]]] = 0;
+            blaze::columnslice(result, indices_vec[sorted_indices[i]]) =
+                values_vec[sorted_indices[i]];
+            ;
+        }
+
+        std::size_t j = 0;
+        for (std::size_t i = 0; i < result.columns(); ++i)
+        {
+            if (mask[i] == 1)
+                blaze::columnslice(result, i) = blaze::columnslice(m, j++);
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
     template <typename T>
     primitive_argument_type insert::insert_3d(ir::node_data<T>&& arg,
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values,
         std::int64_t axis) const
     {
+        if (axis == 0 || axis == -3)
+            return insert_3d_axis0(
+                std::move(arg), std::move(indices), std::move(values));
+        if (axis == 1 || axis == -2)
+            return insert_3d_axis1(
+                std::move(arg), std::move(indices), std::move(values));
+        if (axis == 2 || axis == -1)
+            return insert_3d_axis2(
+                std::move(arg), std::move(indices), std::move(values));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "insert::insert_3d",
-            generate_error_message("not implemented yet"));
+            "insert::insert_flatten_3d",
+            generate_error_message(
+                "axis is out of bounds for array of dimension 3"));
     }
 #endif
 
