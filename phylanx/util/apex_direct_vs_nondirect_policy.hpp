@@ -144,8 +144,8 @@ namespace phylanx { namespace util
                 
             	//apex::custom_event(my_custom_event_2, NULL);
             	
-                //this->set_direct_vs_nondirect_params_for_threshold();
-                this->set_direct_vs_nondirect_params_for_execute_directly();
+                this->set_direct_vs_nondirect_params_for_threshold();
+                //this->set_direct_vs_nondirect_params_for_execute_directly();
             }
             //else {
  		//apex::deregister_policy(policy_handle);
@@ -239,9 +239,9 @@ namespace phylanx { namespace util
             //request->set_strategy(apex_ah_tuning_strategy::PARALLEL_RANK_ORDER);
 
             //for threshold based policy
-            //request->add_param_long("threshold", 100000, 100000, 1000000, 100000);
+            request->add_param_long("threshold", 200000, 200000, 1000000, 100000);
             //for direct vs nondirect execution policy
-            request->add_param_long("execute_directly", 0, 0, 1, 1);
+            //request->add_param_long("execute_directly", 0, 0, 1, 1);
             //request->add_param_long("hysteresis" + primitive_name_, 50000, 50000, 200000, 50000);
             request->set_trigger(apex::register_custom_event(policy_name_));
             tuning_session_handle = apex::setup_custom_tuning(*request);

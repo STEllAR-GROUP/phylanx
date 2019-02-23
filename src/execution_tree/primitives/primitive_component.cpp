@@ -195,9 +195,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = hpx::get_lva<primitive_component>::call(lva);
 
 #if defined(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY) && defined(HPX_HAVE_APEX)
-        //return this_->primitive_->select_direct_eval_execution_policy_for_threshold(policy);
-        return this_->primitive_->select_direct_eval_execution_policy_for_execute_directly(
-		policy);
+        return this_->primitive_->select_direct_eval_execution_policy_for_threshold(policy);
+        //return this_->primitive_->select_direct_eval_execution_policy_for_execute_directly(
+	//	policy);
 #else
         return this_->primitive_->select_direct_eval_execution(policy);
 #endif
@@ -210,9 +210,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = hpx::get_lva<primitive_component>::call(lva);
 
 #if defined(PHYLANX_HAVE_DIRECT_VS_NONDIRECT_POLICY) && defined(HPX_HAVE_APEX)
-        //return this_->primitive_->select_direct_eval_execution_policy_for_threshold(policy);
-        return this_->primitive_->select_direct_eval_execution_policy_for_execute_directly(
-		policy);
+        return this_->primitive_->select_direct_eval_execution_policy_for_threshold(policy);
+        //return this_->primitive_->select_direct_eval_execution_policy_for_execute_directly(
+	//	policy);
 #else
         return this_->primitive_->select_direct_eval_execution(policy);
 #endif

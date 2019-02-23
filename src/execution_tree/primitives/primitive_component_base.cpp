@@ -525,6 +525,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 	    else if( measurements_enabled_) 
 	    {
         	measurements_enabled_ = false;
+		std::cout << name_ << " threshold: " << get_exec_threshold() << std::endl;
+
 	    }	
 
         }
