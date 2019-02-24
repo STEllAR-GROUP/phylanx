@@ -131,7 +131,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             string_operand_sync(operands[1], args, name_, codename_, ctx);
 
         auto this_ = this->shared_from_this();
-        return numeric_operand(operands[2], args, name_, codename_, ctx)
+        return numeric_operand(
+                operands[2], args, name_, codename_, std::move(ctx))
             .then(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_), filename = std::move(filename),
                     dataset_name = std::move(dataset_name)](

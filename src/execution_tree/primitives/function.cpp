@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -25,11 +25,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     primitive create_function(hpx::id_type const& locality,
         primitive_argument_type&& operand, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, bool register_with_agas)
     {
         static std::string type("function");
-        return create_primitive_component(
-            locality, type, std::move(operand), name, codename);
+        return create_primitive_component(locality, type, std::move(operand),
+            name, codename, register_with_agas);
     }
 
     match_pattern_type const function::match_data =
@@ -98,10 +98,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void function::store(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+    void function::store(primitive_argument_type&& data,
+        primitive_arguments_type&& params, eval_context ctx)
     {
-        if (data.empty())
+        if (!valid(data))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "function::store",
@@ -116,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "store shouldn't be called with dynamic arguments"));
         }
 
-        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
+        operands_[0] = extract_copy_value(std::move(data), name_, codename_);
         value_set_ = true;
     }
 

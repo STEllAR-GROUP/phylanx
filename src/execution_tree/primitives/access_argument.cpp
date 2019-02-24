@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -168,7 +168,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void access_argument::store(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (data.size() != 1)
         {
@@ -202,7 +202,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive* p = util::get_if<primitive>(&operands_[0]);
             HPX_ASSERT(p != nullptr);
 
-            p->store(hpx::launch::sync, std::move(data), std::move(params));
+            p->store(hpx::launch::sync, std::move(data), std::move(params),
+                std::move(ctx));
         }
         else if (is_ref_value(params[argnum_]))
         {
@@ -266,7 +267,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void access_argument::store(primitive_argument_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (argnum_ >= params.size())
         {
@@ -298,7 +299,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive* p = util::get_if<primitive>(&params[argnum_]);
                 HPX_ASSERT(p != nullptr);
 
-                p->store(hpx::launch::sync, std::move(vals), std::move(params));
+                p->store(hpx::launch::sync, std::move(vals), std::move(params),
+                    std::move(ctx));
             }
             else
             {
@@ -306,7 +308,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive* p = util::get_if<primitive>(&operands_[0]);
                 HPX_ASSERT(p != nullptr);
 
-                p->store(hpx::launch::sync, std::move(data), std::move(params));
+                p->store(hpx::launch::sync, std::move(data), std::move(params),
+                    std::move(ctx));
             }
         }
         else if (is_ref_value(params[argnum_]))

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //                2018 R. Tohid
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -23,5 +23,6 @@
 #include <phylanx/execution_tree/primitives/string_output.hpp>
 #include <phylanx/execution_tree/primitives/target_reference.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives/variable_factory.hpp>
 
 #endif

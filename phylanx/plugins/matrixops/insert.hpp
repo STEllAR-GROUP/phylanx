@@ -15,15 +15,14 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace execution_tree { namespace primitives {
     /// \brief Implementation of insert as a Phylanx primitive.
     /// Returns a copy of the array with values inserted.
     /// This implementation is intended to behave like [NumPy implementation of flatten]
@@ -74,9 +73,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<std::int64_t>&& indices,
             ir::node_data<T>&& values) const;
 
+        template <typename T>
+        primitive_argument_type insert_2d_axis0(ir::node_data<T>&& arg,
+            ir::node_data<std::int64_t>&& indices,
+            ir::node_data<T>&& values) const;
+        template <typename T>
+        primitive_argument_type insert_2d_axis1(ir::node_data<T>&& arg,
+            ir::node_data<std::int64_t>&& indices,
+            ir::node_data<T>&& values) const;
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type insert_flatten_3d(ir::node_data<T>&& arg,
+            ir::node_data<std::int64_t>&& indices,
+            ir::node_data<T>&& values) const;
+
+        template <typename T>
+        primitive_argument_type insert_3d_axis0(ir::node_data<T>&& arg,
+            ir::node_data<std::int64_t>&& indices,
+            ir::node_data<T>&& values) const;
+        template <typename T>
+        primitive_argument_type insert_3d_axis1(ir::node_data<T>&& arg,
+            ir::node_data<std::int64_t>&& indices,
+            ir::node_data<T>&& values) const;
+
+        template <typename T>
+        primitive_argument_type insert_3d_axis2(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& indices,
             ir::node_data<T>&& values) const;
 

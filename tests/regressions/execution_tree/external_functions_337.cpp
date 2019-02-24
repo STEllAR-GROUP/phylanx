@@ -32,19 +32,21 @@ int hpx_main()
         main_func
     ))";
 
+    phylanx::execution_tree::eval_context ctx;
+
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment envir =
         phylanx::execution_tree::compiler::default_environment();
 
     auto const& code1 = phylanx::execution_tree::compile(
         "extern_print", external_code, snippets, envir);
-    auto external_ = code1.run();
-    external_(4.0);
+    auto external_ = code1.run(ctx);
+    external_(ctx, 4.0);
 
     auto const& code2 = phylanx::execution_tree::compile(
         "main_func", main_code, snippets, envir);
-    auto main_ = code2.run();
-    main_(3.0);
+    auto main_ = code2.run(ctx);
+    main_(ctx, 3.0);
 
     return hpx::finalize();
 }

@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 // Uncomment this if you want to enable debugging
 // #define BOOST_SPIRIT_QI_DEBUG
@@ -179,6 +180,43 @@ namespace phylanx { namespace execution_tree { namespace compiler
     {
         primitive_name_parts parts = parse_primitive_name(name);
         return compose_primitive_display_name(parts);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Extract the primitive name from the given component name
+    std::string extract_primitive_name(std::string const& name)
+    {
+        compiler::primitive_name_parts name_parts;
+        if (!parse_primitive_name(name, name_parts))
+        {
+            std::string::size_type p = name.find_first_of("$");
+            if (p != std::string::npos)
+            {
+                return name.substr(0, p);
+            }
+            return name;
+        }
+        return std::move(name_parts.primitive);
+    }
+
+    // Extract the function/variable name from the given component name
+    std::string extract_instance_name(std::string const& name)
+    {
+        compiler::primitive_name_parts name_parts;
+        if (!parse_primitive_name(name, name_parts))
+        {
+            std::string::size_type p = name.find_first_of("$");
+            if (p != std::string::npos)
+            {
+                std::string::size_type p1 = name.find_first_of("$", p);
+                if (p1 != std::string::npos)
+                {
+                    return name.substr(p1);
+                }
+            }
+            return name;
+        }
+        return std::move(name_parts.instance);
     }
 }}}
 
