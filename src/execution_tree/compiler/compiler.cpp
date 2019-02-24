@@ -137,6 +137,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
     private:
+        using placeholder_map_type =
+            std::multimap<std::string, ast::expression>;
+
         ///////////////////////////////////////////////////////////////////////
         static std::string generate_error_message(std::string const& msg,
             std::string const& name, ast::tagged const& id)
@@ -343,13 +346,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return f;
         }
 
-        function handle_lambda(
-            std::multimap<std::string, ast::expression>& placeholders,
+        function handle_lambda(placeholder_map_type& placeholders,
             ast::tagged const& lambda_id)
         {
             // we know that 'lambda()' uses '__1' to match arguments
-            using iterator =
-                typename std::multimap<std::string, ast::expression>::iterator;
+            using iterator = placeholder_map_type::iterator;
             std::pair<iterator, iterator> p = placeholders.equal_range("__1");
 
             // extract expressions representing the newly defined function
@@ -359,13 +360,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return compile_lambda(args, body, lambda_id);
         }
 
-        function handle_define(
-            std::multimap<std::string, ast::expression>& placeholders,
+        function handle_define(placeholder_map_type& placeholders,
             ast::tagged const& define_id)
         {
             // we know that 'define()' uses '__1' to match arguments
-            using iterator =
-                typename std::multimap<std::string, ast::expression>::iterator;
+            using iterator = placeholder_map_type::iterator;
             std::pair<iterator, iterator> p = placeholders.equal_range("__1");
 
             // extract expressions representing the newly defined variable
@@ -390,10 +389,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive_name_parts name_parts;
             if (args.empty())
             {
-                // get global name of the component created
-
-                compiled_function* cf = env_.define(name,
-                    access_target(f, "access-variable", default_locality_));
+                // create variable in the current environment
+                compiled_function* cf = env_.define_variable(
+                    name, access_target(f, "access-variable", default_locality_));
 
                 // Correct type of the access object if this variable refers
                 // to a lambda.
@@ -419,11 +417,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
                 name_parts.instance = std::move(name);
 
-                // now create the variable object
+                // now create the variable-factory object
                 std::string variable_name = compose_primitive_name(name_parts);
                 f = function{primitive_argument_type{
                         create_primitive_component(
-                            default_locality_, name_parts.primitive,
+                            default_locality_, "variable-factory",
                             primitive_argument_type{}, variable_name, name_)
                     }, variable_name};
 
@@ -439,13 +437,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     id.id, id.col, snippets_.compile_id_ - 1);
                 name_parts.instance = std::move(name);
 
-                env_.define(name_parts.instance,
+                // create variable in the current environment
+                env_.define_variable(name_parts.instance,
                     access_target(f, "access-function", default_locality_));
 
                 std::string variable_name = compose_primitive_name(name_parts);
                 f = function{primitive_argument_type{
                         create_primitive_component(
-                            default_locality_, name_parts.primitive,
+                            default_locality_, "variable-factory",
                             primitive_argument_type{}, variable_name, name_)
                     }, variable_name};
 
@@ -507,13 +506,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         // handle slice(), this has to be transformed into a immediate slicing
         // on the first argument
-        bool handle_slice(
-            std::multimap<std::string, ast::expression>& placeholders,
+        bool handle_slice(placeholder_map_type& placeholders,
             ast::tagged const& slice_id, function& result)
         {
             //  _1 represents the expression to slice
-            using iterator =
-                typename std::multimap<std::string, ast::expression>::iterator;
+            using iterator = placeholder_map_type::iterator;
             std::pair<iterator, iterator> p1 = placeholders.equal_range("_1");
 
             // we don't know how to handle a missing slicing target
@@ -640,8 +637,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name_, id));
         }
 
-        function handle_placeholders(
-            std::multimap<std::string, ast::expression>& placeholders,
+        function handle_placeholders(placeholder_map_type& placeholders,
             std::string const& name, ast::tagged id)
         {
             // add sequence number for this primitive component
@@ -714,7 +710,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     // Handle define(__1)
                     if (function_name == "define")
                     {
-                        std::multimap<std::string, ast::expression> placeholders;
+                        placeholder_map_type placeholders;
                         if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
                                 ast::detail::on_placeholder_match{placeholders}))
                         {
@@ -725,7 +721,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     // Handle lambda(__1)
                     if (function_name == "lambda")
                     {
-                        std::multimap<std::string, ast::expression> placeholders;
+                        placeholder_map_type placeholders;
                         if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
                                 ast::detail::on_placeholder_match{placeholders}))
                         {
@@ -736,7 +732,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     // Handle slice(_1, __2)
                     if (function_name == "slice")
                     {
-                        std::multimap<std::string, ast::expression> placeholders;
+                        placeholder_map_type placeholders;
                         if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
                                 ast::detail::on_placeholder_match{placeholders}))
                         {
@@ -754,9 +750,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     }
 
                     // handle all non-special functions
-                    while (cit != patterns_.end() && (*cit).first == function_name)
+                    while (
+                        cit != patterns_.end() && (*cit).first == function_name)
                     {
-                        std::multimap<std::string, ast::expression> placeholders;
+                        placeholder_map_type placeholders;
                         if (!ast::match_ast(expr, hpx::util::get<1>((*cit).second),
                                 ast::detail::on_placeholder_match{placeholders}))
                         {
@@ -764,7 +761,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                             continue;   // no match found for the current pattern
                         }
 
-                        return handle_placeholders(placeholders, (*cit).first, id);
+                        return handle_placeholders(
+                            placeholders, (*cit).first, id);
                     }
                 }
                 else
@@ -777,7 +775,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // this should handle all remaining constructs (non-function calls)
                 for (auto const& pattern : patterns_)
                 {
-                    std::multimap<std::string, ast::expression> placeholders;
+                    placeholder_map_type placeholders;
                     if (!ast::match_ast(expr, hpx::util::get<1>(pattern.second),
                             ast::detail::on_placeholder_match{placeholders}))
                     {
@@ -898,17 +896,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
         name_parts.sequence_number =
             snippets.sequence_numbers_[name_parts.primitive]++;
 
-        // get sequence number of this component
-        env.define(name_parts.instance,
+        // create variable in the given environment
+        env.define_variable(name_parts.instance,
             access_target(f, "access-variable", default_locality));
 
         // now create the variable object
         std::string variable_name = compose_primitive_name(name_parts);
         f = function{primitive_argument_type{
                 create_primitive_component(
-                    default_locality, name_parts.primitive,
-                    std::move(body), variable_name, codename)
+                    default_locality, "variable-factory",
+                    primitive_argument_type{}, variable_name, codename)
             }, variable_name};
+
+        auto var = primitive_operand(f.arg_, variable_name, codename);
+        var.store(hpx::launch::sync, std::move(body), {});
 
         // the define-variable object is invoked whenever a define() is
         // executed
@@ -919,8 +920,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         name_parts.primitive = std::move(define_variable);
 
         function variable_ref = f;      // copy f as we need to move it
-        return define_operation{default_locality}(
-            std::move(variable_ref.arg_), std::move(name_parts), codename);
+        return define_operation{default_locality}(std::move(variable_ref.arg_),
+            std::move(name_parts), codename);
     }
 }}}
 

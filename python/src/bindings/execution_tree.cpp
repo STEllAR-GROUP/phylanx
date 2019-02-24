@@ -13,17 +13,18 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose execution tree
-void phylanx::bindings::bind_execution_tree(pybind11::module m)
+template <typename T>
+void bind_variable(pybind11::module &execution_tree)
 {
-    auto execution_tree = m.def_submodule("execution_tree");
-
     execution_tree.def("var",
-        [](double d) {
+        [](T d) {
+            pybind11::gil_scoped_release release;       // release GIL
             return hpx::threads::run_as_hpx_thread(
                 [&]()
                 {
@@ -34,7 +35,55 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         },
         "create a new variable from a floating point value");
     execution_tree.def("var",
-        [](const std::string& d) {
+        [](std::vector<T> const& d) {
+            pybind11::gil_scoped_release release;       // release GIL
+            return hpx::threads::run_as_hpx_thread(
+                [&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{
+                            phylanx::ir::node_data<T>{d}});
+                });
+        },
+        "create a new variable from a vector floating point values");
+    execution_tree.def("var",
+        [](std::vector<std::vector<T>> const& d) {
+            pybind11::gil_scoped_release release;       // release GIL
+            return hpx::threads::run_as_hpx_thread(
+                [&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{
+                            phylanx::ir::node_data<T>{d}});
+                });
+        },
+        "create a new variable from a matrix floating point values");
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    execution_tree.def("var",
+        [](std::vector<std::vector<std::vector<T>>> const& d) {
+            pybind11::gil_scoped_release release;       // release GIL
+            return hpx::threads::run_as_hpx_thread(
+                [&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{
+                            phylanx::ir::node_data<T>{d}});
+                });
+        },
+        "create a new variable from a tensor floating point values");
+#endif
+}
+
+void phylanx::bindings::bind_execution_tree(pybind11::module m)
+{
+    auto execution_tree = m.def_submodule("execution_tree");
+
+    execution_tree.def("var",
+        [](std::string const& d) {
+            pybind11::gil_scoped_release release;       // release GIL
             return hpx::threads::run_as_hpx_thread(
                 [&]()
                 {
@@ -44,30 +93,23 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 });
         },
         "create a new variable from a string");
+
+    bind_variable<double>(execution_tree);
+    bind_variable<std::int64_t>(execution_tree);
+    bind_variable<std::uint8_t>(execution_tree);
+
     execution_tree.def("var",
-        [](const std::vector<double>& d) {
+        [](phylanx::execution_tree::primitive_argument_type const& arg) {
+            pybind11::gil_scoped_release release;       // release GIL
             return hpx::threads::run_as_hpx_thread(
                 [&]()
                 {
                     using namespace phylanx::execution_tree;
                     return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{
-                            phylanx::ir::node_data<double>{d}});
+                        "variable", arg);
                 });
         },
-        "create a new variable from a vector floating point values");
-    execution_tree.def("var",
-        [](const std::vector<std::vector<double>>& d) {
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{
-                            phylanx::ir::node_data<double>{d}});
-                });
-        },
-        "create a new variable from a matrix floating point values");
+        "create a new variable from a primitive_argument_type");
 
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
         "compile a numerical expression in PhySL");
@@ -112,16 +154,18 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         .def(pybind11::init<>())
         .def("eval", [](phylanx::execution_tree::primitive const& p)
             {
+                pybind11::gil_scoped_release release;       // release GIL
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        return numeric_operand(primitive_argument_type{p}, {})
-                            .get();
+                        return value_operand(primitive_argument_type{p},
+                            primitive_argument_type{}).get();
                     });
             },
             "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
             {
+                pybind11::gil_scoped_release release;       // release GIL
                 hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;

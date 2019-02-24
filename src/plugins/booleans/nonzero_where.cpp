@@ -67,6 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     };
 
+    ///////////////////////////////////////////////////////////////////////////
     nonzero_where::nonzero_where(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
@@ -74,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , nonzero_(false)
       , where_(false)
     {
-        auto func_name = extract_function_name(name_);
+        auto func_name = compiler::extract_primitive_name(name_);
         if (func_name == "nonzero")
         {
             nonzero_ = true;

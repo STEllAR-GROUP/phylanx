@@ -39,6 +39,7 @@ namespace phylanx { namespace bindings
 
         phylanx::execution_tree::compiler::environment eval_env;
         phylanx::execution_tree::compiler::function_list eval_snippets;
+        phylanx::execution_tree::eval_context eval_ctx;
 
         // data related to measurement status
         bool enable_measurements;
