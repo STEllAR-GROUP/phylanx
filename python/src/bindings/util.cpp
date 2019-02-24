@@ -67,25 +67,35 @@ void phylanx::bindings::bind_util(pybind11::module m)
         "serialize a node_data<std::uint8_t> expression object into a "
         "byte-stream");
 
-    util.def("unserialize",
-        &phylanx::util::unserialize<std::vector<phylanx::ast::expression>>,
+    util.def(
+        "unserialize",
+        [](std::vector<char> const& input)
+                -> std::vector<phylanx::ast::expression> {
+            pybind11::gil_scoped_release release;    // release GIL
+            return phylanx::util::unserialize<
+                std::vector<phylanx::ast::expression>>(input);
+        },
         "un-serialize a byte-stream into a Phylanx object");
-    util.def("unserialize_expr",
-        &phylanx::util::unserialize<phylanx::ast::expression>,
+    util.def(
+        "unserialize_expr",
+        [](std::vector<char> const& input) -> phylanx::ast::expression {
+            pybind11::gil_scoped_release release;    // release GIL
+            return phylanx::util::unserialize<phylanx::ast::expression>(input);
+        },
         "un-serialize a byte-stream into a Phylanx object");
 
-    util.def("phyhelpex",
-            [](std::string const& s)
-            -> std::string
-            {
-                return phylanx::execution_tree::find_help(s);
-            },
-            "display help strings for Phylanx primitives and plugins.");
-    util.def("phylist",
-            []()
-            -> std::map<std::string,std::vector<std::string>>
-            {
-                return phylanx::execution_tree::list_patterns();
-            },
-            "display help strings for Phylanx primitives and plugins.");
+    util.def(
+        "phyhelpex",
+        [](std::string const& s) -> std::string {
+            pybind11::gil_scoped_release release;    // release GIL
+            return phylanx::execution_tree::find_help(s);
+        },
+        "display help strings for Phylanx primitives and plugins.");
+    util.def(
+        "phylist",
+        []() -> std::map<std::string, std::vector<std::string>> {
+            pybind11::gil_scoped_release release;    // release GIL
+            return phylanx::execution_tree::list_patterns();
+        },
+        "display help strings for Phylanx primitives and plugins.");
 }
