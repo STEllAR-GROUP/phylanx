@@ -43,7 +43,8 @@ def learnParameters(alpha,
 
         for i in range(locDocLengthCounts.shape[0]):
             currentDigamma += 1.0 / (
-                              (parametersSum + np.float64(i) - 1.0) + 1e-100)
+                              (parametersSum + np.float64(i) - 1.0) + 1e-100
+            )
             denominator += locDocLengthCounts[i] * currentDigamma
 
         denominator -= 1.0 / scale
@@ -99,7 +100,7 @@ def digamma(z):
                         DIGAMMA_COEF_6 - invZSquared * (DIGAMMA_COEF_7)
                     )
                 )
-             )
+            )
         )
     )))
 
@@ -350,9 +351,9 @@ def estimate(training, numTopics, alpha_, beta_,
                                 ] = currentValue
                             subidx = idx_
                             tmp = 0
-                            while subidx < len(
-                                currentTypeTopicCounts
-                                ) - 1 and \
+                            while (
+                                      subidx < len(currentTypeTopicCounts) - 1
+                                  ) and \
                                 currentTypeTopicCounts[subidx] < \
                                     currentTypeTopicCounts[subidx + 1]:
 
