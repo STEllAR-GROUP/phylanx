@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2019 Hartmut Kaiser
 // Copyright (c) 2018 Tianyi Zhang
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -126,10 +126,11 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive::primitive(hpx::future<hpx::id_type>&& fid, std::string const& name)
+    primitive::primitive(hpx::future<hpx::id_type>&& fid,
+            std::string const& name, bool register_with_agas)
       : base_type(std::move(fid))
     {
-        if (!name.empty())
+        if (register_with_agas && !name.empty())
         {
             this->base_type::register_as(name).get();
         }
@@ -210,35 +211,37 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<void> primitive::store(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         using action_type = primitives::primitive_component::store_action;
-        return hpx::async<action_type>(
-            this->base_type::get_id(), std::move(data), std::move(params));
+        return hpx::async<action_type>(this->base_type::get_id(),
+            std::move(data), std::move(params), std::move(ctx));
     }
 
     hpx::future<void> primitive::store(primitive_argument_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         using action_type = primitives::primitive_component::store_single_action;
-        return hpx::async<action_type>(
-            this->base_type::get_id(), std::move(data), std::move(params));
+        return hpx::async<action_type>(this->base_type::get_id(),
+            std::move(data), std::move(params), std::move(ctx));
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_arguments_type&& data, primitive_arguments_type&& params)
+        primitive_arguments_type&& data, primitive_arguments_type&& params,
+        eval_context ctx)
     {
         using action_type = primitives::primitive_component::store_action;
-        hpx::sync<action_type>(
-            this->base_type::get_id(), std::move(data), std::move(params));
+        hpx::sync<action_type>(this->base_type::get_id(), std::move(data),
+            std::move(params), std::move(ctx));
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_argument_type&& data, primitive_arguments_type&& params)
+        primitive_argument_type&& data, primitive_arguments_type&& params,
+        eval_context ctx)
     {
         using action_type = primitives::primitive_component::store_single_action;
-        hpx::sync<action_type>(
-            this->base_type::get_id(), std::move(data), std::move(params));
+        hpx::sync<action_type>(this->base_type::get_id(), std::move(data),
+            std::move(params), std::move(ctx));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2744,37 +2747,42 @@ namespace phylanx { namespace execution_tree
         return util::get_if<primitive>(&val) != nullptr;
     }
 
-    primitive_argument_type primitive_argument_type::operator()() const
+    primitive_argument_type primitive_argument_type::operator()(
+        eval_context ctx) const
     {
         if (is_primitive_operand(*this))
         {
-            return extract_copy_value(
-                value_operand_sync(*this, primitive_argument_type{}));
+            return extract_copy_value(value_operand_sync(*this,
+                primitive_argument_type{}, "", "<unknown>", std::move(ctx)));
         }
         return extract_ref_value(*this);
     }
 
     primitive_argument_type primitive_argument_type::operator()(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
+        std::string name;
+        std::string codename("<unknown>");
         if (is_primitive_operand(*this))
         {
             primitive_arguments_type params;
             params.reserve(args.size());
             for (auto const& arg : args)
             {
-                params.emplace_back(extract_ref_value(arg));
+                params.emplace_back(extract_ref_value(arg, name, codename));
             }
 
-            return extract_copy_value(
-                value_operand_sync(*this, std::move(params)));
+            return extract_copy_value(value_operand_sync(
+                *this, std::move(params), name, codename, std::move(ctx)));
         }
-        return extract_ref_value(*this);
+        return extract_copy_value(*this, name, codename);
     }
 
     primitive_argument_type primitive_argument_type::operator()(
-        primitive_arguments_type && args) const
+        primitive_arguments_type && args, eval_context ctx) const
     {
+        std::string name;
+        std::string codename("<unknown>");
         if (is_primitive_operand(*this))
         {
             // evaluate the function itself
@@ -2785,13 +2793,13 @@ namespace phylanx { namespace execution_tree
             params.reserve(keep_alive.size());
             for (auto const& arg : keep_alive)
             {
-                params.emplace_back(extract_ref_value(arg));
+                params.emplace_back(extract_ref_value(arg, name, codename));
             }
 
-            return extract_copy_value(
-                value_operand_sync(*this, std::move(params)));
+            return extract_copy_value(value_operand_sync(
+                *this, std::move(params), name, codename, std::move(ctx)));
         }
-        return extract_ref_value(*this);
+        return extract_copy_value(*this, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -3099,13 +3107,14 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type value_operand_ref_sync(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         if (valid(val))

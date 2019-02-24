@@ -254,6 +254,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "counter CSV data code to a file")
             ("dry-run", "Perform all other options requested but do not "
                 "actually run the code")
+            ("time", "Print overall execution time before exiting")
         ;
 
         po::positional_options_description pd;
@@ -413,7 +414,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     std::vector<phylanx::ast::expression> const& ast,
     std::vector<std::string> const& positional_args,
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const& code_source_name, bool dry_run)
+    std::string const& code_source_name, bool dry_run, bool print_time)
 {
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
@@ -422,11 +423,14 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     auto args = read_arguments(positional_args, snippets, env);
 
     // Compile AST into expression tree (into actual executable code);
-    phylanx::execution_tree::define_variable(code_source_name,
+    auto def = phylanx::execution_tree::define_variable(code_source_name,
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
         snippets, env,
         phylanx::execution_tree::primitive_argument_type{args});
+
+    phylanx::execution_tree::eval_context ctx;
+    def.run(ctx);
 
     auto const& code = phylanx::execution_tree::compile(
         code_source_name, ast, snippets, env);
@@ -439,10 +443,17 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     // Evaluate user code using the read data
     if (!dry_run)
     {
-        auto retval = code.run();
+        hpx::util::high_resolution_timer t;
+        auto retval = code.run(ctx);
+
+        if (print_time)
+        {
+            std::cout << "Elapsed time: " << t.elapsed() << " [s]\n";
+        }
+
         if (phylanx::execution_tree::is_primitive_operand(retval))
         {
-            return retval(std::move(args));
+            return retval(ctx, std::move(args));
         }
         return retval;
     }
@@ -598,7 +609,7 @@ void interpreter(po::variables_map const& vm)
 
     phylanx::execution_tree::compiler::function_list snippets;
     auto const result = compile_and_run(ast, positional_args, snippets,
-            code_source_name, vm.count("dry-run") != 0);
+        code_source_name, vm.count("dry-run") != 0, vm.count("time") != 0);
 
     // Print the result of the last PhySL expression, if requested
     if (vm.count("print") != 0)

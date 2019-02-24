@@ -94,7 +94,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
       , slice_pages_(false)
 #endif
     {
-        auto func_name = extract_function_name(name_);
+        auto func_name = compiler::extract_primitive_name(name_);
         if (func_name == "slice_row")
         {
             slice_rows_ = true;
@@ -111,6 +111,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 #endif
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> slicing_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const

@@ -74,15 +74,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_ = std::move(this_), ctx](
-                primitive_argument_type&& func, ir::range&& list)
+                primitive_argument_type&& func, ir::range&& list) mutable
             {
                 if (list.is_ref())
                 {
                     return value_operand_sync(func, std::move(list.args()),
-                        this_->name_, this_->codename_, ctx);
+                        this_->name_, this_->codename_, std::move(ctx));
                 }
-                return value_operand_sync(
-                    func, list.copy(), this_->name_, this_->codename_, ctx);
+                return value_operand_sync(func, list.copy(), this_->name_,
+                    this_->codename_, std::move(ctx));
             }),
             value_operand(operands_[0], params, name_, codename_,
                 add_mode(ctx,

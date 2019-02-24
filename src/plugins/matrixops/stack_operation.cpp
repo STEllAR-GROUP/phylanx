@@ -1248,7 +1248,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             auto&& list = extract_list_value_strict(
                                 std::move(arg), this_->name_,
-                                this_->codename_).args();
+                                this_->codename_);
+
                             for (auto && l : list)
                             {
                                 ops.emplace_back(std::move(l));

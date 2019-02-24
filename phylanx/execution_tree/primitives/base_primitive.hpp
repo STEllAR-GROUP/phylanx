@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2019 Hartmut Kaiser
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Tianyi Zhang
 //
@@ -90,12 +90,15 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     ///////////////////////////////////////////////////////////////////////////
-    inline primitive_argument_type primitive_argument_type::run() const
+    inline primitive_argument_type primitive_argument_type::run(
+        eval_context ctx) const
     {
-        return value_operand_sync(*this, primitive_argument_type{});
+        return value_operand_sync(
+            *this, primitive_argument_type{}, "", "<unknown>", std::move(ctx));
     }
 
     ///////////////////////////////////////////////////////////////////////////

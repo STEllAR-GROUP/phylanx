@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -20,6 +20,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -109,19 +110,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         // direct execution
-        result_type run() const
+        result_type run(eval_context ctx) const
         {
             if (is_primitive_operand(arg_))
             {
-                return extract_copy_value(value_operand_sync(arg_,
-                    primitive_arguments_type{}, name_));
+                return extract_copy_value(
+                    value_operand_sync(arg_, primitive_arguments_type{}, name_,
+                        "<unknown>", std::move(ctx)), name_);
             }
-            return extract_copy_value(arg_);
+            return extract_copy_value(arg_, name_);
         }
 
         // interpret this function as an invocable (evaluate object itself and
         // use the returned value to evaluate the arguments)
-        result_type operator()(arguments_type const& args) const
+        result_type operator()(
+            arguments_type const& args, eval_context ctx) const
         {
             if (is_primitive_operand(arg_))
             {
@@ -129,16 +132,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 params.reserve(args.size());
                 for (auto const& arg : args)
                 {
-                    params.emplace_back(extract_ref_value(arg));
+                    params.emplace_back(extract_ref_value(arg, name_));
                 }
 
                 return extract_copy_value(
-                    value_operand_sync(arg_, std::move(params), name_));
+                    value_operand_sync(arg_, std::move(params), name_), name_);
             }
-            return extract_copy_value(arg_);
+            return extract_copy_value(arg_, name_);
         }
 
-        result_type operator()(arguments_type && args) const
+        result_type operator()(
+            arguments_type&& args, eval_context ctx) const
         {
             if (is_primitive_operand(arg_))
             {
@@ -149,17 +153,70 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 params.reserve(keep_alive.size());
                 for (auto const& arg : keep_alive)
                 {
-                    params.emplace_back(extract_ref_value(arg));
+                    params.emplace_back(extract_ref_value(arg, name_));
                 }
 
                 return extract_copy_value(
-                    value_operand_sync(arg_, std::move(params), name_));
+                    value_operand_sync(arg_, std::move(params), name_,
+                        "<unknown>", std::move(ctx)),
+                    name_);
             }
-            return extract_copy_value(arg_);
+            return extract_copy_value(arg_, name_);
+        }
+
+        template <typename T1, typename ... Ts>
+        typename std::enable_if<
+           !std::is_same<eval_context, typename std::decay<T1>::type>::value,
+            result_type
+        >::type
+        operator()(T1 && t1, Ts &&... ts) const
+        {
+            if (is_primitive_operand(arg_))
+            {
+                // user-facing functions need to copy all arguments
+                arguments_type keep_alive;
+                keep_alive.reserve(sizeof...(Ts) + 1);
+
+                int const sequencer_[] = {
+                    (keep_alive.emplace_back(
+                        extract_copy_value(primitive_argument_type{
+                            std::forward<T1>(t1)
+                        }, name_)), 0)
+                  , (keep_alive.emplace_back(
+                        extract_copy_value(primitive_argument_type{
+                            std::forward<Ts>(ts)
+                        }, name_)), 0)...
+                };
+                (void)sequencer_;
+
+                // construct argument-pack to use for actual call
+                arguments_type params;
+                params.reserve(sizeof...(Ts) + 1);
+                for (auto const& arg : keep_alive)
+                {
+                    params.emplace_back(extract_ref_value(arg, name_));
+                }
+
+                return extract_copy_value(
+                    value_operand_sync(arg_, std::move(params), name_), name_);
+            }
+
+            return extract_copy_value(arg_, name_);
+        }
+
+        result_type operator()() const
+        {
+            if (is_primitive_operand(arg_))
+            {
+                return extract_copy_value(
+                    value_operand_sync(arg_, primitive_argument_type{}, name_),
+                    name_);
+            }
+            return extract_copy_value(arg_, name_);
         }
 
         template <typename ... Ts>
-        result_type operator()(Ts &&... ts) const
+        result_type operator()(eval_context ctx, Ts &&... ts) const
         {
             if (is_primitive_operand(arg_))
             {
@@ -169,9 +226,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 int const sequencer_[] = {
                     0, (keep_alive.emplace_back(
-                            extract_copy_value(primitive_argument_type{
-                                std::forward<Ts>(ts)
-                            })), 0)...
+                        extract_copy_value(primitive_argument_type{
+                            std::forward<Ts>(ts)
+                        }, name_)), 0)...
                 };
                 (void)sequencer_;
 
@@ -180,17 +237,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 params.reserve(sizeof...(Ts));
                 for (auto const& arg : keep_alive)
                 {
-                    params.emplace_back(extract_ref_value(arg));
+                    params.emplace_back(extract_ref_value(arg, name_));
                 }
 
                 return extract_copy_value(
-                    value_operand_sync(arg_, std::move(params), name_));
+                    value_operand_sync(arg_, std::move(params), name_,
+                        "<unknown>", std::move(ctx)),
+                    name_);
             }
 
-            return extract_copy_value(arg_);
+            return extract_copy_value(arg_, name_);
         }
 
-        hpx::future<result_type> eval(arguments_type && args) const
+        hpx::future<result_type> eval(
+            arguments_type&& args, eval_context ctx) const
         {
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
@@ -200,10 +260,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 keep_alive.reserve(args.size());
                 for (auto && arg : std::move(args))
                 {
-                    keep_alive.emplace_back(extract_value(std::move(arg)));
+                    keep_alive.emplace_back(
+                        extract_value(std::move(arg), name_));
                 }
 
-                return p->eval(std::move(keep_alive));
+                return p->eval(std::move(keep_alive), std::move(ctx));
             }
             return hpx::make_ready_future(arg_);
         }
@@ -270,16 +331,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         // execute the code represented by this entry point
-        primitive_argument_type run() const
+        primitive_argument_type run(eval_context ctx = eval_context{}) const
         {
-            auto last = code_.end(); --last;
+            auto last = code_.end();
+            if (!code_.empty())
+            {
+                --last;
+            }
             for (auto it = code_.begin(); it != code_.end(); ++it)
             {
                 if (it == last)
                 {
-                    return it->run();
+                    return it->run(ctx);
                 }
-                it->run();
+                it->run(ctx);
             }
             return primitive_argument_type{};
         }
@@ -314,25 +379,26 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // this must be a list to ensure stable references
     struct program
     {
-        using entry_points_type = std::pair<std::string, std::list<function>>;
-
         program() = default;
-
-//         program(std::string name, std::list<function> code)
-//           : code_(std::move(name), std::move(code))
-//         {
-//         }
 
         ///////////////////////////////////////////////////////////////////////
         // simply run the program, return whatever the last snippet has returned
-        primitive_argument_type run() const
+        primitive_argument_type run(eval_context ctx = eval_context{}) const
         {
-            primitive_argument_type result;
-            for (auto const& ep : entrypoints_)
+            auto last = entrypoints_.end();
+            if (!entrypoints_.empty())
             {
-                result = ep.run();
+                --last;
             }
-            return result;
+            for (auto it = entrypoints_.begin(); it != entrypoints_.end(); ++it)
+            {
+                if (it == last)
+                {
+                    return it->run(ctx);
+                }
+                it->run(ctx);
+            }
+            return primitive_argument_type{};
         }
 
         ///////////////////////////////////////////////////////////////////////
