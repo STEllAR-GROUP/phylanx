@@ -15,6 +15,7 @@ set(tests
     636_boolean_array
     640_function_argument
     651_vstack_dtype
+    794_3d_array
     array_len_494
     array_shape_486
     array_subscript_403
