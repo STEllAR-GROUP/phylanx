@@ -31,6 +31,7 @@ set(tests
     linspace
     list_slicing_operation
     ndim
+    pad
     power_operation
     random
     random_distributions
