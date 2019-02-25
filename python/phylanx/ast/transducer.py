@@ -14,7 +14,7 @@ from .oscop import OpenSCoP
 from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
-
+from phylanx.clusters import create_cluster
 
 def Phylanx(__phylanx_arg=None, **kwargs):
     class __PhylanxDecorator(object):
@@ -22,7 +22,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
             :function:f the decorated funtion.
             """
-            valid_kwargs = ['debug', 'target', 'compiler_state', 'performance']
+            valid_kwargs = ['debug', 'target', 'compiler_state', 'performance', 'cluster']
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
@@ -35,6 +35,12 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 kwargs['fglobals'] = None
             else:
                 kwargs['fglobals'] = f.__globals__
+
+            # determine if code is sent to a remote cluster
+            #
+            self.remote = None
+            if 'cluster' in kwargs.keys():
+                self.remote = create_cluster(kwargs['cluster'])
 
             python_src = self.get_python_src(f)
             python_ast = self.get_python_ast(python_src, f)
@@ -79,10 +85,11 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
+            if self.remote is not None or self.remote != None:
+                return self.remote.send(self.__src__)
+
             result = self.backend.call(args)
-
             self.__perfdata__ = self.backend.__perfdata__
-
             return result
 
         def generate_ast(self):
