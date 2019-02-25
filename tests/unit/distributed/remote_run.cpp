@@ -72,12 +72,14 @@ std::string code2 = R"(block(
 phylanx::execution_tree::compiler::function compile(
     std::string const& codestr, std::uint32_t locality_id)
 {
+    hpx::id_type id = hpx::naming::get_id_from_locality_id(locality_id);
+
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
-        phylanx::execution_tree::compiler::default_environment(
-            hpx::naming::get_id_from_locality_id(locality_id));
+        phylanx::execution_tree::compiler::default_environment(id);
 
-    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    auto const& code =
+        phylanx::execution_tree::compile(codestr, snippets, env, id);
     return code.run();
 }
 
