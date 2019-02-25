@@ -108,11 +108,13 @@ def create_array(array_tree, dtype):
         dstack_symbol += dtype
 
     def extract_data(arr):
-        current_dim = []
         if isinstance(arr, tuple):
-            if isinstance(arr[0], str):
+            if not arr:
+                return []
+            elif isinstance(arr[0], str):
                 return [i for i in arr]
             else:
+                current_dim = []
                 for entry in arr:
                     current_dim.append(extract_data(entry))
                 return current_dim
@@ -120,11 +122,17 @@ def create_array(array_tree, dtype):
             symbol_info.append('$' + arr[0].split('$', 1)[1])
             return extract_data(arr[1])
 
+    data = extract_data(array_tree)
+    if not symbol_info:
+        if isinstance(data[0], str):
+            return [hstack_symbol, (data,)]
+        else:
+            return [hstack_symbol, tuple(data)]
     data = np.array(*extract_data(array_tree))
     num_dim = len(data.shape)
 
     if 3 == num_dim:
-        columns = [data[:,:,i] for i in range(data.shape[-1])]
+        columns = [data[:, :, i] for i in range(data.shape[-1])]
         dstacks = []
         for i, column in enumerate(columns):
             dstacks.append([])
@@ -136,7 +144,7 @@ def create_array(array_tree, dtype):
             vstack = []
             for hstacks in d:
                 vstack.append([hstack_symbol + symbol_info.pop(0), hstacks])
-            vstack = [vstack_symbol + symbol_info.pop(0),tuple(vstack)]
+            vstack = [vstack_symbol + symbol_info.pop(0), tuple(vstack)]
             arr.append(vstack)
         arr = [dstack_symbol + outer_symbol, tuple(arr)]
     elif 2 == num_dim:
@@ -149,7 +157,6 @@ def create_array(array_tree, dtype):
     else:
         ValueError("Phylanx supports arrays with 3 dimensions or less.")
     return (arr,)
-
 
 
 def primitive_name(method_name):
@@ -598,7 +605,9 @@ class PhySL:
         for k in node.keywords:
             if k.arg == 'dtype':
                 if isinstance(k.value, ast.Name):
-                    raise ValueError("dtype must a be string literal.")
+                    type_str = phylanx_dtype.get(k.value.id)
+                    if not type_str:
+                        raise ValueError("dtype must a be string literal.")
                 if isinstance(k.value, ast.Str):
                     type_str = phylanx_dtype.get(k.value.s)
                 if type_str:
