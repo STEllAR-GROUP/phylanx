@@ -350,6 +350,7 @@ class PhySL:
         self.ir = self.apply_rule(tree.body[0])
         check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
+        self.lazy = kwargs.get('lazy')
 
         if self.kwargs.get("debug"):
             print_physl_src(self.__src__)
@@ -406,9 +407,23 @@ class PhySL:
             block = (self.apply_rule(node), )
             return block
 
-    def call(self, args):
+    def eval(self):
         func_name = self.wrapped_function.__name__
+        result = phylanx.execution_tree.eval(
+            self.file_name, func_name, PhySL.compiler_state, *self.args)
 
+        if self.performance:
+            treedata = phylanx.execution_tree.retrieve_tree_topology(
+                self.file_name, func_name, PhySL.compiler_state)
+            self.__perfdata__ = (
+                phylanx.execution_tree.retrieve_counter_data(
+                    PhySL.compiler_state),
+                treedata[0], treedata[1]
+            )
+
+        return result
+
+    def call(self, args):
         self.__perfdata__ = (None, None, None)
         self.performance_primitives = None
 
@@ -423,7 +438,6 @@ class PhySL:
         if not self.is_compiled:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
-            # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
                 PhySL.compiler_state = compiler_state()
 
@@ -431,18 +445,11 @@ class PhySL:
                 self.file_name, self.__src__, PhySL.compiler_state)
             self.is_compiled = True
 
-        result = phylanx.execution_tree.eval(
-            self.file_name, func_name, PhySL.compiler_state, *args)
+        self.args = args
+        if self.lazy:
+            return self
 
-        if self.performance:
-            treedata = phylanx.execution_tree.retrieve_tree_topology(
-                self.file_name, func_name, PhySL.compiler_state)
-            self.__perfdata__ = (
-                phylanx.execution_tree.retrieve_counter_data(
-                    PhySL.compiler_state),
-                treedata[0], treedata[1]
-            )
-
+        result = self.eval()
         return result
 
 # #############################################################################
