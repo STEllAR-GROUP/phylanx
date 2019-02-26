@@ -195,6 +195,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ndim">ndim</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nonzero">nonzero</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#outer">outer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pad">pad</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-block">parallel_block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-map">parallel_map</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#power">power</a></li>
@@ -1789,6 +1790,31 @@ non-zero.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="pad">
+<h2>pad<a class="headerlink" href="#pad" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>pad (a, pad_width, mode, constant_values)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array_like of rank N) : array containing elements to pad
+pad_width(sequence, array_like, int) : number of values padded to the</p>
+<blockquote>
+<div>edges of each axis</div></blockquote>
+<dl class="docutils">
+<dt>mode(str) <span class="classifier-delimiter">:</span> <span class="classifier">‘constant’ pads with a constant value</span></dt>
+<dd>(other modes have not been implemented yet)</dd>
+<dt>constant_values(sequence or int) <span class="classifier-delimiter">:</span> <span class="classifier">Used in ‘constant’.</span></dt>
+<dd>The values to set the padded
+values for each axis.
+Default is 0</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Padded array of rank equal to array with shape increased according to
+pad_width.”</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="parallel-block">
 <h2>parallel_block<a class="headerlink" href="#parallel-block" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2319,7 +2345,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Feb 24, 2019.
+      Last updated on Feb 26, 2019.
 
     </p>
   </div>

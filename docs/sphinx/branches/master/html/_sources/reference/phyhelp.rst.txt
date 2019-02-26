@@ -1389,6 +1389,29 @@ outer (a, b)
             Computes the outer product of two arrays. Always returns a matrix
 
 
+pad
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pad (a, pad_width, mode, constant_values)
+            Args:
+
+                a (array_like of rank N) : array containing elements to pad
+                pad_width(sequence, array_like, int) : number of values padded to the
+                                                       edges of each axis
+
+                mode(str) : 'constant' pads with a constant value
+                            (other modes have not been implemented yet)
+                constant_values(sequence or int) :  Used in 'constant'.
+                                                    The values to set the padded
+                                                    values for each axis.
+                                                    Default is 0
+
+            Returns:
+
+            Padded array of rank equal to array with shape increased according to
+            pad_width."
+            
+
+
 parallel_block
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 parallel_block (*args)
