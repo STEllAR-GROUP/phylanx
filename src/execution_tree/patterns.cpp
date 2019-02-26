@@ -129,6 +129,8 @@ namespace phylanx { namespace execution_tree
 
                 // special purpose primitives
                 PHYLANX_MATCH_DATA(store_operation),
+                PHYLANX_MATCH_DATA(phytype),
+                PHYLANX_MATCH_DATA(phyname),
 
                 // compiler-specific (internal) primitives
                 PHYLANX_MATCH_DATA(access_argument),
