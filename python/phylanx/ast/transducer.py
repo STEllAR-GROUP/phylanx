@@ -27,8 +27,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 'target',
                 'compiler_state',
                 'performance',
-                'localities',
-                'lazy'
+                'localities'
             ]
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
@@ -79,6 +78,13 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             ast.increment_lineno(tree, actual_lineno)
             assert len(tree.body) == 1
             return tree
+
+        def lazy(self, *args):
+            if self.backend == 'OpenSCoP':
+                raise NotImplementedError(
+                    "OpenSCoP kernels are not yet callable.")
+
+            return self.backend.lazy(args)
 
         def __call__(self, *args):
             if self.backend == 'OpenSCoP':

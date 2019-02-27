@@ -350,7 +350,6 @@ class PhySL:
         self.ir = self.apply_rule(tree.body[0])
         check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
-        self.lazy = kwargs.get('lazy')
 
         if self.kwargs.get("debug"):
             print_physl_src(self.__src__)
@@ -423,7 +422,7 @@ class PhySL:
 
         return result
 
-    def call(self, args):
+    def lazy(self, args):
         self.__perfdata__ = (None, None, None)
         self.performance_primitives = None
 
@@ -446,11 +445,11 @@ class PhySL:
             self.is_compiled = True
 
         self.args = args
-        if self.lazy:
-            return self
+        return self
 
-        result = self.eval()
-        return result
+    def call(self, args):
+        self.lazy(args)
+        return self.eval()
 
 # #############################################################################
 # Transducer rules
