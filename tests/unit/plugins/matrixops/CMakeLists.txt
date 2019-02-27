@@ -25,11 +25,13 @@ set(tests
     hsplit_operation
     hstack_operation
     identity
+    insert
     inverse_operation
     linearmatrix
     linspace
     list_slicing_operation
     ndim
+    pad
     power_operation
     random
     random_distributions

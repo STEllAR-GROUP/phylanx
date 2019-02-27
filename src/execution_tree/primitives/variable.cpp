@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -28,11 +28,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     primitive create_variable(hpx::id_type const& locality,
         primitive_argument_type&& operand, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, bool register_with_agas)
     {
         static std::string type("variable");
-        return create_primitive_component(
-            locality, type, std::move(operand), name, codename);
+        return create_primitive_component(locality, type, std::move(operand),
+            name, codename, register_with_agas);
     }
 
     match_pattern_type const variable::match_data =
@@ -169,7 +169,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void variable::store1dslice(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (!valid(bound_value_))
         {
@@ -181,14 +181,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto result = slice(std::move(bound_value_),
-            value_operand_sync(
-                std::move(data[1]), std::move(params), name_, codename_),
+            value_operand_sync(std::move(data[1]), std::move(params), name_,
+                codename_, std::move(ctx)),
             std::move(data[0]), name_, codename_);
         bound_value_ = std::move(result);
     }
 
     void variable::store2dslice(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (!valid(bound_value_))
         {
@@ -200,17 +200,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto data1 =
-            value_operand_sync(data[1], params, name_, codename_);
+            value_operand_sync(data[1], params, name_, codename_, ctx);
         auto result = slice(std::move(bound_value_), std::move(data1),
             value_operand_sync(
-                data[2], std::move(params), name_, codename_),
+                data[2], std::move(params), name_, codename_, std::move(ctx)),
             std::move(data[0]), name_, codename_);
         bound_value_ = std::move(result);
     }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     void variable::store3dslice(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (!valid(bound_value_))
         {
@@ -221,18 +221,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "a value bound to it"));
         }
 
-        auto data1 = value_operand_sync(data[1], params, name_, codename_);
-        auto data2 = value_operand_sync(data[2], params, name_, codename_);
-        auto result = slice(
-            std::move(bound_value_), std::move(data1), std::move(data2),
-            value_operand_sync(data[3], std::move(params), name_, codename_),
-            std::move(data[0]), name_, codename_);
+        auto data1 = value_operand_sync(data[1], params, name_, codename_, ctx);
+        auto data2 = value_operand_sync(data[2], params, name_, codename_, ctx);
+        auto result =
+            slice(std::move(bound_value_), std::move(data1), std::move(data2),
+                value_operand_sync(data[3], std::move(params), name_, codename_,
+                    std::move(ctx)),
+                std::move(data[0]), name_, codename_);
         bound_value_ = std::move(result);
     }
 #endif
 
+    ///////////////////////////////////////////////////////////////////////////
     void variable::store(primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         // data[0] is the new value to store in this variable
         // data[1] and optionally data[2]/data[3] are interpreted as slicing
@@ -270,16 +272,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return;
 
             case 2:
-                store1dslice(std::move(data), std::move(params));
+                store1dslice(
+                    std::move(data), std::move(params), std::move(ctx));
                 return;
 
             case 3:
-                store2dslice(std::move(data), std::move(params));
+                store2dslice(
+                    std::move(data), std::move(params), std::move(ctx));
                 return;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 4:
-                store3dslice(std::move(data), std::move(params));
+                store3dslice(
+                    std::move(data), std::move(params), std::move(ctx));
                 return;
 #endif
 
@@ -295,11 +300,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void variable::store(primitive_argument_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         // data is the new value to store in this variable
+        if (!valid(data))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::store",
+                generate_error_message(
+                    "the right hand side expression is not valid"));
+        }
+//         if (!params.empty())
+//         {
+//             HPX_THROW_EXCEPTION(hpx::invalid_status,
+//                 "valiable::store",
+//                 generate_error_message(
+//                     "store shouldn't be called with dynamic arguments"));
+//         }
+
         if (!value_set_ || !valid(operands_[0]))
         {
+            // extract the initial value for this variable
             operands_[0] =
                 extract_copy_value(std::move(data), name_, codename_);
             value_set_ = true;
@@ -311,6 +332,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     topology variable::expression_topology(std::set<std::string>&& functions,
         std::set<std::string>&& resolve_children) const
     {

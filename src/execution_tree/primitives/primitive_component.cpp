@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(params, std::move(ctx));
+        return primitive_->do_eval(params, ctx);
     }
 
     hpx::future<primitive_argument_type> primitive_component::eval_single(
@@ -135,20 +135,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(std::move(param), std::move(ctx));
+        return primitive_->do_eval(std::move(param), ctx);
     }
 
     // store_action
     void primitive_component::store(primitive_arguments_type&& args,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive_->store(std::move(args), std::move(params));
+        primitive_->store(std::move(args), std::move(params), ctx);
     }
 
     void primitive_component::store_single(primitive_argument_type&& arg,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive_->store(std::move(arg), std::move(params));
+        primitive_->store(std::move(arg), std::move(params), ctx);
     }
 
     // extract_topology_action
@@ -164,7 +164,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     bool primitive_component::bind(
         primitive_arguments_type const& params, eval_context ctx) const
     {
-        return primitive_->bind(params, std::move(ctx));
+        return primitive_->bind(params, ctx);
     }
 
     // access data for performance counter
@@ -207,21 +207,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 namespace phylanx { namespace execution_tree
 {
-    primitive create_primitive_component(
-        hpx::id_type const& locality, std::string const& type,
-        primitive_arguments_type&& operands,
-        std::string const& name, std::string const& codename)
+    primitive create_primitive_component(hpx::id_type const& locality,
+        std::string const& type, primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename,
+        bool register_with_agas)
     {
         return primitive{
             hpx::new_<primitives::primitive_component>(
                 locality, type, std::move(operands), name, codename),
-            name};
+            name, register_with_agas};
+    }
+
+    primitive create_primitive_component(hpx::id_type const& locality,
+        std::string const& type, primitive_arguments_type&& operands,
+        eval_context ctx, std::string const& name, std::string const& codename,
+        bool register_with_agas)
+    {
+        return primitive{
+            hpx::new_<primitives::primitive_component>(locality, type,
+                std::move(operands), std::move(ctx), name, codename),
+            name, register_with_agas};
     }
 
     primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
         primitive_argument_type operand, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, bool register_with_agas)
     {
         primitive_arguments_type operands;
         operands.emplace_back(std::move(operand));
@@ -229,7 +240,7 @@ namespace phylanx { namespace execution_tree
         return primitive{
             hpx::new_<primitives::primitive_component>(
                 locality, type, std::move(operands), name, codename),
-            name};
+            name, register_with_agas};
     }
 }}
 

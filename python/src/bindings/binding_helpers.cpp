@@ -40,6 +40,9 @@ namespace phylanx { namespace bindings
                         phylanx::util::enable_measurements(code.name_));
                 }
 
+                // add all definitions to the global execution environment
+                code.run(c.eval_ctx);
+
                 return code.name_;
             });
     }
@@ -63,7 +66,7 @@ namespace phylanx { namespace bindings
                         phylanx::util::enable_measurements(code_x.name_));
                 }
 
-                auto x = code_x.run();
+                auto x = code_x.run(c.eval_ctx);
 
                 phylanx::execution_tree::primitive_arguments_type keep_alive;
                 keep_alive.reserve(args.size());
@@ -82,7 +85,7 @@ namespace phylanx { namespace bindings
                     }
                 }
 
-                return x(std::move(fargs));
+                return x(std::move(fargs), c.eval_ctx);
             });
     }
 

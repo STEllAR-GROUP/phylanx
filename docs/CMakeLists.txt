@@ -98,18 +98,34 @@ phylanx_source_to_doxygen(phylanx_autodoc
 
 set(SPHINX_DOCS_OUTPUT_DIR "${CMAKE_BINARY_DIR}/share/phylanx/docs/html")
 
+add_custom_target(docs
+  ALL
+  DEPENDS ${SPHINX_DOCS_OUTPUT_DIR})
+add_dependencies(docs core examples python_setup)
+
+#generate rst from helpstring
+configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/generate_rst.py.in"
+        "${CMAKE_BINARY_DIR}/bin/generate_rst.py")
+
+set(GENERATED_RST_FILE "${CMAKE_CURRENT_BINARY_DIR}/sphinx/reference/phyhelp.rst")
+
+add_custom_command(
+  OUTPUT "${GENERATED_RST_FILE}"
+  COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/bin/generate_rst.py ${GENERATED_RST_FILE}
+  DEPENDS "${CMAKE_BINARY_DIR}/bin/generate_rst.py"
+    )
+
+#create sphinx documentation
 add_custom_command(
   OUTPUT "${SPHINX_DOCS_OUTPUT_DIR}"
   DEPENDS "${sphinx_source_files_build}"
     "${CMAKE_CURRENT_BINARY_DIR}/phylanx_autodoc/index.xml"
+    "${GENERATED_RST_FILE}"
   COMMAND ${SPHINX_EXECUTABLE} -b html -n -d
     "${CMAKE_CURRENT_BINARY_DIR}/doctree"
     "${CMAKE_CURRENT_BINARY_DIR}/sphinx"
     "${SPHINX_DOCS_OUTPUT_DIR}")
 
-add_custom_target(docs
-  ALL
-  DEPENDS ${SPHINX_DOCS_OUTPUT_DIR})
 
 add_custom_target(git_docs
   COMMAND "${CMAKE_COMMAND}"

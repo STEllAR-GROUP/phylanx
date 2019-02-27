@@ -26,19 +26,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("while",
             std::vector<std::string>{"while(_1, _2)"},
-            &create_while_operation, &create_primitive<while_operation>,
-            R"(cond, block
+            &create_while_operation, &create_primitive<while_operation>, R"(
+            cond, block
             Args:
 
                 cond (boolean expression): if it evaluates to True,
                                     execute the loop again.
-                block (statement) : code to execute as long as `cond`
-                                    is true.
+                block (statement) : code to execute as long as `cond` is true.
 
             Returns:
 
-              The value returned from the last iteration, `nil` otherwise.)"
-            )
+              The value returned from the last iteration, `nil` otherwise.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -80,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             // Evaluate condition of while statement
             auto this_ = this->shared_from_this();
-            return literal_operand(that_->operands_[0], args_,
+            return value_operand(that_->operands_[0], args_,
                     that_->name_, that_->codename_, ctx_)
                 .then(hpx::launch::sync,
                     [this_ = std::move(this_)](
@@ -99,7 +97,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // Evaluate body of while statement
                 auto this_ = this->shared_from_this();
-                return literal_operand(that_->operands_[1], args_,
+                return value_operand(that_->operands_[1], args_,
                         that_->name_, that_->codename_, ctx_)
                     .then(hpx::launch::sync,
                         [this_ = std::move(this_)](

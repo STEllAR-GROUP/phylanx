@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -34,6 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
+      , target_name_(compiler::extract_instance_name(name_))
     {
         if (operands_.empty() || !valid(operands_[0]))
         {
@@ -53,9 +54,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_function::eval(
-        primitive_arguments_type const& params,
-        eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
+        // access variable from execution context
+        auto const* target = ctx.get_var(target_name_);
+        if (target == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_function::eval",
+                generate_error_message(
+                    hpx::util::format("the variable '{}' is unbound in the "
+                                      "current execution environment",
+                        target_name_)));
+        }
+
         if (!(ctx.mode_ & eval_dont_wrap_functions) && !params.empty())
         {
             if (!params.empty())
@@ -63,8 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive_arguments_type fargs;
                 fargs.reserve(params.size() + 1);
 
-                fargs.push_back(
-                    extract_ref_value(operands_[0], name_, codename_));
+                fargs.push_back(extract_ref_value(*target, name_, codename_));
                 for (auto const& param : params)
                 {
                     fargs.push_back(extract_value(param, name_, codename_));
@@ -76,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return hpx::make_ready_future(primitive_argument_type{
                     create_primitive_component(hpx::find_here(),
-                        name_parts.primitive, std::move(fargs),
+                        name_parts.primitive, std::move(fargs), std::move(ctx),
                         compiler::compose_primitive_name(name_parts),
                         codename_)
                     });
@@ -84,16 +95,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return hpx::make_ready_future(
-            extract_ref_value(operands_[0], name_, codename_));
+            extract_ref_value(*target, name_, codename_));
     }
 
     void access_function::store(primitive_arguments_type&& vals,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive* p = util::get_if<primitive>(&operands_[0]);
+        // access variable from execution context
+        auto* target = ctx.get_var(target_name_);
+        if (target == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_function::store",
+                generate_error_message(
+                    hpx::util::format("the variable '{}' is unbound in the "
+                                      "current execution environment",
+                        target_name_)));
+        }
+
+        primitive* p = util::get_if<primitive>(target);
         if (p != nullptr)
         {
-            p->store(hpx::launch::sync, std::move(vals), std::move(params));
+            p->store(hpx::launch::sync, std::move(vals), std::move(params),
+                std::move(ctx));
+        }
+    }
+
+    void access_function::store(primitive_argument_type&& val,
+        primitive_arguments_type&& params, eval_context ctx)
+    {
+        // access variable from execution context
+        auto* target = ctx.get_var(target_name_);
+        if (target == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_function::store",
+                generate_error_message(
+                    hpx::util::format("the variable '{}' is unbound in the "
+                                      "current execution environment",
+                        target_name_)));
+        }
+
+        primitive* p = util::get_if<primitive>(target);
+        if (p != nullptr)
+        {
+            p->store(hpx::launch::sync, std::move(val), std::move(params),
+                std::move(ctx));
         }
     }
 

@@ -324,6 +324,9 @@ void test_0d_operations()
         "exp10", [](double m) -> double { return std::pow(10, m); });
     test_generic_operation_0d("erf", blaze::erf);
     test_generic_operation_0d("erfc", blaze::erfc);
+    test_generic_operation_0d(
+        "square", [](double m) -> double { return m*m; });
+    test_generic_operation_0d("sign", blaze::sign);
 
     test_generic_operation_0d("trace", std::abs);
 }
@@ -446,6 +449,14 @@ void test_1d_operations()
     test_generic_operation_1d(
         "erfc", [](custom_vector_type m) -> blaze::DynamicVector<double> {
             return blaze::erfc(m);
+        });
+    test_generic_operation_1d(
+        "square", [](custom_vector_type m) -> blaze::DynamicVector<double> {
+            return m*m;
+        });
+    test_generic_operation_1d(
+        "sign", [](custom_vector_type m) -> blaze::DynamicVector<double> {
+            return blaze::sign(m);
         });
 
 //     test_generic_operation_1d(
@@ -573,6 +584,14 @@ void test_2d_operations()
         "erfc", [](custom_matrix_type m) -> blaze::DynamicMatrix<double> {
             return blaze::erfc(m);
         });
+    test_generic_operation_2d(
+        "square", [](custom_matrix_type m) -> blaze::DynamicMatrix<double> {
+            return m%m;
+        });
+    test_generic_operation_2d(
+        "sign", [](custom_matrix_type m) -> blaze::DynamicMatrix<double> {
+            return blaze::sign(m);
+        });
 
     test_generic_operation_2d(
         "trace", [](custom_matrix_type m) -> double {
@@ -699,6 +718,14 @@ void test_3d_operations()
     test_generic_operation_3d(
         "erfc", [](custom_tensor_type m) -> blaze::DynamicTensor<double> {
             return blaze::erfc(m);
+        });
+    test_generic_operation_3d(
+        "square", [](custom_tensor_type m) -> blaze::DynamicTensor<double> {
+            return m%m;
+        });
+    test_generic_operation_3d(
+        "sign", [](custom_tensor_type m) -> blaze::DynamicTensor<double> {
+            return blaze::sign(m);
         });
 }
 #endif

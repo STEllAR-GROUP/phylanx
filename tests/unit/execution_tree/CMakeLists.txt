@@ -8,6 +8,7 @@ set(tests
     expression_topology
     generate_tree
     parse_primitive_name
+    variable_definition
    )
 
 foreach(test ${tests})

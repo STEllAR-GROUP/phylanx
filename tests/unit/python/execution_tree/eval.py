@@ -203,8 +203,34 @@ def pair():
 
 assert [1, 2] == pair()
 
-# @Phylanx(debug=True)
-# def f8():
-#     a = [1, 2]
-#     a[0] = 1
-#     return a[0]
+
+@Phylanx
+def do_sign(n):
+    return np.sign(n)
+
+
+@Phylanx
+def do_square(n):
+    return np.square(n)
+
+
+assert np.sign(2) == do_sign(2)
+assert np.sign(-3) == do_sign(-3)
+assert np.square(2) == do_square(2)
+assert np.square(-3) == do_square(-3)
+
+v = np.array([2, 0, -3])
+assert np.all(np.sign(v) == do_sign(v))
+assert np.all(np.square(v) == do_square(v))
+
+v = np.array([[1, -2, 3], [4, 0, 6]])
+assert np.all(np.sign(v) == do_sign(v))
+assert np.all(np.square(v) == do_square(v))
+
+v = np.array([
+    [[1, 2], [3, 4]],
+    [[-5, 6], [-7, 8]],
+    [[9, 0], [1, 2]]
+])
+assert np.all(np.sign(v) == do_sign(v))
+assert np.all(np.square(v) == do_square(v))

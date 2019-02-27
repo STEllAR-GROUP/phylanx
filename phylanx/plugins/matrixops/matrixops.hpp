@@ -25,10 +25,12 @@
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
 #include <phylanx/plugins/matrixops/hsplit_operation.hpp>
 #include <phylanx/plugins/matrixops/identity.hpp>
+#include <phylanx/plugins/matrixops/insert.hpp>
 #include <phylanx/plugins/matrixops/inverse_operation.hpp>
 #include <phylanx/plugins/matrixops/linearmatrix.hpp>
 #include <phylanx/plugins/matrixops/linspace.hpp>
 #include <phylanx/plugins/matrixops/ndim.hpp>
+#include <phylanx/plugins/matrixops/pad.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/plugins/matrixops/repeat_operation.hpp>
