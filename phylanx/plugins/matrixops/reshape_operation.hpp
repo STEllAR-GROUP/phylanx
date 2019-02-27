@@ -16,6 +16,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -52,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        bool validate_shape(std::int64_t, ir::range const& arg) const;
+        bool validate_shape(std::size_t const& n, ir::range const& arg) const;
 
         primitive_argument_type reshape0d(
             primitive_argument_type&& arr, ir::range&& arg) const;
@@ -85,6 +86,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type reshape3d(
             primitive_argument_type&& arr, ir::range&& arg) const;
+
+        template <typename T>
+        primitive_argument_type reshape1d_3d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type reshape2d_3d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
 
         template <typename T>
         primitive_argument_type reshape3d_1d(ir::node_data<T>&& arr) const;

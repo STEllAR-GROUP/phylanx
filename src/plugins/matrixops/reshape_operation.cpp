@@ -18,6 +18,7 @@
 #include <hpx/util/iterator_facade.hpp>
 #include <hpx/util/optional.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -62,11 +63,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     bool reshape_operation::validate_shape(
-        std::int64_t n, ir::range const& arg) const
+        std::size_t const& n, ir::range const& arg) const
     {
         if (arg.size() == 1)
         {
-            std::size_t first = extract_scalar_integer_value_strict(*arg.begin());
+            std::int64_t first = extract_scalar_integer_value_strict(*arg.begin());
             if (first == -1)
                 return true;
 
@@ -75,8 +76,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if (arg.size() == 2)
         {
             auto it = arg.begin();
-            std::size_t first = extract_scalar_integer_value_strict(*it);
-            std::size_t second = extract_scalar_integer_value_strict(*++it);
+            std::int64_t first = extract_scalar_integer_value_strict(*it);
+            std::int64_t second = extract_scalar_integer_value_strict(*++it);
             if (first == -1 && second > 0)
             {
                 if (n % second == 0)
@@ -97,9 +98,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if (arg.size() == 3)
         {
             auto it = arg.begin();
-            std::size_t first = extract_scalar_integer_value_strict(*it);
-            std::size_t second = extract_scalar_integer_value_strict(*++it);
-            std::size_t third = extract_scalar_integer_value_strict(*++it);
+            std::int64_t first = extract_scalar_integer_value_strict(*it);
+            std::int64_t second = extract_scalar_integer_value_strict(*++it);
+            std::int64_t third = extract_scalar_integer_value_strict(*++it);
 
             if (first == -1 && second > 0 && third > 0)
             {
@@ -142,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 1:
             return primitive_argument_type{
-                blaze::DynamicVector<T>{1, arr.scalar()}};
+                blaze::DynamicVector<T>{arr.scalar()}};
 
         case 2:
             return primitive_argument_type{
@@ -157,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::eval",
                 util::generate_error_message(
-                    "reshaping to >2d is not supported",
+                    "reshaping to >3d is not supported",
                     name_, codename_));
         }
     }
@@ -206,8 +207,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto a = arr.vector();
 
         auto it = arg.begin();
-        std::size_t first = extract_scalar_integer_value(*it);
-        std::size_t second = extract_scalar_integer_value(*++it);
+        std::int64_t first = extract_scalar_integer_value(*it);
+        std::int64_t second = extract_scalar_integer_value(*++it);
 
         if (first == -1)
         {
@@ -226,6 +227,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type reshape_operation::reshape1d_3d(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto a = arr.vector();
+
+        auto it = arg.begin();
+        std::int64_t pages = extract_scalar_integer_value(*it);
+        std::int64_t rows = extract_scalar_integer_value(*++it);
+        std::int64_t columns = extract_scalar_integer_value(*++it);
+
+        if (rows == -1)
+        {
+            rows = (a.size()) / (columns * pages);
+        }
+        else if (columns == -1)
+        {
+            columns = (a.size()) / (rows * pages);
+        }
+        else if (pages == -1)
+        {
+            pages = (a.size()) / (rows * columns);
+        }
+
+        blaze::DynamicTensor<T> result(pages, rows, columns);
+
+        phylanx::util::tensor_iterator<blaze::DynamicTensor<T>> dest(result);
+
+        std::copy(a.begin(), a.end(), dest);
+
+        return primitive_argument_type{std::move(result)};
+    }
+#endif
+
     template <typename T>
     primitive_argument_type reshape_operation::reshape1d(ir::node_data<T>&& arr,
         ir::range&& arg) const
@@ -238,11 +274,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return reshape1d_2d(std::move(arr),std::move(arg));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return reshape1d_3d(std::move(arr),std::move(arg));
+#endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::reshape1d",
                 util::generate_error_message(
-                    "reshaping to >2d is not supported",
+                    "reshaping to >3d is not supported",
                     name_, codename_));
         }
     }
@@ -308,8 +348,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto a = arr.matrix();
 
         auto it = arg.begin();
-        std::size_t rows = extract_scalar_integer_value(*it);
-        std::size_t columns = extract_scalar_integer_value(*++it);
+        std::int64_t rows = extract_scalar_integer_value(*it);
+        std::int64_t columns = extract_scalar_integer_value(*++it);
 
         if (rows == -1)
         {
@@ -333,6 +373,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type reshape_operation::reshape2d_3d(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto a = arr.matrix();
+
+        auto it = arg.begin();
+        std::int64_t pages = extract_scalar_integer_value(*it);
+        std::int64_t rows = extract_scalar_integer_value(*++it);
+        std::int64_t columns = extract_scalar_integer_value(*++it);
+
+        if (rows == -1)
+        {
+            rows = (a.rows() * a.columns()) / (columns * pages);
+        }
+        else if (columns == -1)
+        {
+            columns = (a.rows() * a.columns()) / (rows * pages);
+        }
+        else if (pages == -1)
+        {
+            pages = (a.rows() * a.columns()) / (rows * columns);
+        }
+
+        blaze::DynamicTensor<T> result(pages, rows, columns);
+
+        auto src = blaze::ravel(a);
+        phylanx::util::tensor_iterator<blaze::DynamicTensor<T>> dest(result);
+
+        std::copy(src.begin(), src.end(), dest);
+
+        return primitive_argument_type{std::move(result)};
+    }
+#endif
+
     template <typename T>
     primitive_argument_type reshape_operation::reshape2d(ir::node_data<T>&& arr,
         ir::range&& arg) const
@@ -345,11 +421,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return reshape2d_2d(std::move(arr), std::move(arg));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return reshape2d_3d(std::move(arr), std::move(arg));
+#endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::reshape2d",
                 util::generate_error_message(
-                    "reshaping to >2d is not supported", name_, codename_));
+                    "reshaping to >3d is not supported", name_, codename_));
         }
     }
 
@@ -412,8 +492,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto t = arr.tensor();
 
         auto it = arg.begin();
-        std::size_t rows = extract_scalar_integer_value(*it);
-        std::size_t columns = extract_scalar_integer_value(*++it);
+        std::int64_t rows = extract_scalar_integer_value(*it);
+        std::int64_t columns = extract_scalar_integer_value(*++it);
 
         if (rows == -1)
         {
@@ -441,9 +521,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto t = arr.tensor();
 
         auto it = arg.begin();
-        std::size_t rows = extract_scalar_integer_value(*it);
-        std::size_t columns = extract_scalar_integer_value(*++it);
-        std::size_t pages = extract_scalar_integer_value(*++it);
+        std::int64_t pages = extract_scalar_integer_value(*it);
+        std::int64_t rows = extract_scalar_integer_value(*++it);
+        std::int64_t columns = extract_scalar_integer_value(*++it);
 
         if (rows == -1)
         {
@@ -581,8 +661,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "reshape_operation::eval",
-                        util::generate_error_message("The given shape is not "
-                            "compatible with the shape of the original array",
+                        util::generate_error_message(
+                            "The given shape is not compatible with the shape "
+                            "of the original array. Notice that you can only "
+                            "specify one unknown dimension",
                             this_->name_, this_->codename_));
                 }
 
