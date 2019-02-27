@@ -1,6 +1,6 @@
 # Copyright (c) 2017 Hartmut Kaiser
 # Copyright (c) 2018 Steven R. Brandt
-# Copyright (c) 2018 R. Tohid
+# Copyright (c) 2018-2019 R. Tohid
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,9 +8,9 @@
 import re
 import ast
 import inspect
+import numpy as np
 import phylanx.execution_tree
 from phylanx import compiler_state, PhylanxSession
-from phylanx.ast.utils import dump_info
 
 
 mapped_methods = {
@@ -94,6 +94,69 @@ methods_supporting_dtype = [
     'trunc',
     'vstack',
 ]
+
+
+def create_array(array_tree, dtype):
+    symbol_info = []
+
+    hstack_symbol = 'hstack'
+    vstack_symbol = 'vstack'
+    dstack_symbol = 'dstack'
+    if dtype:
+        hstack_symbol += dtype
+        vstack_symbol += dtype
+        dstack_symbol += dtype
+
+    def extract_data(arr):
+        if isinstance(arr, tuple):
+            if not arr:
+                return []
+            elif isinstance(arr[0], str):
+                return [i for i in arr]
+            else:
+                current_dim = []
+                for entry in arr:
+                    current_dim.append(extract_data(entry))
+                return current_dim
+        elif isinstance(arr, list):
+            symbol_info.append('$' + arr[0].split('$', 1)[1])
+            return extract_data(arr[1])
+
+    data = extract_data(array_tree)
+    if not symbol_info:
+        if isinstance(data[0], str):
+            return [hstack_symbol, (data,)]
+        else:
+            return [hstack_symbol, tuple(data)]
+    data = np.array(*extract_data(array_tree))
+    num_dim = len(data.shape)
+
+    if 3 == num_dim:
+        columns = [data[:, :, i] for i in range(data.shape[-1])]
+        dstacks = []
+        for i, column in enumerate(columns):
+            dstacks.append([])
+            [dstacks[i].append(tuple(data)) for data in column]
+
+        outer_symbol = symbol_info.pop(0)
+        arr = []
+        for d in dstacks:
+            vstack = []
+            for hstacks in d:
+                vstack.append([hstack_symbol + symbol_info.pop(0), hstacks])
+            vstack = [vstack_symbol + symbol_info.pop(0), tuple(vstack)]
+            arr.append(vstack)
+        arr = [dstack_symbol + outer_symbol, tuple(arr)]
+    elif 2 == num_dim:
+        arr = []
+        for hstacks in data:
+            arr.append([hstack_symbol + symbol_info.pop(0), tuple(hstacks)])
+        arr = [vstack_symbol + symbol_info.pop(0), tuple(arr)]
+    elif 1 == num_dim:
+        arr = [hstack_symbol + symbol_info.pop(0), tuple(data)]
+    else:
+        ValueError("Phylanx supports arrays with 3 dimensions or less.")
+    return (arr,)
 
 
 def primitive_name(method_name):
@@ -543,6 +606,8 @@ class PhySL:
             if k.arg == 'dtype':
                 if isinstance(k.value, ast.Name):
                     type_str = phylanx_dtype.get(k.value.id)
+                    if not type_str:
+                        raise ValueError("dtype must a be string literal.")
                 if isinstance(k.value, ast.Str):
                     type_str = phylanx_dtype.get(k.value.s)
                 if type_str:
@@ -557,19 +622,8 @@ class PhySL:
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        if 'hstack' in symbol and isinstance(args[0], list):
-            if args[0][1] and isinstance(args[0][1][0], list):
-                symbol = symbol.replace('hstack', 'vstack' + dtype)
-                for i in range(len(args[0][1])):
-                    args[0][1][i][0] = args[0][1][i][0].replace(
-                        'list', 'hstack' + dtype)
-                    if isinstance(args[0][1][i][1][0], list):
-                        raise NotImplementedError(
-                            'Phylanx only supports 1 and 2 dimensional arrays.'
-                        )
-            else:
-                symbol = symbol.replace('hstack', 'hstack' + dtype)
-            args = args[0][1]
+        if 'hstack' in symbol:
+            return create_array(args, dtype)
         elif 'zeros_like' in symbol:
             symbol = symbol.replace('zeros_like', 'constant' + dtype)
             op = get_symbol_info(node.func, 'shape')
