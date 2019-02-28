@@ -352,6 +352,12 @@ namespace phylanx { namespace ir
                 std::int64_t const step = int_range.step();
 
                 std::int64_t const distance_to_start = stop - start;
+
+                // Adding step to start must get closer to stop
+                if ((distance_to_start > 0) != (step > 0))
+                {
+                    return 0;
+                }
                 std::int64_t const n_steps = distance_to_start / step;
                 std::int64_t const remaining_step =
                     distance_to_start % step > 0 ? 1 : 0;
