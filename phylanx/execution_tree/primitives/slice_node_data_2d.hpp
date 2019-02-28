@@ -18,9 +18,12 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/assert.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <blaze/Math.h>
@@ -183,6 +186,48 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        template <typename T, typename Index, typename Enable = void>
+        struct extract_columns;
+
+        template <typename T, typename Index>
+        struct extract_columns<T, Index,
+            typename std::enable_if<sizeof(std::int64_t) == sizeof(Index)>::type>
+        {
+            template <typename F, typename Data, typename SubMatrix>
+            ir::node_data<T> operator()(F const& f, Data&& m, SubMatrix&& sm,
+                ir::node_data<std::int64_t>&& columns) const
+            {
+                auto result = blaze::columns(sm,
+                    reinterpret_cast<std::size_t*>(columns.vector().data()),
+                    columns.size());
+
+                return f.matrix(m, std::move(result));
+            }
+        };
+
+        template <typename T, typename Index>
+        struct extract_columns<T, Index,
+            typename std::enable_if<sizeof(std::int64_t) != sizeof(Index)>::type>
+        {
+            template <typename F, typename Data, typename SubMatrix>
+            ir::node_data<T> operator()(F const& f, Data&& m, SubMatrix&& sm,
+                ir::node_data<std::int64_t>&& columns) const
+            {
+                std::unique_ptr<std::size_t[]> indices(
+                    std::make_unique<std::size_t[]>(columns.size()));
+
+                std::int64_t* p = columns.vector().data();
+                std::copy(p, p + columns.size(), indices.get());
+
+                auto result = blaze::columns(sm, indices.get(), columns.size());
+
+                return f.matrix(m, std::move(result));
+            }
+        };
+    }
+
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_basic_integer(Data&& m,
         ir::slicing_indices const& rows,
@@ -263,16 +308,11 @@ namespace phylanx { namespace execution_tree
         {
             HPX_ASSERT(row_stop > row_start);
 
-            auto sm = blaze::submatrix(m, row_start, 0ll,
-                row_stop - row_start, m.columns());
+            auto&& sm = blaze::submatrix(
+                m, row_start, 0ll, row_stop - row_start, m.columns());
 
-            static_assert(sizeof(std::int64_t) == sizeof(std::size_t),
-                "sizeof(std::int64_t) == sizeof(std::size_t)");
-            auto result = blaze::columns(sm,
-                reinterpret_cast<std::size_t*>(columns.vector().data()),
-                columns.size());
-
-            return f.matrix(m, std::move(result));
+            return detail::extract_columns<T, std::size_t>{}(
+                f, std::move(m), std::move(sm), std::move(columns));
         }
 
         // general case, pick arbitrary elements from matrix
@@ -379,6 +419,48 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        template <typename T, typename Index, typename Enable = void>
+        struct extract_rows;
+
+        template <typename T, typename Index>
+        struct extract_rows<T, Index,
+            typename std::enable_if<sizeof(std::int64_t) == sizeof(Index)>::type>
+        {
+            template <typename F, typename Data, typename SubMatrix>
+            ir::node_data<T> operator()(F const& f, Data&& m, SubMatrix&& sm,
+                ir::node_data<std::int64_t>&& rows) const
+            {
+                auto result = blaze::rows(sm,
+                    reinterpret_cast<std::size_t*>(rows.vector().data()),
+                    rows.size());
+
+                return f.matrix(m, std::move(result));
+            }
+        };
+
+        template <typename T, typename Index>
+        struct extract_rows<T, Index,
+            typename std::enable_if<sizeof(std::int64_t) != sizeof(Index)>::type>
+        {
+            template <typename F, typename Data, typename SubMatrix>
+            ir::node_data<T> operator()(F const& f, Data&& m, SubMatrix&& sm,
+                ir::node_data<std::int64_t>&& rows) const
+            {
+                std::unique_ptr<std::size_t[]> indices(
+                    std::make_unique<std::size_t[]>(rows.size()));
+
+                std::int64_t* p = rows.vector().data();
+                std::copy(p, p + rows.size(), indices.get());
+
+                auto result = blaze::rows(sm, indices.get(), rows.size());
+
+                return f.matrix(m, std::move(result));
+            }
+        };
+    }
+
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_integer_basic(Data&& m,
         ir::node_data<std::int64_t> && rows,
@@ -450,13 +532,8 @@ namespace phylanx { namespace execution_tree
             auto sm = blaze::submatrix(m, 0ll, col_start,
                 m.rows(), col_stop - col_start);
 
-            static_assert(sizeof(std::int64_t) == sizeof(std::size_t),
-                "sizeof(std::int64_t) == sizeof(std::size_t)");
-            auto result = blaze::rows(sm,
-                reinterpret_cast<std::size_t*>(rows.vector().data()),
-                rows.size());
-
-            return f.matrix(m, std::move(result));
+            return detail::extract_rows<T, std::size_t>{}(
+                f, std::move(m), std::move(sm), std::move(rows));
         }
 
         // general case, pick arbitrary elements from matrix
