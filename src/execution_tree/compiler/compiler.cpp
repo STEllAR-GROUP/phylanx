@@ -53,16 +53,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 result.define(p.primitive_type_,
                     builtin_function(p.create_primitive_, default_locality));
 
-            if (p.supports_dtype_)
-            {
-                result.define(p.primitive_type_ + "__bool",
-                    builtin_function(p.create_primitive_, default_locality));
-                result.define(p.primitive_type_ + "__int",
-                    builtin_function(p.create_primitive_, default_locality));
-                result.define(p.primitive_type_ + "__float",
-                    builtin_function(p.create_primitive_, default_locality));
+                if (p.supports_dtype_)
+                {
+                    result.define(p.primitive_type_ + "__bool",
+                        builtin_function(p.create_primitive_, default_locality));
+                    result.define(p.primitive_type_ + "__int",
+                        builtin_function(p.create_primitive_, default_locality));
+                    result.define(p.primitive_type_ + "__float",
+                        builtin_function(p.create_primitive_, default_locality));
+                }
             }
-        }
         }
 
         return result;
@@ -517,11 +517,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name, access_target(f, "access-variable", default_locality_));
 
                 // Correct type of the access object if this variable refers
-                // to a lambda.
+                // to a lambda or a block.
                 auto body_f = compile_body(body, locality);
                 primitive_name_parts body_name_parts;
                 if (parse_primitive_name(body_f.name_, body_name_parts) &&
-                    body_name_parts.primitive == "lambda")
+                    (body_name_parts.primitive == "lambda" ||
+                        body_name_parts.primitive == "block"))
                 {
                     std::string variable_type = "function";
                     name_parts = primitive_name_parts(variable_type,
@@ -864,10 +865,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                                 // a attribute on the define() could reference
                                 // a specific locality
                                 parse_locality_attribute(attr, locality);
-                            }
+                        }
 
                             return handle_define(placeholders, id, locality);
-                        }
+                    }
                     }
 
                     // Handle lambda(__1)
