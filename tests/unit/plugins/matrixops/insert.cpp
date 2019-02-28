@@ -286,6 +286,7 @@ void test_insert_PhySL_2d_axis1_1()
                 {3.0, 9.0, 3.0, 10.0}, {3.0, 11.0, 3.0, 12.0}}}));
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_insert_PhySL_3d_1()
 {
     std::string const code = R"(block(
@@ -496,6 +497,7 @@ void test_insert_PhySL_3d_axis2_1()
                 {3.0, 4.0, 6.0, 17.0, 18.0, 5.0, 19.0, 2.0},
                 {3.0, 4.0, 6.0, 20.0, 21.0, 5.0, 22.0, 2.0}}}}));
 }
+#endif
 
 int main(int argc, char* argv[])
 {
