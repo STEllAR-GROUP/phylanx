@@ -346,7 +346,11 @@ namespace phylanx { namespace ast
     {
         if (util::is_repr(out))
         {
-            out << "<nil>";
+            out << "None";
+        }
+        else
+        {
+            out << "nil";
         }
         return out;
     }

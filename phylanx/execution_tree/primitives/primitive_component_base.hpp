@@ -109,9 +109,7 @@ namespace phylanx { namespace execution_tree
             }
             primitive_arguments_type const& operands() const
             {
-                return operands_.empty() ||
-                        (operands_.size() == 1 && !valid(operands_[0])) ?
-                    noargs : operands_;
+                return operands_;
             }
 
             std::string extract_function_name(std::string const& name);
