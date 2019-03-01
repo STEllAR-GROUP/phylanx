@@ -8,6 +8,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/ranges.hpp>
 
+#include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 

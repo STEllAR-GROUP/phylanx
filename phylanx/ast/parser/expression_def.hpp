@@ -17,6 +17,7 @@
 #include <boost/spirit/include/phoenix_function.hpp>
 
 #include <cstdint>
+#include <string>
 
 namespace phylanx { namespace ast { namespace parser
 {
@@ -149,9 +150,9 @@ namespace phylanx { namespace ast { namespace parser
         double_vector %= '[' > (double_ % ',') > ']';
 
         function_call %=
-                (identifier >> '(')
-            >   argument_list
-            >   ')'
+                identifier
+            >>  attribute
+            >>  ('(' >  argument_list > ')')
             ;
 
         list %=
@@ -161,6 +162,11 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
         argument_list %= -(expr % ',');
+
+        attribute %=
+                lexeme['{' > *(char_ - '}') > '}']
+            |   attr(std::string{})
+            ;
 
         identifier %=
                 identifier_name

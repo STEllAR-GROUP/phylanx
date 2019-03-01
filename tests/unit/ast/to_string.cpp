@@ -116,7 +116,7 @@ void test_expression()
 void test_function_call()
 {
     phylanx::ast::identifier id("function_name");
-    phylanx::ast::function_call fc(std::move(id));
+    phylanx::ast::function_call fc(id);
 
     phylanx::ast::primary_expr p1(true);
     phylanx::ast::operand op1(p1);
@@ -128,6 +128,9 @@ void test_function_call()
     fc.append(exprs);
 
     test_to_string(fc, "function_name(true, true, true)");
+
+    phylanx::ast::function_call fc1(id, "attribute", std::move(exprs));
+    test_to_string(fc1, "function_name{attribute}(true, true)");
 
     phylanx::ast::primary_expr p2(std::move(fc));
     test_to_string(p2, "function_name(true, true, true)");

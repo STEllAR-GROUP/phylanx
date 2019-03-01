@@ -7,8 +7,9 @@
 #define PHYLANX_COMPILE_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compile.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/compiler/compiler.hpp>
-#include <phylanx/execution_tree/compile.hpp>
+#include <phylanx/execution_tree/compiler_component.hpp>
 
 #endif

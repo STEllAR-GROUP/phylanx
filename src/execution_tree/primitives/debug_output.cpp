@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/debug_output.hpp>
+#include <phylanx/execution_tree/primitives/generic_function.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -13,6 +14,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -73,5 +75,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_,
                 std::move(ctx)));
+    }
+}}}
+
+///////////////////////////////////////////////////////////////////////////////
+HPX_PLAIN_ACTION(phylanx::execution_tree::primitives::locality_id, locality);
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    match_pattern_type const locality_match_data =
+    {
+        hpx::util::make_tuple(
+            "locality", std::vector<std::string>{"locality()"},
+            &create_generic_function< ::locality>,
+            &create_primitive<generic_function< ::locality>>, R"(
+            locality
+
+            Args:
+
+                none
+
+            Returns:
+
+            The locality id of the currently executing code)")
+    };
+
+    hpx::future<primitive_argument_type> locality_id(
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context)
+    {
+        std::int64_t locality_ =
+            hpx::naming::get_locality_id_from_id(hpx::find_here());
+        return hpx::make_ready_future(primitive_argument_type(locality_));
     }
 }}}

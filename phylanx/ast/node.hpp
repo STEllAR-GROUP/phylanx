@@ -698,6 +698,13 @@ namespace phylanx { namespace ast
           , args(std::move(l))
         {}
 
+        function_call(identifier name, std::string attr,
+                std::vector<expression>&& l)
+          : function_name(std::move(name))
+          , attribute(std::move(attr))
+          , args(std::move(l))
+        {}
+
         void append(expression const& expr)
         {
             args.push_back(expr);
@@ -716,6 +723,7 @@ namespace phylanx { namespace ast
         }
 
         identifier function_name;
+        std::string attribute;
         std::vector<expression> args;
 
     private:
@@ -729,7 +737,8 @@ namespace phylanx { namespace ast
 
     inline bool operator==(function_call const& lhs, function_call const& rhs)
     {
-        return lhs.function_name == rhs.function_name && lhs.args == rhs.args;
+        return lhs.function_name == rhs.function_name &&
+            lhs.attribute == rhs.attribute && lhs.args == rhs.args;
     }
     inline bool operator!=(function_call const& lhs, function_call const& rhs)
     {

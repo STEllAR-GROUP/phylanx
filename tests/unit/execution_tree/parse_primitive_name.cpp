@@ -6,6 +6,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
 #include <string>
@@ -25,6 +26,7 @@ void test_primitive_name(pec::primitive_name_parts const& expected_parts,
 int main(int argc, char* argv[])
 {
     pec::primitive_name_parts parts;
+    parts.locality = hpx::naming::invalid_locality_id;
     parts.primitive = "add";
     parts.sequence_number = 1;
     parts.instance = "";
@@ -34,12 +36,15 @@ int main(int argc, char* argv[])
 
     test_primitive_name(parts, "/phylanx/add$1/2$3");
 
+    parts.locality = 0;
     parts.instance = "test";
-    test_primitive_name(parts, "/phylanx/add$1$test/2$3");
+    test_primitive_name(parts, "/phylanx$0/add$1$test/2$3");
 
+    parts.locality = 1;
     parts.tag2 = 4;
-    test_primitive_name(parts, "/phylanx/add$1$test/2$3$4");
+    test_primitive_name(parts, "/phylanx$1/add$1$test/2$3$4");
 
+    parts.locality = hpx::naming::invalid_locality_id;
     parts.instance = "";
     test_primitive_name(parts, "/phylanx/add$1/2$3$4");
 

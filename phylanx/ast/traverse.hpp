@@ -337,6 +337,12 @@ namespace phylanx { namespace ast
                 {
                     if (traverse(fc.function_name, std::forward<F>(f), ts...))
                     {
+                        if (!fc.attribute.empty())
+                        {
+                            if (!traverse(fc.attribute, std::forward<F>(f), ts...))
+                                return;
+                        }
+
                         for (auto const& arg : fc.args)
                         {
                             if (!traverse(arg, std::forward<F>(f), ts...))
