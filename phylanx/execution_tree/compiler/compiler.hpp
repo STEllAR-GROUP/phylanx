@@ -15,8 +15,8 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/util/hashed_string.hpp>
 
-#include <hpx/include/util.hpp>
 #include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>

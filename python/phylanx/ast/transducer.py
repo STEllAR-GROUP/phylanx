@@ -22,7 +22,13 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
             :function:f the decorated funtion.
             """
-            valid_kwargs = ['debug', 'target', 'compiler_state', 'performance']
+            valid_kwargs = [
+                'debug',
+                'target',
+                'compiler_state',
+                'performance',
+                'localities'
+            ]
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
@@ -39,8 +45,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             python_src = self.get_python_src(f)
             python_ast = self.get_python_ast(python_src, f)
 
-            self.backend = self.backends_map[self.backend](f, python_ast,
-                                                           kwargs)
+            self.backend = self.backends_map[self.backend](f, python_ast, kwargs)
             self.__src__ = self.backend.__src__
 
         def get_backend(self, target):

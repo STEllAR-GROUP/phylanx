@@ -337,6 +337,7 @@ class PhySL:
             self.file_name = "<none>"
 
         self.performance = self.kwargs.get('performance')
+        self.localities = self.kwargs.get('localities')
         self.__perfdata__ = (None, None, None)
 
         # Add arguments of the function to the list of discovered variables.

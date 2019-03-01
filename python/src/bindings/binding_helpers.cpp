@@ -180,8 +180,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                        resolve_children.insert(f.name_);
-                    }
+                    resolve_children.insert(f.name_);
+                }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -191,7 +191,7 @@ namespace phylanx { namespace bindings
                     }
                 }
 
-                auto topology = code.get_expression_topology(
+                auto topology = program.get_expression_topology(
                     std::set<std::string>{}, std::move(resolve_children));
 
                 return phylanx::execution_tree::dot_tree(file_name, topology);
@@ -222,8 +222,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                        resolve_children.insert(f.name_);
-                    }
+                    resolve_children.insert(f.name_);
+                }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -233,7 +233,7 @@ namespace phylanx { namespace bindings
                     }
                 }
 
-                auto topology = code.get_expression_topology(
+                auto topology = program.get_expression_topology(
                     std::set<std::string>{}, std::move(resolve_children));
 
                 return phylanx::execution_tree::newick_tree(file_name, topology);
@@ -265,8 +265,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                        resolve_children.insert(f.name_);
-                    }
+                    resolve_children.insert(f.name_);
+                }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -276,7 +276,7 @@ namespace phylanx { namespace bindings
                     }
                 }
 
-                auto topology = code.get_expression_topology(
+                auto topology = program.get_expression_topology(
                     std::set<std::string>{}, std::move(resolve_children));
 
                 std::list<std::string> result;

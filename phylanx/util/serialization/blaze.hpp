@@ -9,7 +9,7 @@
 #define PHYLANX_UTIL_BLAZE_SERIALIZATION_HPP
 
 #include <phylanx/config.hpp>
-#include <hpx/include/serialization.hpp>
+#include <hpx/runtime/serialization/array.hpp>
 #include <hpx/include/util.hpp>
 
 #include <blaze/Math.h>

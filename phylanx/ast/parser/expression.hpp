@@ -77,6 +77,7 @@ namespace phylanx { namespace ast { namespace parser
 
         qi::rule<Iterator, ast::identifier(), skipper<Iterator>> identifier;
 
+        qi::rule<Iterator, std::string(), skipper<Iterator>> attribute;
         qi::rule<Iterator, std::string(), skipper<Iterator>> identifier_name;
         qi::rule<Iterator, std::string(), skipper<Iterator>> string;
 
