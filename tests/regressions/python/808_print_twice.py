@@ -15,4 +15,6 @@ def hello():
 
 hello()
 
-assert(debug_output() == "Hello\n")
+
+s = debug_output()
+assert s == "Hello\n", s

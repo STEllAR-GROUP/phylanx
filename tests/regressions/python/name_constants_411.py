@@ -14,7 +14,8 @@ def f():
 
 
 assert f.__src__ == \
-    "define$11$0(f$11$0, block(define$12$4(a$12$4, nil$12$8), a$13$11))"
+    "define$11$0(f$11$0, lambda$11$0(block(define$12$4(a$12$4, nil$12$8), a$13$11)))", \
+    f.__src__
 
 
 @Phylanx
@@ -24,7 +25,8 @@ def f():
 
 
 assert f.__src__ == \
-    "define$21$0(f$21$0, block(define$22$4(a$22$4, true$22$8), a$23$11))"
+    "define$22$0(f$22$0, lambda$22$0(block(define$23$4(a$23$4, true$23$8), a$24$11)))", \
+    f.__src__
 
 
 @Phylanx
@@ -34,4 +36,5 @@ def f():
 
 
 assert f.__src__ == \
-    "define$31$0(f$31$0, block(define$32$4(a$32$4, false$32$8), a$33$11))"
+    "define$33$0(f$33$0, lambda$33$0(block(define$34$4(a$34$4, false$34$8), a$35$11)))", \
+    f.__src__
