@@ -181,13 +181,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 int const sequencer_[] = {
                     (keep_alive.emplace_back(
-                        extract_copy_value(primitive_argument_type{
+                        extract_copy_value(primitive_argument_type(
                             std::forward<T1>(t1)
-                        }, name_)), 0)
+                        ), name_)), 0)
                   , (keep_alive.emplace_back(
-                        extract_copy_value(primitive_argument_type{
+                        extract_copy_value(primitive_argument_type(
                             std::forward<Ts>(ts)
-                        }, name_)), 0)...
+                        ), name_)), 0)...
                 };
                 (void)sequencer_;
 
@@ -228,9 +228,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 int const sequencer_[] = {
                     0, (keep_alive.emplace_back(
-                            extract_copy_value(primitive_argument_type{
+                            extract_copy_value(primitive_argument_type(
                                 std::forward<Ts>(ts)
-                        }, name_)), 0)...
+                            ), name_)), 0)...
                 };
                 (void)sequencer_;
 
@@ -284,9 +284,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 int const sequencer_[] = {
                     0, (keep_alive.emplace_back(
-                            extract_value(primitive_argument_type{
+                            extract_value(primitive_argument_type(
                                 std::forward<Ts>(ts)
-                            })), 0)...
+                            ))), 0)...
                 };
                 (void)sequencer_;
 
