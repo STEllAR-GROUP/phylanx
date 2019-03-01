@@ -18,7 +18,7 @@ void test_expressiontree_topology(char const* name,
 
     auto const& code = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(codestr), snippets);
-    auto topology = code.get_expression_topology();
+    auto topology = snippets.program_.get_expression_topology();
 
     std::string newick_tree =
         phylanx::execution_tree::newick_tree(name, topology);

@@ -10,7 +10,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/include/serialization.hpp>
+#include <hpx/runtime/serialization/serialization_fwd.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>

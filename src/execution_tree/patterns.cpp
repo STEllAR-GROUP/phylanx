@@ -152,6 +152,9 @@ namespace phylanx { namespace execution_tree
                     hpx::util::get<0>(pattern), hpx::util::get<1>(pattern)));
             }
 
+            patterns.push_back(hpx::util::make_tuple(
+                "locality", primitives::locality_match_data));
+
             return patterns;
         }
 

@@ -18,45 +18,6 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    hpx::future<primitive_argument_type> locality_id(
-        phylanx::execution_tree::primitive_arguments_type const&,
-        phylanx::execution_tree::primitive_arguments_type const&,
-        std::string const&, std::string const&, eval_context ctx);
-}}}
-
-HPX_PLAIN_ACTION(
-    phylanx::execution_tree::primitives::locality_id, locality_id_action);
-
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    match_pattern_type const locality_id_match_data =
-    {
-        hpx::util::make_tuple(
-            "locality_id", std::vector<std::string>{"locality_id()"},
-            &create_generic_function<locality_id_action>,
-            &create_primitive<generic_function<locality_id_action>>,
-            R"(
-            Args:
-
-            Returns:
-
-            The locality of the currently executing code)")
-    };
-
-    hpx::future<primitive_argument_type> locality_id(
-        phylanx::execution_tree::primitive_arguments_type const&,
-        phylanx::execution_tree::primitive_arguments_type const&,
-        std::string const&, std::string const&, eval_context)
-    {
-        std::int64_t locality_ =
-            hpx::naming::get_locality_id_from_id(hpx::find_here());
-        return hpx::make_ready_future(primitive_argument_type(locality_));
-    }
-}}}
-
-///////////////////////////////////////////////////////////////////////////////
 bool is_locality_0 = false;
 
 std::string code1 = "block(define(a, 1), a)";
@@ -83,7 +44,7 @@ phylanx::execution_tree::compiler::function compile(
 
 void test_remote_run_on(std::uint32_t there)
 {
-    auto et = compile("debug(locality_id())", there);
+    auto et = compile("debug(locality())", there);
     et();
 }
 
@@ -115,10 +76,6 @@ int hpx_main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    phylanx::execution_tree::register_pattern("locality_id_action",
-        phylanx::execution_tree::primitives::locality_id_match_data,
-        argv[0]);
-
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
     if (is_locality_0)

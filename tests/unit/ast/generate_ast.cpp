@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
    );
 
    test_expression(
-       "\"string\\x20to\\x200unescape\\x3a\\x20\\n\\r\\t\\\"\\'\\x41\"",
+       R"("string\x20to\x200unescape\x3a\x20\n\r\t\"\'\x41")",
        "string to 0unescape\x3a \n\r\t\"\'\x41\n"
    );
 
@@ -266,6 +266,15 @@ int main(int argc, char* argv[])
         "[[[1, 2, 3], [2, 3, 1], [3, 1, 2]]]\n"
     );
 #endif
+
+    test_expression(
+        "function_call{attribute}(a, b, c)",
+        "function_call$1$1\n"
+            "attribute\n"
+            "a$1$26\n"
+            "b$1$29\n"
+            "c$1$32\n"
+    );
 
     return hpx::util::report_errors();
 }

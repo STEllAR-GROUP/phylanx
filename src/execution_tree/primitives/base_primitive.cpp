@@ -20,6 +20,7 @@
 #include <hpx/include/actions.hpp>
 #include <hpx/include/async.hpp>
 #include <hpx/include/components.hpp>
+#include <hpx/include/serialization.hpp>
 #include <hpx/include/sync.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/util/logging.hpp>

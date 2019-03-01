@@ -7,6 +7,7 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/throw_exception.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
 
 #include <cstdint>
 #include <string>
@@ -27,6 +28,7 @@
 
 BOOST_FUSION_ADAPT_STRUCT(
     phylanx::execution_tree::compiler::primitive_name_parts,
+    (std::uint32_t, locality)
     (std::string, primitive)
     (std::int64_t, sequence_number)
     (std::string, instance)
@@ -49,12 +51,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
               : primitive_name_parser::base_type(start)
             {
                 start =
-                       -qi::lit("/phylanx/") >> primitive
-                    >>   qi::lit('$') >> qi::int_
+                         qi::lit("/phylanx")
+                    >>  (  (qi::lit('$') >> qi::uint_)
+                        |   qi::attr(hpx::naming::invalid_locality_id)
+                        )
+                    >>   qi::lit("/") >> primitive
+                    >>   qi::lit('$') >> qi::uint_
                     >> ((qi::lit('$') >> instance) | qi::attr(""))
-                    >>   qi::lit('/') >> qi::int_
-                    >>   qi::lit('$') >> qi::int_
-                    >> ((qi::lit('$') >> qi::int_) | qi::attr(-1))
+                    >>   qi::lit('/') >> qi::uint_
+                    >>   qi::lit('$') >> qi::uint_
+                    >> ((qi::lit('$') >> qi::uint_) | qi::attr(-1))
                     ;
 
                 primitive = +(qi::char_ - qi::lit('$'));
@@ -114,8 +120,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 "primitive type was not specified");
         }
 
-        std::string result("/phylanx/");
-        result += parts.primitive;
+        std::string result("/phylanx");
+        if (parts.locality != hpx::naming::invalid_locality_id)
+        {
+            result += "$" + std::to_string(parts.locality);
+        }
+        result += "/" + parts.primitive;
         result += "$" + std::to_string(
             parts.sequence_number == -1 ? 0 : parts.sequence_number);
 
@@ -160,6 +170,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             result += "/" + parts.instance;
         }
 
+        if (parts.locality != hpx::naming::invalid_locality_id)
+        {
+            result += "/L#" + std::to_string(parts.locality);
+        }
+
         if (parts.tag1 >= 0 || parts.tag2 != -1)
         {
             result += "(" + std::to_string(parts.tag1 < 0 ? 0 : parts.tag1);
@@ -172,6 +187,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             result += ")";
         }
+
         return result;
     }
 
