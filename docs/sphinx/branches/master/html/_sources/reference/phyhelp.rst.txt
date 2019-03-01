@@ -1206,6 +1206,19 @@ list (args)
     
 
 
+locality
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+locality (locality)
+
+            Args:
+
+                none
+
+            Returns:
+
+            The locality id of the currently executing code
+
+
 logical_and
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 logical_and (a, b)
