@@ -360,7 +360,7 @@ namespace phylanx { namespace ir
                 }
                 std::int64_t const n_steps = distance_to_start / step;
                 std::int64_t const remaining_step =
-                    distance_to_start % step > 0 ? 1 : 0;
+                    (distance_to_start % step > 0) ? 1 : 0;
 
                 return n_steps + remaining_step;
             }

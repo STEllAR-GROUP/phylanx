@@ -69,16 +69,39 @@ void test_int_range_all_args()
     HPX_TEST_EQ(std::distance(r.begin(), r.end()), 5);
 }
 
+void test_int_range_zero_step()
+{
+    bool caught_exception = false;
+    try
+    {
+        phylanx::ir::range r(1, 10, 0);
+    }
+    catch (hpx::exception const&)
+    {
+        caught_exception = true;
+    }
+    HPX_TEST(caught_exception);
+}
+
 void test_int_range_size()
 {
-    phylanx::ir::range r(-1, static_cast<std::int64_t>(0));
+    phylanx::ir::range r(
+        static_cast<std::int64_t>(-1), static_cast<std::int64_t>(0));
 
     HPX_TEST_EQ(r.size(), 1);
 }
 
-void test_int_empty_range_size()
+void test_int_empty_range_size_1()
 {
     phylanx::ir::range r(-6);
+
+    HPX_TEST_EQ(r.size(), 0);
+}
+
+void test_int_empty_range_size_2()
+{
+    phylanx::ir::range r(
+        static_cast<std::int64_t>(1), static_cast<std::int64_t>(1));
 
     HPX_TEST_EQ(r.size(), 0);
 }
@@ -204,9 +227,11 @@ int main(int argc, char* argv[])
 
     test_int_range_stop_arg();
     test_int_range_all_args();
+    test_int_range_zero_step();
 
     test_int_range_size();
-    test_int_empty_range_size();
+    test_int_empty_range_size_1();
+    test_int_empty_range_size_2();
 
     test_arg_type_range();
     test_arg_pair_range();
