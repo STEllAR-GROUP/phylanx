@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 arg (primitive type) : return the type of the arg
 
             Returns:
-            
+
                 The variant index of the primitive type)"
             )
     };

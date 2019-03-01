@@ -274,5 +274,12 @@ def get_names():
 
 
 assert get_names() == [
-    'None', 'node_data<int64>', 'node_data<float>', 'string',
-    'node_data<int64>', 'node_data<float>', 'range', 'dict']
+    'phylanx::ast::nil',
+    'phylanx::ir::node_data<std::int64_t>',
+    'phylanx::ir::node_data<double>',
+    'std::string',
+    'phylanx::ir::node_data<std::int64_t>',
+    'phylanx::ir::node_data<double>',
+    'phylanx::ir::range',
+    'phylanx::ir::dictionary'
+]

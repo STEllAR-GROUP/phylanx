@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 arg (primitive type) : return the name of the arg
 
             Returns:
-            
+
                 The name of the primitive type)"
             )
     };
@@ -63,44 +63,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
                 -> primitive_argument_type
             {
-                if(args.size() == 0) {
-                    std::string name = "None";
-                    return primitive_argument_type{name};
-                }
-                std::string name;
-                int tid = args[0].index();
-                switch(tid) {
-                case 0:
-                    name = "None";
-                    break;
-                case 1:
-                    name = "uint8";
-                    break;
-                case 2:
-                    name = "int64";
-                    break;
-                case 3:
-                    name = "string";
-                    break;
-                case 4:
-                    name = "float64";
-                    break;
-                case 5:
-                    name = "primitive";
-                    break;
-                case 6:
-                    name = "vector<expression>";
-                    break;
-                case 7:
-                    name = "range";
-                    break;
-                case 8:
-                    name = "dict";
-                    break;
-                default:
-                    name  = "??";
-                    break;
-                }
+                int tid = 0;
+                if(args.size() > 0)
+                    tid = args[0].index();
+                std::string name = phylanx::execution_tree::detail::get_primitive_argument_type_name(tid);
                 return primitive_argument_type{name};
             }),
             detail::map_operands(
