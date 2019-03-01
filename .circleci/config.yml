@@ -268,6 +268,28 @@ jobs:
                 path: tests.regressions
             - store_artifacts:
                 path: tests.regressions
+    tests.unit.distributed:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Avoid re-running CMake
+                command: touch build.ninja
+            - run:
+                name: Justify build
+                command: ninja -n -d explain tests.unit.distributed
+            - run:
+                name: Build distributed tests
+                command: ninja -j1 tests.unit.distributed
+            - run:
+                name: Run distributed tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.distributed
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.distributed
+            - store_artifacts:
+                path: tests.distributed
     tests.unit.plugins.arithmetics:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -564,6 +586,9 @@ workflows:
             - tests.unit.group_2:
                 requires:
                     - build
+            - tests.unit.distributed:
+                requires:
+                    - build
             - deploy_image:
                 requires:
                     - build
@@ -579,3 +604,4 @@ workflows:
                     - tests.unit.plugins.statistics
                     - tests.unit.group_1
                     - tests.unit.group_2
+                    - tests.unit.distributed
