@@ -42,8 +42,8 @@ def learnParameters(alpha,
         currentDigamma = 0.0
 
         for i in range(locDocLengthCounts.shape[0]):
-            currentDigamma += 1.0 / (
-                              (parametersSum + np.float64(i) - 1.0) + 1e-100
+            currentDigamma += 1.0 / ((
+                parametersSum + np.float64(i) - 1.0) + 1e-100
             )
             denominator += locDocLengthCounts[i] * currentDigamma
 
@@ -352,10 +352,9 @@ def estimate(training, numTopics, alpha_, beta_,
                             subidx = idx_
                             tmp = 0
                             while (
-                                      subidx < len(currentTypeTopicCounts) - 1
-                                  ) and \
-                                currentTypeTopicCounts[subidx] < \
-                                    currentTypeTopicCounts[subidx + 1]:
+                                subidx < len(currentTypeTopicCounts) - 1) and \
+                                (currentTypeTopicCounts[subidx] < \
+                                    currentTypeTopicCounts[subidx + 1]):
 
                                 tmp = currentTypeTopicCounts[subidx]
                                 currentTypeTopicCounts[subidx] = \
