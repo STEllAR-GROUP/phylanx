@@ -235,5 +235,21 @@ int main(int argc, char* argv[])
         "[[[13, 42]],[[ 1, 33]],[[ 5,  0]]]");
 
 #endif
+
+    test_reshape_operation("flatten(42.)", "[42.]");
+    test_reshape_operation(R"(flatten(42.,"F"))", "[42.]");
+    test_reshape_operation("flatten([42, 13, 33])", "[42, 13, 33]");
+    test_reshape_operation("flatten([[42, 13], [ 5, 33]])", "[42, 13,  5, 33]");
+    test_reshape_operation(
+        R"(flatten([[42, 13], [ 5, 33]], "F"))", "[42,  5, 13, 33]");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_reshape_operation("flatten([[[42, 13], [ 5, 33]],[[ 1, 0], [-2, 6]]])",
+        "[42, 13,  5, 33,  1,  0, -2,  6]");
+    test_reshape_operation(
+        R"(flatten([[[42, 13], [ 5, 33]],[[ 1, 0], [-2, 6]]], "F"))",
+        "[42,  1,  5, -2, 13,  0, 33,  6]");
+#endif
+
     return hpx::util::report_errors();
 }

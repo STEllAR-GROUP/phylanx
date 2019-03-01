@@ -38,6 +38,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : public primitive_component_base
         , public std::enable_shared_from_this<reshape_operation>
     {
+    public:
+        enum reshape_mode
+        {
+            general_reshape,
+            flatten_mode
+        };
+
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
@@ -45,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         reshape_operation() = default;
 
@@ -107,6 +114,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type reshape3d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 #endif
+
+        template <typename T>
+        primitive_argument_type flatten2d(
+            ir::node_data<T>&& arr, std::string order) const;
+
+        template <typename T>
+        primitive_argument_type flatten_nd(ir::node_data<T>&& arr) const;
+
+        template <typename T>
+        primitive_argument_type flatten_nd(
+            ir::node_data<T>&& arr, std::string order) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type flatten3d(
+            ir::node_data<T>&& arr, std::string order) const;
+#endif
+
+    private:
+        reshape_mode mode_;
+
     };
 
     inline primitive create_reshape_operation(hpx::id_type const& locality,
@@ -115,6 +143,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         return create_primitive_component(
             locality, "reshape", std::move(operands), name, codename);
+    }
+
+    inline primitive create_flatten_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "flatten", std::move(operands), name, codename);
     }
 }}}
 
