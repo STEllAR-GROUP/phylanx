@@ -63,10 +63,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
                 -> primitive_argument_type
             {
-                int tid = 0;
+                std::size_t tid = 0;
                 if(args.size() > 0)
                     tid = args[0].index();
-                std::string name = phylanx::execution_tree::detail::get_primitive_argument_type_name(tid);
+                using namespace phylanx::execution_tree::detail;
+                std::string name = get_primitive_argument_type_name(tid);
                 return primitive_argument_type{name};
             }),
             detail::map_operands(
