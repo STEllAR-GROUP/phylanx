@@ -40,9 +40,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             R"(arg
             Args:
 
-                arg array : return the type of the element of the array
+                arg (primitive type) : return the type of the arg
 
-            Returns:)"
+            Returns:
+            
+                The variant index of the primitive type)"
             )
     };
 

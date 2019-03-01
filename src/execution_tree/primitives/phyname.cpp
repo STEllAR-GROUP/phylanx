@@ -39,9 +39,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             R"(arg
             Args:
 
-                arg object : return the phylanx type name for the object
+                arg (primitive type) : return the name of the arg
 
-            Returns:)"
+            Returns:
+            
+                The name of the primitive type)"
             )
     };
 
@@ -72,16 +74,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name = "None";
                     break;
                 case 1:
-                    name = "node_data<uint8>";
+                    name = "uint8";
                     break;
                 case 2:
-                    name = "node_data<int64>";
+                    name = "int64";
                     break;
                 case 3:
                     name = "string";
                     break;
                 case 4:
-                    name = "node_data<float>";
+                    name = "float64";
                     break;
                 case 5:
                     name = "primitive";
