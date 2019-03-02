@@ -12,8 +12,8 @@ from numpy.random import randint
 from scipy.io import loadmat
 import sys
 import phylanx
+from phylanx.ast import Phylanx
 from phylanx.ast import *
-
 
 
 @Phylanx("PhySL")
@@ -492,12 +492,12 @@ def estimate(training, numTopics, alpha_, beta_,
 
 
 if __name__ == "__main__":
-    import sys
     matlab_vars = dict()
-    #if len(sys.argv) > 1 and sys.argv[1] == 0:
-    #    loadmat('../datasets/docword.nips.train.mat', matlab_vars)
-    #else:
-    #    loadmat('../datasets/docword.kos.train.mat', matlab_vars)
+    # if len(sys.argv) > 1 and sys.argv[1] == 0:
+    #     loadmat('../datasets/docword.nips.train.mat', matlab_vars)
+    # else:
+    #     loadmat('../datasets/docword.kos.train.mat', matlab_vars)
+    #
     loadmat(sys.argv[1], matlab_vars)
 
     D = int(matlab_vars['D'][0][0])
