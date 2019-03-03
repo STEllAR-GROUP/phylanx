@@ -144,6 +144,15 @@ jobs:
                 paths:
                     - phylanx/build
                     - phylanx/source
+    check.test_coverage:
+        <<: *docker_config
+        working_directory: /phylanx/source
+        steps:
+            - <<: *attach_phylanx_tree
+            # Test coverage
+            - run:
+                name: Ensure all CTest tests are run
+                command: tools/circleci/check_test_coverage.py .circleci/config.yml <(cd /phylanx/build && ctest -N | grep -o 'tests[^ ]\+')
     build:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -546,6 +555,9 @@ workflows:
             - configure:
                 requires:
                     - checkout_code
+            - check.test_coverage:
+                requires:
+                    - configure
             - build:
                 requires:
                     - configure
