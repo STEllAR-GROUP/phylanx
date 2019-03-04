@@ -19,7 +19,6 @@ set(tests
     expand_dims
     extract_shape
     eye_operation
-    flatten
     flip_operation
     gradient_operation
     hsplit_operation

@@ -16,7 +16,7 @@ PhylanxSession.init(1)
 from phylanx.util import phyhelpex
 
 file_name = sys.argv[1]
-f= open(file_name,"w")
+f= open(file_name,"w+")
 print("=========================",file=f)
 print("Primitives ", file=f)
 print("=========================",file=f)

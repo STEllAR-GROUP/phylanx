@@ -51,8 +51,8 @@ void test_remote_add(hpx::id_type const& here, hpx::id_type const& there)
 {
     // generate two random matrices
     auto load_data = compile_and_run(load_data_str, here);
-    auto m1 = load_data(4ll, 4ll);
-    auto m2 = load_data(4ll, 4ll);
+    auto m1 = load_data(std::int64_t(4), std::int64_t(4));
+    auto m2 = load_data(std::int64_t(4), std::int64_t(4));
 
     // add them locally only
     auto add_here = compile_and_run(add_str, here);
@@ -62,8 +62,10 @@ void test_remote_add(hpx::id_type const& here, hpx::id_type const& there)
     using namespace phylanx::execution_tree;
 
     auto columnwise_tile = compile_and_run(columnwise_tile_str, here);
-    auto m1_tiles = extract_list_value(columnwise_tile(m1, 2ll)).args();
-    auto m2_tiles = extract_list_value(columnwise_tile(m2, 2ll)).args();
+    auto m1_tiles =
+        extract_list_value(columnwise_tile(m1, std::int64_t(2))).args();
+    auto m2_tiles =
+        extract_list_value(columnwise_tile(m2, std::int64_t(2))).args();
 
     // perform remote addition
     auto result1 = add_here.eval(m1_tiles[0], m2_tiles[0]);
