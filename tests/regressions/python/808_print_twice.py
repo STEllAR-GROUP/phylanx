@@ -8,6 +8,10 @@ from phylanx import Phylanx
 from phylanx.util import debug_output
 
 
+def debug(s):   # silence flake
+    pass
+
+
 @Phylanx
 def hello():
     debug("Hello")

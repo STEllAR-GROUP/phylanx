@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <vector>
 #include <map>
+#include <sstream>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
