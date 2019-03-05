@@ -186,13 +186,70 @@ void test_reshape_operation_2d_matrix()
         phylanx::execution_tree::extract_integer_value(f.get()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void test_reshape_operation(std::string const& code,
+    std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+///////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char* argv[])
 {
-//     test_reshape_operation_0d_vector();
-//     test_reshape_operation_0d_matrix();
-//     test_reshape_operation_1d_vector();
+    test_reshape_operation_0d_vector();
+    test_reshape_operation_0d_matrix();
+    test_reshape_operation_1d_vector();
     test_reshape_operation_1d_matrix();
     test_reshape_operation_2d_vector();
     test_reshape_operation_2d_matrix();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_reshape_operation(
+        "reshape(42, make_list(-1, 1, 1))", "[[[42]]]");
+    test_reshape_operation("reshape([42, 13, 33, 5], make_list(-1, 2, 1))",
+        "[[[42],[13]],[[33],[ 5]]]");
+    test_reshape_operation(
+        "reshape([[42, 13, 33],[ 5, 0, -1]], make_list(3, 1, -1))",
+        "[[[42, 13]],[[33,  5]],[[ 0, -1]]]");
+    test_reshape_operation(
+        "reshape([[[13],[42]],[[33],[ 5]]], -1)", "[13, 42, 33,  5]");
+    test_reshape_operation("reshape([[[13],[42],[ 1]],[[33],[ 5],[ 0]]], 6)",
+        "[13, 42,  1, 33,  5,  0]");
+    test_reshape_operation(
+        "reshape([[[13],[42],[ 1]],[[33],[ 5],[ 0]]], make_list(-1,2))",
+        "[[13, 42],[ 1, 33],[ 5,  0]]");
+    test_reshape_operation(
+        "reshape([[[13],[42],[ 1]],[[33],[ 5],[ 0]]], make_list(3,-1,2))",
+        "[[[13, 42]],[[ 1, 33]],[[ 5,  0]]]");
+
+#endif
+
+    test_reshape_operation("flatten(42.)", "[42.]");
+    test_reshape_operation(R"(flatten(42.,"F"))", "[42.]");
+    test_reshape_operation("flatten([42, 13, 33])", "[42, 13, 33]");
+    test_reshape_operation("flatten([[42, 13], [ 5, 33]])", "[42, 13,  5, 33]");
+    test_reshape_operation(
+        R"(flatten([[42, 13], [ 5, 33]], "F"))", "[42,  5, 13, 33]");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_reshape_operation("flatten([[[42, 13], [ 5, 33]],[[ 1, 0], [-2, 6]]])",
+        "[42, 13,  5, 33,  1,  0, -2,  6]");
+    test_reshape_operation(
+        R"(flatten([[[42, 13], [ 5, 33]],[[ 1, 0], [-2, 6]]], "F"))",
+        "[42,  1,  5, -2, 13,  0, 33,  6]");
+#endif
+
     return hpx::util::report_errors();
 }

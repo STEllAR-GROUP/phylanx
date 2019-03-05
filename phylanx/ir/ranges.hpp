@@ -325,6 +325,12 @@ namespace phylanx { namespace ir
         range(std::int64_t start, std::int64_t stop, std::int64_t step = 1)
             : data_(int_range_type{start, stop, step})
         {
+            if (step == 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::ir::range::range",
+                    "range step must not be zero");
+            }
         }
 
         range(std::int64_t stop)

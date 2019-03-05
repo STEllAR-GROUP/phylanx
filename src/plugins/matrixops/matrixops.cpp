@@ -47,8 +47,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(extract_shape_plugin,
     phylanx::execution_tree::primitives::extract_shape::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(eye_operation_plugin,
     phylanx::execution_tree::primitives::eye_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(flatten_plugin,
-    phylanx::execution_tree::primitives::flatten::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(flatten_operation_plugin,
+    phylanx::execution_tree::primitives::reshape_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(flipud_operation_plugin,
     phylanx::execution_tree::primitives::flip_operation::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(fliplr_operation_plugin,
@@ -88,7 +88,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(random_plugin,
 PHYLANX_REGISTER_PLUGIN_FACTORY(repeat_operation_plugin,
     phylanx::execution_tree::primitives::repeat_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(reshape_operation_plugin,
-    phylanx::execution_tree::primitives::reshape_operation::match_data);
+    phylanx::execution_tree::primitives::reshape_operation::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(row_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(shuffle_operation_plugin,
