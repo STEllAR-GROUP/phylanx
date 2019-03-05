@@ -507,11 +507,19 @@ class PhySL:
         """
         if node.vararg or node.kwarg:
             raise (Exception("Phylanx does not support *args and **kwargs"))
-        args = tuple(map(self.apply_rule, node.args))
-        for arg in args:
-            symbol_name = re.sub(r'\$\d+', '', arg)
+
+        defaults = tuple(map(self.apply_rule, node.defaults))
+        result = tuple()
+        for arg, default in zip(node.args, (None,)*(len(node.args)-len(defaults)) + defaults):
+            a = self.apply_rule(arg)
+            symbol_name = re.sub(r'\$\d+', '', a)
             self.defined.add(symbol_name)
-        return args
+            if default is None:
+                result = (*result, a)
+            else:
+                op = get_symbol_info(arg, 'arg')
+                result = (*result, [op, (a, default)])
+        return result
 
     def _Assign(self, node):
         """class Assign(targets, value)
