@@ -632,35 +632,32 @@ class PhySL:
         if 'hstack' in symbol:
             return create_array(args, dtype)
         elif 'zeros_like' in symbol:
-            symbol = symbol.replace('zeros_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, ('0', [op, args])]
+            symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
+            return [symbol, ('0', args)]
         elif 'ones_like' in symbol:
-            symbol = symbol.replace('ones_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, ('1', [op, args])]
+            symbol = symbol.replace('ones_like', 'constant_like' + dtype)
+            return [symbol, ('1', args)]
         elif 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, (args[1], [op, (args[0], )])]
+            symbol = symbol.replace('full_like', 'constant_like' + dtype)
+            return [symbol, (args[1], (args[0], ))]
         elif 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
                 return [symbol, ('0', [op, args])]
             else:
                 return [symbol, ('0', args)]
         elif 'ones' in symbol:
             symbol = symbol.replace('ones', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
                 return [symbol, ('1', [op, args])]
             else:
                 return [symbol, ('1', args)]
         elif 'full' in symbol:
             symbol = symbol.replace('full', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
                 return [symbol, (args[1], [op, args[0]])]
             else:
                 return [symbol, (args[1], args[0])]

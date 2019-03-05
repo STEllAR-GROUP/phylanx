@@ -163,8 +163,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             break;
         }
 
-        return hpx::make_ready_future(
-            extract_value(params[argnum_], name_, codename_));
+        // evaluate the argument
+        return value_operand(
+            params[argnum_], this->noargs, name_, codename_, std::move(ctx));
     }
 
     void access_argument::store(primitive_arguments_type&& data,

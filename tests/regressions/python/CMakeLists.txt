@@ -16,6 +16,7 @@ set(tests
     640_function_argument
     651_vstack_dtype
     794_3d_array
+    805_lazy_variable
     array_len_494
     array_shape_486
     array_subscript_403
