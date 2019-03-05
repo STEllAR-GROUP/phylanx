@@ -36,7 +36,7 @@ def eye_eager(size):
 
 
 def eye(size):
-    return eye_eager.lazy(3)
+    return eye_eager.lazy(size)
 
 
 assert (eye_eager(3) == np.eye(3)).all()
