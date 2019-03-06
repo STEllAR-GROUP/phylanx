@@ -41,4 +41,3 @@ def test_dot_operation(x_shape_or_val, y_shape_or_val):
 
 result, expected = test_dot_operation((4, 2), (2, 4))
 assert np.allclose(result, expected), (result, expected)
-
