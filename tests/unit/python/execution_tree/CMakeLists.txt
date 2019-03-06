@@ -10,6 +10,7 @@ set(tests
     dynamic_init
     for
     eval
+    lazy_eval
     make_array
     map_numpy
     map_numpy_constants

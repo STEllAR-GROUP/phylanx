@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2019 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -16,6 +16,8 @@ set(tests
     640_function_argument
     651_vstack_dtype
     794_3d_array
+    805_lazy_variable
+    805_two_variables
     array_len_494
     array_shape_486
     array_subscript_403

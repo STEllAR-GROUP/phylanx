@@ -113,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         eval_context ctx) const
     {
         if ((ctx.mode_ & eval_dont_evaluate_partials) &&
-            primitive_->operands_.empty() && !params.empty())
+            primitive_->operands_.empty())
         {
             // return a client referring to this component as the evaluation
             // result
