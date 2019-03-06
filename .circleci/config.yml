@@ -67,6 +67,7 @@ anchors:
             branches:
                 only:
                     - master
+                    - fix_deploy
 
     - &convert_xml
         run:
