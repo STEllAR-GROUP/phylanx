@@ -188,7 +188,11 @@ jobs:
                     git config --global user.name "StellarBot"
                     git config --global user.email "stellar@cct.lsu.edu"
                     ninja -j1 git_docs
-
+            - persist_to_workspace:
+                  root: /
+                  paths:
+                      - phylanx/build
+                      - phylanx/source
     check.code_format:
         <<: *docker_config
         working_directory: /phylanx/source
