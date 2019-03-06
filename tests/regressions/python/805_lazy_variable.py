@@ -7,7 +7,6 @@ import numpy as np
 from phylanx import Phylanx, PhylanxSession, execution_tree
 
 
-PhylanxSession.cfg.append('--hpx:ini=phylanx.sync_execution!=1"')
 PhylanxSession.init()
 
 

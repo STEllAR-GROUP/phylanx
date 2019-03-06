@@ -394,7 +394,7 @@ class PhySL:
             return eval('self._%s' % node_name)(node)
 
     def block(self, node):
-        """Returns a map representation of a PhySL bolck."""
+        """Returns a map representation of a PhySL block."""
 
         if isinstance(node, list):
             block = tuple(map(self.apply_rule, node))
@@ -406,33 +406,47 @@ class PhySL:
             block = (self.apply_rule(node), )
             return block
 
-    def eval(self):
-        func_name = self.wrapped_function.__name__
-        result = phylanx.execution_tree.eval(
-            self.file_name, func_name, PhySL.compiler_state, *self.args)
+    class eval_wrapper:
+        """evaluation wrapper binding arguments to a compiled function"""
 
-        if self.performance:
-            treedata = phylanx.execution_tree.retrieve_tree_topology(
-                self.file_name, func_name, PhySL.compiler_state)
-            self.__perfdata__ = (
-                phylanx.execution_tree.retrieve_counter_data(
-                    PhySL.compiler_state),
-                treedata[0], treedata[1]
-            )
+        def __init__(self, outer, args):
+            """initialize evaluation wrapper"""
+            self.outer = outer
+            self.args = args
 
-        return result
+        def eval(self):
+            """evaluate given compiled function using the bound arguments"""
+
+            self.outer.__perfdata__ = (None, None, None)
+            self.outer.performance_primitives = None
+
+            if self.outer.performance:
+                self.outer.performance_primitives = \
+                    phylanx.execution_tree.enable_measurements(
+                        PhySL.compiler_state, True)
+
+            func_name = self.outer.wrapped_function.__name__
+            result = phylanx.execution_tree.eval(
+                self.outer.file_name, func_name, PhySL.compiler_state,
+                *self.args)
+
+            if self.outer.performance:
+                treedata = phylanx.execution_tree.retrieve_tree_topology(
+                    self.outer.file_name, func_name, PhySL.compiler_state)
+                self.outer.__perfdata__ = (
+                    phylanx.execution_tree.retrieve_counter_data(
+                        PhySL.compiler_state),
+                    treedata[0], treedata[1]
+                )
+
+            return result
 
     def lazy(self, args):
-        self.__perfdata__ = (None, None, None)
-        self.performance_primitives = None
+        """compile a given function, return wrapper binding function to
+           arguments"""
 
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
-
-        if self.performance:
-            self.performance_primitives = \
-                phylanx.execution_tree.enable_measurements(
-                    PhySL.compiler_state, True)
 
         if not self.is_compiled:
             if "compiler_state" in self.kwargs:
@@ -444,12 +458,10 @@ class PhySL:
                 self.file_name, self.__src__, PhySL.compiler_state)
             self.is_compiled = True
 
-        self.args = args
-        return self
+        return self.eval_wrapper(self, args)
 
     def call(self, args):
-        self.lazy(args)
-        return self.eval()
+        return self.lazy(args).eval()
 
 # #############################################################################
 # Transducer rules
