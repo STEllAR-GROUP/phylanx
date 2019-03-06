@@ -9,3 +9,5 @@
 FROM stellargroup/phylanx_base:prerequisites
 
 ADD . /usr/local
+RUN ldconfig
+

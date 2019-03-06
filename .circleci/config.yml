@@ -93,6 +93,9 @@ jobs:
                 name: Create a shallow clone
                 command: git clone --depth=1 file:///phylanx/src-full src
             - run:
+                name: CMake Version
+                command: cmake --version
+            - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
             # Install blaze_tensors library
@@ -102,10 +105,7 @@ jobs:
                     git clone https://github.com/STEllAR-GROUP/blaze_tensor.git --depth=1 /blaze_tensor
                     cmake -H/blaze_tensor -B/blaze_tensor/build
                     cmake --build /blaze_tensor/build --target install
-            # CMake
-            - run:
-                name: CMake Version
-                command: cmake --version
+            # Configure Phylanx
             - run:
                 name: Run CMake
                 command: |
@@ -545,9 +545,6 @@ jobs:
             - run:
                 name: Installing
                 command: cmake --build /phylanx/build --target install -- -j1
-            - run:
-                name: Create library symbolic links
-                command: ldconfig
             - run:
                 name: Installing Python front-end
                 command: python3 python/setup_Debug.py install
