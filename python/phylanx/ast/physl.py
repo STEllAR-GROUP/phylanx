@@ -394,7 +394,7 @@ class PhySL:
             return eval('self._%s' % node_name)(node)
 
     def block(self, node):
-        """Returns a map representation of a PhySL bolck."""
+        """Returns a map representation of a PhySL block."""
 
         if isinstance(node, list):
             block = tuple(map(self.apply_rule, node))
@@ -406,24 +406,51 @@ class PhySL:
             block = (self.apply_rule(node), )
             return block
 
-    def call(self, args):
-        func_name = self.wrapped_function.__name__
+    class eval_wrapper:
+        """evaluation wrapper binding arguments to a compiled function"""
 
-        self.__perfdata__ = (None, None, None)
-        self.performance_primitives = None
+        def __init__(self, outer, args):
+            """initialize evaluation wrapper"""
+            self.outer = outer
+            self.args = args
+
+        def eval(self):
+            """evaluate given compiled function using the bound arguments"""
+
+            self.outer.__perfdata__ = (None, None, None)
+            self.outer.performance_primitives = None
+
+            if self.outer.performance:
+                self.outer.performance_primitives = \
+                    phylanx.execution_tree.enable_measurements(
+                        PhySL.compiler_state, True)
+
+            func_name = self.outer.wrapped_function.__name__
+            result = phylanx.execution_tree.eval(
+                self.outer.file_name, func_name, PhySL.compiler_state,
+                *self.args)
+
+            if self.outer.performance:
+                treedata = phylanx.execution_tree.retrieve_tree_topology(
+                    self.outer.file_name, func_name, PhySL.compiler_state)
+                self.outer.__perfdata__ = (
+                    phylanx.execution_tree.retrieve_counter_data(
+                        PhySL.compiler_state),
+                    treedata[0], treedata[1]
+                )
+
+            return result
+
+    def lazy(self, args):
+        """compile a given function, return wrapper binding function to
+           arguments"""
 
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
 
-        if self.performance:
-            self.performance_primitives = \
-                phylanx.execution_tree.enable_measurements(
-                    PhySL.compiler_state, True)
-
         if not self.is_compiled:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
-            # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
                 PhySL.compiler_state = compiler_state()
 
@@ -431,19 +458,10 @@ class PhySL:
                 self.file_name, self.__src__, PhySL.compiler_state)
             self.is_compiled = True
 
-        result = phylanx.execution_tree.eval(
-            self.file_name, func_name, PhySL.compiler_state, *args)
+        return self.eval_wrapper(self, args)
 
-        if self.performance:
-            treedata = phylanx.execution_tree.retrieve_tree_topology(
-                self.file_name, func_name, PhySL.compiler_state)
-            self.__perfdata__ = (
-                phylanx.execution_tree.retrieve_counter_data(
-                    PhySL.compiler_state),
-                treedata[0], treedata[1]
-            )
-
-        return result
+    def call(self, args):
+        return self.lazy(args).eval()
 
 # #############################################################################
 # Transducer rules
@@ -626,35 +644,32 @@ class PhySL:
         if 'hstack' in symbol:
             return create_array(args, dtype)
         elif 'zeros_like' in symbol:
-            symbol = symbol.replace('zeros_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, ('0', [op, args])]
+            symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
+            return [symbol, ('0', args)]
         elif 'ones_like' in symbol:
-            symbol = symbol.replace('ones_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, ('1', [op, args])]
+            symbol = symbol.replace('ones_like', 'constant_like' + dtype)
+            return [symbol, ('1', args)]
         elif 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, (args[1], [op, (args[0], )])]
+            symbol = symbol.replace('full_like', 'constant_like' + dtype)
+            return [symbol, (args[1], (args[0], ))]
         elif 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
                 return [symbol, ('0', [op, args])]
             else:
                 return [symbol, ('0', args)]
         elif 'ones' in symbol:
             symbol = symbol.replace('ones', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
                 return [symbol, ('1', [op, args])]
             else:
                 return [symbol, ('1', args)]
         elif 'full' in symbol:
             symbol = symbol.replace('full', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
                 return [symbol, (args[1], [op, args[0]])]
             else:
                 return [symbol, (args[1], args[0])]
