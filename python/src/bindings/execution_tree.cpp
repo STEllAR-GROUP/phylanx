@@ -94,10 +94,6 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         },
         "create a new variable from a string");
 
-    bind_variable<double>(execution_tree);
-    bind_variable<std::int64_t>(execution_tree);
-    bind_variable<std::uint8_t>(execution_tree);
-
     execution_tree.def("var",
         [](phylanx::execution_tree::primitive_argument_type const& arg) {
             pybind11::gil_scoped_release release;       // release GIL
@@ -110,6 +106,10 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 });
         },
         "create a new variable from a primitive_argument_type");
+
+    bind_variable<double>(execution_tree);
+    bind_variable<std::int64_t>(execution_tree);
+    bind_variable<std::uint8_t>(execution_tree);
 
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
         "compile a numerical expression in PhySL");

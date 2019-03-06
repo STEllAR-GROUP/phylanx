@@ -378,6 +378,16 @@ namespace pybind11 { namespace detail
     };
 
     template <>
+    struct is_array_instance<double>
+    {
+        static bool call(handle src)
+        {
+            return isinstance<array_t<double>>(src) ||
+                   isinstance<array_t<float>>(src);
+        }
+    };
+
+    template <>
     struct is_array_instance<std::int64_t>
     {
         static bool call(handle src)
