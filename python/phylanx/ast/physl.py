@@ -510,7 +510,8 @@ class PhySL:
 
         defaults = tuple(map(self.apply_rule, node.defaults))
         result = tuple()
-        for arg, default in zip(node.args, (None,)*(len(node.args)-len(defaults)) + defaults):
+        padded_defaults = (None,) * (len(node.args) - len(defaults)) + defaults
+        for arg, default in zip(node.args, padded_defaults):
             a = self.apply_rule(arg)
             symbol_name = re.sub(r'\$\d+', '', a)
             self.defined.add(symbol_name)
