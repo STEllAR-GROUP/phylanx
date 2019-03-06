@@ -116,6 +116,18 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    void serialize(
+        hpx::serialization::output_archive& ar, nil const& val, unsigned)
+    {
+        ar << val.explicit_nil;
+    }
+
+    void serialize(hpx::serialization::input_archive& ar, nil& val, unsigned)
+    {
+        ar >> val.explicit_nil;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     void identifier::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
         ar << name << id << col;

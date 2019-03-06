@@ -30,10 +30,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         console_output(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& params,
-            eval_context ctx) const override;
-
     private:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,

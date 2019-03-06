@@ -76,17 +76,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operands, functional::value_operand{}, args, name_, codename_,
                 std::move(ctx)));
     }
-
-    // this overload is required to pass through 'nil' as an argument
-    hpx::future<primitive_argument_type> debug_output::eval(
-        primitive_arguments_type const& params, eval_context ctx) const
-    {
-        if (no_operands())
-        {
-            return this->eval(params, noargs, std::move(ctx));
-        }
-        return this->eval(this->operands_, params, std::move(ctx));
-    }
 }}}
 
 ///////////////////////////////////////////////////////////////////////////////
