@@ -35,11 +35,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename, true)
     {
-        // operands_[0] is expected to be the actual variable, operands_[1],
-        // operands_[2] and operands_[3] are optional slicing arguments
+        // operands_[0] is expected to be the actual variable,
+        // operands_[1] is the (optional) default value
+        // operands_[2], operands_[3], and operands_[4] are optional slicing
+        // arguments
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        if (operands_.empty() || operands_.size() > 4)
+        if (operands_.empty() || operands_.size() > 5)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "access_argument::access_argument",
@@ -48,7 +50,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "and at most four operands"));
         }
 #else
-        if (operands_.empty() || operands_.size() > 3)
+        if (operands_.empty() || operands_.size() > 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "access_argument::access_argument",
@@ -63,15 +65,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> access_argument::eval(
         primitive_arguments_type const& params, eval_context ctx) const
     {
+        primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::access_argument::eval",
-                generate_error_message(hpx::util::format(
-                    "argument count out of bounds, expected at least "
+            if (operands_.size() < 2 || !valid(operands_[1]))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::access_argument::eval",
+                    generate_error_message(hpx::util::format(
+                        "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
                         argnum_ + 1, params.size())));
+            }
+            target = extract_ref_value(operands_[1], name_, codename_);
+        }
+        else if (valid(params[argnum_]))
+        {
+            target = extract_ref_value(params[argnum_], name_, codename_);
+        }
+        else
+        {
+            HPX_ASSERT(operands_.size() > 1 && valid(operands_[1]));
+            target = extract_ref_value(operands_[1], name_, codename_);
         }
 
         // handle slicing, we can replace the params with our slicing
@@ -79,17 +95,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (operands_.size())
         {
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 4: HPX_FALLTHROUGH;
+        case 5: HPX_FALLTHROUGH;
 #endif
-        case 2: HPX_FALLTHROUGH;
-        case 3:
+        case 3: HPX_FALLTHROUGH;
+        case 4:
             {
                 // one slicing parameter
-                if (is_primitive_operand(params[argnum_]))
+                if (is_primitive_operand(target))
                 {
                     primitive_arguments_type fargs;
-                    fargs.reserve(operands_.size() - 1);
-                    for (auto it = operands_.begin() + 1; it != operands_.end();
+                    fargs.reserve(operands_.size() - 2);
+                    for (auto it = operands_.begin() + 2; it != operands_.end();
                          ++it)
                     {
                         fargs.emplace_back(
@@ -97,19 +113,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
 
                     ctx.add_mode(eval_dont_wrap_functions);
-                    return value_operand(params[argnum_], std::move(fargs),
+                    return value_operand(target, std::move(fargs),
                         name_, codename_, std::move(ctx));
                 }
 
                 auto this_ = this->shared_from_this();
-                if (operands_.size() == 3)
+                if (operands_.size() == 4)
                 {
                     // handle row/column-slicing
                     auto op1 = value_operand(
-                        operands_[1], params, name_, codename_, ctx);
+                        operands_[2], params, name_, codename_, ctx);
                     return hpx::dataflow(
                         hpx::launch::sync,
-                        [this_ = std::move(this_), target = params[argnum_]](
+                        [this_ = std::move(this_), target = std::move(target)](
                                 hpx::future<primitive_argument_type>&& rows,
                                 hpx::future<primitive_argument_type>&& cols)
                         ->  primitive_argument_type
@@ -118,21 +134,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 this_->name_, this_->codename_);
                         },
                         op1,
-                        value_operand(operands_[2], params, name_, codename_,
+                        value_operand(operands_[3], params, name_, codename_,
                             std::move(ctx)));
                 }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                if (operands_.size() > 3)
+                if (operands_.size() > 4)
                 {
                     // handle page/row/column-slicing
                     auto op1 = value_operand(
-                        operands_[1], params, name_, codename_, ctx);
-                    auto op2 = value_operand(
                         operands_[2], params, name_, codename_, ctx);
+                    auto op2 = value_operand(
+                        operands_[3], params, name_, codename_, ctx);
                     return hpx::dataflow(
                         hpx::launch::sync,
-                        [this_ = std::move(this_), target = params[argnum_]](
+                        [this_ = std::move(this_), target = std::move(target)](
                                 hpx::future<primitive_argument_type>&& pages,
                                 hpx::future<primitive_argument_type>&& rows,
                                 hpx::future<primitive_argument_type>&& cols)
@@ -142,15 +158,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 this_->name_, this_->codename_);
                         },
                         op1, op2,
-                        value_operand(operands_[3], params, name_, codename_,
+                        value_operand(operands_[4], params, name_, codename_,
                             std::move(ctx)));
                 }
 #endif
                 // handle row-slicing
                 return value_operand(
-                        operands_[1], params, name_, codename_, std::move(ctx))
+                        operands_[2], params, name_, codename_, std::move(ctx))
                     .then(hpx::launch::sync,
-                        [this_ = std::move(this_), target = params[argnum_]](
+                        [this_ = std::move(this_), target = std::move(target)](
                             hpx::future<primitive_argument_type>&& rows)
                         -> primitive_argument_type
                         {
@@ -166,7 +182,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // evaluate the argument
         ctx.add_mode(eval_dont_evaluate_partials);
         return value_operand(
-            params[argnum_], this->noargs, name_, codename_, std::move(ctx));
+            target, this->noargs, name_, codename_, std::move(ctx));
     }
 
     void access_argument::store(primitive_arguments_type&& data,
@@ -180,23 +196,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "invoking store with slicing parameters is not supported"));
         }
 
+        primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::access_argument::store",
-                generate_error_message(hpx::util::format(
-                    "argument count out of bounds, expected at least "
-                    PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
-                    PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
-                    argnum_ + 1, params.size())));
+            if (operands_.size() < 2 || !valid(operands_[1]))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::access_argument::store",
+                    generate_error_message(hpx::util::format(
+                        "argument count out of bounds, expected at least "
+                        PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
+                        PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
+                        argnum_ + 1, params.size())));
+            }
+            target = extract_ref_value(operands_[1], name_, codename_);
+        }
+        else if (valid(params[argnum_]))
+        {
+            target = std::move(params[argnum_]);
+        }
+        else
+        {
+            HPX_ASSERT(operands_.size() > 1 && valid(operands_[1]));
+            target = extract_ref_value(operands_[1], name_, codename_);
         }
 
-        if (is_primitive_operand(params[argnum_]))
+        if (is_primitive_operand(target))
         {
             // handle slicing, simply append the slicing parameters to the end
             // of the argument list
-            data.reserve(data.size() + operands_.size() - 1);
-            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+            data.reserve(data.size() + operands_.size() - 2);
+            for (auto it = operands_.begin() + 2; it != operands_.end(); ++it)
             {
                 data.emplace_back(extract_ref_value(*it, name_, codename_));
             }
@@ -207,11 +237,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             p->store(hpx::launch::sync, std::move(data), std::move(params),
                 std::move(ctx));
         }
-        else if (is_ref_value(params[argnum_]))
+        else if (is_ref_value(target))
         {
             switch (operands_.size())
             {
             case 1:
+            case 2:
                 {
                     HPX_THROW_EXCEPTION(hpx::not_implemented,
                         "phylanx::execution_tree::primitives::access_argument::"
@@ -222,35 +253,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 break;
 
-            case 2:
-                slice(std::move(params[argnum_]),
-                    value_operand_sync(std::move(operands_[1]),
+            case 3:
+                slice(std::move(target),
+                    value_operand_sync(std::move(operands_[2]),
                         std::move(params), name_, codename_),
                     std::move(data[0]), name_, codename_);
                 return;
 
-            case 3:
+            case 4:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[1], params, name_, codename_);
-                    slice(std::move(params[argnum_]), std::move(data1),
+                        operands_[2], params, name_, codename_);
+                    slice(std::move(target), std::move(data1),
                         value_operand_sync(
-                            operands_[2], std::move(params), name_, codename_),
+                            operands_[3], std::move(params), name_, codename_),
                         std::move(data[0]), name_, codename_);
                 }
                 return;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-            case 4:
+            case 5:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[1], params, name_, codename_);
-                    auto data2 = value_operand_sync(
                         operands_[2], params, name_, codename_);
-                    slice(std::move(params[argnum_]),
+                    auto data2 = value_operand_sync(
+                        operands_[3], params, name_, codename_);
+                    slice(std::move(target),
                         std::move(data1), std::move(data2),
                         value_operand_sync(
-                            operands_[3], std::move(params), name_, codename_),
+                            operands_[4], std::move(params), name_, codename_),
                         std::move(data[0]), name_, codename_);
                 }
                 return;
@@ -271,34 +302,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void access_argument::store(primitive_argument_type&& data,
         primitive_arguments_type&& params, eval_context ctx)
     {
+        primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::access_argument::store",
-                generate_error_message(hpx::util::format(
-                    "argument count out of bounds, expected at least "
+            if (operands_.size() < 2 || !valid(operands_[1]))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::access_argument::store",
+                    generate_error_message(hpx::util::format(
+                        "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
                         argnum_ + 1, params.size())));
+            }
+            target = extract_ref_value(operands_[1], name_, codename_);
+        }
+        else if (valid(params[argnum_]))
+        {
+            target = std::move(params[argnum_]);
+        }
+        else
+        {
+            HPX_ASSERT(operands_.size() > 1 && valid(operands_[1]));
+            target = extract_ref_value(operands_[1], name_, codename_);
         }
 
-        if (is_primitive_operand(params[argnum_]))
+        if (is_primitive_operand(target))
         {
-            if (operands_.size() > 1)
+            if (operands_.size() > 2)
             {
                 // handle slicing, simply append the slicing parameters to the
                 // end of the argument list
                 primitive_arguments_type vals;
-                vals.reserve(operands_.size());
+                vals.reserve(operands_.size() - 1);
                 vals.emplace_back(std::move(data));
 
-                for (auto it = operands_.begin() + 1; it != operands_.end();
+                for (auto it = operands_.begin() + 2; it != operands_.end();
                      ++it)
                 {
                     vals.emplace_back(extract_ref_value(*it, name_, codename_));
                 }
 
-                primitive* p = util::get_if<primitive>(&params[argnum_]);
+                primitive* p = util::get_if<primitive>(&target);
                 HPX_ASSERT(p != nullptr);
 
                 p->store(hpx::launch::sync, std::move(vals), std::move(params),
@@ -314,11 +359,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(ctx));
             }
         }
-        else if (is_ref_value(params[argnum_]))
+        else if (is_ref_value(target))
         {
             switch (operands_.size())
             {
             case 1:
+            case 2:
                 {
                     HPX_THROW_EXCEPTION(hpx::not_implemented,
                         "phylanx::execution_tree::primitives::access_argument::"
@@ -328,34 +374,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "not supported (yet)"));
                 }
 
-            case 2:
-                slice(std::move(params[argnum_]),
-                    value_operand_sync(std::move(operands_[1]),
+            case 3:
+                slice(std::move(target),
+                    value_operand_sync(std::move(operands_[2]),
                         std::move(params), name_, codename_),
                     std::move(data), name_, codename_);
                 return;
 
-            case 3:
+            case 4:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[1], params, name_, codename_);
-                    slice(std::move(params[argnum_]), std::move(data1),
-                        value_operand_sync(operands_[2], std::move(params),
+                        operands_[2], params, name_, codename_);
+                    slice(std::move(target), std::move(data1),
+                        value_operand_sync(operands_[3], std::move(params),
                             name_, codename_),
                         std::move(data), name_, codename_);
                 }
                 return;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-            case 4:
+            case 5:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[1], params, name_, codename_);
-                    auto data2 = value_operand_sync(
                         operands_[2], params, name_, codename_);
-                    slice(std::move(params[argnum_]),
+                    auto data2 = value_operand_sync(
+                        operands_[3], params, name_, codename_);
+                    slice(std::move(target),
                         std::move(data1), std::move(data2),
-                        value_operand_sync(operands_[3], std::move(params),
+                        value_operand_sync(operands_[4], std::move(params),
                             name_, codename_),
                         std::move(data), name_, codename_);
                 }

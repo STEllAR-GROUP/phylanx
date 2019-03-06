@@ -9,6 +9,7 @@
 #include <hpx/runtime/find_here.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <list>
 #include <utility>
 
@@ -804,6 +805,33 @@ void test_define_variable_function_call()
     HPX_TEST_EQ(expected, result.vector());
 }
 
+void test_define_function_default_arguments()
+{
+    auto expr = phylanx::ast::generate_ast(R"(
+        define(add, arg(x, 0), arg(y, 1), x + y)
+        add
+    )");
+
+    phylanx::execution_tree::eval_context ctx;
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto add = code.run(ctx);
+
+    HPX_TEST_EQ(std::int64_t(1),
+        phylanx::execution_tree::extract_scalar_integer_value_strict(
+            add()));
+    HPX_TEST_EQ(std::int64_t(43),
+        phylanx::execution_tree::extract_scalar_integer_value_strict(
+            add(std::int64_t(42))));
+    HPX_TEST_EQ(std::int64_t(85),
+        phylanx::execution_tree::extract_scalar_integer_value_strict(
+            add(std::int64_t(42), std::int64_t(43))));
+}
+
 int main(int argc, char* argv[])
 {
     test_builtin_environment();
@@ -843,6 +871,8 @@ int main(int argc, char* argv[])
     test_define_call_lambda_function_ind4();
 
     test_define_variable_function_call();
+
+    test_define_function_default_arguments();
 
     return hpx::util::report_errors();
 }
