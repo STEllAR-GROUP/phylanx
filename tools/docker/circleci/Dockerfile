@@ -8,8 +8,4 @@
 
 FROM stellargroup/phylanx_base:prerequisites
 
-# docker build needs to be run in /usr/local
 ADD . /usr/local
-RUN ldconfig
-WORKDIR /
-CMD /bin/bash
