@@ -336,7 +336,7 @@ class PhySL:
         if not self.file_name:
             self.file_name = "<none>"
 
-        self.performance = self.kwargs.get('performance')
+        self.performance = self.kwargs.get('performance', False)
         self.localities = self.kwargs.get('localities')
         self.__perfdata__ = (None, None, None)
 
