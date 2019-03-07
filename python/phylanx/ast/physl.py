@@ -12,7 +12,6 @@ import numpy as np
 import phylanx.execution_tree
 from phylanx import compiler_state, PhylanxSession
 
-
 mapped_methods = {
     "add": "__add",
     "array": "hstack",
@@ -537,7 +536,7 @@ class PhySL:
             raise Exception("Phylanx does not support chain assignments.")
         if isinstance(node.targets[0], ast.Tuple):
             raise Exception(
-                "Phylanx does not support multi-target assignments.")
+                "Phylanx does not support multi-target assignments. Line #%d." % node.lineno )
 
         symbol = self.apply_rule(node.targets[0])
         # if lhs is not indexed.
