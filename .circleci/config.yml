@@ -75,6 +75,20 @@ anchors:
             command: |
                 mkdir -p ${CIRCLE_JOB}
                 xsltproc /phylanx/conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
+    - &justify_build
+        run:
+            name: Justify building the ALL target
+            command: ninja -n -d explain || true
+            working_directory: /phylanx/build
+    - &avoid_cmake_rerun
+        run:
+            name: Avoid re-running CMake
+            command: |
+                ninja -n -d explain | \
+                    grep -o 'output\ [^ ]\+ older\ than\ most\ recent\ input [^ ]\+' | \
+                    awk '{ print $2 }' | \
+                    xargs -I % echo touch % || true
+            working_directory: /phylanx/build
 
     - &attach_phylanx_tree
         attach_workspace:
@@ -167,14 +181,13 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             # Build Documentation and Push to gh-pages branch
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain git_docs
             - run:
-                name: Build and push  Sphinx Documentation
+                name: Build and push Sphinx Documentation
                 command: |
                     mkdir -p ~/.ssh
                     ssh-keyscan -H github.com >>~/.ssh/known_hosts
@@ -195,10 +208,8 @@ jobs:
             - run:
                 name: Create build, test, and artifacts directories
                 command: mkdir -p /artifacts /code_format
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
-                working_directory: /phylanx/build
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tools.inspect
@@ -290,9 +301,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.regressions
@@ -312,9 +322,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.distributed
@@ -334,9 +343,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.arithmetics
@@ -356,9 +364,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.booleans
@@ -378,9 +385,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.controls
@@ -400,9 +406,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.{fileio,solvers}
@@ -422,9 +427,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.listops
@@ -444,9 +448,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.matrixops
@@ -466,9 +469,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.statistics
@@ -488,9 +490,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
@@ -510,9 +511,8 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 working_directory: /phylanx/build
@@ -535,9 +535,8 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - setup_remote_docker
-            - run:
-                name: Avoid re-running CMake
-                command: touch /phylanx/build/build.ninja
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain install
