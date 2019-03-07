@@ -208,8 +208,6 @@ jobs:
             - run:
                 name: Create build, test, and artifacts directories
                 command: mkdir -p /artifacts /code_format
-            - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tools.inspect
@@ -594,7 +592,7 @@ workflows:
                     - build
             - check.code_format.inspect:
                 requires:
-                    - build
+                    - configure
             - check.code_format.flake8:
                 requires:
                     - configure
