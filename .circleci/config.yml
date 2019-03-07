@@ -87,7 +87,7 @@ anchors:
                 ninja -n -d explain 2>&1 | \
                     grep -o 'output\ [^ ]\+ older\ than\ most\ recent\ input [^ ]\+' | \
                     awk '{ print $2 }' | \
-                    xargs touch % || true
+                    xargs touch || true
             working_directory: /phylanx/build
 
     - &attach_phylanx_tree
