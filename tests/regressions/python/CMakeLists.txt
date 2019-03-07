@@ -18,6 +18,7 @@ set(tests
     794_3d_array
     805_lazy_variable
     805_two_variables
+    808_print_twice
     array_len_494
     array_shape_486
     array_subscript_403

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -14,9 +14,12 @@
 
 #include <pybind11/pybind11.h>
 
+#include <hpx/include/iostreams.hpp>
+
 #include <cstdint>
 #include <vector>
 #include <map>
+#include <sstream>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,4 +101,14 @@ void phylanx::bindings::bind_util(pybind11::module m)
             return phylanx::execution_tree::list_patterns();
         },
         "display help strings for Phylanx primitives and plugins.");
+
+    util.def(
+        "debug_output",
+        []() -> std::string
+        {
+            pybind11::gil_scoped_release release;    // release GIL
+            std::stringstream const& strm = hpx::get_consolestream();
+            return strm.str();
+        },
+        "return all the output generated through the debug() primitive");
 }
