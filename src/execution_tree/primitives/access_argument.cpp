@@ -68,7 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            if (operands_.size() < 2 || !valid(operands_[1]))
+            if (operands_.size() < 2 ||
+                (!valid(operands_[1]) && !is_explicit_nil(operands_[1])))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::access_argument::eval",
@@ -199,7 +200,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            if (operands_.size() < 2 || !valid(operands_[1]))
+            if (operands_.size() < 2 ||
+                (!valid(operands_[1]) && !is_explicit_nil(operands_[1])))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::access_argument::store",
@@ -305,7 +307,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            if (operands_.size() < 2 || !valid(operands_[1]))
+            if (operands_.size() < 2 ||
+                (!valid(operands_[1]) && !is_explicit_nil(operands_[1])))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::access_argument::store",

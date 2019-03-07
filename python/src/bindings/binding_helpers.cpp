@@ -7,6 +7,8 @@
 
 #include <phylanx/phylanx.hpp>
 
+#include <hpx/include/iostreams.hpp>
+
 #include <bindings/binding_helpers.hpp>
 #include <bindings/type_casters.hpp>
 #include <pybind11/pybind11.h>
@@ -57,6 +59,8 @@ namespace phylanx { namespace bindings
         return hpx::threads::run_as_hpx_thread(
             [&]() -> phylanx::execution_tree::primitive_argument_type
             {
+                phylanx::util::repr_wrapper wrap(hpx::consolestream);
+
                 auto const& code_x = phylanx::execution_tree::compile(
                     file_name, xexpr_str, c.eval_snippets, c.eval_env);
 
