@@ -191,8 +191,8 @@ jobs:
                 command: |
                     mkdir -p ~/.ssh
                     ssh-keyscan -H github.com >>~/.ssh/known_hosts
-                    git config user.name "StellarBot"
-                    git config user.email "stellar@cct.lsu.edu"
+                    git config --global user.name "StellarBot"
+                    git config --global user.email "stellar@cct.lsu.edu"
                     cmake --build . -- -j1 git_docs
             - persist_to_workspace:
                   root: /
