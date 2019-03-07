@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
-        else if (valid(params[argnum_]))
+        else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
             target = extract_ref_value(params[argnum_], name_, codename_);
         }
@@ -211,7 +211,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
-        else if (valid(params[argnum_]))
+        else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
             target = std::move(params[argnum_]);
         }
@@ -317,7 +317,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
-        else if (valid(params[argnum_]))
+        else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
             target = std::move(params[argnum_]);
         }
