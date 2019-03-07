@@ -832,6 +832,29 @@ void test_define_function_default_arguments()
             add(std::int64_t(42), std::int64_t(43))));
 }
 
+void test_define_call_block_function_noarg()
+{
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, block(42))
+            define(y, x())
+            y
+        )");
+
+    phylanx::execution_tree::eval_context ctx;
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run(ctx);
+
+    HPX_TEST_EQ(42.0,
+        phylanx::execution_tree::extract_scalar_numeric_value(
+            y(ctx)
+        ));
+}
+
 int main(int argc, char* argv[])
 {
     test_builtin_environment();
@@ -872,6 +895,7 @@ int main(int argc, char* argv[])
 
     test_define_variable_function_call();
 
+    test_define_call_block_function_noarg();
     test_define_function_default_arguments();
 
     return hpx::util::report_errors();

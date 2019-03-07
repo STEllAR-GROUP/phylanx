@@ -15,4 +15,5 @@ def f():
 
 
 assert f.__src__ == \
-    "define$13$0(f$13$0, list$14$11(1, list$14$15(1)))"
+    "define$13$0(f$13$0, lambda$13$0(list$14$11(1, list$14$15(1))))", \
+    f.__src__
