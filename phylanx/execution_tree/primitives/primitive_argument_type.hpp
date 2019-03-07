@@ -586,9 +586,23 @@ namespace phylanx { namespace execution_tree
             return (*this)(std::move(args), std::move(ctx));
         }
 
+        // a primitive_argument_type instance is valid if its not an implicit nil
         explicit operator bool() const noexcept
         {
             return variant().index() != 0;
+        }
+
+        // a primitive_argument_type could be an explicit nil
+        bool is_explicit_nil() const noexcept
+        {
+            return variant().index() == 0 &&
+                util::get<0>(variant()).explicit_nil;
+        }
+
+        bool is_implicit_nil() const noexcept
+        {
+            return variant().index() == 0 &&
+                !util::get<0>(variant()).explicit_nil;
         }
 
         // workaround for problem in implementation of MSVC14.12
@@ -615,6 +629,25 @@ namespace phylanx { namespace execution_tree
         return bool(val);
     }
 
+    inline bool is_explicit_nil(primitive_argument_type const& val) noexcept
+    {
+        return val.is_explicit_nil();
+    }
+    inline bool is_explicit_nil(primitive_argument_type && val) noexcept
+    {
+        return val.is_explicit_nil();
+    }
+
+    inline bool is_implicit_nil(primitive_argument_type const& val) noexcept
+    {
+        return val.is_implicit_nil();
+    }
+    inline bool is_implicit_nil(primitive_argument_type && val) noexcept
+    {
+        return val.is_implicit_nil();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     inline bool operator==(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs)
     {

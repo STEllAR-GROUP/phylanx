@@ -486,18 +486,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     comparison_.name_, comparison_.codename_));
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<primitive_argument_type>&&,
-            ir::node_data<primitive_argument_type>&&) const
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::eval",
-                util::generate_error_message(
-                    "left hand side and right hand side are incompatible "
-                        "and can't be compared",
-                    comparison_.name_, comparison_.codename_));
-        }
-
         primitive_argument_type operator()(std::vector<ast::expression>&&,
             std::vector<ast::expression>&&) const
         {
@@ -719,8 +707,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the comparison primitive requires two or three operands"));
         }
 
-        if (!valid(operands[0]) || !valid(operands[1]) ||
-            (operands.size() == 3 && !valid(operands[2])))
+        // either operand is allowed to be 'nil'
+        if (operands.size() == 3 && !valid(operands[2]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "comparison<Op>::eval",

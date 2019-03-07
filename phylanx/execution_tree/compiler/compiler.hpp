@@ -217,6 +217,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
         }
 
+        access_argument(std::size_t argnum,
+                primitive_argument_type&& default_value,
+                hpx::id_type const& locality = hpx::find_here())
+          : compiled_actor<access_argument>(locality)
+          , argnum_(argnum)
+          , default_value_(default_value)
+        {
+        }
+
         function compose(std::list<function>&& elements,
             primitive_name_parts&& name_parts,
             std::string const& codename = "<unknown>") const
@@ -231,19 +240,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
             name_parts.sequence_number = sequence_number++;
 
             std::string full_name = compose_primitive_name(name_parts);
+
+            primitive_arguments_type fargs;
+            fargs.reserve(elements.size() + 2);
+
+            fargs.push_back(primitive_argument_type{argnum_});
+            fargs.push_back(default_value_);
+
             if (elements.empty())
             {
                 return function{
                     primitive_argument_type{create_primitive_component(
                         this->locality_, name_parts.primitive,
-                        primitive_argument_type{argnum_}, full_name, codename)},
+                        std::move(fargs), full_name, codename)},
                     full_name};
             }
 
-            primitive_arguments_type fargs;
-            fargs.reserve(elements.size() + 1);
-
-            fargs.push_back(primitive_argument_type{argnum_});
             for (auto&& arg : elements)
             {
                 fargs.emplace_back(std::move(arg.arg_));
@@ -257,6 +269,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         std::int64_t argnum_;
+        primitive_argument_type default_value_;
     };
 
     // compose an object that accesses an existing variable or function

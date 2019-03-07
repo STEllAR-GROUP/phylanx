@@ -155,7 +155,15 @@ namespace phylanx { namespace ast
     PHYLANX_EXPORT int precedence_of(optoken);
 
     ///////////////////////////////////////////////////////////////////////////
-    struct nil {};
+    struct nil
+    {
+        bool explicit_nil = false;
+    };
+
+    PHYLANX_EXPORT void serialize(
+        hpx::serialization::output_archive& ar, nil const&, unsigned);
+    PHYLANX_EXPORT void serialize(
+        hpx::serialization::input_archive& ar, nil&, unsigned);
 
     constexpr inline bool operator==(nil const&, nil const&)
     {
