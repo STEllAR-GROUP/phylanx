@@ -84,7 +84,7 @@ anchors:
         run:
             name: Avoid re-running CMake
             command: |
-                ninja -n -d explain | \
+                ninja -n -d explain 2>&1 | \
                     grep -o 'output\ [^ ]\+ older\ than\ most\ recent\ input [^ ]\+' | \
                     awk '{ print $2 }' | \
                     xargs touch % || true
