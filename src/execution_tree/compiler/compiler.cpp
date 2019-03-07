@@ -987,7 +987,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             std::map<std::string, primitive_argument_type> constants =
             {
-                {"nil", primitive_argument_type{}},
+                {"nil", primitive_argument_type{ast::nil{true}}},
                 {"false", primitive_argument_type{false}},
                 {"true", primitive_argument_type{true}},
                 {"inf",

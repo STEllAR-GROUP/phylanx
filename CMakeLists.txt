@@ -312,12 +312,12 @@ if(PHYLANX_WITH_DOCUMENTATION)
   # Install Phylanx documentation files
   install(
     FILES "${PROJECT_SOURCE_DIR}/docs/index.html"
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/ OPTIONAL
     COMPONENT docs)
 
   install(
     DIRECTORY "${CMAKE_BINARY_DIR}/share/phylanx/docs/html/"
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/docs/html
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/docs/html OPTIONAL
     COMPONENT docs
     PATTERN ".git" EXCLUDE)
 endif()
