@@ -29,7 +29,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
         std::int64_t default_value, std::string const& name,
         std::string const& codename)
     {
-        if (valid(val))
+        if (valid(val) && !execution_tree::is_explicit_nil(val))
         {
             auto&& nd =
                 execution_tree::extract_integer_value(val, name, codename);
@@ -177,6 +177,14 @@ namespace phylanx { namespace util { namespace slicing_helpers
 
             // reinit iterator
             it = arg_list.begin();
+            if (size == 1 && is_explicit_nil(*it))
+            {
+                // an empty argument list means return all of the argument
+                indices.start(0, false);
+                indices.stop(arg_size);
+                indices.step(1);
+                return indices;
+            }
 
             // default first index is '0' (if 'nil' was specified)
             indices.start(

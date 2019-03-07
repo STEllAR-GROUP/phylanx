@@ -67,11 +67,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (!valid(operands_[0]))
         {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "lambda::eval",
-                generate_error_message(
-                    "the expression representing the function target "
-                        "has not been initialized"));
+            // body is allowed to be 'nil'
+            return hpx::make_ready_future(primitive_argument_type{});
         }
 
         if (ctx.mode_ & eval_dont_evaluate_lambdas)
@@ -138,7 +135,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // initialize the lambda's body
-        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
+        if (valid(data[0]))
+        {
+            operands_[0] =
+                extract_copy_value(std::move(data[0]), name_, codename_);
+        }
+        else
+        {
+            operands_[0] = std::move(data[0]);
+        }
     }
 
     topology lambda::expression_topology(std::set<std::string>&& functions,
