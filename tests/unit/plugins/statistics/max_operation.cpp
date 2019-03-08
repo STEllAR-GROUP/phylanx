@@ -76,11 +76,53 @@ int main(int argc, char* argv[])
         "amax([[13., 42., 33.],[101, 12, 65]],  1)", "hstack(42., 101.)");
     test_max_operation(
         "amax([[13., 42., 33.],[101, 12, 65]], -1)", "hstack(42., 101.)");
+    test_max_operation("amax([[13., 42., 33.],[101, 12, 65]],  make_list(-1, 0))",
+                       "101.");
     test_max_operation("amax([[13., 42., 33.],[101, 12, 65]],  0, true)",
         "vstack(hstack(101. ,42., 65.))");
     test_max_operation("amax([[13., 42., 33.],[101, 12, 65]],  1, true)",
         "vstack(hstack(42.), hstack(101.))");
+    test_max_operation(
+        "amax([[13., 42., 33.],[101., 12., 65.]],  make_list(0), true)",
+        "vstack(hstack(101. ,42., 65.))");
+    test_max_operation(
+        "amax([[13., 42., 33.],[101., 12., 65.]],  make_list(-1, 0), true)",
+        "vstack(hstack(101.))");
     test_2d_keep_dims_true();
-
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]])", "101.");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], 0)",
+        "vstack(hstack(13., 42., 33.), hstack(101., 12., 65.))");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], 1)",
+        "vstack(hstack(101., 42., 65.))");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], 2)",
+        "vstack(hstack(42., 101.))");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], -1)",
+        "vstack(hstack(42., 101.))");
+    test_max_operation(
+        "amax([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1))",
+        "hstack(42., 101.)");
+    test_max_operation(
+        "amax([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1, 1))",
+        "101.");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], 0, true)",
+        "[[[13., 42., 33.], [101., 12., 65.]]]");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], 1, true)",
+        "[[[101., 42., 65.]]]");
+    test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], -1, true)",
+        "[[[42.], [101.]]]");
+    test_max_operation(
+        "amax([[[13., 42., 33.],[101., 12., 65.]]], make_list(1, -1), true)",
+        "[[[101.]]]");
+    test_max_operation(
+        "amax([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1), true)",
+        "[[[42.], [101.]]]");
+    test_max_operation(
+        "amax([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, 1), true)",
+        "[[[101., 42., 65.]]]");
+    test_max_operation(
+        "amax([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1, 1), true)",
+        "[[[101.]]]");
+#endif
     return hpx::util::report_errors();
 }

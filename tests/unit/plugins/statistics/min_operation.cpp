@@ -81,6 +81,48 @@ int main(int argc, char* argv[])
     test_min_operation("amin([[13., 42., 33.],[101., 12., 65.]],  1, true)",
         "vstack(hstack(13.), hstack(12.))");
     test_2d_keep_dims_true();
-
+    test_min_operation(
+        "amin([[13., 42., 33.],[101., 12., 65.]],  make_list(0), true)",
+        "vstack(hstack(13. ,12., 33.))");
+    test_min_operation(
+        "amin([[13., 42., 33.],[101., 12., 65.]],  make_list(-1, 0), true)",
+        "vstack(hstack(12.))");
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]])", "12.");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], 0)",
+        "vstack(hstack(13., 42., 33.), hstack(101., 12., 65.))");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], 1)",
+        "vstack(hstack(13., 12., 33.))");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], -2)",
+        "vstack(hstack(13., 12., 33.))");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], 2)",
+        "vstack(hstack(13., 12.))");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], -1)",
+        "vstack(hstack(13., 12.))");
+    test_min_operation(
+        "amin([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1))",
+        "hstack(13., 12.)");
+    test_min_operation(
+        "amin([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1, 1))",
+        "12.");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], 0, true)",
+        "[[[13., 42., 33.], [101., 12., 65.]]]");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], 1, true)",
+        "[[[13., 12., 33.]]]");
+    test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], -1, true)",
+        "[[[13.], [12.]]]");
+    test_min_operation(
+        "amin([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1), true)",
+        "[[[13.], [12.]]]");
+    test_min_operation(
+        "amin([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, 1), true)",
+        "[[[13., 12., 33.]]]");
+    test_min_operation(
+        "amin([[[13., 42., 33.],[101., 12., 65.]]], make_list(1, -1), true)",
+        "[[[12.]]]");
+    test_min_operation(
+        "amin([[[13., 42., 33.],[101., 12., 65.]]], make_list(0, -1, 1), true)",
+        "[[[12.]]]");
+#endif
     return hpx::util::report_errors();
 }
