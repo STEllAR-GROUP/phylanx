@@ -34,6 +34,7 @@ set(tests
     allow_return_nil_432
    )
 
+set(817_cout_nil_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_noargs_prints_nothing_159_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)

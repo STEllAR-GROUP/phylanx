@@ -7,13 +7,17 @@
 
 #include <phylanx/phylanx.hpp>
 
-#include <hpx/hpx_main.hpp>
+#include <hpx/hpx_init.hpp>
+#include <hpx/include/iostreams.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-int main(int argc, char* argv[])
+#include <sstream>
+#include <string>
+
+int hpx_main(int argc, char* argv[])
 {
     char const* const codestr = R"(
-        define(test, x, cout(x))
+        define(test, x, debug(x))
         test(nil)
     )";
 
@@ -27,9 +31,15 @@ int main(int argc, char* argv[])
 
     test();
 
-    // FIXME: There is currently no way to verify that it actually prints
-    //        anything. This needs to be fixed once that functionality becomes
-    //        available.
+    return hpx::finalize();
+}
+
+int main(int argc, char* argv[])
+{
+    HPX_TEST_EQ(hpx::init(argc, argv), 0);
+
+    std::stringstream const& strm = hpx::get_consolestream();
+    HPX_TEST_EQ(strm.str(), std::string("nil\n"));
 
     return hpx::util::report_errors();
 }
