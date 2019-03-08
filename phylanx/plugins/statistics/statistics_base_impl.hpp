@@ -610,6 +610,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             std::int64_t axis =
                 extract_scalar_integer_value(std::move(elem), name_, codename_);
+
+            if (axis < 0)
+                axis = axis + dims;
             if (seen_axes.find(axis) != seen_axes.end())
             {
                 // axes must be unique
