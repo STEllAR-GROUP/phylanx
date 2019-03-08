@@ -22,6 +22,7 @@ set(tests
     826_default_args
     832_performance_data
     837_none_default_argument
+    846_if_expression
     array_len_494
     array_shape_486
     array_subscript_403
