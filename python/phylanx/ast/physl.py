@@ -856,6 +856,20 @@ class PhySL:
         return '__ge'
 
     def _If(self, node):
+        """class If(test, body, orelse)
+
+       `test` holds a single node, such as a Compare node.
+       `body` and `orelse` each hold a list of nodes.
+       """
+
+        symbol = '%s' % get_symbol_info(node, 'if')
+        test = self.apply_rule(node.test)
+        body = self.block(node.body)
+        orelse = self.block(node.orelse)
+
+        return [symbol, (test, body, orelse)]
+
+    def _IfExp(self, node):
         """class IfExp(test, body, orelse)
 
        `test` holds a single node, such as a Compare node.
