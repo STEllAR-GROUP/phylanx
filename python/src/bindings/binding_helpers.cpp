@@ -36,16 +36,22 @@ namespace phylanx { namespace bindings
                 auto const& code = phylanx::execution_tree::compile(
                     file_name, xexpr_str, c.eval_snippets, c.eval_env);
 
+                auto const& funcs = code.functions();
+
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 // add all definitions to the global execution environment
                 code.run(c.eval_ctx);
 
-                return code.name_;
+                return !funcs.empty() ? funcs.front().name_ : "";
             });
     }
 
@@ -66,8 +72,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code_x.name_));
+                    auto const& funcs = code_x.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto x = code_x.run(c.eval_ctx);
@@ -173,8 +184,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    auto const& funcs = code.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto const& program = c.eval_snippets.program_;
@@ -215,8 +231,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    auto const& funcs = code.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto const& program = c.eval_snippets.program_;
@@ -258,8 +279,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    auto const& funcs = code.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto const& program = c.eval_snippets.program_;

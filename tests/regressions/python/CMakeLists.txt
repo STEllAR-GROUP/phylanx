@@ -20,6 +20,7 @@ set(tests
     805_two_variables
     808_print_twice
     826_default_args
+    832_performance_data
     837_none_default_argument
     array_len_494
     array_shape_486
