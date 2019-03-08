@@ -837,11 +837,12 @@ class PhySL:
         symbol = get_symbol_info(node, node.name)
         args = self.apply_rule(node.args)
         body = self.block(node.body)
+        lambda_op = get_symbol_info(node, 'lambda')
 
         if (args):
             return [op, (symbol, args, body)]
         else:
-            return [op, (symbol, body)]
+            return [op, (symbol, (lambda_op, (body,)))]
 
     def _Gt(self, node):
         """Leaf node, returning raw string of the 'greater than' operation."""

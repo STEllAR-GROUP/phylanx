@@ -68,7 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     hpx::consolestream << arg;
                 }
-                hpx::consolestream << std::endl;
+                hpx::consolestream << std::endl << hpx::flush;
 
                 return {};
             }),

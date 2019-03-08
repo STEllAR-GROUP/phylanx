@@ -68,7 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            if (operands_.size() < 2 || !valid(operands_[1]))
+            if (operands_.size() < 2 ||
+                (!valid(operands_[1]) && !is_explicit_nil(operands_[1])))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::access_argument::eval",
@@ -80,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
-        else if (valid(params[argnum_]))
+        else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
             target = extract_ref_value(params[argnum_], name_, codename_);
         }
@@ -199,7 +200,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            if (operands_.size() < 2 || !valid(operands_[1]))
+            if (operands_.size() < 2 ||
+                (!valid(operands_[1]) && !is_explicit_nil(operands_[1])))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::access_argument::store",
@@ -211,7 +213,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
-        else if (valid(params[argnum_]))
+        else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
             target = std::move(params[argnum_]);
         }
@@ -305,7 +307,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type target;
         if (argnum_ >= params.size())
         {
-            if (operands_.size() < 2 || !valid(operands_[1]))
+            if (operands_.size() < 2 ||
+                (!valid(operands_[1]) && !is_explicit_nil(operands_[1])))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::access_argument::store",
@@ -317,7 +320,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
-        else if (valid(params[argnum_]))
+        else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
             target = std::move(params[argnum_]);
         }

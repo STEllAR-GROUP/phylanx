@@ -36,5 +36,16 @@ namespace phylanx { namespace util
     {
         return stream.iword(detail::get_repr_manip_index()) != 0;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    repr_wrapper::repr_wrapper(std::ostream& strm)
+        : strm_(strm)
+    {
+        strm_ << repr;
+    }
+    repr_wrapper::~repr_wrapper()
+    {
+        strm_ << norepr;
+    }
 }}
 
