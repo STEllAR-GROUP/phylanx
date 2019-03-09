@@ -125,18 +125,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type softmax_operation::softmax3d_axis0(
         arg_type&& arg) const
     {
+        auto t = arg.tensor();
         if (!arg.is_ref())
         {
-            for (std::size_t i = 0; i != arg.tensor().rows(); ++i)
+            for (std::size_t i = 0; i != t.rows(); ++i)
             {
-                blaze::rowslice(arg.tensor(), i) =
-                    blaze::softmax<blaze::rowwise>(
-                        blaze::rowslice(arg.tensor(), i));
+                blaze::rowslice(t, i) =
+                    blaze::softmax<blaze::rowwise>(blaze::rowslice(t, i));
             }
             return primitive_argument_type{std::move(arg)};
         }
 
-        auto t = arg.tensor();
         blaze::DynamicTensor<val_type> result(t.pages(), t.rows(), t.columns());
         for (std::size_t i = 0; i != t.rows(); ++i)
         {
@@ -149,18 +148,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type softmax_operation::softmax3d_axis1(
         arg_type&& arg) const
     {
+        auto t = arg.tensor();
         if (!arg.is_ref())
         {
             for (std::size_t i = 0; i != arg.tensor().columns(); ++i)
             {
-                blaze::columnslice(arg.tensor(), i) =
-                    blaze::softmax<blaze::rowwise>(
-                        blaze::columnslice(arg.tensor(), i));
+                blaze::columnslice(t, i) =
+                    blaze::softmax<blaze::rowwise>(blaze::columnslice(t, i));
             }
             return primitive_argument_type{std::move(arg)};
         }
 
-        auto t = arg.tensor();
         blaze::DynamicTensor<val_type> result(t.pages(), t.rows(), t.columns());
         for (std::size_t i = 0; i != t.columns(); ++i)
         {
@@ -173,18 +171,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type softmax_operation::softmax3d_axis2(
         arg_type&& arg) const
     {
+        auto t = arg.tensor();
         if (!arg.is_ref())
         {
             for (std::size_t i = 0; i != arg.tensor().pages(); ++i)
             {
-                blaze::pageslice(arg.tensor(), i) =
-                    blaze::softmax<blaze::rowwise>(
-                        blaze::pageslice(arg.tensor(), i));
+                blaze::pageslice(t, i) =
+                    blaze::softmax<blaze::rowwise>(blaze::pageslice(t, i));
             }
             return primitive_argument_type{std::move(arg)};
         }
 
-        auto t = arg.tensor();
         blaze::DynamicTensor<val_type> result(t.pages(), t.rows(), t.columns());
         for (std::size_t i = 0; i != t.pages(); ++i)
         {
