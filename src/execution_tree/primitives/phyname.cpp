@@ -26,15 +26,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
-        static std::string type("phyname");
+        static std::string type("__name");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const phyname::match_data =
     {
-        hpx::util::make_tuple("phyname",
-            std::vector<std::string>{"phyname(_1)"},
+        hpx::util::make_tuple("__name",
+            std::vector<std::string>{"__name(_1)"},
             &create_phyname, &create_primitive<phyname>,
             R"(arg
             Args:
@@ -58,20 +58,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
+        if (operands.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phyname::eval",
+                generate_error_message(
+                    "phylanx.name requires exactly one argument"));
+        }
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            [this_ = std::move(this_)](primitive_argument_type&& arg)
                 -> primitive_argument_type
             {
-                std::size_t tid = 0;
-                if(args.size() > 0)
-                    tid = args[0].index();
                 using namespace phylanx::execution_tree::detail;
-                std::string name = get_primitive_argument_type_name(tid);
-                return primitive_argument_type{name};
+                std::string name = get_primitive_argument_type_name(arg.index());
+                return primitive_argument_type{std::move(name)};
             }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_,
-                std::move(ctx)));
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

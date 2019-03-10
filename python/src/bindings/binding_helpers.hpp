@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -10,6 +10,7 @@
 
 #include <phylanx/phylanx.hpp>
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
 #include <hpx/runtime/threads/run_as_hpx_thread.hpp>
@@ -206,6 +207,9 @@ namespace phylanx { namespace bindings
     // retrieve tree topology in Newick format for given expression
     std::string retrieve_newick_tree_topology(std::string const& file_name,
         std::string const& xexpr_str, compiler_state& c);
+
+    // extract the dtype of the given variable/expression
+    pybind11::dtype extract_dtype(phylanx::execution_tree::primitive const& p);
 }}
 
 #endif

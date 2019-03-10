@@ -23,7 +23,7 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "subtract": "__sub",
+    "subtract": "__sub"
 }
 
 numpy_constants = {

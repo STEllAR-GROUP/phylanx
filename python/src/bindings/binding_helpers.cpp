@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -11,9 +11,12 @@
 
 #include <bindings/binding_helpers.hpp>
 #include <bindings/type_casters.hpp>
+
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <list>
 #include <set>
@@ -202,8 +205,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                    resolve_children.insert(f.name_);
-                }
+                        resolve_children.insert(f.name_);
+                    }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -249,8 +252,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                    resolve_children.insert(f.name_);
-                }
+                        resolve_children.insert(f.name_);
+                    }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -297,8 +300,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                    resolve_children.insert(f.name_);
-                }
+                        resolve_children.insert(f.name_);
+                    }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -318,6 +321,64 @@ namespace phylanx { namespace bindings
                     phylanx::execution_tree::dot_tree(file_name, topology));
 
                 return result;
+            });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    pybind11::dtype extract_dtype(phylanx::execution_tree::primitive const& p)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> pybind11::dtype
+            {
+                using namespace phylanx::execution_tree;
+
+                primitive_arguments_type args;
+                args.push_back(p);
+
+                primitive type = primitives::create_phytype(
+                    hpx::find_here(), std::move(args), "dtype", "<unknown>");
+
+                primitive_argument_type id = type.eval(hpx::launch::sync);
+                std::int64_t type_id = extract_scalar_integer_value_strict(
+                    id, "dtype", "<unknown>");
+
+                pybind11::gil_scoped_acquire acquire;
+
+                switch (type_id)
+                {
+                case primitive_argument_type::nil_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::bool_index:
+                    return pybind11::dtype("int8");
+
+                case primitive_argument_type::int64_index:
+                    return pybind11::dtype("int64");
+
+                case primitive_argument_type::string_index:
+                    return pybind11::dtype("S");
+
+                case primitive_argument_type::float64_index:
+                    return pybind11::dtype("float64");
+
+                case primitive_argument_type::primitive_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::expression_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::list_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::dictionary_index:
+                    return pybind11::dtype("O");
+
+                default:
+                    break;
+                }
+                return pybind11::dtype("");
             });
     }
 }}
