@@ -932,7 +932,8 @@ namespace phylanx { namespace execution_tree
     {
         ///////////////////////////////////////////////////////////////////////
         // Get the string representation for the type
-        char const *const get_primitive_argument_type_name(std::size_t index);
+        PHYLANX_EXPORT char const* const get_primitive_argument_type_name(
+            std::size_t index);
     }
 }}
 
