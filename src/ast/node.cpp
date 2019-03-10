@@ -7,6 +7,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/util/none_manip.hpp>
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/serialization.hpp>
@@ -356,7 +357,7 @@ namespace phylanx { namespace ast
 
     std::ostream& operator<<(std::ostream& out, nil)
     {
-        if (util::is_repr(out))
+        if (util::is_none(out) || util::is_repr(out))
         {
             out << "None";
         }
