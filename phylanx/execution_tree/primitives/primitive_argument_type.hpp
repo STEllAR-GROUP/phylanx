@@ -132,7 +132,8 @@ namespace phylanx { namespace execution_tree
         eval_default = 0x00,                // always evaluate everything
         eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
         eval_dont_evaluate_partials = 0x02, // don't evaluate partially bound functions
-        eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
+        eval_dont_evaluate_lambdas = 0x04,  // don't evaluate functions
+        eval_slicing = 0x08                 // do perform slicing
     };
 
     struct eval_context
