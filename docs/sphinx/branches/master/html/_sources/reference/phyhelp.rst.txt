@@ -1457,6 +1457,30 @@ parallel_map (func, listv)
             Evaluates to [1, 4, 9]
 
 
+phyname
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+phyname (arg)
+            Args:
+
+                arg (primitive type) : return the name of the arg
+
+            Returns:
+
+                The name of the primitive type
+
+
+phytype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+phytype (arg)
+            Args:
+
+                arg (primitive type) : return the type of the arg
+
+            Returns:
+
+                The variant index of the primitive type
+
+
 power
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 power (base, pow)
