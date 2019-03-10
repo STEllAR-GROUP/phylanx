@@ -62,7 +62,8 @@ namespace phylanx { namespace execution_tree
             "phylanx::ir::dictionary"
         };
 
-        static char const* const get_primitive_argument_type_name(std::size_t index)
+        PHYLANX_EXPORT char const* const get_primitive_argument_type_name(
+            std::size_t index)
         {
             if (index > sizeof(primitive_argument_type_names) /
                     sizeof(primitive_argument_type_names[0]))

@@ -454,6 +454,9 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(double val)
           : argument_value_type{phylanx::ir::node_data<double>{val}}
         {}
+        explicit primitive_argument_type(long long val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+        {}
         explicit primitive_argument_type(blaze::DynamicVector<double> const& val)
           : argument_value_type{phylanx::ir::node_data<double>{val}}
         {}

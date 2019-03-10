@@ -234,3 +234,52 @@ v = np.array([
 ])
 assert np.all(np.sign(v) == do_sign(v))
 assert np.all(np.square(v) == do_square(v))
+
+
+def phytype():
+    pass
+
+
+def phyname():
+    pass
+
+
+@Phylanx
+def get_types():
+    return [
+        phytype(None),
+        phytype(0),
+        phytype(1.0),
+        phytype("x"),
+        phytype(np.array([1, 2])),
+        phytype(np.array([1.0, 2.0])),
+        phytype([1.0, "x"]),
+        phytype({"x": 1})]
+
+
+assert get_types() == [0, 2, 4, 3, 2, 4, 7, 8]
+
+
+@Phylanx
+def get_names():
+    return [
+        phyname(None),
+        phyname(0),
+        phyname(1.0),
+        phyname("x"),
+        phyname(np.array([1, 2])),
+        phyname(np.array([1.0, 2.0])),
+        phyname([1.0, "x"]),
+        phyname({"x": 1})]
+
+
+assert get_names() == [
+    'phylanx::ast::nil',
+    'phylanx::ir::node_data<std::int64_t>',
+    'phylanx::ir::node_data<double>',
+    'std::string',
+    'phylanx::ir::node_data<std::int64_t>',
+    'phylanx::ir::node_data<double>',
+    'phylanx::ir::range',
+    'phylanx::ir::dictionary'
+]

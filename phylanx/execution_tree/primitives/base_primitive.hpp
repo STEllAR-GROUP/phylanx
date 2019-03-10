@@ -927,6 +927,13 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
+
+    namespace detail
+    {
+        ///////////////////////////////////////////////////////////////////////
+        // Get the string representation for the type
+        char const *const get_primitive_argument_type_name(std::size_t index);
+    }
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
