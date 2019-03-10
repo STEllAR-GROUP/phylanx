@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,6 +9,7 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/hpx_main.hpp>
+#include <hpx/include/iostreams.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -47,6 +48,8 @@ std::string read_user_code(std::string const& path)
     return str_stream.str();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 // code taken from
 //
 // https://github.com/ReneNyffenegger/cpp-base64/
@@ -63,8 +66,9 @@ static const std::string base64_chars =
              "abcdefghijklmnopqrstuvwxyz"
              "0123456789+/";
 
-static inline bool is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
+static inline bool is_base64(unsigned char c)
+{
+    return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
 std::string base64_decode(std::string const& encoded_string)
@@ -115,13 +119,18 @@ std::string base64_decode(std::string const& encoded_string)
     return ret;
 }
 
-std::tuple<bool, std::string> get_env_physl_ir() {
+std::tuple<bool, std::string> get_env_physl_ir()
+{
     const char * env_physl_ir = std::getenv("PHYSL_IR");
-    if(env_physl_ir == nullptr) { return std::make_tuple(false, std::string{}); }
+    if (env_physl_ir == nullptr)
+    {
+        return std::make_tuple(false, std::string{});
+    }
     auto physl_ir_str = base64_decode(std::string{env_physl_ir});
     return std::make_tuple(true, physl_ir_str);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void dump_ast(std::vector<phylanx::ast::expression> const& ast, std::string path)
 {
     std::ofstream ast_stream(path, std::ios::binary);
@@ -169,12 +178,12 @@ std::vector<phylanx::ast::expression> load_ast_dump(std::string const& path)
 
 void print_physl_code(std::vector<phylanx::ast::expression> const& ast)
 {
-    std::cout << "PhySL Code:\n";
+    hpx::cout << "PhySL Code:\n";
     for (auto const& i : ast)
     {
-        std::cout << phylanx::ast::to_string(i) << '\n';
+        hpx::cout << phylanx::ast::to_string(i) << '\n';
     }
-    std::cout << "\n\n";
+    hpx::cout << "\n\n";
 }
 
 void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
@@ -281,13 +290,13 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
 
         if (vm.count("help") != 0)
         {
-            std::cout << cmdline_options << std::endl;
+            hpx::cout << cmdline_options << std::endl;
             return 1;
         }
     }
     catch (std::exception const& e)
     {
-        std::cerr << "physl: command line handling: exception caught: "
+        hpx::cerr << "physl: command line handling: exception caught: "
                   << e.what() << "\n";
         return -1;
     }
@@ -337,7 +346,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
     // Determine if an AST dump is to be loaded from command line
     if (vm.count("base64") != 0 && physl_ir_env_found == false)
     {
-        std::string user_code = vm["b64-physl"].as<std::string>();
+        std::string user_code = vm["base64"].as<std::string>();
         ast = phylanx::ast::generate_ast(user_code);
         code_source_name = "<command_line>";
     }
@@ -448,7 +457,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
 
         if (print_time)
         {
-            std::cout << "Elapsed time: " << t.elapsed() << " [s]\n";
+            hpx::cout << "Elapsed time: " << t.elapsed() << " [s]\n";
         }
 
         if (phylanx::execution_tree::is_primitive_operand(retval))
@@ -522,8 +531,8 @@ void print_performance_profile(
 
     if (dot_file.empty())
     {
-        std::cout << "\n";
-        print_dot(code_source_name, topology, std::cout);
+        hpx::cout << "\n";
+        print_dot(code_source_name, topology, hpx::cout);
     }
     else
     {
@@ -540,9 +549,9 @@ void print_performance_profile(
 
     if (newick_tree_file.empty())
     {
-        std::cout << "\n";
-        print_newick_tree(code_source_name, topology, std::cout);
-        std::cout << "\n";
+        hpx::cout << "\n";
+        print_newick_tree(code_source_name, topology, hpx::cout);
+        hpx::cout << "\n";
     }
     else
     {
@@ -559,7 +568,7 @@ void print_performance_profile(
 
     if (counter_file.empty())
     {
-        print_performance_counter_data_csv(std::cout);
+        print_performance_counter_data_csv(hpx::cout);
     }
     else
     {
@@ -614,7 +623,7 @@ void interpreter(po::variables_map const& vm)
     // Print the result of the last PhySL expression, if requested
     if (vm.count("print") != 0)
     {
-        std::cout << result << "\n";
+        hpx::cout << result << "\n";
     }
 
     // Print auxiliary information at exit: topology of the execution tree
@@ -636,7 +645,7 @@ void interpreter(po::variables_map const& vm)
     else if (vm.count("dump-dot") != 0 || vm.count("dump-newick-tree") != 0 ||
         vm.count("dump-counters") != 0)
     {
-        std::cout << "physl: in order to generate any of the performance "
+        hpx::cerr << "physl: in order to generate any of the performance "
             "output (--dump-dot, --dump-newick-tree, or --dump-counters), "
             "please also specify the command line option --performance.";
     }
@@ -663,7 +672,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception const& e)
     {
-        std::cout << "physl: exception caught:\n" << e.what() << "\n";
+        hpx::cerr << "physl: exception caught:\n" << e.what() << "\n";
         return -1;
     }
 
