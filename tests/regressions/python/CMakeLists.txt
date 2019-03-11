@@ -24,6 +24,7 @@ set(tests
     832_performance_data
     837_none_default_argument
     846_if_expression
+    852_concatenate_list
     array_len_494
     array_shape_486
     array_subscript_403

@@ -70,12 +70,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_numeric_value_dimension(args[i], name_, codename_);
 
             if (num_dims != 1)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::concatenate::get_"
-                    "vec_size",
+                    "phylanx::execution_tree::primitives::concatenate::"
+                    "get_vec_size",
                     generate_error_message("the concatenate primitive requires "
-                                           "for all input arrays to "
-                                           "have the same dimension"));
+                        "for all input arrays to have the same dimension"));
+            }
             vec_size +=
                 extract_numeric_value_dimensions(args[i], name_, codename_)[0];
         }
@@ -121,9 +122,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type&& args, std::int64_t axis) const
     {
         if (axis < -1 || axis > 0)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "concatenate::concatenate1d",
                 generate_error_message("axis is out of bounds of dimension 1"));
+        }
 
         switch (extract_common_type(args))
         {
@@ -133,8 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate1d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return concatenate1d_helper<double>(std::move(args));
 
@@ -160,12 +162,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_numeric_value_dimension(args[i], name_, codename_);
 
             if (num_dims != 2)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::concatenate::get_"
                     "matrix_size",
                     generate_error_message("the concatenate primitive requires "
-                                           "for all input arrays to "
-                                           "have the same dimension"));
+                        "for all input arrays to have the same dimension"));
+            }
+
             matrix_size +=
                 extract_numeric_value_dimensions(args[i], name_, codename_)[0] *
                 extract_numeric_value_dimensions(args[i], name_, codename_)[1];
@@ -294,17 +298,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case 0:
-            HPX_FALLTHROUGH;
-        case -1:
+        case 0: HPX_FALLTHROUGH;
+        case -2:
             return concatenate2d_axis0<T>(std::move(args));
-        case 1:
-            HPX_FALLTHROUGH;
-        case 2:
+
+        case 1: HPX_FALLTHROUGH;
+        case -1:
             return concatenate2d_axis1<T>(std::move(args));
+
         default:
             break;
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "concatenate::concatenate2d_helper",
             generate_error_message("axis is out of bounds of dimension 2"));
@@ -314,9 +319,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type&& args, std::int64_t axis) const
     {
         if (axis < -2 || axis > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "concatenate::concatenate1d",
                 generate_error_message("axis is out of bounds of dimension 2"));
+        }
 
         switch (extract_common_type(args))
         {
@@ -326,8 +333,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate2d_helper<std::int64_t>(std::move(args), axis);
 
-        case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return concatenate2d_helper<double>(std::move(args), axis);
 
@@ -378,10 +384,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "concatenate::concatenate_flatten",
                 generate_error_message(
                     "zero-dimensional arrays cannot be concatenated"));
+            break;
+
         case 1:
             return concatenate_flatten1d<T>(std::move(args));
+
         case 2:
             return concatenate_flatten2d<T>(std::move(args));
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return concatenate_flatten3d<T>(std::move(args));
@@ -389,6 +399,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             break;
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::concatenate::concatenate_"
             "flatten_helper",
@@ -407,8 +418,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate_flatten_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return concatenate_flatten_helper<double>(std::move(args));
 
@@ -666,21 +676,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case 0:
-            HPX_FALLTHROUGH;
+        case 0: HPX_FALLTHROUGH;
         case -3:
             return concatenate3d_axis0<T>(std::move(args));
-        case 1:
-            HPX_FALLTHROUGH;
+
+        case 1: HPX_FALLTHROUGH;
         case -2:
             return concatenate3d_axis1<T>(std::move(args));
-        case 2:
-            HPX_FALLTHROUGH;
+
+        case 2: HPX_FALLTHROUGH;
         case -1:
             return concatenate3d_axis2<T>(std::move(args));
+
         default:
             break;
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::concatenate::concatenate3d_"
             "helper",
@@ -691,9 +702,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type&& args, std::int64_t axis) const
     {
         if (axis < -3 || axis > 2)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "concatenate::concatenate1d",
                 generate_error_message("axis is out of bounds of dimension 3"));
+        }
 
         switch (extract_common_type(args))
         {
@@ -703,8 +716,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate3d_helper<std::int64_t>(std::move(args), axis);
 
-        case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return concatenate3d_helper<double>(std::move(args), axis);
 
@@ -719,6 +731,74 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 #endif
+
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<primitive_argument_type> concatenate::handle_concatenate(
+        primitive_arguments_type && operands,
+        primitive_argument_type const& axis,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        hpx::future<primitive_argument_type> axis_f =
+            value_operand(axis, args, name_, codename_, ctx);
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](
+                    primitive_arguments_type&& args,
+                    primitive_argument_type&& axis_arg)
+            ->  primitive_argument_type
+            {
+                if (!valid(axis_arg))
+                {
+                    return this_->concatenate_flatten(std::move(args));
+                }
+
+                // last argument has to be the axis
+                std::int64_t axis = extract_scalar_integer_value_strict(
+                    std::move(axis_arg), this_->name_, this_->codename_);
+
+                std::size_t dims = extract_largest_dimension(
+                    args, this_->name_, this_->codename_);
+                switch (dims)
+                {
+                case 0:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "concatenate::eval",
+                        this_->generate_error_message(
+                            "zero-dimensional arrays cannot be concatenated"));
+
+                case 1:
+                    return this_->concatenate1d(
+                        std::move(args), std::move(axis));
+
+                case 2:
+                    return this_->concatenate2d(
+                        std::move(args), std::move(axis));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->concatenate3d(
+                        std::move(args), std::move(axis));
+#endif
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "concatenate::eval",
+                        this_->generate_error_message(
+                            "first operand has unsupported number of "
+                            "dimensions"));
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                    "concatenate::eval",
+                    this_->generate_error_message(
+                        "the operands have unsupported number of dimensions"));
+            }),
+            detail::map_operands(operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)),
+            std::move(axis_f));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> concatenate::eval(
         primitive_arguments_type const& operands,
@@ -732,88 +812,49 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the concatenate primitive requires at most two operands"));
         }
 
-        auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-                primitive_arguments_type ops;
-                if (!is_list_operand(args[0]))
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                        "concatenate::eval",
-                        this_->generate_error_message(
-                            "concatenate accepts a list "
-                            "value as its first operand"));
-                ir::range lhs = extract_list_value_strict(
-                    std::move(args[0]), this_->name_, this_->codename_);
+        // one-argument invocation may be special if the the first argument is
+        // a list
+        primitive_argument_type arg1;
+        if (is_primitive_operand(operands[0]))
+        {
+            arg1 = value_operand_sync(
+                operands[0], args, name_, codename_, ctx);
+        }
+        else
+        {
+            arg1 = operands[0];
+        }
 
-                if (lhs.is_ref())
+        primitive_arguments_type ops;
+        if (is_list_operand_strict(arg1))
+        {
+            auto && r = extract_list_value_strict(arg1, name_, codename_);
+            ops.reserve(r.size() + operands.size() - 1);
+            for (auto && op : r)
+            {
+                if (is_list_operand_strict(op))
                 {
-                    ops = lhs.copy();
-                }
-                else
-                    ops = std::move(lhs.args());
-
-                for (auto const& op : ops)
-                {
-                    if (is_list_operand_strict(op))
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "concatenate::eval",
-                            this_->generate_error_message(
-                                "lists cannot be concatenated"));
-                    }
-                }
-
-                std::int64_t axis = 0;
-
-                if (args.size() != 1)
-                {
-                    if (!valid(args[1]))
-                    {
-                        return this_->concatenate_flatten(std::move(ops));
-                    }
-                    axis = extract_scalar_integer_value_strict(args[1]);
-                }
-
-                std::size_t dims = extract_largest_dimension(
-                    ops, this_->name_, this_->codename_);
-                switch (dims)
-                {
-                case 0:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "concatenate::eval",
-                        this_->generate_error_message(
-                            "zero-dimensional arrays cannot be concatenated"));
-
-                case 1:
-                    return this_->concatenate1d(
-                        std::move(ops), std::move(axis));
-
-                case 2:
-                    return this_->concatenate2d(
-                        std::move(ops), std::move(axis));
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                case 3:
-                    return this_->concatenate3d(
-                        std::move(ops), std::move(axis));
-#endif
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "concatenate::eval",
-                        this_->generate_error_message(
-                            "first operand has unsupported "
-                            "number of dimensions"));
+                        generate_error_message("lists cannot be concatenated"));
                 }
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                    "concatenate::eval",
-                    this_->generate_error_message(
-                        "the opearnds have unsupported number of dimensions"));
-            }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                ops.push_back(std::move(op));
+            }
+        }
+        else
+        {
+            ops.reserve(operands.size());
+            ops.push_back(std::move(arg1));
+        }
+
+        if (operands.size() == 2)
+        {
+            return handle_concatenate(
+                std::move(ops), operands[1], args, std::move(ctx));
+        }
+
+        return handle_concatenate(std::move(ops),
+            primitive_argument_type{std::int64_t(0)}, args,
+            std::move(ctx));
     }
 }}}
