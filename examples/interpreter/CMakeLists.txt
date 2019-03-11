@@ -20,7 +20,8 @@ foreach(example_program ${example_programs})
   add_phylanx_executable(${example_program}
                      SOURCES ${sources}
                      ${${example_program}_FLAGS}
-                     FOLDER "Examples/Interpreter")
+                     FOLDER "Examples/Interpreter"
+                     COMPONENT_DEPENDENCIES iostreams)
 
   # add a custom target for this example
   add_phylanx_pseudo_target(examples.interpreter_.${example_program})
