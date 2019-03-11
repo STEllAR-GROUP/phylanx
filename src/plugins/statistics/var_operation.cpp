@@ -32,39 +32,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_var_op
         {
+            using result_type = double;
+
             statistics_var_op(std::string const& name,
                     std::string const& codename)
               : name_(name), codename_(codename)
               , count_(0), mean_(0), m2_(0)
             {}
 
-            static constexpr T initial()
+            static constexpr double initial()
             {
-                return T(0);
+                return 0.0;
             }
 
             // Use Welford's online algorithm, see
             // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-            void process_value(T val)
+            void process_value(double val)
             {
                 ++count_;
-                T delta = val - mean_;
+                double delta = val - mean_;
                 mean_ += delta / count_;
-                T delta2 = val - mean_;
+                double delta2 = val - mean_;
                 m2_ += delta * delta2;
             }
 
             template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial)
+            typename std::enable_if<traits::is_scalar<Scalar>::value,
+                double>::type
+            operator()(Scalar s, double initial)
             {
                 process_value(s);
                 return initial;
             }
 
             template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector const& v, T initial)
+            typename std::enable_if<!traits::is_scalar<Vector>::value,
+                double>::type
+            operator()(Vector const& v, double initial)
             {
                 for (auto && elem : v)
                 {
@@ -73,7 +77,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return initial;
             }
 
-            T finalize(T value, std::size_t size) const
+            double finalize(double value, std::size_t size) const
             {
                 HPX_ASSERT(count_ == size);
                 if (size == 0)
@@ -86,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 if (size == 1)
                 {
-                    return T(0);
+                    return 0.0;
                 }
 
                 return m2_ / size;
@@ -96,8 +100,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& codename_;
 
             std::size_t count_;
-            T mean_;
-            T m2_;
+            double mean_;
+            double m2_;
         };
     }
 
