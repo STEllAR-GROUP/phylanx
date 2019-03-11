@@ -8,6 +8,7 @@ set(subdirs
     booleans
     controls
     fileio
+    keras_support
     listops
     matrixops
     solvers

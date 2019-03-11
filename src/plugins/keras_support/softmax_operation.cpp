@@ -6,7 +6,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/matrixops/softmax_operation.hpp>
+#include <phylanx/plugins/keras_support/softmax_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

@@ -413,6 +413,26 @@ jobs:
                 path: tests.unit.plugins.fileio_solvers
             - store_artifacts:
                 path: tests.unit.plugins.fileio_solvers
+    tests.unit.plugins.keras_support:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - <<: *avoid_cmake_rerun
+            - run:
+                name: Justify build
+                command: ninja -n -d explain tests.unit.plugins.keras_support
+            - run:
+                name: Build KerasSupport primitive plugin unit tests
+                command: cmake --build . -- -j1 tests.unit.plugins.keras_support
+            - run:
+                name: Run KerasSupport primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.keras_support
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.keras_support
+            - store_artifacts:
+                path: tests.unit.plugins.keras_support
     tests.unit.plugins.listops:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -601,6 +621,9 @@ workflows:
             - tests.unit.plugins.fileio_solvers:
                 requires:
                     - build
+            - tests.unit.plugins.keras_support:
+                requires:
+                    - build
             - tests.unit.plugins.listops:
                 requires:
                     - build
@@ -630,6 +653,7 @@ workflows:
                     - tests.unit.plugins.booleans
                     - tests.unit.plugins.controls
                     - tests.unit.plugins.fileio_solvers
+                    - tests.unit.plugins.keras_support
                     - tests.unit.plugins.listops
                     - tests.unit.plugins.matrixops
                     - tests.unit.plugins.statistics
