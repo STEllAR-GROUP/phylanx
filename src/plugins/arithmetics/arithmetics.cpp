@@ -43,7 +43,7 @@ namespace phylanx { namespace plugin
                 pet::primitives::generic_operation::match_data)
             {
                 pet::register_pattern(
-                    generic_operation_name, pattern, fullpath);
+                    generic_operation_name, pattern.first, fullpath);
             }
         }
     };

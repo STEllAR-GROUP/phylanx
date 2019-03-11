@@ -43,54 +43,74 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }                                                                          \
     /**/
 
-    std::vector<match_pattern_type> const generic_operation::match_data = {
-        PHYLANX_GEN_MATCH_DATA("absolute"),
-        PHYLANX_GEN_MATCH_DATA("floor"),
-        PHYLANX_GEN_MATCH_DATA("ceil"),
-        PHYLANX_GEN_MATCH_DATA("trunc"),
-        PHYLANX_GEN_MATCH_DATA("rint"),
-        PHYLANX_GEN_MATCH_DATA("conj"),
-        PHYLANX_GEN_MATCH_DATA("real"),
-        PHYLANX_GEN_MATCH_DATA("imag"),
-        PHYLANX_GEN_MATCH_DATA("sqrt"),
-        PHYLANX_GEN_MATCH_DATA("invsqrt"),
-        PHYLANX_GEN_MATCH_DATA("cbrt"),
-        PHYLANX_GEN_MATCH_DATA("invcbrt"),
-        PHYLANX_GEN_MATCH_DATA("exp"),
-        PHYLANX_GEN_MATCH_DATA("exp2"),
-        PHYLANX_GEN_MATCH_DATA("exp10"),
-        PHYLANX_GEN_MATCH_DATA("log"),
-        PHYLANX_GEN_MATCH_DATA("log2"),
-        PHYLANX_GEN_MATCH_DATA("log10"),
-        PHYLANX_GEN_MATCH_DATA("sin"),
-        PHYLANX_GEN_MATCH_DATA("cos"),
-        PHYLANX_GEN_MATCH_DATA("tan"),
-        PHYLANX_GEN_MATCH_DATA("sinh"),
-        PHYLANX_GEN_MATCH_DATA("cosh"),
-        PHYLANX_GEN_MATCH_DATA("tanh"),
-        PHYLANX_GEN_MATCH_DATA("arcsin"),
-        PHYLANX_GEN_MATCH_DATA("arccos"),
-        PHYLANX_GEN_MATCH_DATA("arctan"),
-        PHYLANX_GEN_MATCH_DATA("arcsinh"),
-        PHYLANX_GEN_MATCH_DATA("arccosh"),
-        PHYLANX_GEN_MATCH_DATA("arctanh"),
-        PHYLANX_GEN_MATCH_DATA("erf"),
-        PHYLANX_GEN_MATCH_DATA("erfc"),
-        PHYLANX_GEN_MATCH_DATA("square"),
-        PHYLANX_GEN_MATCH_DATA("sign"),
-        PHYLANX_GEN_MATCH_DATA("normalize"),
-        PHYLANX_GEN_MATCH_DATA("trace")
+    std::vector<std::pair<match_pattern_type, bool>> const
+        generic_operation::match_data = {
+            { PHYLANX_GEN_MATCH_DATA("absolute"), true },
+            { PHYLANX_GEN_MATCH_DATA("floor"), false },
+            { PHYLANX_GEN_MATCH_DATA("ceil"), false },
+            { PHYLANX_GEN_MATCH_DATA("trunc"), false },
+            { PHYLANX_GEN_MATCH_DATA("rint"), false },
+            { PHYLANX_GEN_MATCH_DATA("conj"), false },
+            { PHYLANX_GEN_MATCH_DATA("real"), false },
+            { PHYLANX_GEN_MATCH_DATA("imag"), false },
+            { PHYLANX_GEN_MATCH_DATA("sqrt"), false },
+            { PHYLANX_GEN_MATCH_DATA("invsqrt"), false },
+            { PHYLANX_GEN_MATCH_DATA("cbrt"), false },
+            { PHYLANX_GEN_MATCH_DATA("invcbrt"), false },
+            { PHYLANX_GEN_MATCH_DATA("exp"), false },
+            { PHYLANX_GEN_MATCH_DATA("exp2"), false },
+            { PHYLANX_GEN_MATCH_DATA("exp10"), false },
+            { PHYLANX_GEN_MATCH_DATA("log"), false },
+            { PHYLANX_GEN_MATCH_DATA("log2"), false },
+            { PHYLANX_GEN_MATCH_DATA("log10"), false },
+            { PHYLANX_GEN_MATCH_DATA("sin"), false },
+            { PHYLANX_GEN_MATCH_DATA("cos"), false },
+            { PHYLANX_GEN_MATCH_DATA("tan"), false },
+            { PHYLANX_GEN_MATCH_DATA("sinh"), false },
+            { PHYLANX_GEN_MATCH_DATA("cosh"), false },
+            { PHYLANX_GEN_MATCH_DATA("tanh"), false },
+            { PHYLANX_GEN_MATCH_DATA("arcsin"), false },
+            { PHYLANX_GEN_MATCH_DATA("arccos"), false },
+            { PHYLANX_GEN_MATCH_DATA("arctan"), false },
+            { PHYLANX_GEN_MATCH_DATA("arcsinh"), false },
+            { PHYLANX_GEN_MATCH_DATA("arccosh"), false },
+            { PHYLANX_GEN_MATCH_DATA("arctanh"), false },
+            { PHYLANX_GEN_MATCH_DATA("erf"), false },
+            { PHYLANX_GEN_MATCH_DATA("erfc"), false },
+            { PHYLANX_GEN_MATCH_DATA("square"), true },
+            { PHYLANX_GEN_MATCH_DATA("sign"), true },
+            { PHYLANX_GEN_MATCH_DATA("normalize"), false },
+            { PHYLANX_GEN_MATCH_DATA("trace"), false },
     };
 
 #undef PHYLANX_GEN_MATCH_DATA
 
     ///////////////////////////////////////////////////////////////////////////
-    generic_operation::generic_operation(
-        primitive_arguments_type && operands,
-        std::string const& name, std::string const& codename)
+    namespace detail
+    {
+        bool extract_argument_handling_mode(std::string const& funcname,
+            std::string const& name, std::string const& codename)
+        {
+            for (auto && pattern : generic_operation::match_data)
+            {
+                if (pattern.first.primitive_type_ == funcname)
+                    return pattern.second;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "detail::extract_argument_handling_mode",
+                util::generate_error_message(
+                    "unknown function requested: " + funcname, name, codename));
+        }
+    }
+
+    generic_operation::generic_operation(primitive_arguments_type&& operands,
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , func_name_(extract_function_name(name))
       , dtype_(extract_dtype(name_))
+      , retain_argument_type_(detail::extract_argument_handling_mode(
+            func_name_, name_, codename_))
     {
     }
 
@@ -132,7 +152,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
-            t = node_data_type_double;  // use double by default
+            t = retain_argument_type_ ? extract_common_type(op) :
+                                        node_data_type_double;
         }
 
         switch (t)
@@ -159,7 +180,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
-            t = node_data_type_double;  // use double by default
+            t = retain_argument_type_ ? extract_common_type(op) :
+                                        node_data_type_double;
         }
 
         switch (t)
@@ -186,7 +208,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
-            t = node_data_type_double;  // use double by default
+            t = retain_argument_type_ ? extract_common_type(op) :
+                                        node_data_type_double;
         }
 
         switch (t)
@@ -214,7 +237,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
-            t = node_data_type_double;  // use double by default
+            t = retain_argument_type_ ? extract_common_type(op) :
+                                        node_data_type_double;
         }
 
         switch (t)
