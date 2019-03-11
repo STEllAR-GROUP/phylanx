@@ -89,6 +89,18 @@ Returns:
 This function implements function `absolute` from Python's math library.
 
 
+__gen_bool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__gen_bool (arg)
+Args:
+
+    arg (float) : a floating point number
+
+Returns:
+
+This function implements function `isnan` from Python's math library.
+
+
 __gt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 __gt (arg1, arg2, arg3)
