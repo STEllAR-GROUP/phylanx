@@ -180,6 +180,18 @@ __mul (x0, x1)
             The product of all factors.
 
 
+__name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__name (arg)
+            Args:
+
+                arg (primitive type) : return the name of the arg
+
+            Returns:
+
+                The name of the primitive type
+
+
 __ne
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 __ne (arg1, arg2, arg3)
@@ -236,6 +248,18 @@ __sub (x0, x1)
             Returns:
 
             The difference of all arguments.
+
+
+__type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__type (arg)
+            Args:
+
+                arg (primitive type) : return the type of the arg
+
+            Returns:
+
+                The variant index of the primitive type
 
 
 __xor
@@ -1467,30 +1491,6 @@ parallel_map (func, listv)
                print(parallel_map(lambda a : a * a, [1, 2, 3]))
 
             Evaluates to [1, 4, 9]
-
-
-phyname
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-phyname (arg)
-            Args:
-
-                arg (primitive type) : return the name of the arg
-
-            Returns:
-
-                The name of the primitive type
-
-
-phytype
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-phytype (arg)
-            Args:
-
-                arg (primitive type) : return the type of the arg
-
-            Returns:
-
-                The variant index of the primitive type
 
 
 power

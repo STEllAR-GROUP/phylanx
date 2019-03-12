@@ -114,10 +114,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#lt">__lt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minus">__minus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mul">__mul</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#name">__name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ne">__ne</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#not">__not</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#or">__or</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sub">__sub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#type">__type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#xor">__xor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decomposition">_decomposition</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linear-solver">_linear_solver</a></li>
@@ -200,8 +202,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#pad">pad</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-block">parallel_block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-map">parallel_map</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#phyname">phyname</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#phytype">phytype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#power">power</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prod">prod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random">random</a></li>
@@ -516,6 +516,19 @@ arg3 (boolean, optional) : whether to use a</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="name">
+<h2>__name<a class="headerlink" href="#name" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__name (arg)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (primitive type) : return the name of the arg</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The name of the primitive type</div></blockquote>
+</dd>
+</dl>
+</div>
 <div class="section" id="ne">
 <h2>__ne<a class="headerlink" href="#ne" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -578,6 +591,19 @@ arg3 (boolean, optional) : whether to use a</p>
 </div></blockquote>
 <p>Returns:</p>
 <p class="last">The difference of all arguments.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="type">
+<h2>__type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>__type (arg)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>arg (primitive type) : return the type of the arg</div></blockquote>
+<p>Returns:</p>
+<blockquote class="last">
+<div>The variant index of the primitive type</div></blockquote>
 </dd>
 </dl>
 </div>
@@ -1874,32 +1900,6 @@ listv (iterator) : A sequence of values to apply the function to</div></blockquo
 </dd>
 </dl>
 </div>
-<div class="section" id="phyname">
-<h2>phyname<a class="headerlink" href="#phyname" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>phyname (arg)</dt>
-<dd><p class="first">Args:</p>
-<blockquote>
-<div>arg (primitive type) : return the name of the arg</div></blockquote>
-<p>Returns:</p>
-<blockquote class="last">
-<div>The name of the primitive type</div></blockquote>
-</dd>
-</dl>
-</div>
-<div class="section" id="phytype">
-<h2>phytype<a class="headerlink" href="#phytype" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>phytype (arg)</dt>
-<dd><p class="first">Args:</p>
-<blockquote>
-<div>arg (primitive type) : return the type of the arg</div></blockquote>
-<p>Returns:</p>
-<blockquote class="last">
-<div>The variant index of the primitive type</div></blockquote>
-</dd>
-</dl>
-</div>
 <div class="section" id="power">
 <h2>power<a class="headerlink" href="#power" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2395,7 +2395,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Mar 11, 2019.
+      Last updated on Mar 12, 2019.
 
     </p>
   </div>
