@@ -8,6 +8,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/util/random.hpp>
+#include <phylanx/util/truncated_normal_distribution.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -521,6 +522,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_RANDOM_DISTRIBUTION_2(
             normal, std::normal_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_2(
+            truncated_normal, util::truncated_normal_distribution<double>,
+            double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
             lognormal, std::lognormal_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
             chi_squared, std::chi_squared_distribution<double>, double, double);
@@ -550,6 +554,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             { "weibull", create_weibull },
             { "extreme_value", create_extreme_value },
             { "normal", create_normal },
+            { "truncated_normal", create_truncated_normal },
             { "lognormal", create_lognormal },
             { "chi_squared", create_chi_squared },
             { "cauchy", create_cauchy },
