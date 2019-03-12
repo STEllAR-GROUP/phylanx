@@ -29,32 +29,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_mean_op
         {
+            using result_type = double;
+
             statistics_mean_op(std::string const& name,
                     std::string const& codename)
               : name_(name), codename_(codename)
             {
             }
 
-            static constexpr T initial()
+            static constexpr double initial()
             {
-                return T(0);
+                return 0.0;
             }
 
             template <typename Scalar>
             typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial) const
+            operator()(Scalar s, double initial) const
             {
                 return s + initial;
             }
 
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector const& v, T initial) const
+            operator()(Vector const& v, double initial) const
             {
                 return blaze::sum(v) + initial;
             }
 
-            T finalize(T value, std::size_t size) const
+            double finalize(double value, std::size_t size) const
             {
                 if (size == 0)
                 {

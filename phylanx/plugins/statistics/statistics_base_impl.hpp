@@ -46,10 +46,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics0d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
-        bool keepdims, hpx::util::optional<T> const& initial) const
+        bool keepdims, hpx::util::optional<Init> const& initial) const
     {
         if (axis && axis.value() != 0 && axis.value() != -1)
         {
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         Op<T> op{name_, codename_};
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -74,10 +74,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics1d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
-        bool keepdims, hpx::util::optional<T> const& initial) const
+        bool keepdims, hpx::util::optional<Init> const& initial) const
     {
         if (axis && axis.value() != 0 && axis.value() != -1)
         {
@@ -91,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         Op<T> op{name_, codename_};
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -111,17 +111,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics2d_flat(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto m = arg.matrix();
 
         Op<T> op{name_, codename_};
         std::size_t size = 0;
 
-        T result = Op<T>::initial();
+        Init result = Op<T>::initial();
         if (initial)
         {
             result = *initial;
@@ -144,14 +144,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics2d_axis0(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto m = arg.matrix();
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -182,14 +182,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics2d_axis1(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto m = arg.matrix();
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -220,10 +220,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics2d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
-        bool keepdims, hpx::util::optional<T> const& initial) const
+        bool keepdims, hpx::util::optional<Init> const& initial) const
     {
         if (axis)
         {
@@ -251,10 +251,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics3d_flat(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto t = arg.tensor();
 
@@ -262,7 +262,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         std::size_t size = 0;
 
-        T result = Op<T>::initial();
+        Init result = Op<T>::initial();
         if (initial)
         {
             result = *initial;
@@ -289,14 +289,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis0(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto t = arg.tensor();
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -336,14 +336,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis1(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto t = arg.tensor();
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -383,14 +383,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis2(
         arg_type<T>&& arg, bool keepdims,
-        hpx::util::optional<T> const& initial) const
+        hpx::util::optional<Init> const& initial) const
     {
         auto t = arg.tensor();
 
-        T initial_value = Op<T>::initial();
+        Init initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -430,10 +430,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <template <class T> class Op, typename Derived>
-    template <typename T>
+    template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics3d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
-        bool keepdims, hpx::util::optional<T> const& initial) const
+        bool keepdims, hpx::util::optional<Init> const& initial) const
     {
         if (axis)
         {
@@ -470,7 +470,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keepdims, primitive_argument_type&& initial) const
     {
-        hpx::util::optional<T> initial_value;
+        using initial_type = typename Op<T>::result_type;
+
+        hpx::util::optional<initial_type> initial_value;
         if (valid(initial))
         {
             initial_value =

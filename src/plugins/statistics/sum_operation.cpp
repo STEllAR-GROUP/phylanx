@@ -30,6 +30,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_sum_op
         {
+            using result_type = T;
+
             statistics_sum_op(std::string const& name,
                 std::string const& codename)
             {}
