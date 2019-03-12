@@ -38,6 +38,7 @@ set(tests
     reshape_operation
     row_slicing
     shuffle_operation
+    size
     slicing_operation
     softmax_operation
     squeeze_operation
