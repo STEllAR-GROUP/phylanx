@@ -474,7 +474,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (valid(initial))
         {
             initial_value =
-                extract_scalar_data<T>(std::move(arg), name_, codename_);
+                extract_scalar_data<T>(std::move(initial), name_, codename_);
         }
 
         std::size_t a_dims = arg.num_dimensions();
