@@ -4,8 +4,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PLUGINS_MATRIXOPS_SOFTMAX_OPERATION)
-#define PHYLANX_PLUGINS_MATRIXOPS_SOFTMAX_OPERATION
+#if !defined(PHYLANX_PLUGINS_KERAS_SUPPORT_SOFTMAX_OPERATION)
+#define PHYLANX_PLUGINS_KERAS_SUPPORT_SOFTMAX_OPERATION
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
