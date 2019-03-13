@@ -25,6 +25,7 @@ set(tests
     837_none_default_argument
     846_if_expression
     852_concatenate_list
+    862_var_std_two_axis
     array_len_494
     array_shape_486
     array_subscript_403

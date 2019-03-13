@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_all_op
         {
-            using result_type = bool;
+            using result_type = std::uint8_t;
 
             statistics_all_op(std::string const& name,
                 std::string const& codename)
@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector const& v, bool initial) const
+            operator()(Vector& v, bool initial) const
             {
                 return initial && std::all_of(v.begin(), v.end(),
                     [](T val) -> bool

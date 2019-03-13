@@ -63,7 +63,7 @@ void test_2d_keep_dims_true()
 int main(int argc, char* argv[])
 {
     test_max_operation("amax(42.)", "42.");
-    test_max_operation("amax(42., 0, true)", "42.");
+    test_max_operation("amax(42., nil, true)", "42.");
     test_max_operation("amax([13., 42., 33.])", "42.");
     test_max_operation("amax([13., 42., 33.], -1)", "42.");
     test_max_operation("amax([13., 42., 33.],  0, true)", "hstack(42.)");

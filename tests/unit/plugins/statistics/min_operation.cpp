@@ -63,7 +63,7 @@ void test_2d_keep_dims_true()
 int main(int argc, char* argv[])
 {
     test_min_operation("amin(42.)", "42.");
-    test_min_operation("amin(42., 0, true)", "42.");
+    test_min_operation("amin(42., nil, true)", "42.");
     test_min_operation("amin([13., 42., 33.])", "13.");
     test_min_operation("amin([13., 42., 33.], -1)", "13.");
     test_min_operation("amin([13., 42., 33.],  0, true)", "hstack(13.)");

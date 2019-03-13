@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Shahrzad Shirzad
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -51,13 +51,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keepdims, hpx::util::optional<Init> const& initial) const
     {
-        if (axis && axis.value() != 0 && axis.value() != -1)
+        if (axis)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "statistics::statistics0d",
-                generate_error_message(
-                    "the statistics_operation primitive requires operand axis "
-                    "to be either 0 or -1 for scalar values."));
+                generate_error_message("the statistics_operation primitive "
+                    "requires that no axis is specified for scalar values."));
         }
 
         Op<T> op{name_, codename_};
@@ -461,6 +460,210 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return statistics3d_flat(std::move(arg), keepdims, initial);
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <template <class T> class Op, typename Derived>
+    template <typename T, typename Init>
+    primitive_argument_type statistics<Op, Derived>::statistics3d_columnslice(
+        arg_type<T>&& arg, bool keepdims,
+        hpx::util::optional<Init> const& initial) const
+    {
+        auto t = arg.tensor();
+
+        Init initial_value = Op<T>::initial();
+        if (initial)
+        {
+            initial_value = *initial;
+        }
+
+        if (keepdims)
+        {
+            blaze::DynamicTensor<T> result(1, 1, t.columns());
+            for (std::size_t k = 0; k != t.columns(); ++k)
+            {
+                Op<T> op{name_, codename_};
+                auto slice = blaze::ravel(blaze::columnslice(t, k));
+                result(0, 0, k) =
+                    op.finalize(op(slice, initial_value), slice.size());
+            }
+
+            return primitive_argument_type{std::move(result)};
+        }
+
+        blaze::DynamicVector<T> result(t.columns());
+        for (std::size_t k = 0; k != t.columns(); ++k)
+        {
+            Op<T> op{name_, codename_};
+            auto slice = blaze::ravel(blaze::columnslice(t, k));
+            result[k] = op.finalize(op(slice, initial_value), slice.size());
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <template <class T> class Op, typename Derived>
+    template <typename T, typename Init>
+    primitive_argument_type statistics<Op, Derived>::statistics3d_rowslice(
+        arg_type<T>&& arg, bool keepdims,
+        hpx::util::optional<Init> const& initial) const
+    {
+        auto t = arg.tensor();
+
+        Init initial_value = Op<T>::initial();
+        if (initial)
+        {
+            initial_value = *initial;
+        }
+
+        if (keepdims)
+        {
+            blaze::DynamicTensor<T> result(1, t.rows(), 1);
+            for (std::size_t k = 0; k != t.rows(); ++k)
+            {
+                Op<T> op{name_, codename_};
+                auto slice = blaze::ravel(blaze::rowslice(t, k));
+                result(0, k, 0) =
+                    op.finalize(op(slice, initial_value), slice.size());
+            }
+
+            return primitive_argument_type{std::move(result)};
+        }
+
+        blaze::DynamicVector<T> result(t.rows());
+        for (std::size_t k = 0; k != t.rows(); ++k)
+        {
+            Op<T> op{name_, codename_};
+            auto slice = blaze::ravel(blaze::rowslice(t, k));
+            result[k] = op.finalize(op(slice, initial_value), slice.size());
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <template <class T> class Op, typename Derived>
+    template <typename T, typename Init>
+    primitive_argument_type statistics<Op, Derived>::statistics3d_pageslice(
+        arg_type<T>&& arg, bool keepdims,
+        hpx::util::optional<Init> const& initial) const
+    {
+        auto t = arg.tensor();
+
+        Init initial_value = Op<T>::initial();
+        if (initial)
+        {
+            initial_value = *initial;
+        }
+
+        if (keepdims)
+        {
+            blaze::DynamicTensor<T> result(t.pages(), 1, 1);
+            for (std::size_t k = 0; k != t.pages(); ++k)
+            {
+                Op<T> op{name_, codename_};
+                auto slice = blaze::ravel(blaze::pageslice(t, k));
+                result(k, 0, 0) =
+                    op.finalize(op(slice, initial_value), slice.size());
+            }
+
+            return primitive_argument_type{std::move(result)};
+        }
+
+        blaze::DynamicVector<T> result(t.pages());
+        for (std::size_t k = 0; k != t.pages(); ++k)
+        {
+            Op<T> op{name_, codename_};
+            auto slice = blaze::ravel(blaze::pageslice(t, k));
+            result[k] = op.finalize(op(slice, initial_value), slice.size());
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <template <class T> class Op, typename Derived>
+    template <typename T>
+    primitive_argument_type statistics<Op, Derived>::statistics3d_slice(
+        arg_type<T>&& arg, std::int64_t axis0, std::int64_t axis1,
+        bool keepdims, primitive_argument_type&& initial) const
+    {
+        using initial_type = typename Op<T>::result_type;
+
+        hpx::util::optional<initial_type> initial_value;
+        if (valid(initial))
+        {
+            initial_value = extract_scalar_data<initial_type>(
+                std::move(initial), name_, codename_);
+        }
+
+        if (axis0 == 0)
+        {
+            if (axis1 == 1)
+            {
+                return statistics3d_columnslice(
+                    std::move(arg), keepdims, initial_value);
+            }
+
+            // axis0 == 0 && axis1 == 2
+            return statistics3d_rowslice(
+                std::move(arg), keepdims, initial_value);
+        }
+
+        // axis0 == 1 && axis1 == 2
+        return statistics3d_pageslice(std::move(arg), keepdims, initial_value);
+    }
+
+    template <template <class T> class Op, typename Derived>
+    primitive_argument_type statistics<Op, Derived>::statistics3d_slice(
+        primitive_argument_type&& arg,
+        std::int64_t axis0, std::int64_t axis1, bool keepdims,
+        primitive_argument_type&& initial) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(arg);
+        }
+
+        if (axis0 < 0)
+        {
+            axis0 += 3;
+        }
+        if (axis1 < 0)
+        {
+            axis1 += 3;
+        }
+        if (axis0 > axis1)
+        {
+            std::swap(axis0, axis1);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return statistics3d_slice(
+                extract_boolean_value_strict(std::move(arg), name_, codename_),
+                axis0, axis1, keepdims, std::move(initial));
+
+        case node_data_type_int64:
+            return statistics3d_slice(
+                extract_integer_value_strict(std::move(arg), name_, codename_),
+                axis0, axis1, keepdims, std::move(initial));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return statistics3d_slice(
+                extract_numeric_value(std::move(arg), name_, codename_), axis0,
+                axis1, keepdims, std::move(initial));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "statistics::statistics3d_slice",
+            generate_error_message(
+                "the statistics primitive requires for all arguments "
+                "to be numeric data types"));
+    }
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
@@ -475,8 +678,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::optional<initial_type> initial_value;
         if (valid(initial))
         {
-            initial_value =
-                extract_scalar_data<T>(std::move(initial), name_, codename_);
+            initial_value = extract_scalar_data<initial_type>(
+                std::move(initial), name_, codename_);
         }
 
         std::size_t a_dims = arg.num_dimensions();
@@ -497,7 +700,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "statistics::eval",
+                "statistics::statisticsnd",
                 generate_error_message(
                     "operand a has an invalid number of dimensions"));
         }
@@ -545,54 +748,107 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "to be numeric data types"));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <template <class T> class Op, typename Derived>
+    template <typename T>
+    primitive_argument_type statistics<Op, Derived>::statisticsnd_flat(
+        arg_type<T>&& arg, bool keepdims,
+        primitive_argument_type&& initial) const
+    {
+        using initial_type = typename Op<T>::result_type;
+
+        hpx::util::optional<initial_type> initial_value;
+        if (valid(initial))
+        {
+            initial_value = extract_scalar_data<initial_type>(
+                std::move(initial), name_, codename_);
+        }
+
+        std::size_t a_dims = arg.num_dimensions();
+        switch (a_dims)
+        {
+        case 0:
+            return statistics0d(std::move(arg),
+                hpx::util::optional<std::int64_t>(), keepdims, initial_value);
+
+        case 1:
+            return statistics1d(std::move(arg),
+                hpx::util::optional<std::int64_t>(), keepdims, initial_value);
+
+        case 2:
+            return statistics2d_flat(
+                std::move(arg), keepdims, initial_value);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return statistics3d_flat(
+                std::move(arg), keepdims, initial_value);
+#endif
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "statistics::statisticsnd_flat",
+                generate_error_message(
+                    "operand a has an invalid number of dimensions"));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <template <class T> class Op, typename Derived>
+    primitive_argument_type statistics<Op, Derived>::statisticsnd_flat(
+        primitive_argument_type&& arg, bool keepdims,
+        primitive_argument_type&& initial) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(arg);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return statisticsnd_flat(
+                extract_boolean_value_strict(std::move(arg), name_, codename_),
+                keepdims, std::move(initial));
+
+        case node_data_type_int64:
+            return statisticsnd_flat(
+                extract_integer_value_strict(std::move(arg), name_, codename_),
+                keepdims, std::move(initial));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return statisticsnd_flat(
+                extract_numeric_value(std::move(arg), name_, codename_),
+                keepdims, std::move(initial));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "statistics::statisticsnd_flat",
+            generate_error_message(
+                "the statistics primitive requires for all arguments "
+                "to be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        // This function is a hack helping to map the 3d axes into 2d/1d axes
-        // while iterating over the given list of axes (which reduces the
-        // dimensionality of the data we work on).
-        inline std::int64_t adapt_axis(std::int64_t dim, std::size_t dims,
-            std::int64_t prev_axis, std::int64_t axis)
+        inline void verify_axis(std::int64_t axis, std::int64_t min_axis,
+            std::int64_t max_axis, char const* type,
+            std::string const& name, std::string const& codename)
         {
-            if (dim == 1)
+            if (axis < min_axis || axis > max_axis)
             {
-                if (dims == 2)
-                {
-                    axis = 0;       // collapse remaining vector
-                }
-                else
-                {
-                    HPX_ASSERT(dims == 3);
-                    HPX_ASSERT(prev_axis != -1);
-                    switch (prev_axis)
-                    {
-                    case 0:
-                        axis -= 3;
-                        break;
-
-                    case 1:
-                        if (axis == 2)
-                        {
-                            axis = 1;
-                        }
-                        else
-                        {
-                            HPX_ASSERT(axis == 0);
-                        }
-                        break;
-
-                    case 2:
-                        axis -= 2;
-                        break;
-                    }
-
-                }
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "statistics::statistics3d",
+                    util::generate_error_message(hpx::util::format(
+                        "the statistics_operation primitive requires operand "
+                        "axis to be between {} and {} for {}.",
+                        min_axis, max_axis, type), name, codename));
             }
-            else if (dim == 2)
-            {
-                axis = 0;       // collapse remaining vector
-            }
-
-            return axis;
         }
     }
 
@@ -604,50 +860,107 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t dims =
             extract_numeric_value_dimension(arg, name_, codename_);
 
-        // for a list of axes simply repeat the invocation of statisticsnd
-        std::int64_t dim = 0;
-        std::int64_t prev_axis = -1;
-        std::set<std::int64_t> seen_axes;
-        for (auto && elem : axes)
+        switch (axes.size())
         {
-            std::int64_t axis =
-                extract_scalar_integer_value(std::move(elem), name_, codename_);
+        case 0:
+            // empty list given, assume no axis being specified
+            return statisticsnd(std::move(arg),
+                hpx::util::optional<std::int64_t>(), keepdims,
+                std::move(initial));
 
-            if (axis < 0)
-                axis = axis + dims;
-            if (seen_axes.find(axis) != seen_axes.end())
+        case 1:
+            // one axis specified, requires at least 1D data to work with
+            if (dims >= 1)
             {
-                // axes must be unique
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "statistics::statisticsnd",
-                    generate_error_message(
-                        "the statistics primitive requires for all axis "
-                        "arguments to be unique"));
-            }
-            seen_axes.insert(axis);
-
-            if (keepdims)
-            {
-                arg = statisticsnd(std::move(arg),
-                    hpx::util::optional<std::int64_t>(axis), true,
+                std::int64_t axis = extract_scalar_integer_value(
+                    *axes.begin(), name_, codename_);
+                return statisticsnd(std::move(arg),
+                    hpx::util::optional<std::int64_t>(axis), keepdims,
                     std::move(initial));
             }
-            else
+            break;
+
+        case 2:
+            // two axis specified, requires at least 2D data to work with
             {
-                axis = detail::adapt_axis(dim, dims, prev_axis, axis);
+                auto it = axes.begin();
+                std::int64_t axis0 =
+                    extract_scalar_integer_value(*it, name_, codename_);
+                std::int64_t axis1 =
+                    extract_scalar_integer_value(*++it, name_, codename_);
+                if (axis0 == axis1)
+                {
+                    // axes must be unique
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "statistics::statisticsnd",
+                        generate_error_message(
+                            "the statistics primitive requires for all axis "
+                            "arguments to be unique"));
+                }
 
-                arg = statisticsnd(std::move(arg),
-                    hpx::util::optional<std::int64_t>(axis),
-                    false, std::move(initial));
+                if (dims == 2)
+                {
+                    detail::verify_axis(
+                        axis0, -2, 1, "matrices", name_, codename_);
+                    detail::verify_axis(
+                        axis1, -2, 1, "matrices", name_, codename_);
 
-                prev_axis = axis;
+                    return statisticsnd_flat(
+                        std::move(arg), keepdims, std::move(initial));
+                }
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                else if (dims == 3)
+                {
+                    detail::verify_axis(
+                        axis0, -3, 2, "tensors", name_, codename_);
+                    detail::verify_axis(
+                        axis1, -3, 2, "tensors", name_, codename_);
+
+                    return statistics3d_slice(std::move(arg), axis0, axis1,
+                        keepdims, std::move(initial));
+                }
+#endif
             }
-            ++dim;
+            break;
 
-            // the initial value has to be used for the first axis only
-            initial = primitive_argument_type{};
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            {
+                auto it = axes.begin();
+                std::int64_t axis0 =
+                    extract_scalar_integer_value(*it, name_, codename_);
+                std::int64_t axis1 =
+                    extract_scalar_integer_value(*++it, name_, codename_);
+                std::int64_t axis2 =
+                    extract_scalar_integer_value(*++it, name_, codename_);
+                if (axis0 == axis1 || axis0 == axis2 || axis1 == axis2)
+                {
+                    // axes must be unique
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "statistics::statisticsnd",
+                        generate_error_message(
+                            "the statistics primitive requires for all axis "
+                            "arguments to be unique"));
+                }
+
+                detail::verify_axis(axis0, -3, 2, "tensors", name_, codename_);
+                detail::verify_axis(axis1, -3, 2, "tensors", name_, codename_);
+                detail::verify_axis(axis2, -3, 2, "tensors", name_, codename_);
+
+                return statisticsnd_flat(
+                    std::move(arg), keepdims, std::move(initial));
+            }
+#endif
+        default:
+            break;
         }
-        return arg;
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "statistics::statisticsnd",
+            generate_error_message(hpx::util::format(
+                "invalid number of axis specified ({}), "
+                "should be not larger than the data's dimension ({})",
+                axes.size(), dims)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
