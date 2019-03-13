@@ -7,5 +7,6 @@
 #define PHYLANX_PLUGINS_KERAS_SUPPORT_MAR_11_2019_0441PM
 
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
+#include <phylanx/plugins/keras_support/softplus_operation.hpp>
 
 #endif
