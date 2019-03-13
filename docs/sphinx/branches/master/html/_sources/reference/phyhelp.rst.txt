@@ -1630,6 +1630,18 @@ shuffle (args)
             shuffled by this call.
 
 
+size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+size (a)
+            Args:
+
+                a (array type): array to extract the size for
+
+            Returns:
+
+            Size of array (number of elements in the array).
+
+
 slice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 slice (v, ind)
