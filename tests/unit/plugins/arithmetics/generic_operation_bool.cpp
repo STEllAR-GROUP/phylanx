@@ -127,9 +127,10 @@ void test_generic_operation_3d(std::string const& func_name,
 ///////////////////////////////////////////////////////////////////////////////
 void test_0d_operations()
 {
-    test_generic_operation_0d("isnan", std::isnan);
-    test_generic_operation_0d("isinf", std::isinf);
-    test_generic_operation_0d("isfinite", std::isfinite);
+    test_generic_operation_0d("isnan", [](double v) { return std::isnan(v); });
+    test_generic_operation_0d("isinf", [](double v) { return std::isinf(v); });
+    test_generic_operation_0d(
+        "isfinite", [](double v) { return std::isfinite(v); });
     test_generic_operation_0d("isneginf",
         [](double m) -> bool { return std::isinf(m) && std::signbit(m); });
     test_generic_operation_0d("isposinf",
