@@ -21,14 +21,7 @@
 #include <vector>
 
 namespace phylanx {  namespace execution_tree {  namespace primitives  {
-/// \brief Returns an array of the same shape which is the normalized exponential
-///        function of the given array.  The resulting array consists of real
-///        values in the range (0..1], which add up to 1 in direction of the
-///        given axis
-///
-/// \param a      The scalar, vector, or matrix to perform one_hot over
-/// \param axis   Optional. The default is the last axis (axis == -1). Effective
-///               when the array is >1d
+/// \brief please refere to https://keras.io/backend/#one_hot
 
     class one_hot_operation
         : public primitive_component_base
@@ -39,7 +32,7 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
-        using val_type = double;
+        using val_type = std::int64_t;
         using arg_type = ir::node_data<val_type>;
 
     public:
@@ -50,21 +43,16 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
         one_hot_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-//    private:
-//        primitive_argument_type softmax0d() const;
-//        primitive_argument_type softmax1d(arg_type&& arg) const;
-//        primitive_argument_type softmax2d(
-//            arg_type&& arg, std::int64_t axis) const;
-//        primitive_argument_type softmax2d_axis0(arg_type&& arg) const;
-//        primitive_argument_type softmax2d_axis1(arg_type&& arg) const;
-//
-//#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-//        primitive_argument_type softmax3d_axis0(arg_type&& arg) const;
-//        primitive_argument_type softmax3d_axis1(arg_type&& arg) const;
-//        primitive_argument_type softmax3d_axis2(arg_type&& arg) const;
-//        primitive_argument_type softmax3d(
-//            arg_type&& arg, std::int64_t axis) const;
-//#endif
+    private:
+        primitive_argument_type one_hot0d(
+            arg_type&& arg, val_type num_classes) const;
+        primitive_argument_type one_hot1d(
+            arg_type&& arg, val_type num_classes) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type one_hot2d(
+            arg_type&& arg, val_type num_classes) const;
+#endif
     };
     inline primitive create_one_hot_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
