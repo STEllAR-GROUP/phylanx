@@ -18,6 +18,13 @@ set(tests
     794_3d_array
     805_lazy_variable
     805_two_variables
+    808_print_twice
+    826_default_args
+    827_random_0dim
+    832_performance_data
+    837_none_default_argument
+    846_if_expression
+    852_concatenate_list
     array_len_494
     array_shape_486
     array_subscript_403

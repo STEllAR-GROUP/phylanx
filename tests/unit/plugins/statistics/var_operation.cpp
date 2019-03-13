@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 {
     // scalars
     test_count_var_operation("var(1.0)", "0.0");
-    test_count_var_operation("var(1)", "0");
+    test_count_var_operation("var(1)", "0.0");
     test_count_var_operation("var__float(1)", "0.0");
 
     // vectors

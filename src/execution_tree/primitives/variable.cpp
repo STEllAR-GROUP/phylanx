@@ -87,7 +87,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             valid(bound_value_) ? bound_value_ : operands_[0];
 
         // if given, args[0], args[1] and args[2] are optional slicing arguments
-        if (!args.empty() && !(ctx.mode_ & eval_dont_evaluate_partials))
+        if (!args.empty() && !(ctx.mode_ & eval_dont_evaluate_partials) &&
+            (ctx.mode_ & eval_slicing))
         {
             if (args.size() == 2)
             {
@@ -129,7 +130,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             valid(bound_value_) ? bound_value_ : operands_[0];
 
         // if given, args[0] is an optional slicing argument
-        if (valid(arg) && !(ctx.mode_ & eval_dont_evaluate_partials))
+        if (valid(arg) && !(ctx.mode_ & eval_dont_evaluate_partials) &&
+            (ctx.mode_ & eval_slicing))
         {
             // handle row-slicing
             return hpx::make_ready_future(

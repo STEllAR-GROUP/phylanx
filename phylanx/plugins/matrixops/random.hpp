@@ -104,6 +104,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///     list("normal", mean, stddev): Generates random numbers
         ///             according to the Normal (or Gaussian) random number
         ///             distribution (mean: mean, stddev: standard deviation)\n
+        ///     list("truncated_normal", mean, stddev): Generates random numbers
+        ///             according to the Normal (or Gaussian) random number
+        ///             distribution. Values whose magnitude is more than
+        ///             two standard deviations from the mean are dropped and
+        ///             re-picked (mean: mean, stddev: standard deviation)\n
         ///     list("lognormal", m, s): Produces random numbers according
         ///             to a log-normal distribution (m: log-scale, s: shape)\n
         ///     list("chi_squared", n): Produces random positive

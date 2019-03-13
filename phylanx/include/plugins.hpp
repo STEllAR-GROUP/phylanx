@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@
 #include <phylanx/plugins/booleans/booleans.hpp>
 #include <phylanx/plugins/controls/controls.hpp>
 #include <phylanx/plugins/fileio/fileio.hpp>
+#include <phylanx/plugins/keras_support/keras_support.hpp>
 #include <phylanx/plugins/listops/listops.hpp>
 #include <phylanx/plugins/matrixops/matrixops.hpp>
 #include <phylanx/plugins/solvers/solvers.hpp>

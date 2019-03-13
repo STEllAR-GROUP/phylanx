@@ -444,7 +444,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [](arg_type<T>&& m) -> arg_type<T> {
                     if (m.is_ref())
                     {
-                        m = m.vector()*m.vector();
+                        m = m.vector() * m.vector();
                     }
                     else
                     {

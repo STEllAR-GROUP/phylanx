@@ -99,8 +99,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             return value_operand(target,
                                 rows.get(), this_->name_, this_->codename_,
-                                add_mode(std::move(ctx),
-                                    eval_dont_wrap_functions));
+                                add_mode(std::move(ctx), eval_mode(
+                                    eval_dont_wrap_functions|eval_slicing)));
                         });
             }
 
@@ -121,7 +121,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         return value_operand(target,
                             std::move(args), this_->name_, this_->codename_,
-                            add_mode(std::move(ctx), eval_dont_wrap_functions));
+                            add_mode(std::move(ctx), eval_mode(
+                                eval_dont_wrap_functions|eval_slicing)));
                     },
                     value_operand(operands_[1], params, name_, codename_, ctx),
                     value_operand(operands_[2], params, name_, codename_, ctx));
@@ -138,16 +139,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             hpx::future<primitive_argument_type>&& rows,
                             hpx::future<primitive_argument_type>&& cols) mutable
                     -> hpx::future<primitive_argument_type>
-                    {
-                        primitive_arguments_type args;
-                        args.reserve(3);
-                        args.emplace_back(pages.get());
-                        args.emplace_back(rows.get());
-                        args.emplace_back(cols.get());
+                {
+                    primitive_arguments_type args;
+                    args.reserve(3);
+                    args.emplace_back(pages.get());
+                    args.emplace_back(rows.get());
+                    args.emplace_back(cols.get());
 
-                        return value_operand(target,
-                            std::move(args), this_->name_, this_->codename_,
-                            add_mode(std::move(ctx), eval_dont_wrap_functions));
+                    return value_operand(target,
+                        std::move(args), this_->name_, this_->codename_,
+                        add_mode(std::move(ctx), eval_mode(
+                            eval_dont_wrap_functions|eval_slicing)));
                     },
                     value_operand(operands_[1], params, name_, codename_, ctx),
                     value_operand(operands_[2], params, name_, codename_, ctx),
@@ -189,6 +191,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // handle slicing, simply append the slicing parameters to the end of
         // the argument list
+        if (operands_.size() > 1)
+        {
+            ctx = add_mode(std::move(ctx), eval_slicing);
+        }
+
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
             vals.emplace_back(extract_ref_value(*it, name_, codename_));
@@ -234,7 +241,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (p != nullptr)
             {
                 p->store(hpx::launch::sync, std::move(vals), std::move(params),
-                    std::move(ctx));
+                    add_mode(std::move(ctx), eval_slicing));
             }
         }
         else

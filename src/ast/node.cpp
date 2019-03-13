@@ -7,6 +7,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/util/none_manip.hpp>
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/serialization.hpp>
@@ -113,6 +114,18 @@ namespace phylanx { namespace ast
     {
         int val = static_cast<int>(id);
         ar << val;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    void serialize(
+        hpx::serialization::output_archive& ar, nil const& val, unsigned)
+    {
+        ar << val.explicit_nil;
+    }
+
+    void serialize(hpx::serialization::input_archive& ar, nil& val, unsigned)
+    {
+        ar >> val.explicit_nil;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -344,9 +357,13 @@ namespace phylanx { namespace ast
 
     std::ostream& operator<<(std::ostream& out, nil)
     {
-        if (util::is_repr(out))
+        if (util::is_none(out) || util::is_repr(out))
         {
-            out << "<nil>";
+            out << "None";
+        }
+        else
+        {
+            out << "nil";
         }
         return out;
     }

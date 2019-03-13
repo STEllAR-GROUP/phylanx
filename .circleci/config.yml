@@ -50,12 +50,6 @@ anchors:
             - image: stellargroup/phylanx_base:prerequisites
               entrypoint: /bin/bash
 
-    - &machine_config
-        machine: true
-        environment:
-            BASE_IMAGE_NAME: stellargroup/phylanx_base:prerequisites
-            TARGET_IMAGE_NAME: stellargroup/phylanx:devel
-
     - &ignore_docs
         filters:
             branches:
@@ -80,79 +74,89 @@ anchors:
         attach_workspace:
             at: /
 
+    - &avoid_cmake_rerun
+        run:
+            name: Avoid re-running CMake
+            command: |
+                export old_targets=$( \
+                    ninja -n -d explain 2>&1 | \
+                    grep -o 'output\ [^ ]\+ older\ than\ most\ recent\ input [^ ]\+' | \
+                    awk '{ print $2 }' || true)
+                if [[ -n "$old_targets" ]]; then
+                    echo "$old_targets"| xargs -I % touch %
+                fi
+            working_directory: /phylanx/build
+        run:
+            name: Justify building the ALL target
+            command: ninja -n -d explain || true
+            working_directory: /phylanx/build
+
 ################################################################################
 jobs:
-    checkout_code:
+    configure:
         <<: *docker_config
         working_directory: /phylanx
         steps:
             - checkout:
                 path:
-                    /phylanx/source-full
-            # Make a shallow clone of the current commit so that we don't have to copy
-            # the whole repository between work steps.
+                    /phylanx/src-full
             - run:
-                name: Creating shallow clone
-                command: |
-                    git clone --depth=1 file:///phylanx/source-full source
+                name: Create a shallow clone
+                command: git clone --depth=1 file:///phylanx/src-full src
+            - run:
+                name: CMake Version
+                command: cmake --version
             - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
             # Install blaze_tensors library
             - run:
-                name: Install blaze_tensors
+                name: Install blaze_tensor
                 command: |
                     git clone https://github.com/STEllAR-GROUP/blaze_tensor.git --depth=1 /blaze_tensor
                     cmake -H/blaze_tensor -B/blaze_tensor/build
                     cmake --build /blaze_tensor/build --target install
-            - persist_to_workspace:
-                root: /
-                paths:
-                    - phylanx/source
-                    - phylanx/conv.xsl
-                    - usr/local/include/blaze_tensor
-                    - usr/local/share/BlazeTensor
-    configure:
-        <<: *docker_config
-        working_directory: /phylanx/build
-        steps:
-            - <<: *attach_phylanx_tree
-            # CMake
+            # Configure Phylanx
             - run:
                 name: Run CMake
                 command: |
-                    cmake --version
                     cmake                                           \
-                        /phylanx/source                             \
-                        -G "Ninja"                                  \
-                        -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1}    \
-                        -DPHYLANX_WITH_TOOLS=On                     \
-                        -DHPX_DIR=/usr/local/lib/cmake/HPX          \
-                        -Dblaze_DIR=/blaze/share/blaze/cmake        \
-                        -DPHYLANX_WITH_BLAZE_TENSOR=ON              \
-                        -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
+                        -Hsrc                                       \
+                        -Bbuild                                     \
+                        -GNinja                                     \
                         -DCMAKE_BUILD_TYPE=Debug                    \
                         -DCMAKE_CXX_COMPILER=clang++                \
                         -DCMAKE_C_COMPILER=clang                    \
+                        -Dblaze_DIR=/blaze/share/blaze/cmake        \
+                        -DHPX_DIR=/usr/local/lib/cmake/HPX          \
                         -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1}    \
                         -DPHYLANX_WITH_GIT_BRANCH="${CIRCLE_BRANCH}"\
                         -DPHYLANX_WITH_GIT_TAG="${CIRCLE_TAG}"      \
+                        -DPHYLANX_WITH_TOOLS=On                     \
+                        -DPHYLANX_WITH_BLAZE_TENSOR=ON              \
+                        -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
                         -DPHYLANX_WITH_DOCUMENTATION=On             \
                         -DPHYLANX_WITH_HIGHFIVE=On
             - persist_to_workspace:
                 root: /
                 paths:
                     - phylanx/build
-                    - phylanx/source
+                    - phylanx/src
+                    - phylanx/conv.xsl
+                    - usr/local/include/blaze_tensor
+                    - usr/local/share/BlazeTensor
     check.test_coverage:
         <<: *docker_config
-        working_directory: /phylanx/source
+        working_directory: /phylanx/src
         steps:
             - <<: *attach_phylanx_tree
             # Test coverage
             - run:
                 name: Ensure all CTest tests are run
-                command: tools/circleci/check_test_coverage.py .circleci/config.yml <(cd /phylanx/build && ctest -N | grep -o 'tests[^ ]\+')
+                command: |
+                    tools/circleci/check_test_coverage.py \
+                        .circleci/config.yml \
+                        <(cd /phylanx/build && ctest -N | grep -o 'tests[^ ]\+')
     build:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -161,8 +165,7 @@ jobs:
             # Build all targets
             - run:
                 name: Build all targets
-                command: |
-                    ninja -j1
+                command: cmake --build . -- -j1
             # CTest to JUnit XML transformation sheet
             - persist_to_workspace:
                 root: /
@@ -174,59 +177,60 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             # Build Documentation and Push to gh-pages branch
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain git_docs
             - run:
-                name: Build and push  Sphinx Documentation
+                name: Add Github's key(s) to known_hosts
                 command: |
                     mkdir -p ~/.ssh
-                    echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> ~/.ssh/known_hosts
+                    ssh-keyscan -H github.com >>~/.ssh/known_hosts
+            - run:
+                name: Configure local Git
+                command: |
                     git config --global user.name "StellarBot"
                     git config --global user.email "stellar@cct.lsu.edu"
-                    ninja -j1 git_docs
+            - run:
+                name: Build and push Sphinx Documentation
+                command: cmake --build . -- -j1 git_docs
+            - persist_to_workspace:
+                  root: /
+                  paths:
+                      - phylanx/build
 
-    check.code_format:
+    check.code_format.inspect:
         <<: *docker_config
-        working_directory: /phylanx/source
+        working_directory: /phylanx/src
         steps:
             - <<: *attach_phylanx_tree
             - run:
-                name: Create build directory, test and artifacts directories
+                name: Create build, test, and artifacts directories
                 command: mkdir -p /artifacts /code_format
-            # flake8
-            - run:
-                name: Check the formatting of Phylanx's Python files
-                command: flake8 --config=tools/flake8/config.ini --tee --output-file=/artifacts/phylanx_flake8_report.txt .
-            - run:
-                name: Converting flake8 text output to XML
-                command: tools/flake8/flake_to_junit.py /artifacts/phylanx_flake8_report.txt /code_format/phylanx_flake8.xml
-                when: always
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
-                working_directory: /phylanx/build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tools.inspect
                 working_directory: /phylanx/build
                 when: always
-            # Inspect
             - run:
                 name: Build the Inspect tool
                 working_directory: /phylanx/build
-                command: ninja -j1 tools.inspect
+                command: cmake --build . -- -j1 tools.inspect
                 when: always
             - run:
                 name: Check the formatting of Phylanx's C++ files
-                command: ../build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx/source
+                command: |
+                    /phylanx/build/bin/inspect \
+                        --all \
+                        --output=/artifacts/phylanx_inspect_report.html \
+                        /phylanx/src
                 when: always
             - run:
                 name: Convert inspect HTML output to XML
-                command: tools/inspect/inspect_to_junit.py /artifacts/phylanx_inspect_report.html >/code_format/phylanx_inspect.xml
+                command: |
+                    tools/inspect/inspect_to_junit.py \
+                        /artifacts/phylanx_inspect_report.html \
+                        >/code_format/phylanx_inspect.xml
                 when: always
             # Code Formatting Check Reports
             - store_artifacts:
@@ -234,13 +238,44 @@ jobs:
             # Code Format Check JUnit Reports
             - store_test_results:
                 path: /code_format
-    check.help_format:
+
+    check.code_format.flake8:
         <<: *docker_config
-        working_directory: /phylanx/source
+        working_directory: /phylanx/src
         steps:
             - <<: *attach_phylanx_tree
             - run:
-                name: Create build directory, test and artifacts directories
+                name: Create build, test, and artifacts directories
+                command: mkdir -p /artifacts /code_format
+            - run:
+                name: Check the formatting of Phylanx's Python files
+                command: |
+                    flake8 \
+                        --config=tools/flake8/config.ini \
+                        --tee \
+                        --output-file=/artifacts/phylanx_flake8_report.txt \
+                        .
+            - run:
+                name: Converting flake8 text output to XML
+                command: |
+                    tools/flake8/flake_to_junit.py \
+                        /artifacts/phylanx_flake8_report.txt \
+                        /code_format/phylanx_flake8.xml
+                when: always
+            # Code Formatting Check Reports
+            - store_artifacts:
+                path: /artifacts
+            # Code Format Check JUnit Reports
+            - store_test_results:
+                path: /code_format
+
+    check.help_format:
+        <<: *docker_config
+        working_directory: /phylanx/src
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Create build, test, and artifacts directories
                 command: mkdir -p /artifacts /code_format
             # Run the code
             - run:
@@ -248,7 +283,7 @@ jobs:
                 environment:
                     PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.6"
                 command: |
-                    python3 tools/check_help/check_help.py > /code_format/phylanx_help_report.xml
+                    python3 tools/check_help/check_help.py >/code_format/phylanx_help_report.xml
                     cp /code_format/phylanx_help_report.xml /artifacts/phylanx_help_report.txt
             - store_artifacts:
                 path: /artifacts
@@ -263,15 +298,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.regressions
             - run:
                 name: Build regression tests
-                command: ninja -j1 tests.regressions
+                command: cmake --build . -- -j1 tests.regressions
             - run:
                 name: Run regression tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.regressions
@@ -285,15 +318,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.distributed
             - run:
                 name: Build distributed tests
-                command: ninja -j1 tests.unit.distributed
+                command: cmake --build . -- -j1 tests.unit.distributed
             - run:
                 name: Run distributed tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.distributed
@@ -307,15 +338,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.arithmetics
             - run:
                 name: Build arithmetics primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.arithmetics
+                command: cmake --build . -- -j1 tests.unit.plugins.arithmetics
             - run:
                 name: Run arithmetics primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.arithmetics
@@ -329,15 +358,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.booleans
             - run:
                 name: Build boolean primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.booleans
+                command: cmake --build . -- -j1 tests.unit.plugins.booleans
             - run:
                 name: Run boolean primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.booleans
@@ -351,15 +378,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.controls
             - run:
                 name: Build control primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.controls
+                command: cmake --build . -- -j1 tests.unit.plugins.controls
             - run:
                 name: Run control primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.controls
@@ -373,15 +398,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.{fileio,solvers}
             - run:
                 name: Build file I/O and solvers primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.{fileio,solvers}
+                command: cmake --build . -- -j1 tests.unit.plugins.{fileio,solvers}
             - run:
                 name: Run file I/O and solvers primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.plugins.(fileio|solvers)'
@@ -390,20 +413,38 @@ jobs:
                 path: tests.unit.plugins.fileio_solvers
             - store_artifacts:
                 path: tests.unit.plugins.fileio_solvers
+    tests.unit.plugins.keras_support:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - <<: *avoid_cmake_rerun
+            - run:
+                name: Justify build
+                command: ninja -n -d explain tests.unit.plugins.keras_support
+            - run:
+                name: Build KerasSupport primitive plugin unit tests
+                command: cmake --build . -- -j1 tests.unit.plugins.keras_support
+            - run:
+                name: Run KerasSupport primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.keras_support
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.keras_support
+            - store_artifacts:
+                path: tests.unit.plugins.keras_support
     tests.unit.plugins.listops:
         <<: *docker_config
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.listops
             - run:
                 name: Build ListOps primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.listops
+                command: cmake --build . -- -j1 tests.unit.plugins.listops
             - run:
                 name: Run ListOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.listops
@@ -417,15 +458,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.matrixops
             - run:
                 name: Build MatrixOps primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.matrixops
+                command: cmake --build . -- -j1 tests.unit.plugins.matrixops
             - run:
                 name: Run MatrixOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.matrixops
@@ -439,15 +478,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.statistics
             - run:
                 name: Build statistics primitive plugin unit tests
-                command: ninja -j1 tests.unit.plugins.statistics
+                command: cmake --build . -- -j1 tests.unit.plugins.statistics
             - run:
                 name: Run statistics primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.statistics
@@ -461,15 +498,13 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
             - run:
                 name: Build tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
-                command: ninja -j1 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
+                command: cmake --build . -- -j1 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
             - run:
                 name: Run tests.unit.{execution_tree,ast,algorithm,primitives}
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm|primitives)'
@@ -483,17 +518,14 @@ jobs:
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
+            - <<: *avoid_cmake_rerun
             - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
-            - run:
-            # Explain
                 name: Justify build
                 working_directory: /phylanx/build
                 command: ninja -n -d explain tests.unit.{config,ir,util,performance_counters,python}
             - run:
                 name: Build tests.unit.{config,ir,util,performance_counters,python}
-                command: ninja -j1 tests.unit.{config,ir,util,performance_counters,python}
+                command: cmake --build . -- -j1 tests.unit.{config,ir,util,performance_counters,python}
             - run:
                 name: Run tests.unit.config
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(config|ir|util|performance_counters|python)'
@@ -509,27 +541,30 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - setup_remote_docker
-            - run:
-                name: Avoid re-running CMake
-                command: touch build.ninja
-                working_directory: /phylanx/build
+            - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
                 command: ninja -n -d explain install
                 working_directory: /phylanx/build
             - run:
                 name: Installing
-                command: ninja -j1 install
+                command: cmake --build /phylanx/build --target install -- -j1
+            - run:
+                name: Installing Python front-end
+                command: python3 python/setup_Debug.py install
                 working_directory: /phylanx/build
+            - run:
+                name: Install Docker
+                environment:
+                    VER: 18.03.0-ce
+                command: |
+                    curl -JL https://download.docker.com/linux/static/stable/x86_64/docker-${VER}.tgz | \
+                        tar xz --strip-components=1
+                working_directory: /usr/bin/
             - run:
                 name: Create Docker Image
                 command: |
-                    cp /phylanx/source/tools/docker/circleci/Dockerfile .
-                    VER="18.03.0-ce"
-                    curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-                    tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-                    mv /tmp/docker/* /usr/bin
-                    docker build -t ${TARGET_IMAGE_NAME} .
+                    docker build -t ${TARGET_IMAGE_NAME} -f /phylanx/src/tools/docker/circleci/Dockerfile .
                 working_directory: /usr/local
             - run:
                 name: Test installation
@@ -538,11 +573,11 @@ jobs:
             - deploy:
                 name: Push the Phylanx build environment Docker image
                 command: |
-                  if [ -z "$CIRCLE_PR_NUMBER" ] && [ "$CIRCLE_BRANCH" == "master" ]; then
+                  if [[ -z "$CIRCLE_PR_NUMBER" ]] && [[ "${CIRCLE_BRANCH}" == "master" ]]; then
                     docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
                     docker push ${TARGET_IMAGE_NAME}
                   else
-                    echo "Skipping docker push on non-master branch"
+                    echo "Not on the master branch. The image will not be pushed."
                   fi
 
 ################################################################################
@@ -550,11 +585,8 @@ workflows:
     version: 2
     build_and_test_phylanx:
         jobs:
-            - checkout_code:
-                <<: *ignore_docs
             - configure:
-                requires:
-                    - checkout_code
+                <<: *ignore_docs
             - check.test_coverage:
                 requires:
                     - configure
@@ -565,9 +597,12 @@ workflows:
                 <<: *docs_push_branch_filter
                 requires:
                     - build
-            - check.code_format:
+            - check.code_format.inspect:
                 requires:
-                    - build
+                    - configure
+            - check.code_format.flake8:
+                requires:
+                    - configure
             - check.help_format:
                 requires:
                     - build
@@ -584,6 +619,9 @@ workflows:
                 requires:
                     - build
             - tests.unit.plugins.fileio_solvers:
+                requires:
+                    - build
+            - tests.unit.plugins.keras_support:
                 requires:
                     - build
             - tests.unit.plugins.listops:
@@ -607,13 +645,15 @@ workflows:
             - deploy_image:
                 requires:
                     - build
-                    - check.code_format
+                    - check.code_format.inspect
+                    - check.code_format.flake8
                     - check.help_format
                     - tests.regressions
                     - tests.unit.plugins.arithmetics
                     - tests.unit.plugins.booleans
                     - tests.unit.plugins.controls
                     - tests.unit.plugins.fileio_solvers
+                    - tests.unit.plugins.keras_support
                     - tests.unit.plugins.listops
                     - tests.unit.plugins.matrixops
                     - tests.unit.plugins.statistics

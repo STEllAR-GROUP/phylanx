@@ -36,6 +36,13 @@ namespace phylanx { namespace util
         hpx::id_type id =
             hpx::agas::resolve_name(hpx::launch::sync, primitive_instance);
 
+        if (!id)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::util::enable_measurements",
+                "given primitive name cannot be resolved by AGAS");
+        }
+
         auto p = hpx::get_ptr<primitive_component>(hpx::launch::sync, id);
 
         p->enable_measurements();

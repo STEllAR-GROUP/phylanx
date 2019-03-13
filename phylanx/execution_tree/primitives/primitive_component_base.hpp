@@ -110,7 +110,8 @@ namespace phylanx { namespace execution_tree
             primitive_arguments_type const& operands() const
             {
                 return operands_.empty() ||
-                        (operands_.size() == 1 && !valid(operands_[0])) ?
+                        (operands_.size() == 1 &&
+                            is_implicit_nil(operands_[0])) ?
                     noargs : operands_;
             }
 

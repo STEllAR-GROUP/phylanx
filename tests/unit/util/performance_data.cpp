@@ -52,7 +52,7 @@ std::map<std::string, std::size_t> expected_counts =
     { "/phylanx/access-variable$10$step/0$16$27", 0 },
     { "/phylanx/access-variable$11$step/0$16$33", 8 },
     { "/phylanx/access-variable$12$z/0$19$13", 1 },
-    { "/phylanx/access-variable$13$fib_test/0$22$5", 1 },
+    { "/phylanx/access-function$0$fib_test/0$22$5", 1 },
     { "/phylanx/access-variable$2$x/0$12$30", 8 },
     { "/phylanx/access-variable$3$y/0$12$34", 8 },
     { "/phylanx/access-variable$4$temp/0$13$27", 0 },
@@ -80,7 +80,7 @@ std::map<std::string, std::size_t> expected_counts =
     { "/phylanx/variable$2$y/0$6$20", 1 },
     { "/phylanx/variable$3$temp/0$7$20", 1 },
     { "/phylanx/variable$4$step/0$8$20", 1 },
-    { "/phylanx/variable$5$fib_test/0$2$12", 1 },
+    { "/phylanx/function$0$fib_test/0$2$12", 1 },
     { "/phylanx/while$0/0$9$13", 1 },
 };
 

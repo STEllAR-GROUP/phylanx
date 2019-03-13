@@ -32,30 +32,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_logsumexp_op
         {
+            using result_type = double;
+
             statistics_logsumexp_op(std::string const& name,
                 std::string const& codename)
             {}
 
-            static constexpr T initial()
+            static constexpr double initial()
             {
-                return T(0);
+                return 0.0;
             }
 
             template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial) const
+            typename std::enable_if<traits::is_scalar<Scalar>::value,
+                double>::type
+            operator()(Scalar s, double initial) const
             {
                 return s;
             }
 
             template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector const& v, T initial) const
+            typename std::enable_if<!traits::is_scalar<Vector>::value,
+                double>::type
+            operator()(Vector const& v, double initial) const
             {
                 return blaze::sum(blaze::exp(v)) + initial;
             }
 
-            static T finalize(T value, std::size_t size)
+            static double finalize(double value, std::size_t size)
             {
                 return blaze::log(value);
             }

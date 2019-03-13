@@ -132,7 +132,8 @@ namespace phylanx { namespace execution_tree
         eval_default = 0x00,                // always evaluate everything
         eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
         eval_dont_evaluate_partials = 0x02, // don't evaluate partially bound functions
-        eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
+        eval_dont_evaluate_lambdas = 0x04,  // don't evaluate functions
+        eval_slicing = 0x08                 // do perform slicing
     };
 
     struct eval_context
@@ -356,6 +357,19 @@ namespace phylanx { namespace execution_tree
 
     struct primitive_argument_type : argument_value_type
     {
+        enum variant_index
+        {
+            nil_index = 0,
+            bool_index = 1,
+            int64_index = 2,
+            string_index = 3,
+            float64_index = 4,
+            primitive_index = 5,
+            expression_index = 6,
+            list_index = 7,
+            dictionary_index = 8
+        };
+
         primitive_argument_type() = default;
 
         primitive_argument_type(ast::nil val)
@@ -583,9 +597,23 @@ namespace phylanx { namespace execution_tree
             return (*this)(std::move(args), std::move(ctx));
         }
 
+        // a primitive_argument_type instance is valid if its not an implicit nil
         explicit operator bool() const noexcept
         {
             return variant().index() != 0;
+        }
+
+        // a primitive_argument_type could be an explicit nil
+        bool is_explicit_nil() const noexcept
+        {
+            return variant().index() == 0 &&
+                util::get<0>(variant()).explicit_nil;
+        }
+
+        bool is_implicit_nil() const noexcept
+        {
+            return variant().index() == 0 &&
+                !util::get<0>(variant()).explicit_nil;
         }
 
         // workaround for problem in implementation of MSVC14.12
@@ -612,6 +640,25 @@ namespace phylanx { namespace execution_tree
         return bool(val);
     }
 
+    inline bool is_explicit_nil(primitive_argument_type const& val) noexcept
+    {
+        return val.is_explicit_nil();
+    }
+    inline bool is_explicit_nil(primitive_argument_type && val) noexcept
+    {
+        return val.is_explicit_nil();
+    }
+
+    inline bool is_implicit_nil(primitive_argument_type const& val) noexcept
+    {
+        return val.is_implicit_nil();
+    }
+    inline bool is_implicit_nil(primitive_argument_type && val) noexcept
+    {
+        return val.is_implicit_nil();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     inline bool operator==(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs)
     {

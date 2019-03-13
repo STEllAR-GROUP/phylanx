@@ -4,8 +4,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PLUGINS_MATRIXOPS_SOFTMAX_OPERATION)
-#define PHYLANX_PLUGINS_MATRIXOPS_SOFTMAX_OPERATION
+#if !defined(PHYLANX_PLUGINS_KERAS_SUPPORT_SOFTMAX_OPERATION)
+#define PHYLANX_PLUGINS_KERAS_SUPPORT_SOFTMAX_OPERATION
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -57,6 +57,14 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
             arg_type&& arg, std::int64_t axis) const;
         primitive_argument_type softmax2d_axis0(arg_type&& arg) const;
         primitive_argument_type softmax2d_axis1(arg_type&& arg) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type softmax3d_axis0(arg_type&& arg) const;
+        primitive_argument_type softmax3d_axis1(arg_type&& arg) const;
+        primitive_argument_type softmax3d_axis2(arg_type&& arg) const;
+        primitive_argument_type softmax3d(
+            arg_type&& arg, std::int64_t axis) const;
+#endif
     };
     inline primitive create_softmax_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,

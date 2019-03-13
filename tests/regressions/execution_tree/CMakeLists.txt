@@ -7,6 +7,9 @@ set(tests
     319_fold_right_copy_list
     543_compile_twice
     792_hstack_range
+    817_compare_nil
+    817_cout_nil
+    817_lambda_nil
     allow_empty_blocks_278
     assign_variable_twice_491
     assign_wrong_variable_245
@@ -31,6 +34,7 @@ set(tests
     allow_return_nil_432
    )
 
+set(817_cout_nil_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_noargs_prints_nothing_159_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)

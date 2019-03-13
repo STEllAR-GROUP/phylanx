@@ -23,7 +23,7 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "subtract": "__sub",
+    "subtract": "__sub"
 }
 
 numpy_constants = {
@@ -336,7 +336,7 @@ class PhySL:
         if not self.file_name:
             self.file_name = "<none>"
 
-        self.performance = self.kwargs.get('performance')
+        self.performance = self.kwargs.get('performance', False)
         self.localities = self.kwargs.get('localities')
         self.__perfdata__ = (None, None, None)
 
@@ -507,11 +507,20 @@ class PhySL:
         """
         if node.vararg or node.kwarg:
             raise (Exception("Phylanx does not support *args and **kwargs"))
-        args = tuple(map(self.apply_rule, node.args))
-        for arg in args:
-            symbol_name = re.sub(r'\$\d+', '', arg)
+
+        defaults = tuple(map(self.apply_rule, node.defaults))
+        result = tuple()
+        padded_defaults = (None,) * (len(node.args) - len(defaults)) + defaults
+        for arg, default in zip(node.args, padded_defaults):
+            a = self.apply_rule(arg)
+            symbol_name = re.sub(r'\$\d+', '', a)
             self.defined.add(symbol_name)
-        return args
+            if default is None:
+                result = (*result, a)
+            else:
+                op = get_symbol_info(arg, 'arg')
+                result = (*result, [op, (a, default)])
+        return result
 
     def _Assign(self, node):
         """class Assign(targets, value)
@@ -829,11 +838,12 @@ class PhySL:
         symbol = get_symbol_info(node, node.name)
         args = self.apply_rule(node.args)
         body = self.block(node.body)
+        lambda_op = get_symbol_info(node, 'lambda')
 
         if (args):
             return [op, (symbol, args, body)]
         else:
-            return [op, (symbol, body)]
+            return [op, (symbol, (lambda_op, (body,)))]
 
     def _Gt(self, node):
         """Leaf node, returning raw string of the 'greater than' operation."""
@@ -846,6 +856,20 @@ class PhySL:
         return '__ge'
 
     def _If(self, node):
+        """class If(test, body, orelse)
+
+       `test` holds a single node, such as a Compare node.
+       `body` and `orelse` each hold a list of nodes.
+       """
+
+        symbol = '%s' % get_symbol_info(node, 'if')
+        test = self.apply_rule(node.test)
+        body = self.block(node.body)
+        orelse = self.block(node.orelse)
+
+        return [symbol, (test, body, orelse)]
+
+    def _IfExp(self, node):
         """class IfExp(test, body, orelse)
 
        `test` holds a single node, such as a Compare node.

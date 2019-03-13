@@ -31,6 +31,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_any_op
         {
+            using result_type = bool;
+
             statistics_any_op(std::string const& name,
                 std::string const& codename)
             {}

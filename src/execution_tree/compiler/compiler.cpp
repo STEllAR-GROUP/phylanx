@@ -53,16 +53,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 result.define(p.primitive_type_,
                     builtin_function(p.create_primitive_, default_locality));
 
-            if (p.supports_dtype_)
-            {
-                result.define(p.primitive_type_ + "__bool",
-                    builtin_function(p.create_primitive_, default_locality));
-                result.define(p.primitive_type_ + "__int",
-                    builtin_function(p.create_primitive_, default_locality));
-                result.define(p.primitive_type_ + "__float",
-                    builtin_function(p.create_primitive_, default_locality));
+                if (p.supports_dtype_)
+                {
+                    result.define(p.primitive_type_ + "__bool",
+                        builtin_function(p.create_primitive_, default_locality));
+                    result.define(p.primitive_type_ + "__int",
+                        builtin_function(p.create_primitive_, default_locality));
+                    result.define(p.primitive_type_ + "__float",
+                        builtin_function(p.create_primitive_, default_locality));
+                }
             }
-        }
         }
 
         return result;
@@ -89,10 +89,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         void insert_pattern(expression_pattern_list& result,
             std::string pattern, match_pattern_type const& p,
-            std::string const& suffix = "")
+            std::string const& suffix)
         {
-            pattern =
-                construct_extended_pattern(pattern, p.primitive_type_, suffix);
+            if (!suffix.empty())
+            {
+                pattern = construct_extended_pattern(
+                    std::move(pattern), p.primitive_type_, suffix);
+            }
 
             auto exprs = ast::generate_ast(pattern);
             HPX_ASSERT(exprs.size() == 1);
@@ -106,13 +109,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     expression_pattern_list generate_patterns(pattern_list const& patterns_list)
     {
+        std::string empty_suffix;
+
         expression_pattern_list result;
         for (auto const& patterns : patterns_list)
         {
             auto const& p = hpx::util::get<1>(patterns);
             for (auto const& pattern : p.patterns_)
             {
-                detail::insert_pattern(result, pattern, p);
+                detail::insert_pattern(result, pattern, p, empty_suffix);
 
                 if (p.supports_dtype_)
                 {
@@ -122,6 +127,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
             }
         }
+
+        // add internal arg(_1, _2) needed for default arguments
+        match_pattern_type match("__arg",
+            std::vector<std::string>{"arg(_1, _2)"}, nullptr, nullptr,
+            "Internal");
+
+        detail::insert_pattern(result, match.patterns_[0], match, empty_suffix);
+
         return result;
     }
 
@@ -205,7 +218,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             for (auto it = first; it != last; ++it, ++count)
             {
                 if (count != 0 && count != size-1 &&
-                    !ast::detail::is_identifier(it->second))
+                    !ast::detail::is_identifier(it->second) &&
+                    !ast::detail::is_function_call(it->second))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::detail::"
@@ -246,7 +260,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             for (auto it = first; it != last; ++it, ++count)
             {
                 if (count != 0 && count != size-1 &&
-                    !ast::detail::is_identifier(it->second))
+                    !ast::detail::is_identifier(it->second) &&
+                    !ast::detail::is_function_call(it->second))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::detail::"
@@ -299,6 +314,61 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         ///////////////////////////////////////////////////////////////////////
+        std::pair<std::string, function>
+        extract_default_argument_value(ast::expression const& arg,
+            hpx::id_type const& locality, ast::tagged const& id) const
+        {
+            expression_pattern_list::const_iterator cit =
+                patterns_.lower_bound("__arg");
+            HPX_ASSERT(cit != patterns_.end());
+
+            placeholder_map_type placeholders;
+            if (!ast::match_ast(arg, hpx::util::get<1>(cit->second),
+                    ast::detail::on_placeholder_match{placeholders}))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::compiler::compile_body",
+                    generate_error_message(
+                        hpx::util::format(
+                            "invalid default argument {}, should be arg() "
+                                "construct",
+                            ast::to_string(arg)),
+                        name_, id));
+            }
+
+            placeholder_map_type::iterator p = placeholders.find("_1");
+            if (p == placeholders.end() || !ast::detail::is_identifier(p->second))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::compiler::compile_body",
+                    generate_error_message(
+                        hpx::util::format(
+                            "invalid default argument {}, should be arg() "
+                                "construct (missing variable name)",
+                            ast::to_string(arg)),
+                        name_, id));
+            }
+
+            std::string arg_name = ast::detail::identifier_name(p->second);
+
+            p = placeholders.find("_2");
+            if (p == placeholders.end())
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::compiler::compile_body",
+                    generate_error_message(
+                        hpx::util::format(
+                            "invalid default argument {}, should be arg() "
+                                "construct (missing default value)",
+                            ast::to_string(arg)),
+                        name_, id));
+            }
+
+            return std::make_pair(
+                std::move(arg_name), compile_body(p->second, locality));
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         function compile_body(
             ast::expression const& body, hpx::id_type const& locality) const
         {
@@ -311,12 +381,63 @@ namespace phylanx { namespace execution_tree { namespace compiler
             ast::expression const& body, hpx::id_type const& locality) const
         {
             std::size_t base_arg_num = env_.base_arg_num();
+
+            bool has_default_value = false;
             environment env(&env_, args.size());
             for (std::size_t i = 0; i != args.size(); ++i)
             {
-                HPX_ASSERT(ast::detail::is_identifier(args[i]));
-                env.define(ast::detail::identifier_name(args[i]),
-                    access_argument(i + base_arg_num, locality));
+                ast::tagged id = ast::detail::tagged_id(args[i]);
+                if (ast::detail::is_identifier(args[i]))
+                {
+                    if (has_default_value)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::compiler::compile_body",
+                            generate_error_message(
+                                hpx::util::format("missing default argument "
+                                    "{}, should be args() construct",
+                                    ast::to_string(args[i])),
+                                name_, id));
+                    }
+
+                    env.define(ast::detail::identifier_name(args[i]),
+                        access_argument(i + base_arg_num, locality));
+                }
+                else if (ast::detail::is_function_call(args[i]))
+                {
+                    if (ast::detail::function_name(args[i]) != "arg")
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::compiler::compile_body",
+                            generate_error_message(
+                                hpx::util::format("invalid default argument "
+                                    "{}, should be arg() construct",
+                                    ast::to_string(args[i])),
+                                name_, id));
+                    }
+
+                    // returns pair<name, value>
+                    auto default_value = extract_default_argument_value(
+                        args[i], locality, id);
+
+                    env.define(std::move(default_value.first),
+                        access_argument(i + base_arg_num,
+                            std::move(default_value.second.arg_),
+                            locality));
+
+                    // all subsequent arguments must have a default value
+                    has_default_value = true;
+                }
+                else
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::compiler::compile_body",
+                        generate_error_message(
+                            hpx::util::format("invalid argument {}, should be "
+                                "either variable name or args() construct",
+                                ast::to_string(args[i])),
+                            name_, id));
+                }
             }
             return compile(name_, body, snippets_, env, patterns_, locality);
         }
@@ -396,11 +517,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name, access_target(f, "access-variable", default_locality_));
 
                 // Correct type of the access object if this variable refers
-                // to a lambda.
+                // to a lambda or a block.
                 auto body_f = compile_body(body, locality);
                 primitive_name_parts body_name_parts;
                 if (parse_primitive_name(body_f.name_, body_name_parts) &&
-                    body_name_parts.primitive == "lambda")
+                    (body_name_parts.primitive == "lambda" ||
+                        body_name_parts.primitive == "block"))
                 {
                     std::string variable_type = "function";
                     name_parts = primitive_name_parts(variable_type,
@@ -743,10 +865,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                                 // a attribute on the define() could reference
                                 // a specific locality
                                 parse_locality_attribute(attr, locality);
-                            }
+                        }
 
                             return handle_define(placeholders, id, locality);
-                        }
+                    }
                     }
 
                     // Handle lambda(__1)
@@ -865,7 +987,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             std::map<std::string, primitive_argument_type> constants =
             {
-                {"nil", primitive_argument_type{}},
+                {"nil", primitive_argument_type{ast::nil{true}}},
                 {"false", primitive_argument_type{false}},
                 {"true", primitive_argument_type{true}},
                 {"inf",

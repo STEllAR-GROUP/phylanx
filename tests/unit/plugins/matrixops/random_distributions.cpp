@@ -890,6 +890,69 @@ void test_normal_distribution_params(std::mt19937& gen)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_truncated_normal_distribution(std::mt19937& gen)
+{
+    std::string const code = R"(block(
+            define(call, size, random(size, "truncated_normal")),
+            call
+        ))";
+
+    auto call = compile(code);
+
+    {
+        phylanx::util::truncated_normal_distribution<double> dist;
+        generate_0d<double>(call, gen, dist);
+    }
+    {
+        phylanx::util::truncated_normal_distribution<double> dist;
+        generate_1d<double>(call, gen, dist);
+    }
+    {
+        phylanx::util::truncated_normal_distribution<double> dist;
+        generate_2d<double>(call, gen, dist);
+    }
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    {
+        phylanx::util::truncated_normal_distribution<double> dist;
+        generate_3d<double>(call, gen, dist);
+    }
+#endif
+}
+
+void test_truncated_normal_distribution_params(std::mt19937& gen)
+{
+    using namespace phylanx::execution_tree::primitives;
+
+    std::string const code = R"(block(
+            define(call, size,
+                random(size, list("truncated_normal", 0.8, 1.2))
+            ),
+            call
+        ))";
+
+    auto call = compile(code);
+
+    {
+        phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
+        generate_0d<double>(call, gen, dist);
+    }
+    {
+        phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
+        generate_1d<double>(call, gen, dist);
+    }
+    {
+        phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
+        generate_2d<double>(call, gen, dist);
+    }
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    {
+        phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
+        generate_3d<double>(call, gen, dist);
+    }
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void test_lognormal_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
@@ -1231,6 +1294,9 @@ int main(int argc, char* argv[])
 
     test_normal_distribution(gen);
     test_normal_distribution_params(gen);
+
+    test_truncated_normal_distribution(gen);
+    test_truncated_normal_distribution_params(gen);
 
     test_lognormal_distribution(gen);
     test_lognormal_distribution_params(gen);

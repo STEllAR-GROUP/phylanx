@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -7,11 +7,16 @@
 
 #include <phylanx/phylanx.hpp>
 
+#include <hpx/include/iostreams.hpp>
+
 #include <bindings/binding_helpers.hpp>
 #include <bindings/type_casters.hpp>
+
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <list>
 #include <set>
@@ -34,16 +39,22 @@ namespace phylanx { namespace bindings
                 auto const& code = phylanx::execution_tree::compile(
                     file_name, xexpr_str, c.eval_snippets, c.eval_env);
 
+                auto const& funcs = code.functions();
+
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 // add all definitions to the global execution environment
                 code.run(c.eval_ctx);
 
-                return code.name_;
+                return !funcs.empty() ? funcs.front().name_ : "";
             });
     }
 
@@ -57,13 +68,22 @@ namespace phylanx { namespace bindings
         return hpx::threads::run_as_hpx_thread(
             [&]() -> phylanx::execution_tree::primitive_argument_type
             {
+                // Make sure None is printed as "None"
+                phylanx::util::none_wrapper wrap_cout(hpx::cout);
+                phylanx::util::none_wrapper wrap_debug(hpx::consolestream);
+
                 auto const& code_x = phylanx::execution_tree::compile(
                     file_name, xexpr_str, c.eval_snippets, c.eval_env);
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code_x.name_));
+                    auto const& funcs = code_x.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto x = code_x.run(c.eval_ctx);
@@ -77,9 +97,18 @@ namespace phylanx { namespace bindings
                     pybind11::gil_scoped_acquire acquire;
                     for (auto const& item : args)
                     {
-                        phylanx::execution_tree::primitive_argument_type value =
-                            item.cast<
-                                phylanx::execution_tree::primitive_argument_type>();
+                        using phylanx::execution_tree::primitive_argument_type;
+
+                        primitive_argument_type value;
+                        if (item.is_none())
+                        {
+                            value = primitive_argument_type{
+                                phylanx::ast::nil{true}};
+                        }
+                        else
+                        {
+                            value = item.cast<primitive_argument_type>();
+                        }
                         keep_alive.emplace_back(std::move(value));
                         fargs.emplace_back(extract_ref_value(keep_alive.back()));
                     }
@@ -169,8 +198,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    auto const& funcs = code.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto const& program = c.eval_snippets.program_;
@@ -180,8 +214,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                    resolve_children.insert(f.name_);
-                }
+                        resolve_children.insert(f.name_);
+                    }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -211,8 +245,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    auto const& funcs = code.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto const& program = c.eval_snippets.program_;
@@ -222,8 +261,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                    resolve_children.insert(f.name_);
-                }
+                        resolve_children.insert(f.name_);
+                    }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -254,8 +293,13 @@ namespace phylanx { namespace bindings
 
                 if (c.enable_measurements)
                 {
-                    c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(code.name_));
+                    auto const& funcs = code.functions();
+                    if (!funcs.empty())
+                    {
+                        c.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
                 }
 
                 auto const& program = c.eval_snippets.program_;
@@ -265,8 +309,8 @@ namespace phylanx { namespace bindings
                 {
                     for (auto const& f : ep.functions())
                     {
-                    resolve_children.insert(f.name_);
-                }
+                        resolve_children.insert(f.name_);
+                    }
                 }
                 for (auto const& entry : program.scratchpad())
                 {
@@ -286,6 +330,64 @@ namespace phylanx { namespace bindings
                     phylanx::execution_tree::dot_tree(file_name, topology));
 
                 return result;
+            });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    pybind11::dtype extract_dtype(phylanx::execution_tree::primitive const& p)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> pybind11::dtype
+            {
+                using namespace phylanx::execution_tree;
+
+                primitive_arguments_type args;
+                args.push_back(p);
+
+                primitive type = primitives::create_phytype(
+                    hpx::find_here(), std::move(args), "dtype", "<unknown>");
+
+                primitive_argument_type id = type.eval(hpx::launch::sync);
+                std::int64_t type_id = extract_scalar_integer_value_strict(
+                    id, "dtype", "<unknown>");
+
+                pybind11::gil_scoped_acquire acquire;
+
+                switch (type_id)
+                {
+                case primitive_argument_type::nil_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::bool_index:
+                    return pybind11::dtype("int8");
+
+                case primitive_argument_type::int64_index:
+                    return pybind11::dtype("int64");
+
+                case primitive_argument_type::string_index:
+                    return pybind11::dtype("S");
+
+                case primitive_argument_type::float64_index:
+                    return pybind11::dtype("float64");
+
+                case primitive_argument_type::primitive_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::expression_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::list_index:
+                    return pybind11::dtype("O");
+
+                case primitive_argument_type::dictionary_index:
+                    return pybind11::dtype("O");
+
+                default:
+                    break;
+                }
+                return pybind11::dtype("");
             });
     }
 }}
