@@ -15,9 +15,10 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(batch_dot_operation_plugin,
     phylanx::execution_tree::primitives::batch_dot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(hard_sigmoid_operation_plugin,
     phylanx::execution_tree::primitives::hard_sigmoid_operation::match_data);
+NX_REGISTER_PLUGIN_FACTORY(one_hot_operation_plugin,
+    phylanx::execution_tree::primitives::one_hot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sigmoid_operation_plugin,
-    phylanx::execution_tree::primitives::sigmoid_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(softmax_operation_plugin,
+    phylanx::execution_tree::primitives::sigmoid_operation::match_data);PHYLANX_REGISTER_PLUGIN_FACTORY(softmax_operation_plugin,
     phylanx::execution_tree::primitives::softmax_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softplus_operation_plugin,
     phylanx::execution_tree::primitives::softplus_operation::match_data);
