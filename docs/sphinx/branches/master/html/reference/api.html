@@ -536,6 +536,7 @@ parameters: (optional) Specifies what distribution to use to generate the random
  list(“weibull”, a, b): Produces random positive floating-point values, distributed according to the Weibull probability density function (a: shape, b: scale)
  list(“extreme_value”, a, b): Produces random positive floating-point values, distributed according to the extreme value probability density function, also known as Gumbel Type I, log-Weibull, or Fisher-Tippett Type I distribution (a: location, b: scale)
  list(“normal”, mean, stddev): Generates random numbers according to the Normal (or Gaussian) random number distribution (mean: mean, stddev: standard deviation)
+ list(“truncated_normal”, mean, stddev): Generates random numbers according to the Normal (or Gaussian) random number distribution. Values whose magnitude is more than two standard deviations from the mean are dropped and re-picked (mean: mean, stddev: standard deviation)
  list(“lognormal”, m, s): Produces random numbers according to a log-normal distribution (m: log-scale, s: shape)
  list(“chi_squared”, n): Produces random positive floating-point values, distributed according to the Chi-squared probability density function (n: degrees of freedom)
  list(“cauchy”, a, b): Produces random positive floating-point values, distributed according to the Cauchy (Lorentz) probability density function (a: location, s: scale)
