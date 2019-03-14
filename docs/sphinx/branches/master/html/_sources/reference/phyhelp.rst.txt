@@ -1735,21 +1735,6 @@ softmax (a, axis)
         values in the range (0..1], which add up to 1 in direction of the given axis
 
 
-softplus
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-softplus (a)
-            Args:
-
-                a (array_like) : input array
-
-            Returns:
-
-            Returns an array of the same shape which is the the differential
-            surrogate of the input and is defined as f(x) = ln(1 + e^x).
-            Both the ReLU and Softplus are largely similar, except near 0 where
-            the Softplus is enticingly smooth and differentiable.
-
-
 squeeze
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 squeeze (a, axis)
