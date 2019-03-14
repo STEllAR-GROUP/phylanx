@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2019 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,6 +17,11 @@ macro(phylanx_setup_pybind11)
 
   if(${pybind11_VERSION} VERSION_LESS 2.2.0)
     phylanx_error("pybind11 too old, should be of version 2.2.0 or newer.")
+  endif()
+
+  # Make sure the Python interpreter found is sufficiently new
+  if(${PYTHON_VERSION_STRING} VERSION_LESS 3.6)
+    phylanx_error("The python version found is too old (${PYTHON_VERSION_STRING}), Phylanx requires at least Python V3.6")
   endif()
 
   phylanx_info("Python library version: " ${PYTHON_VERSION_STRING})

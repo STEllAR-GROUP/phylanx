@@ -7,6 +7,8 @@ import os
 import sys
 import platform
 
+if sys.version_info < (3, 6):
+    raise Exception("Phylanx requires Python 3.6 or higher.")
 
 PHYLANX_INSTALL_PATH = '@PHYLANX_INSTALL_PATH@'
 HPX_INSTALL_PATH = '@HPX_INSTALL_PATH@'
