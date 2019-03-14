@@ -127,10 +127,12 @@ void test_generic_operation_3d(std::string const& func_name,
 ///////////////////////////////////////////////////////////////////////////////
 void test_0d_operations()
 {
-    test_generic_operation_0d("isnan", [](double v) { return std::isnan(v); });
-    test_generic_operation_0d("isinf", [](double v) { return std::isinf(v); });
     test_generic_operation_0d(
-        "isfinite", [](double v) { return std::isfinite(v); });
+        "isnan", [](double v) -> bool { return std::isnan(v); });
+    test_generic_operation_0d(
+        "isinf", [](double v) -> bool { return std::isinf(v); });
+    test_generic_operation_0d(
+        "isfinite", [](double v) -> bool { return std::isfinite(v); });
     test_generic_operation_0d("isneginf",
         [](double m) -> bool { return std::isinf(m) && std::signbit(m); });
     test_generic_operation_0d("isposinf",
@@ -141,15 +143,18 @@ void test_1d_operations()
 {
     test_generic_operation_1d("isnan",
         [](custom_vector_type m) -> blaze::DynamicVector<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isnan(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isnan(m); });
         });
     test_generic_operation_1d("isinf",
         [](custom_vector_type m) -> blaze::DynamicVector<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isinf(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isinf(m); });
         });
     test_generic_operation_1d("isfinite",
         [](custom_vector_type m) -> blaze::DynamicVector<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isfinite(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isfinite(m); });
         });
     test_generic_operation_1d("isneginf",
         [](custom_vector_type m) -> blaze::DynamicVector<std::uint8_t> {
@@ -167,15 +172,18 @@ void test_2d_operations()
 {
     test_generic_operation_2d("isnan",
         [](custom_matrix_type m) -> blaze::DynamicMatrix<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isnan(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isnan(m); });
         });
     test_generic_operation_2d("isinf",
         [](custom_matrix_type m) -> blaze::DynamicMatrix<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isinf(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isinf(m); });
         });
     test_generic_operation_2d("isfinite",
         [](custom_matrix_type m) -> blaze::DynamicMatrix<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isfinite(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isfinite(m); });
         });
     test_generic_operation_2d("isneginf",
         [](custom_matrix_type m) -> blaze::DynamicMatrix<std::uint8_t> {
@@ -194,15 +202,18 @@ void test_3d_operations()
 {
     test_generic_operation_3d("isnan",
         [](custom_tensor_type m) -> blaze::DynamicTensor<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isnan(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isnan(m); });
         });
     test_generic_operation_3d("isinf",
         [](custom_tensor_type m) -> blaze::DynamicTensor<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isinf(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isinf(m); });
         });
     test_generic_operation_3d("isfinite",
         [](custom_tensor_type m) -> blaze::DynamicTensor<std::uint8_t> {
-            return blaze::map(m, [](double m) { return std::isfinite(m); });
+            return blaze::map(
+                m, [](double m) -> bool { return std::isfinite(m); });
         });
     test_generic_operation_3d("isneginf",
         [](custom_tensor_type m) -> blaze::DynamicTensor<std::uint8_t> {
