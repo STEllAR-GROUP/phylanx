@@ -217,6 +217,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slice-page">slice_page</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slice-row">slice_row</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#softmax">softmax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softplus">softplus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#squeeze">squeeze</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stack">stack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#std">std</a></li>
@@ -2148,6 +2149,21 @@ values in the range (0..1], which add up to 1 in direction of the given axis</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="softplus">
+<h2>softplus<a class="headerlink" href="#softplus" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>softplus (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns an array of the same shape which is the the differential
+surrogate of the input and is defined as f(x) = ln(1 + e^x).
+Both the ReLU and Softplus are largely similar, except near 0 where
+the Softplus is enticingly smooth and differentiable.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="squeeze">
 <h2>squeeze<a class="headerlink" href="#squeeze" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2408,7 +2424,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Mar 13, 2019.
+      Last updated on Mar 14, 2019.
 
     </p>
   </div>
