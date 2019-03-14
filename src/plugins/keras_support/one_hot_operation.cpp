@@ -59,7 +59,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto a = arg.scalar();
         blaze::DynamicVector<double> result(num_classes, 0.);
 
-        result[a] = 1.;
+        if (a < num_classes)
+            result[a] = 1.;
 
         return primitive_argument_type{std::move(result)};
     }
