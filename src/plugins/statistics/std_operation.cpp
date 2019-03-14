@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         template <typename T>
-        HPX_FORCEINLINE T sqr(T v)
+        constexpr HPX_FORCEINLINE T sqr(T v)
         {
             return v * v;
         }
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value,
                 double>::type
-            operator()(Vector const& v, double initial)
+            operator()(Vector& v, double initial)
             {
                 for (auto && elem : v)
                 {

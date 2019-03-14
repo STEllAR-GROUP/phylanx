@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value,
                 double>::type
-            operator()(Vector const& v, double initial) const
+            operator()(Vector& v, double initial) const
             {
                 return blaze::sum(blaze::exp(v)) + initial;
             }
