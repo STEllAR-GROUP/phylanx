@@ -5,6 +5,7 @@
 
 set(tests
     softmax_operation
+    softplus_operation
    )
 
 foreach(test ${tests})
