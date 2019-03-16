@@ -55,6 +55,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type batch_dot2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type batch_dot3d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 #endif
     };
 

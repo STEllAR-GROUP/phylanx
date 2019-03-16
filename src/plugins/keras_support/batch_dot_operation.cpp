@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type batch_dot_operation::batch_dot2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
-        if (lhs.dimension(0) != rhs.dimension(0) &&
+        if (lhs.dimension(0) != rhs.dimension(0) ||
             lhs.dimension(1) != rhs.dimension(1))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -153,6 +153,82 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot3d2d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(0) != rhs.dimension(0) ||
+            lhs.dimension(2) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "batch_dot_operation::batch_dot3d2d",
+                generate_error_message(
+                    "operands have incompatible number of dimensions"));
+        }
+
+        auto m = rhs.matrix();
+        auto t = lhs.tensor();
+
+        blaze::DynamicMatrix<T> result(t.pages(), t.rows());
+
+        for (std::size_t i = 0; i != t.pages(); ++i)
+
+            blaze::row(result, i) =
+                blaze::row(m, i) * blaze::trans(blaze::pageslice(t, i));
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot3d3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        if (lhs.dimension(0) != rhs.dimension(0) ||
+            lhs.dimension(2) != rhs.dimension(1))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "batch_dot_operation::batch_dot3d3d",
+                generate_error_message(
+                    "operands have incompatible number of dimensions"));
+        }
+
+        auto t1 = lhs.tensor();
+        auto t2 = rhs.tensor();
+
+        blaze::DynamicTensor<T> result(t1.pages(), t1.rows(), t2.columns());
+
+        for (std::size_t i = 0; i != t1.pages(); ++i)
+
+            blaze::pageslice(result, i) =
+                blaze::pageslice(t1, i) * blaze::pageslice(t2, i);
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 2:
+            return batch_dot3d2d(std::move(lhs), std::move(rhs));
+
+        case 3:
+            return batch_dot3d3d(std::move(lhs), std::move(rhs));
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "batch_dot_operation::batch_dot3d",
+            generate_error_message(
+                "the right operand has unsupported number of dimensions"));
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot_nd(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -163,8 +239,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return batch_dot2d(std::move(lhs), std::move(rhs));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        //case 3:
-        //    return dot3d3d(std::move(lhs), std::move(rhs));
+        case 3:
+            return batch_dot3d(std::move(lhs), std::move(rhs));
 #endif
 
         default:
