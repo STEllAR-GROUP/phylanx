@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    batch_dot_operation
     hard_sigmoid_operation
     sigmoid_operation
     softmax_operation

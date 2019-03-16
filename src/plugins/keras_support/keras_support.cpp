@@ -11,6 +11,8 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(batch_dot_operation_plugin,
+    phylanx::execution_tree::primitives::batch_dot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(hard_sigmoid_operation_plugin,
     phylanx::execution_tree::primitives::hard_sigmoid_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sigmoid_operation_plugin,
