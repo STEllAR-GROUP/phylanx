@@ -98,28 +98,28 @@ namespace phylanx { namespace execution_tree
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type slice(primitive_argument_type const& data,
+        primitive_argument_type const& pages,
         primitive_argument_type const& rows,
-        primitive_argument_type const& columns,
-        primitive_argument_type const& pages, std::string const& name,
+        primitive_argument_type const& columns, std::string const& name,
         std::string const& codename)
     {
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_integer_value_strict(data, name, codename),
-                rows, columns, pages, name, codename)};
+                pages, rows, columns, name, codename)};
         }
         if (is_numeric_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_numeric_value_strict(data, name, codename),
-                rows, columns, pages, name, codename)};
+                pages, rows, columns, name, codename)};
         }
         if (is_boolean_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_boolean_value_strict(data, name, codename),
-                rows, columns, pages, name, codename)};
+                pages, rows, columns, name, codename)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -290,9 +290,9 @@ namespace phylanx { namespace execution_tree
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type slice(primitive_argument_type&& data,
+        primitive_argument_type const& pages,
         primitive_argument_type const& rows,
-        primitive_argument_type const& columns,
-        primitive_argument_type const& pages, primitive_argument_type&& value,
+        primitive_argument_type const& columns, primitive_argument_type&& value,
         std::string const& name, std::string const& codename)
     {
         if (is_integer_operand_strict(data))
@@ -303,7 +303,7 @@ namespace phylanx { namespace execution_tree
                     slice_assign(
                         extract_integer_value_strict(
                             std::move(data), name, codename),
-                        rows, columns, pages,
+                        pages, rows, columns,
                         extract_integer_value_strict(
                             std::move(value), name, codename),
                         name, codename)};
@@ -311,7 +311,7 @@ namespace phylanx { namespace execution_tree
 
             return primitive_argument_type{slice_assign(
                 extract_integer_value_strict(std::move(data), name, codename),
-                rows, columns, pages,
+                pages, rows, columns,
                 extract_integer_value(std::move(value), name, codename),
                 name, codename)};
         }
@@ -323,7 +323,7 @@ namespace phylanx { namespace execution_tree
                     slice_assign(
                         extract_numeric_value_strict(
                             std::move(data), name, codename),
-                        rows, columns, pages,
+                        pages, rows, columns,
                         extract_numeric_value_strict(
                             std::move(value), name, codename),
                         name, codename)};
@@ -331,7 +331,7 @@ namespace phylanx { namespace execution_tree
 
             return primitive_argument_type{slice_assign(
                 extract_numeric_value_strict(std::move(data), name, codename),
-                rows, columns, pages,
+                pages, rows, columns,
                 extract_numeric_value(std::move(value), name, codename),
                 name, codename)};
         }
@@ -343,7 +343,7 @@ namespace phylanx { namespace execution_tree
                     slice_assign(
                         extract_boolean_value_strict(
                             std::move(data), name, codename),
-                        rows, columns, pages,
+                        pages, rows, columns,
                         extract_boolean_value_strict(
                             std::move(value), name, codename),
                         name, codename)};
@@ -351,7 +351,7 @@ namespace phylanx { namespace execution_tree
 
             return primitive_argument_type{slice_assign(
                 extract_boolean_value_strict(std::move(data), name, codename),
-                rows, columns, pages,
+                pages, rows, columns,
                 extract_boolean_value(std::move(value), name, codename),
                 name, codename)};
         }
