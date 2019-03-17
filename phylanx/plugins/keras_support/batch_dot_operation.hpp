@@ -46,25 +46,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type batch_dot2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
 
         template <typename T>
         primitive_argument_type batch_dot_nd(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot_nd(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type batch_dot2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot2d3d_axes12(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot2d3d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
 
         template <typename T>
         primitive_argument_type batch_dot3d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
+        primitive_argument_type batch_dot3d2d_axes11(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
+
+        template <typename T>
         primitive_argument_type batch_dot3d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
+        primitive_argument_type batch_dot3d3d_axis1(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d3d_axis2(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d3d_axes12(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d3d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
+        template <typename T>
         primitive_argument_type batch_dot3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
 #endif
     };
 
