@@ -174,6 +174,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#format">format</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-seed-action">get_seed_action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient">gradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hard-sigmoid">hard_sigmoid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hsplit">hsplit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hstack">hstack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#identity">identity</a></li>
@@ -211,6 +212,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#set-seed-action">set_seed_action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shape">shape</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shuffle">shuffle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sigmoid">sigmoid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#size">size</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slice">slice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slice-column">slice_column</a></li>
@@ -1484,6 +1486,19 @@ along the specified axis.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="hard-sigmoid">
+<h2>hard_sigmoid<a class="headerlink" href="#hard-sigmoid" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>hard_sigmoid (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns an array of the same shape which is the Segment-wise linear
+approximation of the sigmoid function.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="hsplit">
 <h2>hsplit<a class="headerlink" href="#hsplit" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2046,6 +2061,20 @@ shuffled by this call.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="sigmoid">
+<h2>sigmoid<a class="headerlink" href="#sigmoid" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>sigmoid (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns an array of the same shape which is the calculated based on
+the mathematical function having a characteristic “S”-shaped curve
+or ‘sigmoid curve’</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="size">
 <h2>size<a class="headerlink" href="#size" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2424,7 +2453,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Mar 14, 2019.
+      Last updated on Mar 17, 2019.
 
     </p>
   </div>

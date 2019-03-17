@@ -1085,6 +1085,19 @@ gradient (m, axis)
             along the specified axis.
 
 
+hard_sigmoid
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+hard_sigmoid (a)
+            Args:
+
+                a (array_like) : input array
+
+            Returns:
+
+            Returns an array of the same shape which is the Segment-wise linear
+            approximation of the sigmoid function.
+
+
 hsplit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 hsplit (args)
@@ -1628,6 +1641,20 @@ shuffle (args)
 
             A shuffled version of the list. Note that `args` itself will be "
             shuffled by this call.
+
+
+sigmoid
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sigmoid (a)
+            Args:
+
+                a (array_like) : input array
+
+            Returns:
+
+            Returns an array of the same shape which is the calculated based on
+            the mathematical function having a characteristic "S"-shaped curve
+            or 'sigmoid curve'
 
 
 size
