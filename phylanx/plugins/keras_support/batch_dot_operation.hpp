@@ -14,6 +14,9 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -40,6 +43,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
+        std::size_t positivize_axis(std::int64_t axis, std::size_t const& ndim) const;
+        bool validate_axes(ir::range const& axes, std::size_t&& ndims_a,
+            std::size_t&& ndims_b,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims_a,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims_b) const;
+
         template <typename T>
         primitive_argument_type batch_dot2d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
