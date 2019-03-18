@@ -41,30 +41,25 @@ namespace phylanx {  namespace execution_tree {  namespace primitives
 
         using val_type   = double;
         using mat_type   = ir::node_data<val_type>;
-		using alpha_type = ir::node_data<val_type>;
+        using alpha_type = ir::node_data<val_type>;
 
     public:
         static match_pattern_type const match_data;
 
         elu_operation() = default;
 
-		elu_operation(primitive_arguments_type&& operands,
+        elu_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type elu0d(mat_type&& arg) const;
-        primitive_argument_type elu1d(mat_type&& arg) const;
-        primitive_argument_type elu2d(mat_type&& arg) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        primitive_argument_type elu3d(mat_type&& arg) const;
-#endif
+        primitive_argument_type elu(mat_type&& arg, double alpha = 1.) const;
     };
 
     inline primitive create_elu_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
-		return create_primitive_component(
+        return create_primitive_component(
             locality, "elu", std::move(operands), name, codename);
     }
 }}}
