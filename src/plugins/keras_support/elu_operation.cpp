@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 	{
 	 hpx::util::make_tuple("elu",
 						   std::vector<std::string>{"elu(_1, _2)"},
-						   &create_elu_operation, &create_primitive<elu_operation>,
+						   &create_elu_operation,
+                           &create_primitive<elu_operation>,
 						   R"(a
                            Args:
 
@@ -56,7 +57,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 	primitive_argument_type elu_operation::elu1d(mat_type&& arg) const
 	{
-
 		/* TODO */ return primitive_argument_type{};
 	}
 
@@ -98,7 +98,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 		if(operands.size() == 1)
 		{
-			return value_operand(operands[0], args, name_, codename_, std::move(ctx))
+			return value_operand(operands[0], args, name_, codename_,
+                std::move(ctx))
 				.then(hpx::launch::sync, hpx::util::unwrapping(
 					[_this = std::move(this_)](primitive_argument_type&& arg)
 					-> primitive_argument_type
@@ -110,7 +111,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if(operands.size() == 2 && valid(operands[1]))
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op1, primitive_argument_type&& op2)
+                [this_ = std::move(this_)]
+                (primitive_argument_type&& op1, primitive_argument_type&& op2)
                 {
                     return primitive_argument_type{};
 				}),
