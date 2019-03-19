@@ -38,7 +38,8 @@ void test_elu_operation_0d()
         elu_0.eval();
 
     HPX_TEST_EQ(
-        -1.90043, phylanx::execution_tree::extract_numeric_value(f_0.get())[0]);
+        -1.9004258632642721,
+        phylanx::execution_tree::extract_numeric_value(f_0.get())[0]);
 
     ////
 
@@ -46,11 +47,15 @@ void test_elu_operation_0d()
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
+    phylanx::execution_tree::primitive alpha_1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
+
     phylanx::execution_tree::primitive elu_1 =
         phylanx::execution_tree::primitives::create_elu_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(scal_1)});
+                std::move(scal_1), std::move(alpha_1)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f_1 =
         elu_1.eval();
@@ -64,17 +69,22 @@ void test_elu_operation_0d()
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(-2.0));
 
+    phylanx::execution_tree::primitive alpha_2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
+
     phylanx::execution_tree::primitive elu_2 =
         phylanx::execution_tree::primitives::create_elu_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(scal_2)});
+                std::move(scal_2), std::move(alpha_2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f_2 =
         elu_2.eval();
 
     HPX_TEST_EQ(
-        -0.864665, phylanx::execution_tree::extract_numeric_value(f_2.get())[0]);
+        -0.8646647167633873,
+        phylanx::execution_tree::extract_numeric_value(f_2.get())[0]);
 }
 
 void test_elu_operation_1d()
@@ -98,7 +108,7 @@ void test_elu_operation_1d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         elu.eval();
 
-    blaze::DynamicVector<double> expected{41., -1.96337, 0.};
+    blaze::DynamicVector<double> expected{41., -1.9633687222225316, 0.};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -127,9 +137,10 @@ void test_elu_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         elu.eval();
 
-    blaze::DynamicMatrix<double> expected{{-1.26424, 2., 3       },
-                                          {-1.96337, 1., -1.72933},
-                                          {3.      , 4., -1.26424}};
+    blaze::DynamicMatrix<double> expected{
+        {-1.2642411176571153, 2., 3                  },
+        {-1.9633687222225316, 1., -1.7293294335267746},
+        {3.                 , 4., -1.2642411176571153}};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -165,13 +176,13 @@ void test_elu_operation_3d()
         elu.eval();
 
     blaze::DynamicTensor<double> expected{
-        {{1.0    , 2.0     , 3.0},
-        {-1.96337, -1.26424, 2.0},
-        {-1.90043, -1.96337, 1.0}},
+        {{1.0               , 2.0                , 3.0},
+        {-1.9633687222225316, -1.2642411176571153, 2.0},
+        {-1.9004258632642721, -1.9633687222225316, 1.0}},
 
-        {{3.0     , 6.0, 2.0     },
-        { -1.72933, 2.0, 0.0     },
-        { 1.0     , 1.0, -1.90043}}};
+        {{3.0               , 6.0, 2.0                  },
+        {-1.7293294335267746, 2.0, 0.0                  },
+        { 1.0               , 1.0, -1-1.9004258632642721}}};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
