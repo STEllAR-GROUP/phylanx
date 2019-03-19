@@ -32,18 +32,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     match_pattern_type const elu_operation::match_data =
     {
-     hpx::util::make_tuple("elu",
-                           std::vector<std::string>{"elu(_1, _2)"},
-                           &create_elu_operation,
-                           &create_primitive<elu_operation>,
-                           R"(a
-                           Args:
+         match_pattern_type{
+            "elu",
+            std::vector<std::string>{"elu(_1, _2)"},
+            &create_elu_operation,
+            &create_primitive<elu_operation>, R"(
+            a
+            Args:
 
-                               a (array_like) : input array
+                a (array_like) : input array
+                alpha (optional, number) : scale for the negative factor
 
             Returns:
 
-            Returns an array of the same shape... .)") // TODO
+            Returns an array of the same shape that is the exponential linear
+            unit of the input and is defined as:
+            * f(x) = alpha * (exp(x) - 1.) for x < 0,
+            * f(x) = x for x >= 0.)"
+        }
     };
 
     elu_operation::elu_operation(primitive_arguments_type&& operands,
@@ -51,7 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : primitive_component_base{ std::move(operands), name, codename }
     {}
 
-    primitive_argument_type elu_operation::elu(mat_type&& arg, double alpha) const
+    primitive_argument_type elu_operation::elu0d(mat_type&& arg,
+        double alpha) const
     {
         //  ELU activation function
         auto elu_ = [alpha](auto&& x)
@@ -72,42 +79,61 @@ namespace phylanx { namespace execution_tree { namespace primitives
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
         };
 
-        switch(arg.num_dimensions())
-        {
-
         //  NB : Enforcing storageXd_type constructors here otherwise the
         //  call for primitive_argument_type's constructor would be ambiguous.
         //  These correspond to 0D/1D/2D/3D types in Blaze and thus should have
         //  costless move constructors.
 
-        case 0: //  Scalar ELU
-            return primitive_argument_type{mat_type::storage0d_type{
-                elu_(arg.scalar()) }};
+        return primitive_argument_type{mat_type::storage0d_type{
+            elu_(arg.scalar()) }};
+    }
 
-        case 1: //  Vector ELU
-            return primitive_argument_type{mat_type::storage1d_type{
-                arg.is_ref() ? blaze::map(arg.vector(), elu_)
-                    : blaze::map(std::move(arg.vector()), elu_)
-            }};
+    primitive_argument_type elu_operation::elu1d(mat_type&& arg,
+        double alpha) const
+    {
+        auto elu_ = [alpha](auto&& x)
+        {
+            return (x >= 0.) * ( x )
+                 + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
+        };
 
-        case 2: //  Matrix ELU
-            return primitive_argument_type{mat_type::storage2d_type{
-                arg.is_ref() ? blaze::map(arg.matrix(), elu_)
-                    : blaze::map(std::move(arg.matrix()), elu_)
-            }};
+        return primitive_argument_type{mat_type::storage1d_type{
+            arg.is_ref() ? blaze::map(arg.vector(), elu_)
+                : blaze::map(std::move(arg.vector()), elu_)
+        }};
+    }
+
+    primitive_argument_type elu_operation::elu2d(mat_type&& arg,
+        double alpha) const
+    {
+        auto elu_ = [alpha](auto&& x)
+        {
+            return (x >= 0.) * ( x )
+                 + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
+        };
+
+        return primitive_argument_type{mat_type::storage2d_type{
+            arg.is_ref() ? blaze::map(arg.matrix(), elu_)
+                : blaze::map(std::move(arg.matrix()), elu_)
+        }};
+    }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 3: //  Tensor ELU
-            return primitive_argument_type{mat_type::storage3d_type{
-                arg.is_ref() ? blaze::map(arg.tensor(), elu_)
-                    : blaze::map(std::move(arg.tensor()), elu_)
-            }};
-#endif
-        }
+    primitive_argument_type elu_operation::elu3d(mat_type&& arg,
+        double alpha) const
+    {
+        auto elu_ = [alpha](auto&& x)
+        {
+            return (x >= 0.) * ( x )
+                 + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
+        };
 
-        /* TODO: Throw exception ? */
-        return primitive_argument_type{ 0. };
+        return primitive_argument_type{mat_type::storage3d_type{
+            arg.is_ref() ? blaze::map(arg.tensor(), elu_)
+                : blaze::map(std::move(arg.tensor()), elu_)
+        }};
     }
+#endif
 
     hpx::future<primitive_argument_type> elu_operation::eval(
         primitive_arguments_type const& operands,
@@ -156,7 +182,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "scalar"));
                 }
 
-                return this_->elu(std::move(mat), alpha.scalar());
+                switch(mat.num_dimensions())
+                {
+                case 0:
+                    return this_->elu0d(std::move(mat), alpha.scalar());
+                case 1:
+                    return this_->elu1d(std::move(mat), alpha.scalar());
+                case 2:
+                    return this_->elu2d(std::move(mat), alpha.scalar());
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->elu3d(std::move(mat), alpha.scalar());
+#endif
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "elu_operation::eval",
+                        this_->generate_error_message(
+                            "operand a has an invalid number of dimensions"));
+                }
             }),
             value_operand(operands[0], args, name_, codename_, ctx),
             value_operand(operands[1], args, name_, codename_, ctx));
