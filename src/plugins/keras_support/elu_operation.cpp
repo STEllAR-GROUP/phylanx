@@ -56,6 +56,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         //  ELU activation function
         auto elu_ = [alpha](auto&& x)
         {
+            //  NB : Might be unusable with the upcoming CUDA version of blaze
+            //  because lambda kernels are wrapped inside std::function objects.
+            //  See: https://devblogs.nvidia.com/new-compiler-features-cuda-8/,
+            //  then find "There's one caveat:"
+
+            //  NB2: Keeping all that code as a single expression may suggest
+            //  the compiler to use only float operations instead of branching,
+            //  also it allows optimizations with libraries like boost_simd that
+            //  provide comparison operators that directly translate into SIMD.
+            //  Using an if statement instead makes vectorization harder if not
+            //  impossible.
+
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
         };
