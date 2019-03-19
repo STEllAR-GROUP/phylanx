@@ -128,8 +128,8 @@ def print_python_ast_node(s, node, depth=0):
 
     # nodes._fields gives a list of all child nodes
 
-    #print("###################################")
-    #print_type("node", node)
+    # print("###################################")
+    # print_type("node", node)
 
     if not isinstance(node, ast.AST):
         raise TypeError('Expected AST, got %r' % node.__class__.__name__)
@@ -138,19 +138,15 @@ def print_python_ast_node(s, node, depth=0):
 
     print(indent * depth, end="")
     print("%-12s" % s, node)
-    #print("%-12s" % s, node.__class__)
-    #print("%-12s %s" % (s, node.__class__.__name__), node._fields)
-    #print("%-12s" % s, node.__class__, node._fields)
+    # print("%-12s" % s, node.__class__)
+    # print("%-12s %s" % (s, node.__class__.__name__), node._fields)
+    # print("%-12s" % s, node.__class__, node._fields)
 
-
-    #print(indent * depth, end="")
-    #print("# for (fieldname, value) in ast.iter_fields(node):")
+    # print(indent * depth, end="")
+    # print("# for (fieldname, value) in ast.iter_fields(node):")
     for (fieldname, value) in ast.iter_fields(node):
         print(indent * (depth + 1), end="")
         print("%-12s" % fieldname, value)
     print("")
 
-    #depth += 1
-
-
-
+    # depth += 1

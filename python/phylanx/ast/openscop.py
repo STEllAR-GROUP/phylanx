@@ -104,8 +104,8 @@ $num_statements
     def empty_statment(self):
         d = dict(
             statement_id=None,
-            num_relations=
-            0,  # UNDEFINED, CONTEXT, DOMAIN, SCATTERING, READ, WRITE
+            num_relations=0,
+            # UNDEFINED, CONTEXT, DOMAIN, SCATTERING, READ, WRITE
             domain="",
             scatter="",
             access="",
@@ -244,11 +244,11 @@ $access
     def generate_oscop_statements(self):
         for i in range(0, self.globalinfo["num_statements"]):
             statement = self.statements[i]
-            #print("debug generate_statements A", statement)   # DEBUG
+            # print("debug generate_statements A", statement)   # DEBUG
             self.generate_domain(statement)
             self.generate_scatter(statement)
             self.generate_access(statement)
-            #print("debug generate_statements B", statement)   # DEBUG
+            # print("debug generate_statements B", statement)   # DEBUG
             print("")  # DEBUG
 
     def generate(self):
@@ -274,7 +274,7 @@ $access
         print("self.domain: ", self.domain)
         print("self.domain_iter: ", self.domain_iter)
         print("self.scatter: ", self.scatter)
-        #print("")
+        # print("")
 
 
 class OpenSCoP:
@@ -297,11 +297,11 @@ class OpenSCoP:
         kernel = python_ast.body[0].body  # BUG, only allow 1 statement
         for node in kernel:
             self.visit(node, {}, 1, 0)
-        #for node in kernel:
+        # for node in kernel:
         #    self.visit(node, {}, 1, 1)
 
         self.__src__ = self.oscop.generate()
-        #dump_to_file(self.__src__, "dump_openscop", kwargs)
+        # dump_to_file(self.__src__, "dump_openscop", kwargs)
 
     # help function
     def debug_dev(self, node, expr, coef, mode):
@@ -340,7 +340,9 @@ class OpenSCoP:
     ###############################################################
 
     def _Assign(self, node, expr, coef, mode):
-        ## stmt -> Assign(expr* targets, expr value)
+        """
+        stmt -> Assign(expr* targets, expr value)
+        """
 
         if len(node.targets) > 1:
             raise Exception("Does not support chain assignments.")
@@ -381,7 +383,9 @@ class OpenSCoP:
         return
 
     def _For(self, node, expr, coef, mode):
-        ## stmt -> For(expr target, expr iter, stmt* body, stmt* orelse)
+        """
+        stmt -> For(expr target, expr iter, stmt* body, stmt* orelse)
+        """
 
         # supported formats
         #
@@ -452,7 +456,7 @@ class OpenSCoP:
         if not isinstance(node.iter, ast.Call):  # call something
             self._For_exception()
 
-        if (node.iter.func.id is not "range"):  # call range function
+        if (node.iter.func.id != "range"):       # call range function
             self._For_exception()
 
         bounds = node.iter.args
@@ -495,7 +499,9 @@ class OpenSCoP:
         return
 
     def _If(self, node, expr, coef, mode):
-        ## stmt -> If(expr test, stmt* body, stmt* orelse)
+        """
+        stmt -> If(expr test, stmt* body, stmt* orelse)
+        """
 
         if (len(node.orelse) != 0):  # if ...: ... else: ...
             raise NotImplementedError(
@@ -528,7 +534,9 @@ class OpenSCoP:
         return
 
     def _Pass(self, node, expr, coef, mode):
-        ## stmt -> Pass
+        """
+        stmt -> Pass
+        """
 
         return
 
@@ -538,18 +546,22 @@ class OpenSCoP:
 
     # Level mixed, bad !!!!
     def _BinOp(self, node, expr, coef, mode):
-        ## expr -> BinOp(expr left, operator op, expr right)
+        """
+        expr -> BinOp(expr left, operator op, expr right)
+        """
 
-        if (node.op.__class__.__name__ is "Add"):
+        if (node.op.__class__.__name__ == "Add"):
             self._AddSub(node, expr, coef, mode)
-        if (node.op.__class__.__name__ is "Sub"):
+        if (node.op.__class__.__name__ == "Sub"):
             self._AddSub(node, expr, coef, mode)
-        if (node.op.__class__.__name__ is "Mult"):
+        if (node.op.__class__.__name__ == "Mult"):
             self._Mult(node, expr, coef, mode)
         return
 
     def _UnaryOp(self, node, expr, coef, mode):
-        ## expr -> UnaryOp(unaryop op, expr operand)
+        """
+        expr -> UnaryOp(unaryop op, expr operand)
+        """
 
         if isinstance(node.op, ast.USub):
             coef = -coef
@@ -559,7 +571,9 @@ class OpenSCoP:
         return
 
     def _Compare(self, node, expr, coef, mode):
-        ## expr -> Compare(expr left, cmpop* ops, expr* comparators)
+        """
+        expr -> Compare(expr left, cmpop* ops, expr* comparators)
+        """
 
         if (len(node.ops) != 1):  # eg: 2 < N < 5
             raise NotImplementedError("only allow one op")
@@ -581,7 +595,9 @@ class OpenSCoP:
         return
 
     def _Call(self, node, expr, coef, mode):
-        ## expr -> Call(expr func, expr* args, keyword* keywords)
+        """
+        expr -> Call(expr func, expr* args, keyword* keywords)
+        """
 
         # debug, should not support call !!!!!
         for arg in node.args:
@@ -589,7 +605,9 @@ class OpenSCoP:
         return
 
     def _Num(self, node, expr, coef, mode):
-        ## expr -> Num(object n)
+        """
+        expr -> Num(object n)
+        """
 
         if "literals" in expr:
             expr["literals"] += coef * node.n
@@ -599,7 +617,9 @@ class OpenSCoP:
         return
 
     def _Subscript(self, node, expr, coef, mode):
-        ## expr -> Subscript(expr value, slice slice, expr_context ctx)
+        """
+        expr -> Subscript(expr value, slice slice, expr_context ctx)
+        """
 
         # B[i] = ...
         #   Subscript(
@@ -643,7 +663,9 @@ class OpenSCoP:
         return
 
     def _Name(self, node, expr, coef, mode):
-        ## expr -> Name(identifier id, expr_context ctx)
+        """
+        expr -> Name(identifier id, expr_context ctx)
+        """
 
         if node.id in expr:
             expr[node.id] += coef
@@ -655,10 +677,12 @@ class OpenSCoP:
     ###############################################################
     # slice
     ###############################################################
-    ## expr -> Subscript(expr value, slice slice, expr_context ctx)
+    # expr -> Subscript(expr value, slice slice, expr_context ctx)
 
     def _Index(self, node, expr, coef, mode):
-        ## slice -> Index(expr value)
+        """
+        slice -> Index(expr value)
+        """
 
         expr = {}
         self.visit(node.value, expr, coef, mode)
@@ -668,17 +692,19 @@ class OpenSCoP:
     ###############################################################
     # operator
     ###############################################################
-    ## expr -> BinOp(expr left, operator op, expr right)
-    ## stmt -> AugAssign(expr target, operator op, expr value)
+    # expr -> BinOp(expr left, operator op, expr right)
+    # stmt -> AugAssign(expr target, operator op, expr value)
 
     # example input code
-    #b[i] = a[i] + 7
-    #b[i] = a[i + 1]
-    #b[i] = a[7 * i + 1]
+    # b[i] = a[i] + 7
+    # b[i] = a[i + 1]
+    # b[i] = a[7 * i + 1]
 
     def _AddSub(self, node, expr, coef, mode):
-        ## operator
-        ## node.__class__.__name__ == BinOp
+        """
+        operator
+        node.__class__.__name__ == BinOp
+        """
 
         left = node.left
         right = node.right
@@ -686,7 +712,7 @@ class OpenSCoP:
 
         if isinstance(left, ast.Subscript):
             pass
-            #self.old_fill_access(self.statements[-1], "READ", expr)
+            # self.old_fill_access(self.statements[-1], "READ", expr)
 
         if isinstance(right, ast.Subscript):
             expr = {}
@@ -694,14 +720,16 @@ class OpenSCoP:
         self.visit(right, expr, coef, mode)
 
         if isinstance(right, ast.Subscript):
-            #self.old_fill_access(self.statements[-1], "READ", expr)
+            # self.old_fill_access(self.statements[-1], "READ", expr)
             pass
 
         return
 
     def _Mult(self, node, expr, coef, mode):
-        ## operator
-        ## node.__class__.__name__ == BinOp
+        """
+        operator
+        node.__class__.__name__ == BinOp
+        """
 
         left = node.left
         right = node.right
