@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type elu_operation::elu(mat_type&& arg, double alpha) const
     {
         //  ELU activation function
-        auto elu_ = [&](auto&& x)
+        auto elu_ = [=](auto&& x)
         {
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "elu_operation::eval",
                 generate_error_message(
-                    "the elu_operation primitive requires  exactly one or two "
+                    "the elu_operation primitive requires exactly one or two "
                     "operands"));
         }
 
