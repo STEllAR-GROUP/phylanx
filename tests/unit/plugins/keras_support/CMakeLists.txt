@@ -8,7 +8,7 @@ set(tests
     batch_dot_operation
     elu_operation
     hard_sigmoid_operation
-    l2+normalize_operation
+    l2_normalize_operation
     one_hot_operation
     sigmoid_operation
     softmax_operation
