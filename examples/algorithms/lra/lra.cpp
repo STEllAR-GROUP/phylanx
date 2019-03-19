@@ -32,7 +32,7 @@ char const* const lra_code = R"(block(
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
                     // exp(-dot(x, weights)): [30], pred: [30]
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
+                    store(pred, sigmoid(dot(x, weights))),
                     store(error, pred - y),                      // error: [30]
                     store(gradient, dot(transx, error)),         // gradient: [2]
                     parallel_block(
