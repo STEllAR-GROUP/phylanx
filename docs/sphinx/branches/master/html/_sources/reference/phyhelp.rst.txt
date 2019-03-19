@@ -479,6 +479,19 @@ assert (cond)
             Returns:
 
 
+batch_dot
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+batch_dot (x, y, axes)
+            Args:
+                x (array) : a matrix or a tensor
+                y (array) : a matrix or a tensor
+                axes (optional, integer or tuple of integers): None by default.
+                    Target dimensions to be reduced.
+            Returns:
+            The batch dot along specified axes. For more deyail refer to
+            https://keras.io/backend/#batch_dot
+
+
 block
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 block (stmt)

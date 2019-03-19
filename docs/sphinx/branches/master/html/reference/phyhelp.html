@@ -134,6 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#argmax">argmax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argmin">argmin</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#batch-dot">batch_dot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#car-cdr">car_cdr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#clip">clip</a></li>
@@ -840,6 +841,25 @@ specified, a vector of minima along the axis is returned.</p>
 <blockquote>
 <div>cond (boolean expression) : if not true, raise an AssertionError</div></blockquote>
 <p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="batch-dot">
+<h2>batch_dot<a class="headerlink" href="#batch-dot" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>batch_dot (x, y, axes)</dt>
+<dd><dl class="first docutils">
+<dt>Args:</dt>
+<dd><p class="first">x (array) : a matrix or a tensor
+y (array) : a matrix or a tensor
+axes (optional, integer or tuple of integers): None by default.</p>
+<blockquote class="last">
+<div>Target dimensions to be reduced.</div></blockquote>
+</dd>
+</dl>
+<p class="last">Returns:
+The batch dot along specified axes. For more deyail refer to
+<a class="reference external" href="https://keras.io/backend/#batch_dot">https://keras.io/backend/#batch_dot</a></p>
 </dd>
 </dl>
 </div>
@@ -2453,7 +2473,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Mar 17, 2019.
+      Last updated on Mar 19, 2019.
 
     </p>
   </div>
