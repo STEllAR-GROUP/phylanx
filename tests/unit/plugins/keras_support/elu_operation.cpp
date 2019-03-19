@@ -46,21 +46,35 @@ void test_elu_operation_0d()
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
-    phylanx::execution_tree::primitive alpha_1 =
-        phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(2.0));
-
     phylanx::execution_tree::primitive elu_1 =
         phylanx::execution_tree::primitives::create_elu_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(scal_1), std::move(alpha_1)});
+                std::move(scal_1)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f_1 =
         elu_1.eval();
 
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f_1.get())[0]);
+
+    ////
+
+    phylanx::execution_tree::primitive scal_2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(-2.0));
+
+    phylanx::execution_tree::primitive elu_2 =
+        phylanx::execution_tree::primitives::create_elu_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(scal_2)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f_2 =
+        elu_2.eval();
+
+    HPX_TEST_EQ(
+        -0.864665, phylanx::execution_tree::extract_numeric_value(f_2.get())[0]);
 }
 
 void test_elu_operation_1d()
@@ -78,7 +92,8 @@ void test_elu_operation_1d()
     phylanx::execution_tree::primitive elu =
         phylanx::execution_tree::primitives::create_elu_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{std::move(arg)});
+            phylanx::execution_tree::primitive_arguments_type{std::move(arg),
+                std::move(alpha)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         elu.eval();
@@ -143,7 +158,8 @@ void test_elu_operation_3d()
     phylanx::execution_tree::primitive elu =
         phylanx::execution_tree::primitives::create_elu_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{std::move(arg)});
+            phylanx::execution_tree::primitive_arguments_type{std::move(arg),
+                std::move(alpha)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         elu.eval();
