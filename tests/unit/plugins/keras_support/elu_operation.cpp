@@ -182,7 +182,7 @@ void test_elu_operation_3d()
 
         {{3.0               , 6.0, 2.0                  },
         {-1.7293294335267746, 2.0, 0.0                  },
-        { 1.0               , 1.0, -1-1.9004258632642721}}};
+        { 1.0               , 1.0, -1.9004258632642721}}};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
