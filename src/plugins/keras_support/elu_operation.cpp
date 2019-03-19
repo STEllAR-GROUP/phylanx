@@ -62,6 +62,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         switch(arg.num_dimensions())
         {
+
+        //  NB : Enforcing storageXd_type constructors here otherwise the
+        //  call for primitive_argument_type's constructor would be ambiguous.
+        //  These correspond to 0D/1D/2D/3D types in Blaze and thus should have
+        //  costless move constructors.
+
         case 0: //  Scalar ELU
             return primitive_argument_type{mat_type::storage0d_type{
                 elu_(arg.scalar()) }};
