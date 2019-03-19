@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const elu_operation::match_data =
     {
      hpx::util::make_tuple("elu",
-                           std::vector<std::string>{"elu(_1, _2)"},
+                           std::vector<std::string>{"elu(_1)", "elu(_1, _2)"},
                            &create_elu_operation,
                            &create_primitive<elu_operation>,
                            R"(a
@@ -51,8 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : primitive_component_base{ std::move(operands), name, codename }
     {}
 
-    primitive_argument_type elu_operation::elu(mat_type&& arg
-        , double alpha) const
+    primitive_argument_type elu_operation::elu(mat_type&& arg, double alpha) const
     {
         //  ELU activation function
         auto elu_ = [&](auto&& x)
@@ -88,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
         }
 
-        /* TODO: Throw exception */
+        /* TODO: Throw exception ? */
         return primitive_argument_type{ 0. };
     }
 
@@ -139,8 +138,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_)]
-                (primitive_argument_type&& arg_mat
-                    , primitive_argument_type&& arg_alpha)
+                (primitive_argument_type&& arg_mat,
+                    primitive_argument_type&& arg_alpha)
                 {
                     mat_type mat = extract_numeric_value(
                         std::move(arg_mat),
