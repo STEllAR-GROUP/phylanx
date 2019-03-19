@@ -37,9 +37,8 @@ void test_elu_operation_0d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f_0 =
         elu_0.eval();
 
-    HPX_TEST_EQ(
-        -1.9004258632642721,
-        phylanx::execution_tree::extract_numeric_value(f_0.get())[0]);
+    HPX_TEST(allclose(phylanx::ir::node_data<double>(-1.9004258632642721),
+        phylanx::execution_tree::extract_numeric_value(f_0.get())));
 
     ////
 
@@ -60,8 +59,8 @@ void test_elu_operation_0d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f_1 =
         elu_1.eval();
 
-    HPX_TEST_EQ(
-        42.0, phylanx::execution_tree::extract_numeric_value(f_1.get())[0]);
+    HPX_TEST(allclose(phylanx::ir::node_data<double>(42.0),
+        phylanx::execution_tree::extract_numeric_value(f_1.get())));
 
     ////
 
@@ -82,9 +81,8 @@ void test_elu_operation_0d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f_2 =
         elu_2.eval();
 
-    HPX_TEST_EQ(
-        -0.8646647167633873,
-        phylanx::execution_tree::extract_numeric_value(f_2.get())[0]);
+    HPX_TEST(allclose(phylanx::ir::node_data<double>(-0.8646647167633873),
+        phylanx::execution_tree::extract_numeric_value(f_2.get())));
 }
 
 void test_elu_operation_1d()
@@ -110,8 +108,8 @@ void test_elu_operation_1d()
 
     blaze::DynamicVector<double> expected{41., -1.9633687222225316, 0.};
 
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+    HPX_TEST(allclose(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get())));
 }
 
 void test_elu_operation_2d()
@@ -142,8 +140,8 @@ void test_elu_operation_2d()
         {-1.9633687222225316, 1., -1.7293294335267746},
         {3.                 , 4., -1.2642411176571153}};
 
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+    HPX_TEST(allclose(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get())));
 }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -184,8 +182,8 @@ void test_elu_operation_3d()
         {-1.7293294335267746, 2.0, 0.0                  },
         { 1.0               , 1.0, -1.9004258632642721}}};
 
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+    HPX_TEST(allclose(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get())));
 }
 #endif
 
