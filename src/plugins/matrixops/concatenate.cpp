@@ -829,7 +829,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (is_list_operand_strict(arg1))
         {
             auto && r = extract_list_value_strict(arg1, name_, codename_);
-            ops.reserve(r.size() + operands.size() - 1);
+            ops.reserve(r.size());
             for (auto && op : r)
             {
                 if (is_list_operand_strict(op))
