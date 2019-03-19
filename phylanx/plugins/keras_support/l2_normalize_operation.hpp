@@ -21,6 +21,13 @@
 #include <vector>
 
 namespace phylanx {  namespace execution_tree {  namespace primitives  {
+/// \brief Returns an array of the same shape which is l2 normalized
+///
+/// \param a      The scalar, vector, matrix, or tensor to perform l2
+///               normalization over
+/// \param axis   Optional. The default is None (normalizing over the whole
+///               array).
+/// Immitates the functionality of https://keras.io/backend/#l2_normalize
 
     class l2_normalize_operation
         : public primitive_component_base

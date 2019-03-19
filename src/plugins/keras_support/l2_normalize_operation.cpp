@@ -166,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (std::size_t j = 0; j != t.rows(); ++j)
             {
                 auto slice = blaze::rowslice(t, j);
-                for (std::size_t i = 0; i != t.rows(); ++i)
+                for (std::size_t i = 0; i != t.columns(); ++i)
                     blaze::row(slice, i) = blaze::row(slice, i) /
                         blaze::l2Norm(blaze::row(slice, i));
             }
@@ -178,45 +178,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             auto slice = blaze::rowslice(result, j);
             auto t_slice = blaze::rowslice(t, j);
-            for (std::size_t i = 0; i != t.rows(); ++i)
+
+            for (std::size_t i = 0; i != t.columns(); ++i)
                 blaze::row(slice, i) = blaze::row(t_slice, i) /
                     blaze::l2Norm(blaze::row(t_slice, i));
         }
         return primitive_argument_type{std::move(result)};
     }
 
-//    primitive_argument_type l2_normalize_operation::l2_normalize3d_axis1(
-//        arg_type&& arg) const
-//    {
-//        auto t = arg.tensor();
-//        if (!arg.is_ref())
-//        {
-//            for (std::size_t i = 0; i != arg.tensor().columns(); ++i)
-//            {
-//                blaze::columnslice(t, i) =
-//                    blaze::l2_normalize<blaze::rowwise>(blaze::columnslice(t, i));
-//            }
-//            return primitive_argument_type{std::move(arg)};
-//        }
-//
-//        blaze::DynamicTensor<val_type> result(t.pages(), t.rows(), t.columns());
-//        for (std::size_t i = 0; i != t.columns(); ++i)
-//        {
-//            auto slice = blaze::columnslice(t, i);
-//            blaze::columnslice(result, i) = blaze::l2_normalize<blaze::rowwise>(slice);
-//        }
-//        return primitive_argument_type{std::move(result)};
-//    }
-
-    primitive_argument_type l2_normalize_operation::l2_normalize3d_axis2(
+    primitive_argument_type l2_normalize_operation::l2_normalize3d_axis1(
         arg_type&& arg) const
     {
         auto t = arg.tensor();
         if (!arg.is_ref())
         {
-            for (std::size_t j = 0; j != t.rows(); ++j)
+            for (std::size_t j = 0; j != t.pages(); ++j)
             {
-                auto slice = blaze::rowslice(t, j);
+                auto slice = blaze::pageslice(t, j);
                 for (std::size_t i = 0; i != t.columns(); ++i)
                     blaze::column(slice, i) = blaze::column(slice, i) /
                         blaze::l2Norm(blaze::column(slice, i));
@@ -225,10 +203,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         blaze::DynamicTensor<val_type> result(t.pages(), t.rows(), t.columns());
-        for (std::size_t j = 0; j != t.rows(); ++j)
+        for (std::size_t j = 0; j != t.pages(); ++j)
         {
-            auto slice = blaze::rowslice(result, j);
-            auto t_slice = blaze::rowslice(t, j);
+            auto slice = blaze::pageslice(result, j);
+            auto t_slice = blaze::pageslice(t, j);
             for (std::size_t i = 0; i != t.columns(); ++i)
                 blaze::column(slice, i) = blaze::column(t_slice, i) /
                     blaze::l2Norm(blaze::column(t_slice, i));
@@ -236,27 +214,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type l2_normalize_operation::l2_normalize3d_flatten(
+    primitive_argument_type l2_normalize_operation::l2_normalize3d_axis2(
         arg_type&& arg) const
     {
         auto t = arg.tensor();
         if (!arg.is_ref())
         {
-            t = t / blaze::l2Norm(t);
-
+            for (std::size_t j = 0; j != t.pages(); ++j)
+            {
+                auto slice = blaze::pageslice(t, j);
+                for (std::size_t i = 0; i != t.rows(); ++i)
+                    blaze::row(slice, i) = blaze::row(slice, i) /
+                        blaze::l2Norm(blaze::row(slice, i));
+            }
             return primitive_argument_type{std::move(arg)};
         }
 
         blaze::DynamicTensor<val_type> result(t.pages(), t.rows(), t.columns());
-        for (std::size_t j = 0; j != t.rows(); ++j)
+        for (std::size_t j = 0; j != t.pages(); ++j)
         {
-            auto slice = blaze::rowslice(result, j);
-            auto t_slice = blaze::rowslice(t, j);
-            for (std::size_t i = 0; i != t.columns(); ++i)
-                blaze::column(slice, i) = blaze::column(t_slice, i) /
-                    blaze::l2Norm(blaze::column(t_slice, i));
+            auto slice = blaze::pageslice(result, j);
+            auto t_slice = blaze::pageslice(t, j);
+            for (std::size_t i = 0; i != t.rows(); ++i)
+                blaze::row(slice, i) = blaze::row(t_slice, i) /
+                    blaze::l2Norm(blaze::row(t_slice, i));
         }
+
         return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type l2_normalize_operation::l2_normalize3d_flatten(
+        arg_type&& arg) const
+    {
+        auto t = arg.tensor();
+    //    if (!arg.is_ref())
+    //    {
+    //        t = t / blaze::l2Norm(t);
+            return primitive_argument_type{std::move(arg)};
+    //    }
+
+    //    blaze::DynamicMatrix<val_type> result = t / blaze::l2Norm(t);
+    //    return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type l2_normalize_operation::l2_normalize3d(
@@ -268,9 +266,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 0:
             return l2_normalize3d_axis0(std::move(arg));
 
-        //case -2: HPX_FALLTHROUGH;
-        //case 1:
-        //    return l2_normalize3d_axis1(std::move(arg));
+        case -2: HPX_FALLTHROUGH;
+        case 1:
+            return l2_normalize3d_axis1(std::move(arg));
 
         case -1: HPX_FALLTHROUGH;
         case 2:
@@ -314,59 +312,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        if (operands.size() == 2 && valid(operands[1]))
-        {
-            return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping([this_ = std::move(this_)](
-                    primitive_arguments_type&& args)
-                    ->primitive_argument_type {
-
-                    std::int64_t axis =
-                        execution_tree::extract_scalar_integer_value_strict(
-                            args[1], this_->name_, this_->codename_);
-
-                    // Extract the array, the result should always be double
-                    arg_type a = extract_numeric_value(
-                        std::move(args[0]), this_->name_, this_->codename_);
-
-                    std::size_t a_dims = a.num_dimensions();
-
-                    switch (a_dims)
-                    {
-                    case 0:
-                        return this_->l2_normalize0d();
-                    case 1:
-                        return this_->l2_normalize1d(std::move(a));
-                    case 2:
-                        return this_->l2_normalize2d(std::move(a), axis);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                    case 3:
-                        return this_->l2_normalize3d(std::move(a), axis);
-#endif
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "l2_normalize_operation::eval",
-                            util::generate_error_message(
-                                "operand a has an invalid "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
-                    }
-            }),
-                detail::map_operands(
-                    operands, functional::value_operand{}, args,
-                    name_, codename_, std::move(ctx)));
-        }
-        // No axis or axis=None
         return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping([this_ = std::move(this_)](
-                    primitive_argument_type&& arg)
-                    ->primitive_argument_type {
+            hpx::util::unwrapping([this_ = std::move(this_)](
+                primitive_arguments_type&& args)
+                ->primitive_argument_type {
 
-                // Extract the array, the result should always be double
-                arg_type a = extract_numeric_value(
-                    std::move(arg), this_->name_, this_->codename_);
+            // Extract the array, the result should always be double
+            arg_type a = extract_numeric_value(
+                std::move(args[0]), this_->name_, this_->codename_);
 
-                std::size_t a_dims = a.num_dimensions();
+            std::size_t a_dims = a.num_dimensions();
+
+            if (args.size() == 2 && valid(args[1]))
+            {
+                std::int64_t axis =
+                    execution_tree::extract_scalar_integer_value_strict(
+                        args[1], this_->name_, this_->codename_);
 
                 switch (a_dims)
                 {
@@ -375,21 +336,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return this_->l2_normalize1d(std::move(a));
                 case 2:
-                    return this_->l2_normalize2d_flatten(std::move(a));
-    //#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    //            case 3:
-    //                return this_->l2_normalize3d(std::move(a));
-    //#endif
+                    return this_->l2_normalize2d(std::move(a), axis);
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->l2_normalize3d(std::move(a), axis);
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "l2_normalize_operation::eval",
-                        util::generate_error_message("operand a has an invalid "
-                            "number of dimensions ",
+                        util::generate_error_message(
+                            "operand a has an invalid "
+                            "number of dimensions",
                             this_->name_, this_->codename_));
                 }
-            }),
-                value_operand(operands[0], args, name_, codename_, ctx));
-    }
+            }
 
+            // no axis is given or axis=None
+            switch (a_dims)
+            {
+            case 0:
+                return this_->l2_normalize0d();
+            case 1:
+                return this_->l2_normalize1d(std::move(a));
+            case 2:
+                return this_->l2_normalize2d_flatten(std::move(a));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case 3:
+                return this_->l2_normalize3d_flatten(std::move(a));
+#endif
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "l2_normalize_operation::eval",
+                    util::generate_error_message("operand a has an invalid "
+                        "number of dimensions ",
+                        this_->name_, this_->codename_));
+            }
+        }),
+            detail::map_operands(
+                operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
+    }
 }}}
 
