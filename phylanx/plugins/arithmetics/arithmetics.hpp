@@ -11,6 +11,7 @@
 #include <phylanx/plugins/arithmetics/cumsum.hpp>
 #include <phylanx/plugins/arithmetics/div_operation.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>
+#include <phylanx/plugins/arithmetics/generic_operation_bool.hpp>
 #include <phylanx/plugins/arithmetics/maximum.hpp>
 #include <phylanx/plugins/arithmetics/minimum.hpp>
 #include <phylanx/plugins/arithmetics/mul_operation.hpp>

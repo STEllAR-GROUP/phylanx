@@ -18,12 +18,19 @@
 #include <hpx/util/register_locks.hpp>
 
 #include <atomic>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 namespace phylanx { namespace ir
 {
@@ -2267,6 +2274,68 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        struct isclose
+        {
+            bool operator()(double lhs, double rhs) const
+            {
+                return std::abs(lhs - rhs) <= atol + rtol * std::abs(rhs) ||
+                    (equal_nan && std::isnan(lhs) && std::isnan(rhs));
+            }
+
+            double rtol;
+            double atol;
+            bool equal_nan;
+        };
+    }
+
+    bool allclose(node_data<double> const& lhs, node_data<double> const& rhs,
+        double rtol, double atol, bool equal_nan)
+    {
+        if (lhs.num_dimensions() != rhs.num_dimensions() ||
+            lhs.dimensions() != rhs.dimensions())
+        {
+            return false;
+        }
+
+        auto isclose = detail::isclose{atol, rtol, equal_nan};
+
+        switch (lhs.index())
+        {
+        case node_data<double>::storage0d:          HPX_FALLTHROUGH;
+        case node_data<double>::custom_storage0d:
+            return isclose(lhs.scalar(), rhs.scalar());
+
+        case node_data<double>::storage1d:          HPX_FALLTHROUGH;
+        case node_data<double>::custom_storage1d:
+            return blaze::reduce(
+                blaze::map(lhs.vector(), rhs.vector(), isclose),
+                std::logical_and<bool>{});
+
+        case node_data<double>::storage2d:          HPX_FALLTHROUGH;
+        case node_data<double>::custom_storage2d:
+            return blaze::reduce(
+                blaze::map(lhs.matrix(), rhs.matrix(), isclose),
+                std::logical_and<bool>{});
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case node_data<double>::storage3d:          HPX_FALLTHROUGH;
+        case node_data<double>::custom_storage3d:
+            return blaze::reduce(
+                blaze::map(lhs.tensor(), rhs.tensor(), isclose),
+                std::logical_and<bool>{});
+#endif
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<double>::allclose)",
+            "node_data object holds unsupported data type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
         template <typename T, typename Range>
         void print_array(std::ostream& out, Range const& r, std::size_t size)
         {
@@ -2377,13 +2446,12 @@ namespace phylanx { namespace ir
             {
             case node_data<std::int64_t>::storage0d:          HPX_FALLTHROUGH;
             case node_data<std::int64_t>::custom_storage0d:
-                    out << nd.scalar();
-                    break;
+                out << nd.scalar();
+                break;
 
             case node_data<std::int64_t>::storage1d:          HPX_FALLTHROUGH;
             case node_data<std::int64_t>::custom_storage1d:
-                detail::print_array<std::int64_t>(
-                    out, nd.vector(), nd.size());
+                detail::print_array<std::int64_t>(out, nd.vector(), nd.size());
                 break;
 
             case node_data<std::int64_t>::storage2d:          HPX_FALLTHROUGH;
@@ -2450,6 +2518,7 @@ namespace phylanx { namespace ir
                     out << std::boolalpha;
                     detail::print_matrix<bool>(out, m, m.rows(), m.columns());
                 }
+                break;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case node_data<std::uint8_t>::storage3d:          HPX_FALLTHROUGH;

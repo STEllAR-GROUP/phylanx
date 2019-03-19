@@ -132,7 +132,8 @@ namespace phylanx { namespace execution_tree
         eval_default = 0x00,                // always evaluate everything
         eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
         eval_dont_evaluate_partials = 0x02, // don't evaluate partially bound functions
-        eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
+        eval_dont_evaluate_lambdas = 0x04,  // don't evaluate functions
+        eval_slicing = 0x08                 // do perform slicing
     };
 
     struct eval_context
@@ -356,6 +357,19 @@ namespace phylanx { namespace execution_tree
 
     struct primitive_argument_type : argument_value_type
     {
+        enum variant_index
+        {
+            nil_index = 0,
+            bool_index = 1,
+            int64_index = 2,
+            string_index = 3,
+            float64_index = 4,
+            primitive_index = 5,
+            expression_index = 6,
+            list_index = 7,
+            dictionary_index = 8
+        };
+
         primitive_argument_type() = default;
 
         primitive_argument_type(ast::nil val)

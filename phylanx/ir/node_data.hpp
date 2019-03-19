@@ -487,6 +487,26 @@ namespace phylanx { namespace ir
         return !(lhs == rhs);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT bool allclose(node_data<double> const& lhs,
+        node_data<double> const& rhs, double rtol = 1e-5, double atol = 1e-8,
+        bool equal_nan = false);
+
+    inline bool allclose(node_data<std::uint8_t> const& lhs,
+        node_data<std::uint8_t> const& rhs, double rtol = 0, double atol = 0,
+        bool equal_nan = false)
+    {
+        return lhs == rhs;
+    }
+
+    inline bool allclose(node_data<std::int64_t> const& lhs,
+        node_data<std::int64_t> const& rhs, double rtol = 0, double atol = 0,
+        bool equal_nan = false)
+    {
+        return lhs == rhs;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, node_data<double> const& nd);
     PHYLANX_EXPORT std::ostream& operator<<(

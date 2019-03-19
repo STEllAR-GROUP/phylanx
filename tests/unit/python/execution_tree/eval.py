@@ -6,7 +6,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx import Phylanx, PhylanxSession
+from phylanx import Phylanx, PhylanxSession, execution_tree
 import numpy as np
 
 PhylanxSession.init(1)
@@ -234,3 +234,33 @@ v = np.array([
 ])
 assert np.all(np.sign(v) == do_sign(v))
 assert np.all(np.square(v) == do_square(v))
+
+
+def phytype(x):
+    return execution_tree.var(x).dtype
+
+
+def get_types():
+    return [
+        phytype(None),
+        phytype(0),
+        phytype(1.0),
+        phytype("x"),
+        phytype(np.array([True, False])),
+        phytype(np.array([1, 2])),
+        phytype(np.array([1.0, 2.0])),
+        phytype([1.0, "x"]),
+        phytype({"x": 1})]
+
+
+types = get_types()
+assert types == [
+    np.dtype('O'),
+    np.dtype('int64'),
+    np.dtype('float64'),
+    np.dtype('S'),
+    np.dtype('int8'),
+    np.dtype('int64'),
+    np.dtype('float64'),
+    np.dtype('O'),
+    np.dtype('O')], types

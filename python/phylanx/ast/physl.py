@@ -22,7 +22,7 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "subtract": "__sub",
+    "subtract": "__sub"
 }
 
 numpy_constants = {
@@ -335,7 +335,7 @@ class PhySL:
         if not self.file_name:
             self.file_name = "<none>"
 
-        self.performance = self.kwargs.get('performance')
+        self.performance = self.kwargs.get('performance', False)
         self.localities = self.kwargs.get('localities')
         self.__perfdata__ = (None, None, None)
 
@@ -855,6 +855,20 @@ class PhySL:
         return '__ge'
 
     def _If(self, node):
+        """class If(test, body, orelse)
+
+       `test` holds a single node, such as a Compare node.
+       `body` and `orelse` each hold a list of nodes.
+       """
+
+        symbol = '%s' % get_symbol_info(node, 'if')
+        test = self.apply_rule(node.test)
+        body = self.block(node.body)
+        orelse = self.block(node.orelse)
+
+        return [symbol, (test, body, orelse)]
+
+    def _IfExp(self, node):
         """class IfExp(test, body, orelse)
 
        `test` holds a single node, such as a Compare node.

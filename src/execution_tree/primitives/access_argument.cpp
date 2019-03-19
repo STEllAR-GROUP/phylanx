@@ -113,7 +113,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             extract_ref_value(*it, name_, codename_));
                     }
 
-                    ctx.add_mode(eval_dont_wrap_functions);
+                    ctx.add_mode(
+                        eval_mode(eval_dont_wrap_functions | eval_slicing));
                     return value_operand(target, std::move(fargs),
                         name_, codename_, std::move(ctx));
                 }
@@ -237,7 +238,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_ASSERT(p != nullptr);
 
             p->store(hpx::launch::sync, std::move(data), std::move(params),
-                std::move(ctx));
+                ctx.add_mode(eval_slicing));
         }
         else if (is_ref_value(target))
         {
@@ -350,7 +351,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_ASSERT(p != nullptr);
 
                 p->store(hpx::launch::sync, std::move(vals), std::move(params),
-                    std::move(ctx));
+                    ctx.add_mode(eval_slicing));
             }
             else
             {

@@ -8,6 +8,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/util/random.hpp>
+#include <phylanx/util/truncated_normal_distribution.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -56,6 +57,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        template <typename T>
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> adjust_dimensions(
+            ir::node_data<T> const& data, std::string const& name,
+            std::string const& codename)
+        {
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{
+                data.dimensions()};
+
+            switch (data.num_dimensions())
+            {
+            case 0:
+                result[0] = extract_scalar_integer_value(data, name, codename);
+                break;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case 3:  HPX_FALLTHROUGH;
+#endif
+            case 1:  HPX_FALLTHROUGH;
+            case 2:
+                break;
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::adjust_dimensions",
+                    util::generate_error_message(
+                        "primitive_argument_type does not represent a "
+                        "supported dimensionality",
+                        name, codename));
+            }
+
+            return result;
+        }
+    }
+
     // extract the required dimensionality from argument 1
     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
         primitive_argument_type const& val, std::string const& name,
@@ -64,44 +101,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (val.index())
         {
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            return util::get<1>(val).dimensions();
+            return detail::adjust_dimensions(
+                util::get<1>(val), name, codename);
 
         case 2:    // std::uint64_t
-            return util::get<2>(val).dimensions();
+            return detail::adjust_dimensions(
+                util::get<2>(val), name, codename);
 
         case 4:    // phylanx::ir::node_data<double>
-            return util::get<4>(val).dimensions();
+            return detail::adjust_dimensions(
+                util::get<4>(val), name, codename);
 
         case 7:    // phylanx::ir::range
             {
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};
-                auto const& list = util::get<7>(val);
-                auto const& args = list;
+                auto const& args = util::get<7>(val);
                 switch (args.size())
                 {
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
-                    {
-                        auto elem_0 = args.begin();
-                        result[0] = extract_scalar_integer_value(*elem_0);
-                        result[1] = extract_scalar_integer_value(*(++elem_0));
-                        result[2] = extract_scalar_integer_value(*(++elem_0));
-                    }
+                {
+                    auto elem_0 = args.begin();
+                    result[0] =
+                        extract_scalar_integer_value(*elem_0, name, codename);
+                    result[1] = extract_scalar_integer_value(
+                        *(++elem_0), name, codename);
+                    result[2] = extract_scalar_integer_value(
+                        *(++elem_0), name, codename);
+                }
                     return result;
 #endif
                 case 2:
-                    {
-                        auto elem_0 = args.begin();
-                        result[0] = extract_scalar_integer_value(*elem_0);
-                        result[1] = extract_scalar_integer_value(*(++elem_0));
-                    }
+                {
+                    auto elem_0 = args.begin();
+                    result[0] =
+                        extract_scalar_integer_value(*elem_0, name, codename);
+                    result[1] = extract_scalar_integer_value(
+                        *(++elem_0), name, codename);
+                }
                     return result;
 
                 case 1:
-                    result[0] = extract_scalar_integer_value(*args.begin());
+                    result[0] = extract_scalar_integer_value(
+                        *args.begin(), name, codename);
                     return result;
 
                 case 0:
+                    result[0] = extract_scalar_integer_value(
+                        *args.begin(), name, codename);
                     return result;
 
                 default:
@@ -110,7 +157,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             break;
 
-        case 0: HPX_FALLTHROUGH;    // nil
+        case 0:     // nil
+            return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{};
+
         case 3: HPX_FALLTHROUGH;    // string
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
@@ -126,6 +175,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name, codename));
     }
 
+    // This function extracts the required dimensions of the returned data,
+    // note, that in case of a zero-dimensional argument we return a
+    // one-dimensional result as the value specifies the number of values to
+    // return. In case of 'nil' we return z zero-dimensional argument as
+    // exactly one random number should be generated.
     hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>>
     dimensions_operand(primitive_argument_type const& val,
         primitive_arguments_type const& args, std::string const& name,
@@ -468,6 +522,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_RANDOM_DISTRIBUTION_2(
             normal, std::normal_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_2(
+            truncated_normal, util::truncated_normal_distribution<double>,
+            double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
             lognormal, std::lognormal_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
             chi_squared, std::chi_squared_distribution<double>, double, double);
@@ -497,6 +554,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             { "weibull", create_weibull },
             { "extreme_value", create_extreme_value },
             { "normal", create_normal },
+            { "truncated_normal", create_truncated_normal },
             { "lognormal", create_lognormal },
             { "chi_squared", create_chi_squared },
             { "cauchy", create_cauchy },
@@ -635,7 +693,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > 2)
+        if (operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
@@ -643,8 +701,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the random primitive requires at most one operand"));
         }
 
-        if (!valid(operands[0]) ||
-            (operands.size() == 2 && !valid(operands[1])))
+        if (operands.size() == 2 && !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",

@@ -94,6 +94,36 @@ void test_0d_keep_dims_false()
         expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
+void test_0d_keep_dims_false_init()
+{
+    phylanx::execution_tree::primitive arg0 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ast::nil{});
+    phylanx::execution_tree::primitive arg2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
+    phylanx::execution_tree::primitive init =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(2.0));
+
+    phylanx::execution_tree::primitive prod =
+        phylanx::execution_tree::primitives::create_prod_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{std::move(arg0),
+                std::move(arg1), std::move(arg2), std::move(init)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        prod.eval();
+
+    blaze::DynamicVector<double> expected{84.};
+
+    HPX_TEST_EQ(
+        expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+}
+
 void test_1d()
 {
     blaze::DynamicVector<double> subject{6., 9., 2., 3., -1.};
@@ -138,6 +168,37 @@ void test_1d_keep_dims_true()
         prod.eval();
 
     blaze::DynamicVector<double> expected{-324.};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_1d_keep_dims_true_init()
+{
+    blaze::DynamicVector<double> subject{6., 9., 2., 3., -1.};
+    phylanx::execution_tree::primitive arg0 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(subject));
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ast::nil{});
+    phylanx::execution_tree::primitive arg2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
+    phylanx::execution_tree::primitive init =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(0.5));
+
+    phylanx::execution_tree::primitive prod =
+        phylanx::execution_tree::primitives::create_prod_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(arg0), std::move(arg1), std::move(arg2), std::move(init)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        prod.eval();
+
+    blaze::DynamicVector<double> expected{-162.};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -397,7 +458,7 @@ void test_2d_axis0_keep_dims_true()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-void test_2d_axis1_keep_dims_true()
+void test_2d_axis1_keep_dims_true_init()
 {
     blaze::DynamicMatrix<double> subject{{6., 9.}, {2., 3.}, {-1., -1.}};
     phylanx::execution_tree::primitive arg0 =
@@ -409,20 +470,51 @@ void test_2d_axis1_keep_dims_true()
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
+    phylanx::execution_tree::primitive init =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(2.));
 
     phylanx::execution_tree::primitive prod =
         phylanx::execution_tree::primitives::create_prod_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{
-                std::move(arg0), std::move(arg1), std::move(arg2)});
+            phylanx::execution_tree::primitive_arguments_type{std::move(arg0),
+                std::move(arg1), std::move(arg2), std::move(init)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         prod.eval();
 
-    blaze::DynamicMatrix<double> expected{{54.}, {6.}, {1.}};
+    blaze::DynamicMatrix<double> expected{{108.}, {12.}, {2.}};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_2d_axis1_keep_dims_true()
+{
+    blaze::DynamicMatrix<double> subject{{6., 9.}, {2., 3.}, {-1., -1.}};
+    phylanx::execution_tree::primitive arg0 =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<double>(subject));
+    phylanx::execution_tree::primitive arg1 =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
+    phylanx::execution_tree::primitive arg2 =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
+
+    phylanx::execution_tree::primitive prod =
+            phylanx::execution_tree::primitives::create_prod_operation(
+                    hpx::find_here(),
+                    phylanx::execution_tree::primitive_arguments_type{
+                            std::move(arg0), std::move(arg1), std::move(arg2)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+            prod.eval();
+
+    blaze::DynamicMatrix<double> expected{{54.}, {6.}, {1.}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+                phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_2d_axis0_keep_dims_false()
@@ -476,6 +568,37 @@ void test_2d_axis1_keep_dims_false()
         prod.eval();
 
     blaze::DynamicVector<double> expected{54., 6., 1.};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_2d_axis1_keep_dims_false_init()
+{
+    blaze::DynamicMatrix<double> subject{{6., 9.}, {2., 3.}, {-1., -1.}};
+    phylanx::execution_tree::primitive arg0 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(subject));
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
+    phylanx::execution_tree::primitive arg2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
+    phylanx::execution_tree::primitive init =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(3.));
+
+    phylanx::execution_tree::primitive prod =
+        phylanx::execution_tree::primitives::create_prod_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{std::move(arg0),
+                std::move(arg1), std::move(arg2), std::move(init)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        prod.eval();
+
+    blaze::DynamicVector<double> expected{162., 18., 3.};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -980,6 +1103,38 @@ void test_3d_axis2_keep_dims_false()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_3d_axis2_keep_dims_false_init()
+{
+    blaze::DynamicTensor<double> subject{
+        {{6., 9.}, {2., 3.}, {-1., -1.}}, {{3., 4.}, {1., 5.}, {-2., 3.}}};
+    phylanx::execution_tree::primitive arg0 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(subject));
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(2));
+    phylanx::execution_tree::primitive arg2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
+    phylanx::execution_tree::primitive init =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(2));
+
+    phylanx::execution_tree::primitive prod =
+        phylanx::execution_tree::primitives::create_prod_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{std::move(arg0),
+                std::move(arg1), std::move(arg2), std::move(init)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        prod.eval();
+
+    blaze::DynamicMatrix<double> expected{{108., 12., 2.}, {24., 10., -12.}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
 void test_3d_axes(std::int64_t axis1, std::int64_t axis2,
     blaze::DynamicVector<double> expected)
 {
@@ -1119,9 +1274,13 @@ void test_3d_axes_keep_dims_true(
 int main(int argc, char* argv[])
 {
     test_0d();
+    test_0d_keep_dims_true();
+    test_0d_keep_dims_false();
+    test_0d_keep_dims_false_init();
 
     test_1d();
     test_1d_keep_dims_true();
+    test_1d_keep_dims_true_init();
     test_1d_keep_dims_false();
 
     test_2d();
@@ -1133,6 +1292,7 @@ int main(int argc, char* argv[])
     test_2d_axis1_keep_dims_true();
     test_2d_axis0_keep_dims_false();
     test_2d_axis1_keep_dims_false();
+    test_2d_axis1_keep_dims_false_init();
     test_2d_int();
     test_2d_axis0_int();
     test_2d_axis1_int();
@@ -1156,6 +1316,7 @@ int main(int argc, char* argv[])
     test_3d_axis0_keep_dims_false();
     test_3d_axis1_keep_dims_false();
     test_3d_axis2_keep_dims_false();
+    test_3d_axis2_keep_dims_false_init();
     test_3d_int();
     test_3d_axis0_int();
     test_3d_axis1_int();

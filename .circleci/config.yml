@@ -50,12 +50,6 @@ anchors:
             - image: stellargroup/phylanx_base:prerequisites
               entrypoint: /bin/bash
 
-    - &machine_config
-        machine: true
-        environment:
-            BASE_IMAGE_NAME: stellargroup/phylanx_base:prerequisites
-            TARGET_IMAGE_NAME: stellargroup/phylanx:devel
-
     - &ignore_docs
         filters:
             branches:
@@ -75,24 +69,27 @@ anchors:
             command: |
                 mkdir -p ${CIRCLE_JOB}
                 xsltproc /phylanx/conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
-    - &justify_build
-        run:
-            name: Justify building the ALL target
-            command: ninja -n -d explain || true
-            working_directory: /phylanx/build
-    - &avoid_cmake_rerun
-        run:
-            name: Avoid re-running CMake
-            command: |
-                ninja -n -d explain 2>&1 | \
-                    grep -o 'output\ [^ ]\+ older\ than\ most\ recent\ input [^ ]\+' | \
-                    awk '{ print $2 }' | \
-                    xargs touch || true
-            working_directory: /phylanx/build
 
     - &attach_phylanx_tree
         attach_workspace:
             at: /
+
+    - &avoid_cmake_rerun
+        run:
+            name: Avoid re-running CMake
+            command: |
+                export old_targets=$( \
+                    ninja -n -d explain 2>&1 | \
+                    grep -o 'output\ [^ ]\+ older\ than\ most\ recent\ input [^ ]\+' | \
+                    awk '{ print $2 }' || true)
+                if [[ -n "$old_targets" ]]; then
+                    echo "$old_targets"| xargs -I % touch %
+                fi
+            working_directory: /phylanx/build
+        run:
+            name: Justify building the ALL target
+            command: ninja -n -d explain || true
+            working_directory: /phylanx/build
 
 ################################################################################
 jobs:
@@ -114,7 +111,7 @@ jobs:
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
             # Install blaze_tensors library
             - run:
-                name: Install blaze_tensors
+                name: Install blaze_tensor
                 command: |
                     git clone https://github.com/STEllAR-GROUP/blaze_tensor.git --depth=1 /blaze_tensor
                     cmake -H/blaze_tensor -B/blaze_tensor/build
@@ -168,8 +165,7 @@ jobs:
             # Build all targets
             - run:
                 name: Build all targets
-                command: |
-                    cmake --build . -- -j1
+                command: cmake --build . -- -j1
             # CTest to JUnit XML transformation sheet
             - persist_to_workspace:
                 root: /
@@ -182,23 +178,26 @@ jobs:
             - <<: *attach_phylanx_tree
             # Build Documentation and Push to gh-pages branch
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain git_docs
             - run:
-                name: Build and push Sphinx Documentation
+                name: Add Github's key(s) to known_hosts
                 command: |
                     mkdir -p ~/.ssh
                     ssh-keyscan -H github.com >>~/.ssh/known_hosts
+            - run:
+                name: Configure local Git
+                command: |
                     git config --global user.name "StellarBot"
                     git config --global user.email "stellar@cct.lsu.edu"
-                    cmake --build . -- -j1 git_docs
+            - run:
+                name: Build and push Sphinx Documentation
+                command: cmake --build . -- -j1 git_docs
             - persist_to_workspace:
                   root: /
                   paths:
                       - phylanx/build
-                      - phylanx/source
 
     check.code_format.inspect:
         <<: *docker_config
@@ -208,8 +207,6 @@ jobs:
             - run:
                 name: Create build, test, and artifacts directories
                 command: mkdir -p /artifacts /code_format
-            - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tools.inspect
@@ -302,7 +299,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.regressions
@@ -323,7 +319,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.distributed
@@ -344,7 +339,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.arithmetics
@@ -365,7 +359,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.booleans
@@ -386,7 +379,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.controls
@@ -407,7 +399,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.{fileio,solvers}
@@ -422,13 +413,32 @@ jobs:
                 path: tests.unit.plugins.fileio_solvers
             - store_artifacts:
                 path: tests.unit.plugins.fileio_solvers
+    tests.unit.plugins.keras_support:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - <<: *avoid_cmake_rerun
+            - run:
+                name: Justify build
+                command: ninja -n -d explain tests.unit.plugins.keras_support
+            - run:
+                name: Build KerasSupport primitive plugin unit tests
+                command: cmake --build . -- -j1 tests.unit.plugins.keras_support
+            - run:
+                name: Run KerasSupport primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.keras_support
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.keras_support
+            - store_artifacts:
+                path: tests.unit.plugins.keras_support
     tests.unit.plugins.listops:
         <<: *docker_config
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.listops
@@ -449,7 +459,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.matrixops
@@ -470,7 +479,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.statistics
@@ -491,7 +499,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
@@ -512,7 +519,6 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 working_directory: /phylanx/build
@@ -536,7 +542,6 @@ jobs:
             - <<: *attach_phylanx_tree
             - setup_remote_docker
             - <<: *avoid_cmake_rerun
-            - <<: *justify_build
             - run:
                 name: Justify build
                 command: ninja -n -d explain install
@@ -594,7 +599,7 @@ workflows:
                     - build
             - check.code_format.inspect:
                 requires:
-                    - build
+                    - configure
             - check.code_format.flake8:
                 requires:
                     - configure
@@ -614,6 +619,9 @@ workflows:
                 requires:
                     - build
             - tests.unit.plugins.fileio_solvers:
+                requires:
+                    - build
+            - tests.unit.plugins.keras_support:
                 requires:
                     - build
             - tests.unit.plugins.listops:
@@ -645,6 +653,7 @@ workflows:
                     - tests.unit.plugins.booleans
                     - tests.unit.plugins.controls
                     - tests.unit.plugins.fileio_solvers
+                    - tests.unit.plugins.keras_support
                     - tests.unit.plugins.listops
                     - tests.unit.plugins.matrixops
                     - tests.unit.plugins.statistics
