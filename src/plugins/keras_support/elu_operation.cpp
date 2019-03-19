@@ -1,5 +1,5 @@
 // Copyright (c) 2018-2019 Hartmut Kaiser
-// Copyright (c) 2018-2019 Jules Pénuchot
+// Copyright (c) 2018-2019 Jules Penuchot
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
