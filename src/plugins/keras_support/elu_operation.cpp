@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const elu_operation::match_data =
     {
      hpx::util::make_tuple("elu",
-                           std::vector<std::string>{"elu(_1)", "elu(_1, _2)"},
+                           std::vector<std::string>{"elu(_1, _2)"},
                            &create_elu_operation,
                            &create_primitive<elu_operation>,
                            R"(a
@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type elu_operation::elu(mat_type&& arg, double alpha) const
     {
         //  ELU activation function
-        auto elu_ = [=](auto&& x)
+        auto elu_ = [alpha](auto&& x)
         {
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
@@ -96,16 +96,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& args,
         eval_context ctx) const
     {
-        if(operands.size() != 1 && operands.size() != 2)
+        if(operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "elu_operation::eval",
                 generate_error_message(
-                    "the elu_operation primitive requires exactly one or two "
+                    "the elu_operation primitive requires exactly two "
                     "operands"));
         }
 
-        if (!valid(operands[0]))
+        if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "elu_operation::eval",
@@ -115,60 +115,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)]
+            (primitive_argument_type&& arg_mat,
+                primitive_argument_type&& arg_alpha)
+            {
+                mat_type mat = extract_numeric_value(
+                    std::move(arg_mat),
+                    this_->name_, this_->codename_);
 
-        //  In case alpha isn't provided (default value)
-        if(operands.size() == 1)
-        {
-            return value_operand(operands[0], args, name_, codename_,
-                std::move(ctx))
-                .then(hpx::launch::sync, hpx::util::unwrapping(
-                    [this_ = std::move(this_)](primitive_argument_type&& arg_mat)
-                    -> primitive_argument_type
-                    {
-                        mat_type mat = extract_numeric_value(
-                            std::move(arg_mat),
-                            this_->name_, this_->codename_);
+                alpha_type alpha = extract_numeric_value(
+                    std::move(arg_alpha),
+                    this_->name_, this_->codename_);
 
-                        return this_->elu(std::move(mat));
-                    }));
-        }
-
-        //  alpha is provided
-        else if(operands.size() == 2 && valid(operands[1]))
-        {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)]
-                (primitive_argument_type&& arg_mat,
-                    primitive_argument_type&& arg_alpha)
+                if(alpha.num_dimensions() != 0)
                 {
-                    mat_type mat = extract_numeric_value(
-                        std::move(arg_mat),
-                        this_->name_, this_->codename_);
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "elu_operation::eval",
+                        this_->generate_error_message(
+                            "the elu primitive requires that the alpha "
+                            "argument given by the operands array is "
+                            "scalar"));
+                }
 
-                    alpha_type alpha = extract_numeric_value(
-                        std::move(arg_alpha),
-                        this_->name_, this_->codename_);
-
-                    if(alpha.num_dimensions() != 0)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "elu_operation::eval",
-                            this_->generate_error_message(
-                                "the elu primitive requires that the alpha "
-                                "argument given by the operands array is "
-                                "scalar"));
-                    }
-
-                    return this_->elu(std::move(mat), alpha.scalar());
-                }),
-                value_operand(operands[0], args, name_, codename_, ctx),
-                value_operand(operands[1], args, name_, codename_, ctx));
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "elu_operation::eval",
-            generate_error_message(
-                "the elu_operation primitive requires that the arguments given "
-                "by the operands array are valid"));
+                return this_->elu(std::move(mat), alpha.scalar());
+            }),
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}
