@@ -1449,6 +1449,21 @@ nonzero (arg)
             
 
 
+one_hot
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+one_hot (indices, num_classes)
+        Args:
+
+            indices (array_like) : input array of integers. nD integer tensor
+                of shape  (batch_size, dim1, dim2, ... dim(n-1))
+            num_classes (integer): number of classes to consider
+
+        Returns:
+
+        (n + 1)D one hot representation of the input with shape (batch_size,
+        dim1, dim2, ... dim(n-1), num_classes).
+
+
 outer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 outer (a, b)

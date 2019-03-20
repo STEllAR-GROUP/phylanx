@@ -200,6 +200,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#minimum">minimum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ndim">ndim</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nonzero">nonzero</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#one-hot">one_hot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#outer">outer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pad">pad</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-block">parallel_block</a></li>
@@ -1856,6 +1857,24 @@ vector created when the mean is taken along the specified axis.</p>
 <p>Returns:</p>
 <p class="last">A 1D array containing the indices of the elements of <cite>arg</cite> that are
 non-zero.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="one-hot">
+<h2>one_hot<a class="headerlink" href="#one-hot" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>one_hot (indices, num_classes)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>indices (array_like) <span class="classifier-delimiter">:</span> <span class="classifier">input array of integers. nD integer tensor</span></dt>
+<dd>of shape  (batch_size, dim1, dim2, … dim(n-1))</dd>
+</dl>
+<p>num_classes (integer): number of classes to consider</p>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">(n + 1)D one hot representation of the input with shape (batch_size,
+dim1, dim2, … dim(n-1), num_classes).</p>
 </dd>
 </dl>
 </div>
