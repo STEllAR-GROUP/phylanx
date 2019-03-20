@@ -9,25 +9,12 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(_MSC_VER) && _MSC_VER >= 1912 && defined(_HAS_CXX17) && (_HAS_CXX17 != 0)
-#include <variant>
-#else
 #include <phylanx/util/detail/variant.hpp>
-#endif
 
 #include <utility>
 
 namespace phylanx { namespace util
 {
-#if defined(_MSC_VER) && _MSC_VER >= 1912 && defined(_HAS_CXX17) && (_HAS_CXX17 != 0)
-    using std::variant;
-    using std::monostate;
-
-    using std::holds_alternative;
-    using std::get;
-    using std::get_if;
-    using std::visit;
-#else
     using mpark::variant;
     using mpark::monostate;
 
@@ -35,7 +22,6 @@ namespace phylanx { namespace util
     using mpark::get;
     using mpark::get_if;
     using mpark::visit;
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // class template recursive_wrapper
