@@ -60,78 +60,77 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type elu_operation::elu0d(mat_type&& arg,
         double alpha) const
     {
-        //  ELU activation function
-        auto elu_ = [alpha](auto&& x)
+        auto elu_ = [alpha](auto const& x)
         {
-            //  NB : Might be unusable with the upcoming CUDA version of blaze
-            //  because lambda kernels are wrapped inside std::function objects.
-            //  See: https://devblogs.nvidia.com/new-compiler-features-cuda-8/,
-            //  then find "There's one caveat:"
-
-            //  NB2: Keeping all that code as a single expression may suggest
-            //  the compiler to use only float operations instead of branching,
-            //  also it allows optimizations with libraries like boost_simd that
-            //  provide comparison operators that directly translate into SIMD.
-            //  Using an if statement instead makes vectorization harder if not
-            //  impossible.
-
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
         };
 
-        //  NB : Enforcing storageXd_type constructors here otherwise the
-        //  call for primitive_argument_type's constructor would be ambiguous.
-        //  These correspond to 0D/1D/2D/3D types in Blaze and thus should have
-        //  costless move constructors.
-
-        return primitive_argument_type{mat_type::storage0d_type{
-            elu_(arg.scalar()) }};
+        return primitive_argument_type{ elu_(arg.scalar()) };
     }
 
     primitive_argument_type elu_operation::elu1d(mat_type&& arg,
         double alpha) const
     {
-        auto elu_ = [alpha](auto&& x)
+        auto elu_ = [alpha](auto const& x)
         {
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
         };
 
-        return primitive_argument_type{mat_type::storage1d_type{
-            arg.is_ref() ? blaze::map(arg.vector(), elu_)
-                : blaze::map(std::move(arg.vector()), elu_)
-        }};
+        if(!arg.is_ref())
+        {
+            arg.vector() = blaze::map(arg.vector(), elu_);
+        }
+        else
+        {
+            arg = blaze::map(arg.vector(), elu_);
+        }
+
+        return primitive_argument_type{ std::move(arg) };
     }
 
     primitive_argument_type elu_operation::elu2d(mat_type&& arg,
         double alpha) const
     {
-        auto elu_ = [alpha](auto&& x)
+        auto elu_ = [alpha](auto const& x)
         {
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
         };
 
-        return primitive_argument_type{mat_type::storage2d_type{
-            arg.is_ref() ? blaze::map(arg.matrix(), elu_)
-                : blaze::map(std::move(arg.matrix()), elu_)
-        }};
+        if(!arg.is_ref())
+        {
+            arg.matrix() = blaze::map(arg.matrix(), elu_);
+        }
+        else
+        {
+            arg = blaze::map(arg.matrix(), elu_);
+        }
+
+        return primitive_argument_type{ std::move(arg) };
     }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type elu_operation::elu3d(mat_type&& arg,
         double alpha) const
     {
-        auto elu_ = [alpha](auto&& x)
+        auto elu_ = [alpha](auto const& x)
         {
             return (x >= 0.) * ( x )
                  + (x <  0.) * ( alpha * (std::exp(x) - 1.) );
         };
 
-        return primitive_argument_type{mat_type::storage3d_type{
-            arg.is_ref() ? blaze::map(arg.tensor(), elu_)
-                : blaze::map(std::move(arg.tensor()), elu_)
-        }};
+        if(!arg.is_ref())
+        {
+            arg.tensor() = blaze::map(arg.tensor(), elu_);
+        }
+        else
+        {
+            arg = blaze::map(arg.tensor(), elu_);
+        }
+
+        return primitive_argument_type{ std::move(arg) };
     }
 #endif
 
