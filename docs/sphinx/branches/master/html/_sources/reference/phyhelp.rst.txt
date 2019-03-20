@@ -738,6 +738,22 @@ dstack (args)
             A vertically (depth wise) stacked sequence of array-like objects
 
 
+elu
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+elu (a)
+            Args:
+
+                a (array_like) : input array
+                alpha (optional, number) : scale for the negative factor
+
+            Returns:
+
+            Returns an array of the same shape that is the exponential linear
+            unit of the input and is defined as:
+            * f(x) = alpha * (exp(x) - 1.) for x < 0,
+            * f(x) = x for x >= 0.
+
+
 enable_tracing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 enable_tracing (eon)

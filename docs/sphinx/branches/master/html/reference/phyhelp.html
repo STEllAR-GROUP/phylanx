@@ -153,6 +153,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dict">dict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dot">dot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dstack">dstack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elu">elu</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#enable-tracing">enable_tracing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#expand-dims">expand_dims</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#eye">eye</a></li>
@@ -1124,6 +1125,22 @@ N-D array and an M-D array is of dimension N+M-2</p>
 <div><a href="#id21"><span class="problematic" id="id22">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
 <p>Returns:</p>
 <p class="last">A vertically (depth wise) stacked sequence of array-like objects</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="elu">
+<h2>elu<a class="headerlink" href="#elu" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>elu (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array
+alpha (optional, number) : scale for the negative factor</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns an array of the same shape that is the exponential linear
+unit of the input and is defined as:
+* f(x) = alpha * (exp(x) - 1.) for x &lt; 0,
+* f(x) = x for x &gt;= 0.</p>
 </dd>
 </dl>
 </div>
