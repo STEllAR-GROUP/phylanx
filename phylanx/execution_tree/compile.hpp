@@ -117,6 +117,13 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, compiler::environment& env,
         primitive_argument_type body,
         hpx::id_type const& default_locality = hpx::find_here());
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Helper function allowing to construct the internal data structures for
+    // a pattern
+    PHYLANX_EXPORT void add_patterns(
+        compiler::expression_pattern_list& patterns,
+        match_pattern_type const& p);
 }}
 
 #endif

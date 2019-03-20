@@ -61,7 +61,7 @@ namespace phylanx { namespace ast
                 }
                 else if (ast::detail::is_placeholder(ast2))
                 {
-                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    if (ast::detail::is_placeholder_ellipses(ast2))
                     {
                         placeholders.insert(value_type(
                             ast::detail::identifier_name(ast2).substr(1),

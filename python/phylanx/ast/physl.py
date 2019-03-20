@@ -518,7 +518,7 @@ class PhySL:
             if default is None:
                 result = (*result, a)
             else:
-                op = get_symbol_info(arg, 'arg')
+                op = get_symbol_info(arg, '__arg')
                 result = (*result, [op, (a, default)])
         return result
 
