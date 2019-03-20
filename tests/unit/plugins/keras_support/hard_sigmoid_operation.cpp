@@ -52,7 +52,7 @@ void test_hard_sigmoid_operation_1d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hard_sigmoid.eval();
 
-    blaze::DynamicVector<double> expected{0.7, 1., 1.};
+    blaze::DynamicVector<double> expected{0.7, 0.9, 1.};
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
     HPX_TEST(
@@ -76,7 +76,7 @@ void test_hard_sigmoid_operation_2d()
         hard_sigmoid.eval();
 
     blaze::DynamicMatrix<double> expected{
-        {0.7, 1., 1.}, {1., 0.7, 1.}, {1., 1., 0.7}};
+        {0.7, 0.9, 1.}, {1., 0.7, 0.9}, {1., 1., 0.7}};
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
     HPX_TEST(
@@ -103,8 +103,8 @@ void test_hard_sigmoid_operation_3d()
         hard_sigmoid.eval();
 
     blaze::DynamicTensor<double> expected{
-        {{0.7, 1., 1.}, {1., 0.7, 1.}, {1., 1., 0.7}},
-        {{1., 1., 1.}, {0., 1., 0.2}, {0.7, 0.7, 1.}}};
+        {{0.7, .9, 1.}, {1., 0.7, 0.9}, {1., 1., 0.7}},
+        {{1., 1., 0.9}, {0.1, 0.9, 0.5}, {0.7, 0.7, 1.}}};
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
     HPX_TEST(
