@@ -117,8 +117,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto ones = detail::make_uniform(1.0, v);
         auto zeros = detail::make_uniform(0.0, v);
-        auto fifth = detail::make_uniform(0.5, v);
-        auto halfs = detail::make_uniform(0.2, v);
+        auto fifth = detail::make_uniform(0.2, v);
+        auto halfs = detail::make_uniform(0.5, v);
 
         if (!arg.is_ref())
         {
@@ -139,8 +139,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto ones = detail::make_uniform(1.0, m);
         auto zeros = detail::make_uniform(0.0, m);
-        auto fifth = detail::make_uniform(0.5, m);
-        auto halfs = detail::make_uniform(0.2, m);
+        auto fifth = detail::make_uniform(0.2, m);
+        auto halfs = detail::make_uniform(0.5, m);
 
         if (!arg.is_ref())
         {
@@ -162,8 +162,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto ones = detail::make_uniform(1.0, t);
         auto zeros = detail::make_uniform(0.0, t);
-        auto fifth = detail::make_uniform(0.5, t);
-        auto halfs = detail::make_uniform(0.2, t);
+        auto fifth = detail::make_uniform(0.2, t);
+        auto halfs = detail::make_uniform(0.5, t);
 
         if (!arg.is_ref())
         {
