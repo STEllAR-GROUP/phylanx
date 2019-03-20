@@ -9,7 +9,9 @@ set(tests
     elu_operation
     hard_sigmoid_operation
     one_hot_operation
-    sigmoid_operation    softmax_operation
+    relu_operation
+    sigmoid_operation
+    softmax_operation
     softplus_operation
    )
 
