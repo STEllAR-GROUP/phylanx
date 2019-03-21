@@ -8,7 +8,6 @@ set(tests
     batch_dot_operation
     elu_operation
     hard_sigmoid_operation
-    categorical_crossentropy_operation
     one_hot_operation
     sigmoid_operation    softmax_operation
     softplus_operation
