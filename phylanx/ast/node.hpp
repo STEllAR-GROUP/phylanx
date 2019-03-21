@@ -158,6 +158,12 @@ namespace phylanx { namespace ast
     struct nil
     {
         bool explicit_nil = false;
+
+        // nil is always evaluated to false, if needed
+        explicit operator bool() const
+        {
+            return false;
+        }
     };
 
     PHYLANX_EXPORT void serialize(

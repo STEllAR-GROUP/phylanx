@@ -91,11 +91,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_argument_type operator()(ast::nil lhs, ast::nil rhs) const
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::eval",
-                util::generate_error_message(
-                    "left hand side logical right hand side can't be compared",
-                    logical_.name_, logical_.codename_));
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{Op{}(bool(lhs), bool(rhs))});
         }
 
         primitive_argument_type operator()(ir::range lhs, ir::range rhs) const

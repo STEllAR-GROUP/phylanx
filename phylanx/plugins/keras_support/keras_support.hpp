@@ -7,7 +7,9 @@
 #define PHYLANX_PLUGINS_KERAS_SUPPORT_MAR_11_2019_0441PM
 
 #include <phylanx/plugins/keras_support/batch_dot_operation.hpp>
+#include <phylanx/plugins/keras_support/elu_operation.hpp>
 #include <phylanx/plugins/keras_support/hard_sigmoid_operation.hpp>
+#include <phylanx/plugins/keras_support/one_hot_operation.hpp>
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
 #include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>

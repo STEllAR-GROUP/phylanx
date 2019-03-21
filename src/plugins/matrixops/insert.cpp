@@ -125,10 +125,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_vec[sorted_indices[i]] += result.size();
 
             if (indices_vec[sorted_indices[i]] < 0 ||
-                indices_vec[sorted_indices[i]] >= result.size())
+                indices_vec[sorted_indices[i]] >=
+                    static_cast<std::int64_t>(result.size()))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "insert::insert_flatten_nd_helper",
                     generate_error_message("index out of bound"));
+            }
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             result[indices_vec[sorted_indices[i]]] = values_vec[sorted_indices[i]];
@@ -286,10 +289,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_vec[sorted_indices[i]] += result.rows();
 
             if (indices_vec[sorted_indices[i]] < 0 ||
-                indices_vec[sorted_indices[i]] >= result.rows())
+                indices_vec[sorted_indices[i]] >=
+                    static_cast<std::int64_t>(result.rows()))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "insert::insert_2d_axis_0",
                     generate_error_message("index out of bound"));
+            }
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::row(result, indices_vec[sorted_indices[i]]) =
@@ -353,10 +359,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_vec[sorted_indices[i]] += result.columns();
 
             if (indices_vec[sorted_indices[i]] < 0 ||
-                indices_vec[sorted_indices[i]] >= result.columns())
+                indices_vec[sorted_indices[i]] >=
+                    static_cast<std::int64_t>(result.columns()))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "insert::insert_2d_axis_1",
                     generate_error_message("index out of bound"));
+            }
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::column(result, indices_vec[sorted_indices[i]]) =
@@ -439,10 +448,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_vec[sorted_indices[i]] += result.pages();
 
             if (indices_vec[sorted_indices[i]] < 0 ||
-                indices_vec[sorted_indices[i]] >= result.pages())
+                indices_vec[sorted_indices[i]] >=
+                    static_cast<std::int64_t>(result.pages()))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "insert::insert_3d_axis0",
                     generate_error_message("index out of bound"));
+            }
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::pageslice(result, indices_vec[sorted_indices[i]]) =
@@ -505,10 +517,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_vec[sorted_indices[i]] += result.rows();
 
             if (indices_vec[sorted_indices[i]] < 0 ||
-                indices_vec[sorted_indices[i]] >= result.rows())
+                indices_vec[sorted_indices[i]] >=
+                    static_cast<std::int64_t>(result.rows()))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "insert::insert_3d_axis_1",
                     generate_error_message("index out of bound"));
+            }
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::rowslice(result, indices_vec[sorted_indices[i]]) =
@@ -572,15 +587,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_vec[sorted_indices[i]] += result.columns();
 
             if (indices_vec[sorted_indices[i]] < 0 ||
-                indices_vec[sorted_indices[i]] >= result.columns())
+                indices_vec[sorted_indices[i]] >=
+                    static_cast<std::int64_t>(result.columns()))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "insert::insert_3d_axis_2",
                     generate_error_message("index out of bound"));
+            }
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::columnslice(result, indices_vec[sorted_indices[i]]) =
                 values_vec[sorted_indices[i]];
-            ;
         }
 
         std::size_t j = 0;

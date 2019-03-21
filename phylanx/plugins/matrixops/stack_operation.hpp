@@ -16,6 +16,7 @@
 #include <hpx/lcos/future.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -63,15 +64,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_argument_type stack0d(
             primitive_arguments_type&& args) const;
+        primitive_argument_type stack0d(
+            primitive_arguments_type&& args, std::int64_t& axis) const;
         primitive_argument_type stack1d(
             primitive_arguments_type&& args) const;
+        primitive_argument_type stack1d(
+                primitive_arguments_type&& args, std::int64_t& axis) const;
         primitive_argument_type stack2d(
             primitive_arguments_type&& args) const;
+        primitive_argument_type stack2d(
+                primitive_arguments_type&& args, std::int64_t& axis) const;
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type stack3d(primitive_arguments_type&& args) const;
         primitive_argument_type stack3d(
-            primitive_arguments_type&& args) const;
+            primitive_arguments_type&& args, std::int64_t& axis) const;
 #endif
 
+        // support for stack
+        template <typename T>
+        primitive_argument_type stack1d_axis1_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack1d_axis1(
+            primitive_arguments_type&& args) const;
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type stack2d_axis0_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack2d_axis0(
+            primitive_arguments_type&& args) const;
+        template <typename T>
+        primitive_argument_type stack2d_axis1_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack2d_axis1(
+            primitive_arguments_type&& args) const;
+        template <typename T>
+        primitive_argument_type stack3d_axis1_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack3d_axis1(
+            primitive_arguments_type&& args) const;
+        template <typename T>
+        primitive_argument_type stack3d_axis2_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack3d_axis2(
+            primitive_arguments_type&& args) const;
+#endif
         // support for hstack
         template <typename T>
         primitive_argument_type hstack0d1d_helper(

@@ -41,6 +41,7 @@ set(tests
     size
     slicing_operation
     squeeze_operation
+    stack_operation
     tile_operation
     transpose_operation
     unique

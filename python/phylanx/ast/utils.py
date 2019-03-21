@@ -7,6 +7,7 @@
 
 import ast
 import re
+import os
 
 
 def dump_info(a, depth=0):
@@ -91,3 +92,61 @@ def dump_ast(node, annotate_fields=True, include_attributes=False,
     if not isinstance(node, ast.AST):
         raise TypeError('expected AST, got %r' % node.__class__.__name__)
     return _format(node)
+
+
+def save_to_file(data, ofn, verbose=False):
+    d = os.path.dirname(ofn)
+    if d != "":
+        os.makedirs(d, exist_ok=True)
+
+    with open(ofn, "w") as f:
+        print(data, file=f)
+    if verbose is True:
+        print(ofn, "saved")
+
+
+def dump_to_file(data, key, kwargs):
+    if kwargs[key] is True:
+        ofn = key + "_" + kwargs["python_src_tag"] + ".txt"
+        save_to_file(data, ofn, kwargs["verbose"])
+
+
+def print_type(s, o):
+    indent = "    "
+    print("%-16s      type()      \n%s%s" % (s, indent, type(o)))
+    print("")
+    print("%-16s      dir()       \n%s%s" % (s, indent, dir(o)))
+    print("")
+    print("%-16s      __class__   \n%s%s" % (s, indent, o.__class__))
+    print("")
+
+
+def print_python_ast_node(s, node, depth=0):
+    # two ways to check the nodes type:
+    #   1.  if node.__class__.__name__ == "Num"
+    #   2.  if isinstance(node, ast.Num):
+
+    # nodes._fields gives a list of all child nodes
+
+    # print("###################################")
+    # print_type("node", node)
+
+    if not isinstance(node, ast.AST):
+        raise TypeError('Expected AST, got %r' % node.__class__.__name__)
+
+    indent = "    "
+
+    print(indent * depth, end="")
+    print("%-12s" % s, node)
+    # print("%-12s" % s, node.__class__)
+    # print("%-12s %s" % (s, node.__class__.__name__), node._fields)
+    # print("%-12s" % s, node.__class__, node._fields)
+
+    # print(indent * depth, end="")
+    # print("# for (fieldname, value) in ast.iter_fields(node):")
+    for (fieldname, value) in ast.iter_fields(node):
+        print(indent * (depth + 1), end="")
+        print("%-12s" % fieldname, value)
+    print("")
+
+    # depth += 1
