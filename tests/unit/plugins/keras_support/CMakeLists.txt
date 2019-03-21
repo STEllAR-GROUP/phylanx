@@ -8,6 +8,7 @@ set(tests
     hard_sigmoid_operation
     sigmoid_operation
     softmax_operation
+    categorical_crossentropy_operation
     softplus_operation
    )
 

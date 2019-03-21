@@ -10,6 +10,7 @@
 #include <phylanx/plugins/keras_support/hard_sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
+#include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/softplus_operation.hpp>
 
 #endif
