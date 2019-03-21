@@ -19,6 +19,7 @@ set(tests
     parallel
     set_operation
     slice
+    keras
    )
 
 foreach(test ${tests})
