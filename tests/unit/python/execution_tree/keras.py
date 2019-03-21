@@ -24,16 +24,13 @@ def categorical_crossentropy(target, output, from_logits=False):
 
 @Phylanx
 def cc(target, output, from_logits):
-    print("before:",output)
-    res = categorical_crossentropy(target, output, from_logits)
-    print("after:",output)
-    return res
+    return categorical_crossentropy(target, output, from_logits)
 
 
 # Generate some random data
 t = np.linspace(1, 10, 10)
 t[2] = 10
-o = 3*np.ones(10)
+o = 3 * np.ones(10)
 o[4] = 2
 
 flag = False
