@@ -24,6 +24,24 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+    node_data_type map_dtype(std::string const& spec)
+    {
+        node_data_type result = node_data_type_unknown;
+        if (spec == "bool")
+        {
+            result = node_data_type_bool;
+        }
+        else if (spec == "int")
+        {
+            result = node_data_type_int64;
+        }
+        else if (spec == "float")
+        {
+            result = node_data_type_double;
+        }
+        return result;
+    }
+
     node_data_type extract_dtype(std::string name)
     {
         compiler::primitive_name_parts name_parts;
@@ -32,25 +50,12 @@ namespace phylanx { namespace execution_tree
             name = std::move(name_parts.primitive);
         }
 
-        node_data_type result = node_data_type_unknown;
         auto p = name.find("__");
         if (p != std::string::npos)
         {
-            boost::string_ref spec(&name[p + 2], name.size() - p - 2);
-            if (spec == "bool")
-            {
-                result = node_data_type_bool;
-            }
-            else if (spec == "int")
-            {
-                result = node_data_type_int64;
-            }
-            else if (spec == "float")
-            {
-                result = node_data_type_double;
-            }
+            return map_dtype(std::string(&name[p + 2], name.size() - p - 2));
         }
-        return result;
+        return node_data_type_unknown;
     }
 
     ///////////////////////////////////////////////////////////////////////////

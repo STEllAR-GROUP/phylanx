@@ -26,6 +26,7 @@ set(tests
     846_if_expression
     852_concatenate_list
     862_var_std_two_axis
+    866_dynamic_dtype
     886_notnone
     array_len_494
     array_shape_486

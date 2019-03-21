@@ -619,33 +619,41 @@ class PhySL:
             Add support for keywords, starargs, and kwargs
         """
 
+        def __apply(self, k):
+            return (k.arg, self.apply_rule(k.value))
+
+
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
-        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
-        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
-        dtypes_bools = ['b', 'bool']
-        phylanx_dtype = {
-            **dict.fromkeys(dtype_floats, 'float'),
-            **dict.fromkeys(dtype_ints, 'int'),
-            **dict.fromkeys(dtypes_bools, 'bool')
-        }
+        op = get_symbol_info(node.func, '__arg')
+        kwargs = tuple([op, __apply(self, k)] for k in node.keywords)
+
         dtype = ''
-        for k in node.keywords:
-            if k.arg == 'dtype':
-                if isinstance(k.value, ast.Name):
-                    type_str = phylanx_dtype.get(k.value.id)
-                    if not type_str:
-                        raise ValueError("dtype must a be string literal.")
-                if isinstance(k.value, ast.Str):
-                    type_str = phylanx_dtype.get(k.value.s)
-                if type_str:
-                    dtype = '__' + type_str
-                else:
-                    raise NotImplementedError(
-                        'Only the followig are acceptable Phylanx array types:\n'
-                        'booleans: %s\nfloats: %s\nintegers %s' %
-                        (dtypes_bools, dtype_floats, dtype_ints))
-                break
+
+#        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
+#        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
+#        dtypes_bools = ['b', 'bool']
+#        phylanx_dtype = {
+#            **dict.fromkeys(dtype_floats, 'float'),
+#            **dict.fromkeys(dtype_ints, 'int'),
+#            **dict.fromkeys(dtypes_bools, 'bool')
+#        }
+#        for k in node.keywords:
+#            if k.arg == 'dtype':
+#                if isinstance(k.value, ast.Name):
+#                    type_str = phylanx_dtype.get(k.value.id)
+#                    if not type_str:
+#                        raise ValueError("dtype must a be string literal.")
+#                if isinstance(k.value, ast.Str):
+#                    type_str = phylanx_dtype.get(k.value.s)
+#                if type_str:
+#                    dtype = '__' + type_str
+#                else:
+#                    raise NotImplementedError(
+#                        'Only the followig are acceptable Phylanx array types:\n'
+#                        'booleans: %s\nfloats: %s\nintegers %s' %
+#                        (dtypes_bools, dtype_floats, dtype_ints))
+#                break
 
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
@@ -689,7 +697,7 @@ class PhySL:
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        return [symbol, args]
+        return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):
     #     """class ClassDef(name, bases, keywords, starargs, kwargs, body,

@@ -172,7 +172,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             argname = std::move(names.second);
-            value = to_string(p->second);
+            value = to_string(p->second, true);
 
             return true;
         }
@@ -1022,6 +1022,23 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.reserve(base + exprs.size());
                 for (auto const& argexpr : exprs)
                 {
+                    if (ast::detail::is_function_call(argexpr) &&
+                        ast::detail::function_name(argexpr) == "__arg")
+                    {
+                        std::string argname;
+                        std::string value;
+                        detail::parse_argument_value(
+                            patterns_, argexpr, argname, value);
+
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::compiler::"
+                            "handle_function_call_argument",
+                            generate_error_message(hpx::util::format(
+                                "unexpected keyword argument '{}' for "
+                                "function '{}'", argname, function_name),
+                                name_, id));
+                    }
+
                     fargs.push_back(compile(name_, argexpr, snippets_, env,
                         patterns_, locality).arg_);
                 }

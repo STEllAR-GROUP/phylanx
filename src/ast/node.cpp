@@ -504,9 +504,13 @@ namespace phylanx { namespace ast
         return out;
     }
 
-    std::string to_string(expression const& expr)
+    std::string to_string(expression const& expr, bool isrepr)
     {
         std::ostringstream str;
+        if (isrepr)
+        {
+            str << util::repr;
+        }
         str << expr;
         return str.str();
     }

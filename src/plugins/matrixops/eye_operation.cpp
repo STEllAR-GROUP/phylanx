@@ -25,13 +25,17 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives {
+namespace phylanx { namespace execution_tree { namespace primitives
+{
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const eye_operation::match_data = {
+    match_pattern_type const eye_operation::match_data =
+    {
         match_pattern_type{"eye",
-            std::vector<std::string>{"eye(_1)", "eye(_1,_2)", "eye(_1,_2,_3)"},
-            &create_eye_operation, &create_primitive<eye_operation>,R"(
-            N, M, k
+            std::vector<std::string>{R"(
+                eye(_1_N, __arg(_2_M, nil), __arg(_3_k, 0), __arg(dtype, "float"))
+            )"},
+            &create_eye_operation, &create_primitive<eye_operation>, R"(
+            N, M, k, dtype
             Args:
 
                 N (integer) : number of rows in the output.
@@ -40,12 +44,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 k (optional, integer) : index of the diagonal: 0 (the default)
                   refers to the main diagonal, a positive value refers to an
                   upper diagonal, and a negative value to a lower diagonal.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
             Return an N x M matrix with ones on the k-th diagonal and zeros
-            elsewhere.)",
-            true
+            elsewhere.)"
         }
     };
 
@@ -53,46 +58,37 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     eye_operation::eye_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
     {
     }
+
     template <typename T>
-    primitive_argument_type eye_operation::eye_n_helper(arg_type&& arg) const
+    primitive_argument_type eye_operation::eye_n_helper(std::int64_t n) const
     {
-        if (extract_numeric_value_dimension(arg) != 0)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "eye_operation::eye_n_helper",
-                generate_error_message("input should be a scalar"));
-        }
-        std::int64_t N = arg.scalar();
-        if (N < 0)
+        if (n < 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "eye_operation::eye_n_helper",
                 generate_error_message("input should be greater than zero"));
         }
-        std::size_t size = static_cast<std::size_t>(N);
-        return primitive_argument_type{
-            ir::node_data<T>{blaze::IdentityMatrix<T>(size)}};
+
+        return primitive_argument_type{ir::node_data<T>{
+            blaze::IdentityMatrix<T>(static_cast<std::size_t>(n))}};
     }
 
-    primitive_argument_type eye_operation::eye_n(arg_type&& arg) const
+    primitive_argument_type eye_operation::eye_n(
+        std::int64_t n, node_data_type dtype) const
     {
-        node_data_type t = dtype_;
-
-        switch (t)
+        switch (dtype)
         {
         case node_data_type_bool:
-            return eye_n_helper<std::uint8_t>(std::move(arg));
+            return eye_n_helper<std::uint8_t>(n);
 
         case node_data_type_int64:
-            return eye_n_helper<std::int64_t>(std::move(arg));
+            return eye_n_helper<std::int64_t>(n);
 
-        case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
-            return eye_n_helper<double>(std::move(arg));
+            return eye_n_helper<double>(n);
 
         default:
             break;
@@ -107,65 +103,44 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     }
 
     template <typename T>
-    primitive_argument_type eye_operation::eye_nmk_helper(args_type&& args) const
+    primitive_argument_type eye_operation::eye_nmk_helper(
+        std::int64_t n, std::int64_t m, std::int64_t k) const
     {
-        if (extract_numeric_value_dimension(args[0]) != 0 ||
-            extract_numeric_value_dimension(args[1]) != 0)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "eye_operation::eye_n_helper",
-                generate_error_message("input should be a scalar"));
-        }
-        auto N = args[0].scalar();
-        auto M = args[1].scalar();
-        auto k = 0;
-        if (args.size() == 3)
-        {
-            if (extract_numeric_value_dimension(args[2]) != 0)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "eye_operation::eye_n_helper",
-                    generate_error_message("input should be a scalar"));
-            }
-            k = args[2].scalar();
-        }
-
-        if (N < 0 || M < 0)
+        if (n< 0 || m < 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "eye_operation::eye_nm_helper",
                 generate_error_message("inputs should be greater than zero"));
         }
-        blaze::DynamicMatrix<T> result(N, M, T(0));
 
-        std::int64_t vecsize = static_cast<std::int64_t>(1);    // a positive number (k=0)
-
+        std::int64_t vecsize = 1;    // a positive number (k = 0)
         if (k > 0)
-            vecsize = M - k;
+            vecsize = m - k;
         else if (k < 0)
-            vecsize = N + k;
+            vecsize = n + k;
+
+        blaze::DynamicMatrix<T> result(n, m, T(0));
 
         if (vecsize > 0)
             blaze::band(result, k) = T(1);
 
         return primitive_argument_type{ir::node_data<T>{std::move(result)}};
     }
-    primitive_argument_type eye_operation::eye_nmk(args_type&& args) const
-    {
-        node_data_type t = dtype_;
 
-        switch (t)
+    primitive_argument_type eye_operation::eye_nmk(std::int64_t n,
+        std::int64_t m, std::int64_t k, node_data_type dtype) const
+    {
+        switch (dtype)
         {
         case node_data_type_bool:
-            return eye_nmk_helper<std::uint8_t>(std::move(args));
+            return eye_nmk_helper<std::uint8_t>(n, m, k);
 
         case node_data_type_int64:
-            return eye_nmk_helper<std::int64_t>(std::move(args));
+            return eye_nmk_helper<std::int64_t>(n, m, k);
 
-        case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
-            return eye_nmk_helper<double>(std::move(args));
+            return eye_nmk_helper<double>(n, m, k);
 
         default:
             break;
@@ -178,34 +153,31 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 "the eye primitive requires for all arguments to "
                 "be numeric data types"));
     }
-    ///////////////////////////////////////////////////////////////////////////
 
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> eye_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > 3)
+        if (operands.size() != 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "eye_operation::eval",
                 util::generate_error_message(
-                    "the eye_operation primitive can have  one to"
-                    "five operands",
+                    "the eye_operation primitive can have one to"
+                    "four operands",
                     name_, codename_));
         }
 
-        for (auto const& i : operands)
+        if (!valid(args[0]))
         {
-            if (!valid(i))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "eye_operation::eval",
-                    util::generate_error_message(
-                        "the eye_operation primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
-                        name_, codename_));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "eye_operation::eval",
+                util::generate_error_message(
+                    "the eye_operation primitive requires that the "
+                    "arguments given by the operands array are "
+                    "valid",
+                    name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
@@ -213,23 +185,29 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             [this_ = std::move(this_)](args_type&& args)
             -> primitive_argument_type
             {
-                switch (args.size())
+                std::int64_t n = extract_scalar_integer_value(
+                    std::move(args[0]), this_->name_, this_->codename_);
+
+                std::int64_t m = valid(args[1]) ?
+                    extract_scalar_integer_value(
+                        std::move(args[1]), this_->name_, this_->codename_) :
+                    n;
+
+                std::int64_t k = valid(args[2]) ?
+                    extract_scalar_integer_value(
+                        std::move(args[2]), this_->name_, this_->codename_) :
+                    0;
+
+                node_data_type dtype = map_dtype(extract_string_value(
+                    std::move(args[3]), this_->name_, this_->codename_));
+
+                if (n == m && k == 0)
                 {
-                case 1:
-                    return this_->eye_n(std::move(args[0]));
-                case 2:
-                    HPX_FALLTHROUGH;
-                case 3:
-                    return this_->eye_nmk(std::move(args));
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "eye_operation::eval",
-                        util::generate_error_message(
-                            "operand a has an invalid number of dimensions",
-                            this_->name_, this_->codename_));
+                    return this_->eye_n(n, dtype);
                 }
+                return this_->eye_nmk(n, m, k, dtype);
             }),
-            detail::map_operands(operands, functional::integer_operand_strict{},
+            detail::map_operands(operands, functional::value_operand{},
                 args, name_, codename_, std::move(ctx)));
     }
 }}}
