@@ -83,7 +83,7 @@ namespace phylanx
             if (path != nullptr)
             {
                 cfg.emplace_back(hpx::util::format(
-                    "hpx.plugin_paths=$[hpx.plugin_paths]{1}{2}",
+                    "hpx.component_paths=$[hpx.component_paths]{1}{2}",
                     HPX_INI_PATH_DELIMITER, std::string(path)));
             }
 

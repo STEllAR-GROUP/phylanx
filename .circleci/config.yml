@@ -540,7 +540,6 @@ jobs:
             TARGET_IMAGE_NAME: stellargroup/phylanx:devel
         steps:
             - <<: *attach_phylanx_tree
-            - setup_remote_docker
             - <<: *avoid_cmake_rerun
             - run:
                 name: Justify build
@@ -561,6 +560,7 @@ jobs:
                     curl -JL https://download.docker.com/linux/static/stable/x86_64/docker-${VER}.tgz | \
                         tar xz --strip-components=1
                 working_directory: /usr/bin/
+            - setup_remote_docker
             - run:
                 name: Create Docker Image
                 command: |

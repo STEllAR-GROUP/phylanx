@@ -10,6 +10,8 @@ macro(phylanx_setup_pybind11)
     set(PYBIND11_CPP_STANDARD /std:c++17)
   endif()
 
+  phylanx_info("Used C++ flags for pybind11: " ${PYBIND11_CPP_STANDARD})
+
   find_package(pybind11 REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
   if(NOT pybind11_FOUND)
     phylanx_error("pybind11 could not be found, please set pybind11_DIR to help locating it.")
