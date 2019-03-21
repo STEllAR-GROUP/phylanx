@@ -101,6 +101,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(
+            ast::nil&&) const
+        {
+            return primitive_argument_type{true};    // not None
+        }
+
+        primitive_argument_type operator()(
             ir::node_data<double>&& ops) const
         {
             return that_.unary_not_all(std::move(ops));
