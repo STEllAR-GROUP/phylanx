@@ -253,14 +253,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         ///////////////////////////////////////////////////////////////////////
-        std::string reconstruct_pattern(
-            std::string const& name, std::vector<std::string> const& args)
+        std::string reconstruct_pattern(std::string const& name,
+            std::vector<std::string> const& args, std::size_t maxcount)
         {
-            std::size_t count = 1;
+            std::size_t count = 0;
             std::string pattern = name + '(';
             for (auto const& arg : args)
             {
-                if (count != 1)
+                // generate only as many arguments as required
+                if (count == maxcount)
+                {
+                    break;
+                }
+
+                if (count != 0)
                 {
                     pattern += ", ";
                 }
@@ -271,7 +277,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
                 else
                 {
-                    pattern += '_' + std::to_string(count);
+                    pattern += '_' + std::to_string(count + 1);
                     if (!arg.empty())
                     {
                         pattern += '_' + arg;
@@ -304,7 +310,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 // handle named arguments
                 if (!extract_arguments(p.primitive_type_ + suffix, result,
-                        exprs[0], args, defaults))
+                    exprs[0], args, defaults))
                 {
                     // something went wrong
                     HPX_ASSERT(false);
@@ -312,20 +318,32 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             // reconstruct the pattern, if needed (leaving out default values)
-            if (!defaults.empty())
+            if (defaults.empty())
             {
-                std::string resulting_pattern =
-                    reconstruct_pattern(p.primitive_type_ + suffix, args);
-                exprs = ast::generate_ast(resulting_pattern);
+                result.insert(expression_pattern_list::value_type(
+                    p.primitive_type_ + suffix,
+                    expression_pattern{std::move(pattern), std::move(exprs[0]),
+                        p.create_primitive_, std::move(args),
+                        std::move(defaults)}));
             }
+            else
+            {
+                // reconstruct all patterns (with varying number of default
+                // arguments)
+                for (std::size_t i = defaults.size() + 1; i != 0; --i)
+                {
+                    std::string resulting_pattern =
+                        reconstruct_pattern(p.primitive_type_ + suffix, args,
+                            args.size() - (i - 1));
+                    exprs = ast::generate_ast(resulting_pattern);
 
-            result.insert(expression_pattern_list::value_type(
-                p.primitive_type_ + suffix,
-                expression_pattern{
-                    std::move(pattern), std::move(exprs[0]), p.create_primitive_,
-                    std::move(args), std::move(defaults)
+                    result.insert(expression_pattern_list::value_type(
+                        p.primitive_type_ + suffix,
+                        expression_pattern{std::move(resulting_pattern),
+                            std::move(exprs[0]), p.create_primitive_, args,
+                            defaults}));
                 }
-            ));
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////
