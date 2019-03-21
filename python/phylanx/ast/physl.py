@@ -622,7 +622,6 @@ class PhySL:
         def __apply(self, k):
             return (k.arg, self.apply_rule(k.value))
 
-
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
         op = get_symbol_info(node.func, '__arg')

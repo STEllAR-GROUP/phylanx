@@ -41,9 +41,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         arange(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename);
-
-    private:
-        node_data_type dtype_;
     };
 
     inline primitive create_arange(hpx::id_type const& locality,

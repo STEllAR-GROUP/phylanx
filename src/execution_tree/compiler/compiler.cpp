@@ -211,14 +211,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         auto names = split_argument(
                             ast::detail::identifier_name(it->second));
 
-                        // arguments with default values must after kwargs
-                        HPX_ASSERT(!has_default_value);
-
                         // kwargs cannot come after varargs
                         HPX_ASSERT(!has_ellipses);
 
                         // plain argument should always be given
                         args.push_back(std::move(names.second));
+
+                        // all arguments after the first one with with a default
+                        // value must fill the defaults array
+                        if (has_default_value)
+                        {
+                            defaults.emplace_back();
+                        }
                     }
                 }
                 else if (ast::detail::is_function_call(it->second))
@@ -1045,10 +1049,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return;
             }
 
+            // flags telling whether an argument was filled
+            std::vector<std::int8_t> args_valid;
+
             // make sure the argument array is large enough for what the
             // function expects
             fargs.resize(
                 base + (std::max)(exprs.size(), it->second.args_.size()));
+            args_valid.resize(fargs.size() - base);
 
             // pre-fill argument array with default values
             if (num_defaults != 0)
@@ -1058,11 +1066,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 for (std::size_t pos = size - num_defaults; pos != size;
                      ++pos, ++default_arg)
                 {
+                    if (it->second.defaults_[default_arg].empty())
+                    {
+                        continue;   // skip arguments that have no default value
+                    }
+
                     ast::expression default_expr =
                         ast::generate_ast(it->second.defaults_[default_arg])[0];
 
                     fargs[base + pos] = compile(name_, default_expr,
                         snippets_, env, patterns_, locality).arg_;
+                    args_valid[pos] = true;
                 }
             }
 
@@ -1096,6 +1110,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         if (fargs.size() <= base + pos)
                         {
                             fargs.resize(base + pos + 1);
+                            args_valid.resize(pos + 1);
                         }
 
                         // place the keyword argument into the argument slot
@@ -1103,6 +1118,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         fargs[base + pos] = compile(name_,
                             ast::generate_ast(value)[0], snippets_, env,
                             patterns_, locality).arg_;
+                        args_valid[pos] = true;
 
                         count = base + pos + 1;
                     }
@@ -1125,12 +1141,31 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     if (fargs.size() <= count)
                     {
                         fargs.resize(count + 1);
+                        args_valid.resize(count - base + 1);
                     }
 
                     // normal function argument, just place in array
                     fargs[count] = compile(name_, argexpr, snippets_, env,
                         patterns_, locality).arg_;
+                    args_valid[count - base] = true;
+
                     ++count;
+                }
+            }
+
+            // make sure all argument slots have been filled
+            for (std::size_t i = 0; i != args_valid.size(); ++i)
+            {
+                if (!args_valid[i])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::compiler::"
+                        "handle_function_call_argument",
+                        generate_error_message(
+                            hpx::util::format("missing positional argument {} "
+                                              "for function '{}'",
+                                i, function_name),
+                            name_, id));
                 }
             }
         }

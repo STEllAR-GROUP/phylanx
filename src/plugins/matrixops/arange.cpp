@@ -31,7 +31,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         match_pattern_type{
             "arange",
-            std::vector<std::string>{"arange(__1)"},
+            std::vector<std::string>{R"(
+                arange(
+                    __arg(_1_start, nil),
+                    __arg(_2_stop, nil),
+                    __arg(_3_step, 1),
+                    __arg(_4_dtype, nil)
+                )
+            )"},
             &create_arange, &create_primitive<arange>, R"(
             start, stop, step
             Args:
@@ -47,14 +54,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     values, `out[i+1] - out[i]`. The default step size is `1`.
                     If step is specified as a position argument, start must
                     also be given.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
             Array of evenly spaced values. For floating point arguments, the
             length of the result is `ceil((stop - start)/step)`. Because of
             floating point overflow, this rule may result in the last element
-            of out being greater than stop.)",
-            true
+            of out being greater than stop.)"
         }
     };
 
@@ -62,7 +70,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     arange::arange(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
-      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -84,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             stop = extract_scalar_data<T>(args[0], name_, codename_);
         }
 
-        if (args.size() == 3)
+        if (args.size() >= 3)
         {
             step = extract_scalar_data<T>(args[2], name_, codename_);
         }
@@ -127,24 +134,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > 3)
+        if (operands.size() != 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::arange",
                 generate_error_message(
-                    "the arange primitive requires one, two, or three arguments."));
+                    "the arange primitive requires between one and four "
+                    "arguments."));
         }
 
-        for (std::size_t i = 0; i != operands.size(); ++i)
+        if ((!valid(operands[0]) && !valid(operands[1])) || !valid(operands[2]))
         {
-            if (!valid(operands[i]))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "arange::eval",
-                    generate_error_message(
-                        "at least one of the arguments passed to arange is "
-                        "not valid"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "arange::eval",
+                generate_error_message(
+                    "at least one of the arguments passed to arange is "
+                    "not valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -152,13 +157,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
             -> primitive_argument_type
             {
-                node_data_type t = this_->dtype_;
-                if (t == node_data_type_unknown)
+                if (!valid(args[0]))
                 {
-                    t = extract_common_type(args);
+                    if (!valid(args[1]))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::primitives::arange::eval",
+                            this_->generate_error_message(
+                                "the arange primitive requires fto be invoked "
+                                "with at least one (stop) argument"));
+                    }
+
+                    // default value for 'start' is zero
+                    args[0] = primitive_argument_type{std::int64_t(0)};
+                }
+                else if (!valid(args[1]))
+                {
+                    args[1] = std::move(args[0]);
+                    args[0] = primitive_argument_type{std::int64_t(0)};
                 }
 
-                switch (t)
+                node_data_type dtype = node_data_type_unknown;
+
+                if (valid(args[3]))
+                {
+                    dtype = map_dtype(extract_string_value(
+                        std::move(args[3]), this_->name_, this_->codename_));
+                }
+
+                if (dtype == node_data_type_unknown)
+                {
+                    dtype = extract_common_type(args);
+                }
+
+                switch (dtype)
                 {
                 case node_data_type_bool:
                     return this_->arange_helper<std::uint8_t>(std::move(args));

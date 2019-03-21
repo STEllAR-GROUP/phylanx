@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree
     node_data_type extract_common_type(
         primitive_arguments_type const& args)
     {
-        node_data_type result = node_data_type_bool;
+        node_data_type result = node_data_type_unknown;
         for (auto const& arg : args)
         {
             if (is_numeric_operand_strict(arg))
@@ -93,10 +93,10 @@ namespace phylanx { namespace execution_tree
             {
                 result = node_data_type_int64;
             }
-            else if (!is_boolean_operand_strict(arg))
+            else if (is_boolean_operand_strict(arg) &&
+                result == node_data_type_unknown)
             {
-                result = node_data_type_unknown;
-                break;
+                result = node_data_type_bool;
             }
         }
         return result;
