@@ -927,6 +927,30 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 p1.first->second, std::move(args), result);
         }
 
+        // handle list() constructs directly in  the compiler
+        function handle_list(placeholder_map_type& placeholders,
+            ast::tagged const& id)
+        {
+            //  _1 represents the expressions passed to list
+            using iterator = placeholder_map_type::iterator;
+            std::pair<iterator, iterator> p = placeholders.equal_range("_1");
+
+            // now compile list elements
+            std::list<function> args;
+
+            for (iterator it = p.first; it != p.second; ++it)
+            {
+                args.emplace_back(compile(name_, it->second,
+                    snippets_, env_, patterns_, default_locality_));
+            }
+
+            primitive_name_parts name_parts("list", 0ull, id.id, id.col,
+                snippets_.compile_id_ - 1, get_locality_id(default_locality_));
+
+            return list_value{default_locality_}(
+                std::move(args), std::move(name_parts), name_);
+        }
+
         function handle_variable_reference(std::string name,
             ast::expression const& expr)
         {
@@ -1366,6 +1390,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                             // fall through to normal processing for all other
                             // cases
+                        }
+                    }
+
+                    // handle list(__1)/make_list(__1)
+                    if (function_name == "list" || function_name == "make_list")
+                    {
+                        placeholder_map_type placeholders;
+                        if (ast::match_ast(expr, cit->second.pattern_ast_,
+                                ast::detail::on_placeholder_match{placeholders}))
+                        {
+                            return handle_list(placeholders, id);
                         }
                     }
 

@@ -184,6 +184,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
         factory_function_type f_;
     };
 
+    // compose a nil
+    struct list_value : compiled_actor<list_value>
+    {
+        list_value(hpx::id_type const& locality)
+          : compiled_actor<list_value>(locality)
+        {}
+
+        function compose(std::list<function>&& elements,
+            primitive_name_parts&& name_parts,
+            std::string const& codename = "<unknown>") const
+        {
+            primitive_arguments_type fargs;
+            fargs.reserve(elements.size());
+
+            for (auto&& arg : elements)
+            {
+                fargs.emplace_back(std::move(arg.arg_));
+            }
+
+            return function{primitive_argument_type{std::move(fargs)}};
+        }
+    };
+
     // compose a literal value
     struct primitive_literal_value
     {
@@ -295,7 +318,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive_arguments_type fargs;
             fargs.reserve(elements.size() + 2);
 
-            fargs.push_back(primitive_argument_type{argnum_});
+            fargs.emplace_back(argnum_);
             fargs.push_back(default_value_);
 
             if (elements.empty())
