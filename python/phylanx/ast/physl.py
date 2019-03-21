@@ -45,7 +45,6 @@ numpy_constants = {
 
 methods_supporting_dtype = [
     'absolute',
-    'arange',
     'arccos',
     'arccosh',
     'arcsin',
@@ -66,7 +65,6 @@ methods_supporting_dtype = [
     'exp',
     'exp2',
     'exp10',
-    'eye',
     'floor',
     'hstack',
     'identity',
@@ -87,7 +85,6 @@ methods_supporting_dtype = [
     'sin',
     'sinh',
     'sqrt',
-    'stack',
     'tan',
     'tanh',
     'trace'

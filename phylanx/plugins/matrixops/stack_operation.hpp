@@ -62,22 +62,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t get_vecsize(
             primitive_arguments_type const& args) const;
 
+        primitive_argument_type handle_hvdstack(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type handle_stack(
+            primitive_arguments_type&& args) const;
+
         primitive_argument_type stack0d(
             primitive_arguments_type&& args) const;
         primitive_argument_type stack0d(
-            primitive_arguments_type&& args, std::int64_t& axis) const;
+            primitive_arguments_type&& args, std::int64_t axis) const;
         primitive_argument_type stack1d(
             primitive_arguments_type&& args) const;
         primitive_argument_type stack1d(
-                primitive_arguments_type&& args, std::int64_t& axis) const;
+                primitive_arguments_type&& args, std::int64_t axis) const;
         primitive_argument_type stack2d(
             primitive_arguments_type&& args) const;
         primitive_argument_type stack2d(
-                primitive_arguments_type&& args, std::int64_t& axis) const;
+                primitive_arguments_type&& args, std::int64_t axis) const;
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type stack3d(primitive_arguments_type&& args) const;
         primitive_argument_type stack3d(
-            primitive_arguments_type&& args, std::int64_t& axis) const;
+            primitive_arguments_type&& args, std::int64_t axis) const;
 #endif
 
         // support for stack

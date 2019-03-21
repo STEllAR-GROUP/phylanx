@@ -159,17 +159,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 4)
+        if (operands.empty() || operands.size() > 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "eye_operation::eval",
-                util::generate_error_message(
-                    "the eye_operation primitive can have one to"
-                    "four operands",
+                util::generate_error_message(hpx::util::format(
+                    "the eye_operation primitive can have one to "
+                    "four operands, got {}", operands.size()),
                     name_, codename_));
         }
 
-        if (!valid(args[0]))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "eye_operation::eval",
@@ -178,6 +178,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "arguments given by the operands array are "
                     "valid",
                     name_, codename_));
+        }
+
+        // supply missing default arguments
+        std::size_t numops = operands.size();
+        primitive_arguments_type ops = operands;
+        if (numops != 4)
+        {
+            ops.resize(4);
+            ops[3] = primitive_argument_type{std::string("float")};
+            if (numops < 3)
+            {
+                ops[2] = primitive_argument_type{std::int64_t(0)};
+            }
+            if (numops < 2)
+            {
+                ops[1] = primitive_argument_type{};
+            }
         }
 
         auto this_ = this->shared_from_this();
@@ -207,7 +224,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return this_->eye_nmk(n, m, k, dtype);
             }),
-            detail::map_operands(operands, functional::value_operand{},
+            detail::map_operands(ops, functional::value_operand{},
                 args, name_, codename_, std::move(ctx)));
     }
 }}}
