@@ -45,7 +45,7 @@ void test_column_slicing_operation_0d()
 void test_column_slicing_operation_1d()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(2,4))
     ))";
 
@@ -60,7 +60,7 @@ void test_column_slicing_operation_1d()
 void test_column_slicing_operation_1d_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(2,6,2))
     ))";
 
@@ -75,7 +75,7 @@ void test_column_slicing_operation_1d_step()
 void test_column_slicing_operation_1d_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(6,2,-2))
     ))";
 
@@ -90,7 +90,7 @@ void test_column_slicing_operation_1d_neg_step()
 void test_column_slicing_operation_1d_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(-6,-2))
     ))";
 
@@ -107,7 +107,7 @@ void test_column_slicing_operation_1d_negative_index()
 void test_column_slicing_operation_1d_single_slice_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(-6,-5))
     ))";
 
@@ -121,7 +121,7 @@ void test_column_slicing_operation_1d_single_slice_negative_index()
 void test_column_slicing_operation_1d_negative_index_zero_start()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(0,-1))
     ))";
 
@@ -141,7 +141,7 @@ void test_column_slicing_operation_1d_negative_index_zero_start()
 void test_column_slicing_operation_1d_negative_index_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, list(-2,-6,-2))
     ))";
 
@@ -156,7 +156,7 @@ void test_column_slicing_operation_1d_negative_index_neg_step()
 void test_column_slicing_operation_1d_single()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, 2)
     ))";
 
@@ -170,7 +170,7 @@ void test_column_slicing_operation_1d_single()
 void test_column_slicing_operation_1d_single_negetive()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice_column(a, -2)
     ))";
 
@@ -184,13 +184,13 @@ void test_column_slicing_operation_1d_single_negetive()
 void test_column_slicing_operation_2d_single_column()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, 2)
     ))";
 
@@ -205,13 +205,13 @@ void test_column_slicing_operation_2d_single_column()
 void test_column_slicing_operation_2d()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(2,4))
     ))";
 
@@ -226,13 +226,13 @@ void test_column_slicing_operation_2d()
 void test_column_slicing_operation_2d_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(1,5,2))
     ))";
 
@@ -247,13 +247,13 @@ void test_column_slicing_operation_2d_step()
 void test_column_slicing_operation_2d_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(5,1,-2))
     ))";
 
@@ -268,13 +268,13 @@ void test_column_slicing_operation_2d_neg_step()
 void test_column_slicing_operation_2d_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(-5,-2))
     ))";
 
@@ -290,13 +290,13 @@ void test_column_slicing_operation_2d_negative_index()
 void test_column_slicing_operation_2d_single_slice_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(-5,-4))
     ))";
 
@@ -311,13 +311,13 @@ void test_column_slicing_operation_2d_single_slice_negative_index()
 void test_column_slicing_operation_2d_negative_index_zero_start()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(0,-2))
     ))";
 
@@ -334,13 +334,13 @@ void test_column_slicing_operation_2d_negative_index_zero_start()
 void test_column_slicing_operation_2d_negative_index_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_column(input, list(-1,-4,-2))
     ))";
 

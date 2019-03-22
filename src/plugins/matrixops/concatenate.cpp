@@ -830,7 +830,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type ops;
         if (is_list_operand_strict(arg1))
         {
-            auto && r = extract_list_value_strict(arg1, name_, codename_);
+            auto&& r =
+                extract_list_value_strict(std::move(arg1), name_, codename_);
             ops.reserve(r.size());
             for (auto && op : r)
             {

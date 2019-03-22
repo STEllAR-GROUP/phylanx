@@ -1394,15 +1394,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     }
 
                     // handle list(__1)/make_list(__1)
-                    if (function_name == "list" || function_name == "make_list")
-                    {
-                        placeholder_map_type placeholders;
-                        if (ast::match_ast(expr, cit->second.pattern_ast_,
-                                ast::detail::on_placeholder_match{placeholders}))
-                        {
-                            return handle_list(placeholders, id);
-                        }
-                    }
+//                     if (function_name == "list" || function_name == "make_list")
+//                     {
+//                         placeholder_map_type placeholders;
+//                         if (ast::match_ast(expr, cit->second.pattern_ast_,
+//                                 ast::detail::on_placeholder_match{placeholders}))
+//                         {
+//                             return handle_list(placeholders, id);
+//                         }
+//                     }
 
                     // handle all non-special functions
                     while (

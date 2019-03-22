@@ -34,23 +34,25 @@ void test_append_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_append_operation("append( make_list(1, 42), 3 )", "list(1, 42, 3)");
+    test_append_operation("append( list(1, 42), 3 )", "list(1, 42, 3)");
 
-    test_append_operation("append( make_list(1, 42), make_list(3, 4) )",
+    test_append_operation("append( list(1, 42), list(3, 4) )",
         "list(1, 42, list(3, 4))");
-    test_append_operation("append( make_list(), make_list() )", "list(list())");
+    test_append_operation("append( list(), list() )", "list(list())");
     test_append_operation(
-        "append( make_list(1, 42), make_list() )", "list(1, 42, list())");
+        "append( list(1, 42), list() )", "list(1, 42, list())");
     test_append_operation(
-        "append( make_list(), make_list(1, 42) )", "list(list(1, 42))");
-    test_append_operation("append( make_list(1, 2), 42 )", "list(1, 2, 42)");
-    test_append_operation("append( make_list(1, 2), hstack(3, 42) )",
-        "list(1, 2, hstack(3, 42))");
-    test_append_operation("append( make_list(vstack(hstack(1, 2), hstack(3, "
-                          "4)), vstack(hstack(5, 6), hstack(7, 8))), "
-                          "vstack(hstack(42, 42), hstack(42, 42)) )",
-        "list(vstack(hstack(1, 2), hstack(3, 4)), vstack(hstack(5, 6), "
-        "hstack(7, 8)), vstack(hstack(42, 42), hstack(42, 42)))");
+        "append( list(), list(1, 42) )", "list(list(1, 42))");
+    test_append_operation("append( list(1, 2), 42 )", "list(1, 2, 42)");
+    test_append_operation("append( list(1, 2), hstack(list(3, 42)) )",
+        "list(1, 2, hstack(list(3, 42)))");
+    test_append_operation(
+        "append( list(vstack(list(hstack(list(1, 2))), hstack(list(3, 4))), "
+        "vstack(list(hstack(list(5, 6))), hstack(list(7, 8)))), "
+        "vstack(list(hstack(list(42, 42))), hstack(list(42, 42))) )",
+        "list(vstack(list(hstack(list(1, 2))), hstack(list(3, 4))), "
+        "vstack(list(hstack(list(5, 6))), hstack(list(7, 8))), "
+        "vstack(list(hstack(list(42, 42))), hstack(list(42, 42))))");
 
     return hpx::util::report_errors();
 }

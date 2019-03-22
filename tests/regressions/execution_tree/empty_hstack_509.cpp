@@ -14,10 +14,10 @@
 #include <string>
 #include <sstream>
 
-std::string const hstack = "block(define(f, a, hstack(a, a)), f)";
-std::string const vstack = "block(define(f, a, vstack(a, a)), f)";
+std::string const hstack = "block(define(f, a, hstack(list(a, a))), f)";
+std::string const vstack = "block(define(f, a, vstack(list(a, a))), f)";
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-std::string const dstack = "block(define(f, a, dstack(a, a)), f)";
+std::string const dstack = "block(define(f, a, dstack(list(a, a))), f)";
 #endif
 
 int main(int argc, char* argv[])

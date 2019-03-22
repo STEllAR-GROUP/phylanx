@@ -35,7 +35,7 @@ void test_fold_right_copy_list()
         compile_and_run(code));
 
     std::string const expected_str = R"(
-            hstack(1, 2, 3, 4)
+            hstack(list(1, 2, 3, 4))
         )";
 
     auto expected_result =

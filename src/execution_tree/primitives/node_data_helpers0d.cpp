@@ -61,7 +61,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     node_data_type extract_common_type(primitive_argument_type const& arg)
     {
-        node_data_type result = node_data_type_bool;
+        node_data_type result = node_data_type_unknown;
         if (is_numeric_operand_strict(arg))
         {
             result = node_data_type_double;
@@ -70,9 +70,10 @@ namespace phylanx { namespace execution_tree
         {
             result = node_data_type_int64;
         }
-        else if (!is_boolean_operand_strict(arg))
+        else if (is_boolean_operand_strict(arg) &&
+            result == node_data_type_unknown)
         {
-            result = node_data_type_unknown;
+            result = node_data_type_bool;
         }
         return result;
     }
@@ -110,12 +111,15 @@ namespace phylanx { namespace execution_tree
         std::size_t result = 2;
         for (auto const& arg : args)
         {
-            result = (std::min)(
-                result, extract_numeric_value_dimension(arg, name, codename));
-
-            if (result == 0)
+            if (is_numeric_operand(arg))
             {
-                break;      // can't get larger than that
+                result = (std::min)(result,
+                    extract_numeric_value_dimension(arg, name, codename));
+
+                if (result == 0)
+                {
+                    break;      // can't get larger than that
+                }
             }
         }
         return result;
@@ -235,12 +239,15 @@ namespace phylanx { namespace execution_tree
         std::size_t result = 0;
         for (auto const& arg : args)
         {
-            result = (std::max)(
-                result, extract_numeric_value_dimension(arg, name, codename));
-
-            if (result == PHYLANX_MAX_DIMENSIONS)
+            if (is_numeric_operand(arg))
             {
-                break;      // can't get larger than that
+                result = (std::max)(result,
+                    extract_numeric_value_dimension(arg, name, codename));
+
+                if (result == PHYLANX_MAX_DIMENSIONS)
+                {
+                    break;      // can't get larger than that
+                }
             }
         }
         return result;
@@ -259,9 +266,12 @@ namespace phylanx { namespace execution_tree
 
         for (auto const& arg : args)
         {
-            sizes.emplace_back(extract_aligned_dimensions(
-                extract_numeric_value_dimensions(arg, name, codename),
-                numdims, name, codename));
+            if (is_numeric_operand(arg))
+            {
+                sizes.emplace_back(extract_aligned_dimensions(
+                    extract_numeric_value_dimensions(arg, name, codename),
+                    numdims, name, codename));
+            }
         }
 
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};

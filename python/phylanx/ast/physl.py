@@ -57,7 +57,6 @@ methods_supporting_dtype = [
     'cos',
     'cosh',
     'cumsum',
-    'dstack',
     'erf',
     'erfc',
     'square',
@@ -66,7 +65,6 @@ methods_supporting_dtype = [
     'exp2',
     'exp10',
     'floor',
-    'hstack',
     'identity',
     'imag',
     'invcbrt',
@@ -89,7 +87,6 @@ methods_supporting_dtype = [
     'tanh',
     'trace'
     'trunc',
-    'vstack',
 ]
 
 
