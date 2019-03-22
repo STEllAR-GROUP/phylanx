@@ -71,11 +71,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     primitive_argument_type cat_cross_operation::cat_cross0d() const
     {
-        return primitive_argument_type{static_cast<double>(1.)};
+        /*
+        if(from_logits)
+        {
+            // softmax0d is 1
+            output.scalar() = blaze::softmax(output.scalar());
+        }
+        else
+        {
+            // divide by itself is 1
+            output.scalar() /= blaze::sum(output.scalar());
+        }
+        // regardless of from_logits, output = 1
+
+        // Construct low and high clip regions
+        primitive_argument_type lo_{small}, hi_{1-small};
+
+        auto lo = extract_value_scalar<double>(lo_, name_, codename_ );
+        auto hi = extract_value_scalar<double>(hi_, name_, codename_ );
+
+        output.scalar() = blaze::max(blaze::min(
+            output.scalar(), hi.scalar()), lo.scalar());
+        // output is still 1 after clipping
+
+        // log of 1 is zero, so res is zero
+        auto res = target.scalar() * (-blaze::log(output.scalar()));
+        return primitive_argument_type{ blaze::sum(res) };
+        */
+        return primitive_argument_type{static_cast<double>(0.)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type cat_cross_operation::cat_cross1d(arg_type&& target,arg_type&& output,bool from_logits) const
+    primitive_argument_type cat_cross_operation::cat_cross1d(
+        arg_type&& target,arg_type&& output,bool from_logits) const
     {
         if(from_logits)
         {
@@ -93,7 +121,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lo = extract_value_vector<double>(lo_, sz0, name_, codename_ );
         auto hi = extract_value_vector<double>(hi_, sz0, name_, codename_ );
 
-        output.vector() = blaze::max(blaze::min(output.vector(), hi.vector()), lo.vector());
+        output.vector() = blaze::max(
+            blaze::min(output.vector(), hi.vector()), lo.vector());
 
         auto res = target.vector() * (-blaze::log(output.vector()));
         return primitive_argument_type{ blaze::sum(res) };
@@ -121,7 +150,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lo = extract_value_matrix<double>(lo_, sz0, sz1, name_, codename_ );
         auto hi = extract_value_matrix<double>(hi_, sz0, sz1, name_, codename_ );
 
-        output.matrix() = blaze::max(blaze::min(output.matrix(), hi.matrix()), lo.matrix());
+        output.matrix() = blaze::max(
+            blaze::min(output.matrix(), hi.matrix()), lo.matrix());
 
         auto res = target.matrix() % (-blaze::log(output.matrix()));
         return primitive_argument_type{ blaze::sum(res) };
@@ -148,10 +178,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto sz2 = output.dimension(2);
         primitive_argument_type lo_{small}, hi_{1-small};
 
-        auto lo = extract_value_tensor<double>(lo_, sz0, sz1, sz2, name_, codename_ );
-        auto hi = extract_value_tensor<double>(hi_, sz0, sz1, sz2, name_, codename_ );
+        auto lo = extract_value_tensor<double>(
+            lo_, sz0, sz1, sz2, name_, codename_ );
+        auto hi = extract_value_tensor<double>(
+            hi_, sz0, sz1, sz2, name_, codename_ );
 
-        output.tensor() = blaze::max(blaze::min(output.tensor(), hi.tensor()), lo.tensor());
+        output.tensor() = blaze::max(
+            blaze::min(output.tensor(), hi.tensor()), lo.tensor());
 
         auto res = target.tensor() % (-blaze::log(output.tensor()));
         return primitive_argument_type{ blaze::sum(res) };
@@ -203,8 +236,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() > 2)
                 {
                     if (valid(args[2]))
-                        from_logits = execution_tree::extract_scalar_boolean_value(
-                            args[2], this_->name_, this_->codename_);
+                        from_logits =
+                            execution_tree::extract_scalar_boolean_value(
+                                args[2], this_->name_, this_->codename_);
                 }
 
                 // Extract the matrix, the result should always be double
