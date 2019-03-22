@@ -1983,7 +1983,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if ((mode_ == stacking_mode_axis && operands.size() > 3) ||
+        if (operands.empty() ||
+            (mode_ == stacking_mode_axis && operands.size() > 3) ||
             operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

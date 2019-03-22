@@ -12,6 +12,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <hpx/lcos/future.hpp>
+#include <hpx/util/optional.hpp>
 
 #include <memory>
 #include <string>
@@ -40,17 +41,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         template <typename T>
         primitive_argument_type cumulative_helper(
-            primitive_arguments_type&& ops) const;
+            primitive_arguments_type&& ops,
+            hpx::util::optional<std::int64_t>&& axis) const;
 
         template <typename T>
-        primitive_argument_type cumulative0d(
-            primitive_arguments_type&& ops) const;
+        primitive_argument_type cumulative0d(primitive_arguments_type&& ops,
+            hpx::util::optional<std::int64_t>&& axis) const;
+
         template <typename T>
-        primitive_argument_type cumulative1d(
-            primitive_arguments_type&& ops) const;
+        primitive_argument_type cumulative1d(primitive_arguments_type&& ops,
+            hpx::util::optional<std::int64_t>&& axis) const;
+
         template <typename T>
-        primitive_argument_type cumulative2d(
-            primitive_arguments_type&& ops) const;
+        primitive_argument_type cumulative2d(primitive_arguments_type&& ops,
+            hpx::util::optional<std::int64_t>&& axis) const;
 
         template <typename T>
         primitive_argument_type cumulative2d_noaxis(
@@ -64,8 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
-        primitive_argument_type cumulative3d(
-            primitive_arguments_type&& ops) const;
+        primitive_argument_type cumulative3d(primitive_arguments_type&& ops,
+            hpx::util::optional<std::int64_t>&& axis) const;
 
         template <typename T>
         primitive_argument_type cumulative3d_noaxis(
@@ -80,8 +84,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type cumulative3d_rows(
             primitive_arguments_type&& ops) const;
 #endif
-    private:
-        node_data_type dtype_;
     };
 }}}
 

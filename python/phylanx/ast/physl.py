@@ -56,7 +56,6 @@ methods_supporting_dtype = [
     'conj',
     'cos',
     'cosh',
-    'cumsum',
     'erf',
     'erfc',
     'square',

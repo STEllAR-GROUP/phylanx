@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     values, `out[i+1] - out[i]`. The default step size is `1`.
                     If step is specified as a position argument, start must
                     also be given.
-                dtype (optional, string) : the data-type of the returned array,
+                dtype (nil, optional) : the data-type of the returned array,
                   defaults to dtype of input arrays.
 
             Returns:
