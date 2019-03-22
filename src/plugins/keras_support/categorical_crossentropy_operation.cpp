@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if(from_logits)
         {
-            output.matrix() = blaze::softmax(output.matrix());
+            output.matrix() = blaze::softmax<blaze::rowwise>(output.matrix());
         }
         else
         {
@@ -159,13 +159,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+     blaze::DynamicTensor<double> cat_cross_operation::softmax3d_axis2(
+        arg_type& arg) const
+    {
+        auto t = arg.tensor();
+
+        blaze::DynamicTensor<double> result(t.pages(), t.rows(), t.columns());
+        for (std::size_t i = 0; i != t.pages(); ++i)
+        {
+            auto slice = blaze::pageslice(t, i);
+            blaze::pageslice(result, i) = blaze::softmax<blaze::rowwise>(slice);
+        }
+        return result;
+    }
 
     primitive_argument_type cat_cross_operation::cat_cross3d(
         arg_type&& target, arg_type&& output, bool from_logits) const
     {
         if(from_logits)
         {
-            output.tensor() = blaze::softmax(output.tensor());
+            output.tensor() = softmax3d_axis2(output);
         }
         else
         {
