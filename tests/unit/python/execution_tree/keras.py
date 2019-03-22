@@ -12,7 +12,7 @@ def softmax(x, axis=-1):
     return y / np.sum(y, axis, keepdims=True)
 
 
-def categorical_crossentropy(target, output, from_logits=False):
+def cat_cross(target, output, from_logits=False):
     if from_logits:
         output = softmax(output)
     else:
@@ -35,5 +35,5 @@ o[4] = 2
 
 flag = False
 v1 = cc(t, o, flag)
-v2 = categorical_crossentropy(t, o, flag)
+v2 = cat_cross(t, o, flag)
 assert v1 == v2

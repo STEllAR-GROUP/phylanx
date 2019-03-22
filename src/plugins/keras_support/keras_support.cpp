@@ -23,7 +23,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(sigmoid_operation_plugin,
     phylanx::execution_tree::primitives::sigmoid_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softmax_operation_plugin,
     phylanx::execution_tree::primitives::softmax_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(categorical_crossentropy_operation_plugin,
-    phylanx::execution_tree::primitives::categorical_crossentropy_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(cat_cross_operation_plugin,
+    phylanx::execution_tree::primitives::cat_cross_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softplus_operation_plugin,
     phylanx::execution_tree::primitives::softplus_operation::match_data);

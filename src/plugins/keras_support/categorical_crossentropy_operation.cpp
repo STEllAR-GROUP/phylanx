@@ -33,14 +33,14 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const categorical_crossentropy_operation::match_data =
+    match_pattern_type const cat_cross_operation::match_data =
     {
         hpx::util::make_tuple("categorical_crossentropy",
         std::vector<std::string>{
             "categorical_crossentropy(_1,_2)",
             "categorical_crossentropy(_1,_2,_3)"
         },
-        &create_categorical_crossentropy_operation, &create_primitive<categorical_crossentropy_operation>,
+        &create_cat_cross_operation, &create_primitive<cat_cross_operation>,
         R"(a, axis
         Args:
 
@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             The value should be the same as would be returned by the following
             Python function:
 
-            def categorical_crossentropy(target, output, from_logits=False):
+            def cat_cross(target, output, from_logits=False):
                 if from_logits:
                     output = softmax(output)
                 else:
@@ -64,18 +64,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     const double small = 1e-7;
 
     ///////////////////////////////////////////////////////////////////////////
-    categorical_crossentropy_operation::categorical_crossentropy_operation(primitive_arguments_type&& operands,
+    cat_cross_operation::cat_cross_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    primitive_argument_type categorical_crossentropy_operation::categorical_crossentropy0d() const
+    primitive_argument_type cat_cross_operation::cat_cross0d() const
     {
         return primitive_argument_type{static_cast<double>(1.)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type categorical_crossentropy_operation::categorical_crossentropy1d(arg_type&& target,arg_type&& output,bool from_logits) const
+    primitive_argument_type cat_cross_operation::cat_cross1d(arg_type&& target,arg_type&& output,bool from_logits) const
     {
         if(from_logits)
         {
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
 
-    primitive_argument_type categorical_crossentropy_operation::categorical_crossentropy2d(
+    primitive_argument_type cat_cross_operation::cat_cross2d(
         arg_type&& target, arg_type&& output,bool from_logits) const
     {
         if(from_logits)
@@ -130,7 +130,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 
-    primitive_argument_type categorical_crossentropy_operation::categorical_crossentropy3d(
+    primitive_argument_type cat_cross_operation::cat_cross3d(
         arg_type&& target, arg_type&& output, bool from_logits) const
     {
         if(from_logits)
@@ -159,7 +159,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> categorical_crossentropy_operation::eval(
+    hpx::future<primitive_argument_type> cat_cross_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args,
         eval_context ctx) const
@@ -168,9 +168,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "categorical_crossentropy_operation::eval",
+                "cat_cross_operation::eval",
                 util::generate_error_message(
-                    "the categorical_crossentropy_operation primitive requires exactly one, or "
+                    "the cat_cross_operation primitive requires exactly one, or "
                     "two operands",
                     name_, codename_));
         }
@@ -181,9 +181,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (!valid(i))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "categorical_crossentropy_operation::eval",
+                    "cat_cross_operation::eval",
                     util::generate_error_message(
-                        "the categorical_crossentropy_operation primitive requires that the "
+                        "the cat_cross_operation primitive requires that the "
                         "arguments given by the operands array are "
                         "valid",
                         name_, codename_));
@@ -220,18 +220,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (target_dims)
                 {
                 case 0:
-                    return this_->categorical_crossentropy0d();
+                    return this_->cat_cross0d();
                 case 1:
-                    return this_->categorical_crossentropy1d(std::move(target),std::move(output),from_logits);
+                    return this_->cat_cross1d(
+                        std::move(target),std::move(output),from_logits);
                 case 2:
-                    return this_->categorical_crossentropy2d(std::move(target),std::move(output),from_logits);
+                    return this_->cat_cross2d(
+                        std::move(target),std::move(output),from_logits);
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
-                    return this_->categorical_crossentropy3d(std::move(target),std::move(output),from_logits);
+                    return this_->cat_cross3d(
+                        std::move(target),std::move(output),from_logits);
 #endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "categorical_crossentropy_operation::eval",
+                        "cat_cross_operation::eval",
                         util::generate_error_message("operand a has an invalid "
                                                         "number of dimensions",
                             this_->name_, this_->codename_));

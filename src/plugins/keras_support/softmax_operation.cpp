@@ -36,8 +36,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::string>{
             "softmax(_1)",
             "softmax(_1,_2)"
-            //"categorical_crossentropy(_1,_2)",
-            //"categorical_crossentropy(_1,_2,_3)"
         },
         &create_softmax_operation, &create_primitive<softmax_operation>,
         R"(a, axis
