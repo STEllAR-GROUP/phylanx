@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Weile Wei
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -25,7 +25,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_append_operation(std::string const& code,
+void test_prepend_operation(std::string const& code,
     std::string const& expected_str)
 {
     HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
@@ -34,15 +34,15 @@ void test_append_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_append_operation("append( list(1, 42), 3 )", "list(1, 42, 3)");
+    test_prepend_operation("prepend( 3, list(1, 42) )", "list(3, 1, 42)");
 
-    test_append_operation("append( list(1, 42), list(3, 4) )",
-        "list(1, 42, list(3, 4))");
-    test_append_operation("append( list(), list() )", "list(list())");
-    test_append_operation(
-        "append( list(1, 42), list() )", "list(1, 42, list())");
-    test_append_operation(
-        "append( list(), list(1, 42) )", "list(list(1, 42))");
+    test_prepend_operation("prepend( list(1, 42), list(3, 4) )",
+        "list(list(1, 42), 3, 4)");
+    test_prepend_operation("prepend( list(), list() )", "list(list())");
+    test_prepend_operation(
+        "prepend( list(1, 42), list() )", "list(list(1, 42))");
+    test_prepend_operation(
+        "prepend( list(), list(1, 42) )", "list(list(), 1, 42)");
 
     return hpx::util::report_errors();
 }

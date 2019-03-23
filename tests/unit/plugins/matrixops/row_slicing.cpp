@@ -191,7 +191,7 @@ void test_row_slicing_operation_2d_single_row()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, 2)
     ))";
 
@@ -212,7 +212,7 @@ void test_row_slicing_operation_2d()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(2,4))
     ))";
 
@@ -234,7 +234,7 @@ void test_row_slicing_operation_2d_step()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(1,5,2))
     ))";
 
@@ -256,7 +256,7 @@ void test_row_slicing_operation_2d_neg_step()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(5,1,-2))
     ))";
 
@@ -278,7 +278,7 @@ void test_row_slicing_operation_2d_negative_index()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(-5,-2))
     ))";
 
@@ -300,7 +300,7 @@ void test_row_slicing_operation_2d_single_slice_negative_index()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(-5,-4))
     ))";
 
@@ -321,7 +321,7 @@ void test_row_slicing_operation_2d_negative_index_zero_start()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(0,-2))
     ))";
 
@@ -344,7 +344,7 @@ void test_row_slicing_operation_2d_negative_index_neg_step()
         define(d, [101,102,103,104,105,106,107,108]),
         define(e, [31,32,33,34,35,36,37,83]),
         define(f, [311,132,313,134,135,136,137,318]),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice_row(input, '(-1,-4,-2))
     ))";
 

@@ -27,11 +27,11 @@ assert (test_arange_int() == np.arange(1, 3, dtype='int')).all
 
 @Phylanx
 def test_cumsum_float(a):
-    return np.cumsum(a, dtype=float)
+    return np.cumsum(a, dtype='float')
 
 
 a = np.array([[1.5, 2, 3], [4, 5, 6]])
-assert (test_cumsum_float(a) == np.cumsum(a, dtype=float)).all
+assert (test_cumsum_float(a) == np.cumsum(a, dtype='float')).all
 
 
 @Phylanx
@@ -62,23 +62,23 @@ assert (test_stack_float() == np.array([[1], [2], [3]], dtype='float')).all
 
 @Phylanx
 def test_stack_int():
-    return np.array([[1], [2], [3]], dtype=int)
+    return np.array([[1], [2], [3]], dtype='int')
 
 
-assert (test_stack_int() == np.array([[1], [2], [3]], dtype=int)).all
+assert (test_stack_int() == np.array([[1], [2], [3]], dtype='int')).all
 
 
 @Phylanx
 def test_zeros():
-    return np.zeros((3, 3), dtype=int)
+    return np.zeros((3, 3), dtype='int')
 
 
-assert (test_zeros() == np.zeros((3, 3), dtype=int)).all
+assert (test_zeros() == np.zeros((3, 3), dtype='int')).all
 
 
 @Phylanx
 def test_ones():
-    return np.ones((3, 3), dtype=float)
+    return np.ones((3, 3), dtype='float')
 
 
-assert (test_ones() == np.ones((3, 3), dtype=float)).all
+assert (test_ones() == np.ones((3, 3), dtype='float')).all

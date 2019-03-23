@@ -19,7 +19,10 @@ void vstack_operation_empty()
     phylanx::execution_tree::primitive vstack =
         phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{}, "vstack");
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{}}},
+            "vstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vstack.eval();

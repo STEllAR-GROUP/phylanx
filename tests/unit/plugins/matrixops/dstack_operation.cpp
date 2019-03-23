@@ -20,7 +20,10 @@ void dstack_operation_empty()
     phylanx::execution_tree::primitive dstack =
         phylanx::execution_tree::primitives::create_dstack_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{}, "dstack");
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{}}},
+            "dstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dstack.eval();

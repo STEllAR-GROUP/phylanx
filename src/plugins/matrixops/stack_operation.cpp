@@ -103,34 +103,119 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    stack_operation::stacking_mode extract_stacking_mode(
-        std::string const& name)
+    namespace detail
     {
-        stack_operation::stacking_mode result =
-            stack_operation::stacking_mode_axis;
+        stack_operation::stacking_mode extract_stacking_mode(
+            std::string const& name)
+        {
+            stack_operation::stacking_mode result =
+                stack_operation::stacking_mode_axis;
 
-        if (name.find("vstack") != std::string::npos)
-        {
-            result = stack_operation::stacking_mode_row_wise;
+            if (name.find("vstack") != std::string::npos)
+            {
+                result = stack_operation::stacking_mode_row_wise;
+            }
+            else if (name.find("hstack") != std::string::npos)
+            {
+                result = stack_operation::stacking_mode_column_wise;
+            }
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            else if (name.find("dstack") != std::string::npos)
+            {
+                result = stack_operation::stacking_mode_depth_wise;
+            }
+    #endif
+            return result;
         }
-        else if (name.find("hstack") != std::string::npos)
+
+        template <typename T>
+        primitive_argument_type empty_helper(std::size_t dims,
+            std::string const& name, std::string const& codename)
         {
-            result = stack_operation::stacking_mode_column_wise;
+            switch (dims)
+            {
+            case 1:
+                {
+                    // hstack() without arguments returns an empty 1D vector
+                    using storage1d_type =
+                        typename ir::node_data<T>::storage1d_type;
+                    return primitive_argument_type{
+                        ir::node_data<T>{storage1d_type(0)}};
+                }
+
+            case 2:
+                {
+                    // vstack() without arguments returns an empty 2D matrix
+                    using storage2d_type =
+                        typename ir::node_data<T>::storage2d_type;
+                    return primitive_argument_type{
+                        ir::node_data<T>{storage2d_type(0, 0)}};
+                }
+
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case 3:
+                {
+                    // dstack without arguments returns an empty 3D tensor
+                    using storage3d_type =
+                        typename ir::node_data<T>::storage3d_type;
+                    return primitive_argument_type{
+                        ir::node_data<T>{storage3d_type(0, 0, 0)}};
+                }
+    #endif
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "detail::empty_helper",
+                util::generate_error_message(
+                    "unsupported stacking mode requested", name, codename));
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        else if (name.find("dstack") != std::string::npos)
-        {
-            result = stack_operation::stacking_mode_depth_wise;
-        }
-#endif
-        return result;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    hpx::future<primitive_argument_type> stack_operation::empty_helper() const
+    {
+        switch (mode_)
+        {
+        case stacking_mode_column_wise:
+            {
+                // hstack() without arguments returns an empty 1D vector
+                return hpx::make_ready_future(
+                    detail::empty_helper<T>(1, name_, codename_));
+            }
+
+        case stacking_mode_row_wise:
+            {
+                // vstack() without arguments returns an empty 2D matrix
+                return hpx::make_ready_future(
+                    detail::empty_helper<T>(2, name_, codename_));
+            }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case stacking_mode_depth_wise:
+            {
+                // dstack without arguments returns an empty 3D tensor
+                return hpx::make_ready_future(
+                    detail::empty_helper<T>(3, name_, codename_));
+            }
+#endif
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "stack_operation::empty",
+            generate_error_message("unsupported stacking mode requested"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     stack_operation::stack_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , mode_(extract_stacking_mode(name_))
+      , mode_(detail::extract_stacking_mode(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -173,6 +258,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::hstack0d1d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(1, name_, codename_);
+        }
+
         blaze::DynamicVector<T> result(get_vecsize(args));
 
         auto iter = result.begin();
@@ -238,6 +328,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::hstack2d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t args_size = args.size();
 
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
@@ -338,6 +433,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::hstack3d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 3)
@@ -388,7 +488,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             total_rows += dim[1];
         }
 
-        blaze::DynamicTensor<double> result(num_pages, total_rows, num_cols);
+        blaze::DynamicTensor<T> result(num_pages, total_rows, num_cols);
 
         std::size_t step = 0;
         for (auto && arg : args)
@@ -452,6 +552,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::vstack0d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t vec_size = args.size();
 
         blaze::DynamicMatrix<T> result(vec_size, 1);
@@ -522,6 +627,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::vstack1d2d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t args_size = args.size();
 
         std::size_t num_dims_first =
@@ -656,6 +766,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::vstack3d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 3)
@@ -706,7 +821,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             total_pages += dim[0];
         }
 
-        blaze::DynamicTensor<double> result(total_pages, num_rows, num_cols);
+        blaze::DynamicTensor<T> result(total_pages, num_rows, num_cols);
 
         std::size_t step = 0;
         for (auto && arg : args)
@@ -769,6 +884,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::dstack0d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t vec_size = args.size();
 
         blaze::DynamicTensor<T> result(vec_size, 1, 1);
@@ -838,6 +958,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::dstack1d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 1)
@@ -881,7 +1006,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        blaze::DynamicTensor<double> result(1, size, args_size);
+        blaze::DynamicTensor<T> result(1, size, args_size);
         auto page = blaze::pageslice(result, 0);
 
         std::size_t j = 0;
@@ -938,6 +1063,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::dstack2d3d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
 
@@ -1001,7 +1131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        blaze::DynamicTensor<double> result(num_rows, num_cols, total_columns);
+        blaze::DynamicTensor<T> result(num_rows, num_cols, total_columns);
 
         std::size_t step = 0;
         for (auto && arg : args)
@@ -1109,6 +1239,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack1d_axis1_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t args_size = args.size();
 
         std::size_t num_dims =
@@ -1255,6 +1390,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack2d_axis0_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 2)
@@ -1362,6 +1502,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack2d_axis1_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 2)
@@ -1533,6 +1678,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack3d_axis1_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 3)
@@ -1613,6 +1763,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack3d_axis2_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
 
@@ -1737,45 +1892,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("unsupported number of dimensions"));
     }
 #endif
-
-    template <typename T>
-    hpx::future<primitive_argument_type> stack_operation::empty_helper() const
-    {
-        switch (mode_)
-        {
-        case stacking_mode_column_wise:
-            {
-                // hstack() without arguments returns an empty 1D vector
-                using storage1d_type = typename ir::node_data<T>::storage1d_type;
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<T>{storage1d_type(0)}});
-            }
-
-        case stacking_mode_row_wise:
-            {
-                // vstack() without arguments returns an empty 2D matrix
-                using storage2d_type = typename ir::node_data<T>::storage2d_type;
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<T>{storage2d_type(0, 0)}});
-            }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case stacking_mode_depth_wise:
-            {
-                // dstack without arguments returns an empty 3D tensor
-                using storage3d_type = typename ir::node_data<T>::storage3d_type;
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<T>{storage3d_type(0, 0, 0)}});
-            }
-#endif
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "stack_operation::empty",
-            generate_error_message("unsupported stacking mode requested"));
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
@@ -1985,7 +2101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands.empty() ||
             (mode_ == stacking_mode_axis && operands.size() > 3) ||
-            operands.size() > 2)
+            (mode_ != stacking_mode_axis && operands.size() > 2))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "stack_operation::eval",
