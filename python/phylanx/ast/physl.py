@@ -116,11 +116,10 @@ def create_array(array_tree, dtype):
             return extract_data(arr[1])
 
     data = extract_data(array_tree)
+
     if not symbol_info:
-        if isinstance(data[0], str):
-            return [hstack_symbol, (data,)]
-        else:
-            return [hstack_symbol, tuple(data)]
+        return [hstack_symbol, (['list', tuple(data)], )]
+
     data = np.array(*extract_data(array_tree))
     num_dim = len(data.shape)
 
@@ -129,24 +128,28 @@ def create_array(array_tree, dtype):
         dstacks = []
         for i, column in enumerate(columns):
             dstacks.append([])
-            [dstacks[i].append(tuple(data)) for data in column]
+            [dstacks[i].append((['list', tuple(data)], )) for data in column]
 
-        outer_symbol = symbol_info.pop(0)
+        outer_symbol = '' if not symbol_info else symbol_info.pop(0)
         arr = []
         for d in dstacks:
             vstack = []
             for hstacks in d:
                 vstack.append([hstack_symbol + symbol_info.pop(0), hstacks])
-            vstack = [vstack_symbol + symbol_info.pop(0), tuple(vstack)]
+            sym_info = '' if not symbol_info else symbol_info.pop(0)
+            vstack = [vstack_symbol + sym_info, (['list', tuple(vstack)], )]
             arr.append(vstack)
-        arr = [dstack_symbol + outer_symbol, tuple(arr)]
+        arr = [dstack_symbol + outer_symbol, (['list', tuple(arr)], )]
     elif 2 == num_dim:
         arr = []
         for hstacks in data:
-            arr.append([hstack_symbol + symbol_info.pop(0), tuple(hstacks)])
-        arr = [vstack_symbol + symbol_info.pop(0), tuple(arr)]
+            sym_info = '' if not symbol_info else symbol_info.pop(0)
+            arr.append([hstack_symbol + sym_info, (['list', tuple(hstacks)], )])
+        sym_info = '' if not symbol_info else symbol_info.pop(0)
+        arr = [vstack_symbol + sym_info, (['list', tuple(arr)], )]
     elif 1 == num_dim:
-        arr = [hstack_symbol + symbol_info.pop(0), tuple(data)]
+        sym_info = '' if not symbol_info else symbol_info.pop(0)
+        arr = [hstack_symbol + sym_info, (['list', tuple(data)], )]
     else:
         ValueError("Phylanx supports arrays with 3 dimensions or less.")
     return (arr,)
