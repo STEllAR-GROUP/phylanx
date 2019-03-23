@@ -89,16 +89,12 @@ methods_supporting_dtype = [
 ]
 
 
-def create_array(array_tree, dtype):
+def create_array(array_tree, kwargs):
     symbol_info = []
 
     hstack_symbol = 'hstack'
     vstack_symbol = 'vstack'
     dstack_symbol = 'dstack'
-    if dtype:
-        hstack_symbol += dtype
-        vstack_symbol += dtype
-        dstack_symbol += dtype
 
     def extract_data(arr):
         if isinstance(arr, tuple):
@@ -118,7 +114,11 @@ def create_array(array_tree, dtype):
     data = extract_data(array_tree)
 
     if not symbol_info:
-        return [hstack_symbol, (['list', tuple(data)], )]
+        if kwargs:
+            args = (['list', tuple(data)], kwargs)
+        else:
+            args = (['list', tuple(data)], )
+        return [hstack_symbol, args]
 
     data = np.array(*extract_data(array_tree))
     num_dim = len(data.shape)
@@ -128,7 +128,10 @@ def create_array(array_tree, dtype):
         dstacks = []
         for i, column in enumerate(columns):
             dstacks.append([])
-            [dstacks[i].append((['list', tuple(data)], )) for data in column]
+            if kwargs:
+                [dstacks[i].append((['list', tuple(data)], kwargs)) for data in column]
+            else:
+                [dstacks[i].append((['list', tuple(data)], )) for data in column]
 
         outer_symbol = '' if not symbol_info else symbol_info.pop(0)
         arr = []
@@ -137,19 +140,39 @@ def create_array(array_tree, dtype):
             for hstacks in d:
                 vstack.append([hstack_symbol + symbol_info.pop(0), hstacks])
             sym_info = '' if not symbol_info else symbol_info.pop(0)
-            vstack = [vstack_symbol + sym_info, (['list', tuple(vstack)], )]
+            if kwargs:
+                args = (['list', tuple(vstack)], kwargs)
+            else:
+                args = (['list', tuple(vstack)], )
+            vstack = [vstack_symbol + sym_info, args]
             arr.append(vstack)
-        arr = [dstack_symbol + outer_symbol, (['list', tuple(arr)], )]
+        if kwargs:
+            args = (['list', tuple(arr)], kwargs, )
+        else:
+            args = (['list', tuple(arr)])
+        arr = [dstack_symbol + outer_symbol, args]
     elif 2 == num_dim:
         arr = []
         for hstacks in data:
             sym_info = '' if not symbol_info else symbol_info.pop(0)
-            arr.append([hstack_symbol + sym_info, (['list', tuple(hstacks)], )])
+            if kwargs:
+                args = (['list', tuple(hstacks)], kwargs)
+            else:
+                args = (['list', tuple(hstacks)], )
+            arr.append([hstack_symbol + sym_info, args])
         sym_info = '' if not symbol_info else symbol_info.pop(0)
-        arr = [vstack_symbol + sym_info, (['list', tuple(arr)], )]
+        if kwargs:
+            args = (['list', tuple(arr)], kwargs)
+        else:
+            args = (['list', tuple(arr)], )
+        arr = [vstack_symbol + sym_info, args]
     elif 1 == num_dim:
         sym_info = '' if not symbol_info else symbol_info.pop(0)
-        arr = [hstack_symbol + sym_info, (['list', tuple(data)], )]
+        if kwargs:
+            args = (['list', tuple(data)], kwargs)
+        else:
+            args = (['list', tuple(data)], )
+        arr = [hstack_symbol + sym_info, args]
     else:
         ValueError("Phylanx supports arrays with 3 dimensions or less.")
     return (arr,)
@@ -616,7 +639,10 @@ class PhySL:
         """
 
         def __apply(self, k):
-            return (k.arg, self.apply_rule(k.value))
+            kw = self.apply_rule(k.value)
+            if k.arg == 'dtype' and '$' in kw:
+                kw = '"' + kw.split('$', 1)[0] + '"'
+            return (k.arg, kw)
 
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
@@ -625,36 +651,17 @@ class PhySL:
 
         dtype = ''
 
-#        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
-#        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
-#        dtypes_bools = ['b', 'bool']
-#        phylanx_dtype = {
-#            **dict.fromkeys(dtype_floats, 'float'),
-#            **dict.fromkeys(dtype_ints, 'int'),
-#            **dict.fromkeys(dtypes_bools, 'bool')
-#        }
-#        for k in node.keywords:
-#            if k.arg == 'dtype':
-#                if isinstance(k.value, ast.Name):
-#                    type_str = phylanx_dtype.get(k.value.id)
-#                    if not type_str:
-#                        raise ValueError("dtype must a be string literal.")
-#                if isinstance(k.value, ast.Str):
-#                    type_str = phylanx_dtype.get(k.value.s)
-#                if type_str:
-#                    dtype = '__' + type_str
-#                else:
-#                    raise NotImplementedError(
-#                        'Only the followig are acceptable Phylanx array types:\n'
-#                        'booleans: %s\nfloats: %s\nintegers %s' %
-#                        (dtypes_bools, dtype_floats, dtype_ints))
-#                break
-
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol:
-            return create_array(args, dtype)
+            return create_array(args, kwargs)
+        elif 'vstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = (['list', (tuple(args), )],)
+        elif 'dstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = (['list', (tuple(args), )],)
         elif 'zeros_like' in symbol:
             symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
             return [symbol, ('0', args)]
@@ -692,7 +699,9 @@ class PhySL:
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        return [symbol, args + kwargs]
+        if kwargs:
+            args += kwargs
+        return [symbol, args]
 
     # def _ClassDef(self, node):
     #     """class ClassDef(name, bases, keywords, starargs, kwargs, body,
