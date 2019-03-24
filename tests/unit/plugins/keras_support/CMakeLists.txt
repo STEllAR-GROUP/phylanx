@@ -11,6 +11,7 @@ set(tests
     l2_normalize_operation
     one_hot_operation
     relu_operation
+    pool_operation
     sigmoid_operation
     softmax_operation
     softplus_operation
