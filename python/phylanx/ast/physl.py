@@ -149,7 +149,7 @@ def create_array(array_tree, kwargs):
         if kwargs:
             args = (['list', tuple(arr)], kwargs, )
         else:
-            args = (['list', tuple(arr)])
+            args = (['list', tuple(arr)], )
         arr = [dstack_symbol + outer_symbol, args]
     elif 2 == num_dim:
         arr = []
