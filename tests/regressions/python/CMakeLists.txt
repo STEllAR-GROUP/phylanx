@@ -27,6 +27,7 @@ set(tests
     852_concatenate_list
     862_var_std_two_axis
     866_dynamic_dtype
+    874_0d_shape
     886_notnone
     array_len_494
     array_shape_486
