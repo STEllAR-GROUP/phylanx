@@ -111,14 +111,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto it = pool_size.begin();
         for (std::size_t i = 0; i != pool_size.size(); ++i, ++it)
         {
-            if (is_list_operand_strict(*it))
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "pool_operation::validate_pooling",
-                    generate_error_message(
-                        "pool_size cannot be a tuple of tuples. For matrices, "
-                        "pool_size should be a tuple of two integers and for "
-                        "tensors pool_size should be a tuple of 3 integers"));
-
             if (extract_scalar_integer_value_strict(*it) <= 0)
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "pool_operation::validate_pooling",
@@ -126,6 +118,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the height, width (and possibly depth) of a pooling "
                         "filter should be positive"));
         }
+        return true;
+    }
+
+    bool pool_operation::validate_strides(
+        std::size_t const& ndim, ir::range& strides) const
+    {
+        if (ndim != strides.size())
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "pool_operation::validate_strides",
+                generate_error_message(
+                    "the length of strides should be same as array "
+                    "dimensions. For matrices, strides should be a tuple of "
+                    "two positive integers and for tensors strides should be a "
+                    "tuple of three positive integers"));
+
+        auto it = strides.begin();
+        bool flag = true;
+        for (std::size_t i = 0; i != strides.size(); ++i, ++it)
+        {
+            if (extract_scalar_integer_value_strict(*it) <= 0)
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "pool_operation::validate_strides",
+                    generate_error_message(
+                        "the strides on each dimension should be positive"));
+            if (extract_scalar_integer_value_strict(*it) != 1)
+                flag = false;
+        }
+        if (flag == true)
+            strides = ir::range(0);
         return true;
     }
 
@@ -145,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for (std::size_t r = 0; r != result.rows(); ++r)
             for (std::size_t c = 0; c != result.columns(); ++c)
 
-                result(r, c) = blaze::max(
+                result(r, c) = (blaze::max)(
                     blaze::submatrix(m, r, c, filter_height, filter_width));
 
         return primitive_argument_type{std::move(result)};
@@ -175,6 +196,66 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <typename T>
+    primitive_argument_type pool_operation::max_pool2d(ir::node_data<T>&& arg,
+        ir::range&& pool_size, ir::range&& strides) const
+    {
+        auto m = arg.matrix();
+        auto it = pool_size.begin();
+        std::size_t filter_height = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_height = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        blaze::DynamicMatrix<double> result(
+            blaze::ceil(static_cast<float>((m.rows() - filter_height + 1)) /
+                static_cast<float>(stride_height)),
+            blaze::ceil(static_cast<float>((m.columns() - filter_width + 1)) /
+                static_cast<float>(stride_width)));
+
+        for (std::size_t r = 0; r != result.rows(); ++r)
+            for (std::size_t c = 0; c != result.columns(); ++c)
+
+                result(r, c) =
+                    (blaze::max)(blaze::submatrix(m, r * stride_height,
+                        c * stride_width, filter_height, filter_width));
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type pool_operation::avg_pool2d(
+        ir::node_data<double>&& arg, ir::range&& pool_size,
+        ir::range&& strides) const
+    {
+        auto m = arg.matrix();
+        auto it = pool_size.begin();
+        std::size_t filter_height = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_height = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        blaze::DynamicMatrix<double> result(
+            blaze::ceil(static_cast<float>((m.rows() - filter_height + 1)) /
+                static_cast<float>(stride_height)),
+            blaze::ceil(static_cast<float>((m.columns() - filter_width + 1)) /
+                static_cast<float>(stride_width)));
+
+        for (std::size_t r = 0; r != result.rows(); ++r)
+            for (std::size_t c = 0; c != result.columns(); ++c)
+
+                result(r, c) = blaze::sum(blaze::submatrix(m, r * stride_height,
+                    c * stride_width, filter_height, filter_width));
+
+        result /= (filter_height * filter_width);
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
     primitive_argument_type pool_operation::max_pool2d_with_pad(
         ir::node_data<T>&& arg,
         ir::range&& pool_size) const
@@ -191,7 +272,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t ncolumns = m.columns();
 
         std::int64_t r_rel;    //relative row
-        std::int64_t c_rel;    // relative column
+        std::int64_t c_rel;    //relative column
 
         blaze::DynamicMatrix<T> result(nrows, ncolumns);
 
@@ -205,35 +286,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     if (c_rel < 0)
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(m, 0, 0,
+                        result(r, c) = (blaze::max)(blaze::submatrix(m, 0, 0,
                             filter_height + r_rel, filter_width + c_rel));
                     }
-                    else if (c_rel > ncolumns - filter_width)
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(m, 0, c_rel,
-                            filter_height + r_rel, ncolumns - c_rel));
+                        result(r, c) = (blaze::max)(blaze::submatrix(m, 0,
+                            c_rel, filter_height + r_rel, ncolumns - c_rel));
                     }
                     else
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, 0, c_rel, filter_height + r_rel, filter_width));
                     }
                 }
-                else if (r_rel > nrows - filter_height)
+                else if (r_rel > static_cast<std::int64_t>(nrows) -
+                        static_cast<std::int64_t>(filter_height))
                 {
                     if (c_rel < 0)
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, r_rel, 0, nrows - r_rel, filter_width + c_rel));
                     }
-                    else if (c_rel > ncolumns - filter_width)
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, r_rel, c_rel, nrows - r_rel, ncolumns - c_rel));
                     }
                     else
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, r_rel, c_rel, nrows - r_rel, filter_width));
                     }
                 }
@@ -241,17 +325,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     if (c_rel < 0)
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, r_rel, 0, filter_height, filter_width + c_rel));
                     }
-                    else if (c_rel > ncolumns - filter_width)
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, r_rel, c_rel, filter_height, ncolumns - c_rel));
                     }
                     else
                     {
-                        result(r, c) = blaze::max(blaze::submatrix(
+                        result(r, c) = (blaze::max)(blaze::submatrix(
                             m, r_rel, c_rel, filter_height, filter_width));
                     }
                 }
@@ -295,7 +380,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 filter_height + r_rel, filter_width + c_rel)) /
                             ((filter_height + r_rel) * (filter_width + c_rel));
                     }
-                    else if (c_rel > ncolumns - filter_width)
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
                     {
                         result(r, c) =
                             blaze::sum(blaze::submatrix(m, 0, c_rel,
@@ -310,7 +396,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             ((filter_height + r_rel) * filter_width);
                     }
                 }
-                else if (r_rel > nrows - filter_height)
+                else if (r_rel > static_cast<std::int64_t>(nrows) -
+                        static_cast<std::int64_t>(filter_height))
                 {
                     if (c_rel < 0)
                     {
@@ -319,7 +406,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 nrows - r_rel, filter_width + c_rel)) /
                             ((nrows - r_rel) * (filter_width + c_rel));
                     }
-                    else if (c_rel > ncolumns - filter_width)
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
                     {
                         result(r, c) =
                             blaze::sum(blaze::submatrix(m, r_rel, c_rel,
@@ -343,7 +431,263 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 filter_height, filter_width + c_rel)) /
                             (filter_height * (filter_width + c_rel));
                     }
-                    else if (c_rel > ncolumns - filter_width)
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, r_rel, c_rel,
+                                filter_height, ncolumns - c_rel)) /
+                            (filter_height * (ncolumns - c_rel));
+                    }
+                    else
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(
+                                m, r_rel, c_rel, filter_height, filter_width)) /
+                            (filter_height * filter_width);
+                    }
+                }
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type pool_operation::max_pool2d_with_pad(
+        ir::node_data<T>&& arg, ir::range&& pool_size,
+        ir::range&& strides) const
+    {
+        auto m = arg.matrix();
+        auto it = pool_size.begin();
+        std::size_t filter_height = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_height = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        std::size_t pad_top;
+        std::size_t pad_left;
+        std::size_t pad_height;
+        std::size_t pad_width;
+
+        std::size_t nrows = m.rows();
+        std::size_t ncolumns = m.columns();
+
+        if (nrows % stride_height == 0)
+            pad_height = (blaze::max)(
+                filter_height - stride_height, static_cast<std::size_t>(0));
+        else
+            pad_height = (blaze::max)(filter_height - (nrows % stride_height),
+                static_cast<std::size_t>(0));
+
+        if (ncolumns % stride_width == 0)
+            pad_width = (blaze::max)(
+                filter_width - stride_width, static_cast<std::size_t>(0));
+        else
+            pad_width = (blaze::max)(filter_width - (ncolumns % stride_width),
+                static_cast<std::size_t>(0));
+
+        pad_top = pad_height / 2;
+        pad_left = pad_width / 2;
+
+        std::int64_t r_rel;    //relative row
+        std::int64_t c_rel;    //relative column
+
+        blaze::DynamicMatrix<T> result(
+            blaze::ceil(
+                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(stride_height)),
+            blaze::ceil(
+                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(stride_width)));
+
+        for (std::size_t r = 0; r != result.rows(); ++r)
+        {
+            r_rel = r * stride_height - pad_top;
+            for (std::size_t c = 0; c != result.columns(); ++c)
+            {
+                c_rel = c * stride_width - pad_left;
+                if (r_rel < 0)
+                {
+                    if (c_rel < 0)
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(m, 0, 0,
+                            filter_height + r_rel, filter_width + c_rel));
+                    }
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(m, 0,
+                            c_rel, filter_height + r_rel, ncolumns - c_rel));
+                    }
+                    else
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, 0, c_rel, filter_height + r_rel, filter_width));
+                    }
+                }
+                else if (r_rel > static_cast<std::int64_t>(nrows) -
+                        static_cast<std::int64_t>(filter_height))
+                {
+                    if (c_rel < 0)
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, r_rel, 0, nrows - r_rel, filter_width + c_rel));
+                    }
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, r_rel, c_rel, nrows - r_rel, ncolumns - c_rel));
+                    }
+                    else
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, r_rel, c_rel, nrows - r_rel, filter_width));
+                    }
+                }
+                else
+                {
+                    if (c_rel < 0)
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, r_rel, 0, filter_height, filter_width + c_rel));
+                    }
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, r_rel, c_rel, filter_height, ncolumns - c_rel));
+                    }
+                    else
+                    {
+                        result(r, c) = (blaze::max)(blaze::submatrix(
+                            m, r_rel, c_rel, filter_height, filter_width));
+                    }
+                }
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type pool_operation::avg_pool2d_with_pad(
+        ir::node_data<double>&& arg, ir::range&& pool_size,
+        ir::range&& strides) const
+    {
+        auto m = arg.matrix();
+        auto it = pool_size.begin();
+        std::size_t filter_height = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_height = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        std::size_t pad_top;
+        std::size_t pad_left;
+        std::size_t pad_height;
+        std::size_t pad_width;
+
+        std::size_t nrows = m.rows();
+        std::size_t ncolumns = m.columns();
+
+        if (nrows % stride_height == 0)
+            pad_height = (blaze::max)(
+                filter_height - stride_height, static_cast<std::size_t>(0));
+        else
+            pad_height = (blaze::max)(filter_height - (nrows % stride_height),
+                static_cast<std::size_t>(0));
+
+        if (ncolumns % stride_width == 0)
+            pad_width = (blaze::max)(
+                filter_width - stride_width, static_cast<std::size_t>(0));
+        else
+            pad_width = (blaze::max)(filter_width - (ncolumns % stride_width),
+                static_cast<std::size_t>(0));
+
+        pad_top = pad_height / 2;
+        pad_left = pad_width / 2;
+
+        std::int64_t r_rel;    //relative row
+        std::int64_t c_rel;    //relative column
+
+        blaze::DynamicMatrix<double> result(
+            blaze::ceil(
+                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(stride_height)),
+            blaze::ceil(
+                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(stride_width)));
+
+        for (std::size_t r = 0; r != result.rows(); ++r)
+        {
+            r_rel = r * stride_height - pad_top;
+            for (std::size_t c = 0; c != result.columns(); ++c)
+            {
+                c_rel = c * stride_width - pad_left;
+                if (r_rel < 0)
+                {
+                    if (c_rel < 0)
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, 0, 0,
+                                filter_height + r_rel, filter_width + c_rel)) /
+                            ((filter_height + r_rel) * (filter_width + c_rel));
+                    }
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, 0, c_rel,
+                                filter_height + r_rel, ncolumns - c_rel)) /
+                            ((filter_height + r_rel) * (ncolumns - c_rel));
+                    }
+                    else
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, 0, c_rel,
+                                filter_height + r_rel, filter_width)) /
+                            ((filter_height + r_rel) * filter_width);
+                    }
+                }
+                else if (r_rel > static_cast<std::int64_t>(nrows) -
+                        static_cast<std::int64_t>(filter_height))
+                {
+                    if (c_rel < 0)
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, r_rel, 0,
+                                nrows - r_rel, filter_width + c_rel)) /
+                            ((nrows - r_rel) * (filter_width + c_rel));
+                    }
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, r_rel, c_rel,
+                                nrows - r_rel, ncolumns - c_rel)) /
+                            ((nrows - r_rel) * (ncolumns - c_rel));
+                    }
+                    else
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(
+                                m, r_rel, c_rel, nrows - r_rel, filter_width)) /
+                            ((nrows - r_rel) * filter_width);
+                    }
+                }
+                else
+                {
+                    if (c_rel < 0)
+                    {
+                        result(r, c) =
+                            blaze::sum(blaze::submatrix(m, r_rel, 0,
+                                filter_height, filter_width + c_rel)) /
+                            (filter_height * (filter_width + c_rel));
+                    }
+                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(filter_width))
                     {
                         result(r, c) =
                             blaze::sum(blaze::submatrix(m, r_rel, c_rel,
@@ -382,7 +726,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (std::size_t r = 0; r != result.rows(); ++r)
                 for (std::size_t c = 0; c != result.columns(); ++c)
 
-                    result(p, r, c) = blaze::max(blaze::subtensor(
+                    result(p, r, c) = (blaze::max)(blaze::subtensor(
                         t, p, r, c, filter_depth, filter_height, filter_width));
 
         return primitive_argument_type{std::move(result)};
@@ -413,6 +757,73 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
+    template <typename T>
+    primitive_argument_type pool_operation::max_pool3d(ir::node_data<T>&& arg,
+        ir::range&& pool_size, ir::range&& strides) const
+    {
+        auto t = arg.tensor();
+        auto it = pool_size.begin();
+        std::size_t filter_depth = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_height = extract_scalar_integer_value_strict(*++it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_depth = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_height =
+            extract_scalar_integer_value_strict(*++it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        blaze::DynamicTensor<T> result(
+            (t.pages() - filter_depth) / stride_depth + 1,
+            (t.rows() - filter_height) / stride_height + 1,
+            (t.columns() - filter_width) / stride_width + 1);
+
+        for (std::size_t p = 0; p != result.pages(); ++p)
+            for (std::size_t r = 0; r != result.rows(); ++r)
+                for (std::size_t c = 0; c != result.columns(); ++c)
+
+                    result(p, r, c) = (blaze::max)(blaze::subtensor(t,
+                        p * stride_depth, r * stride_height, c * stride_width,
+                        filter_depth, filter_height, filter_width));
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type pool_operation::avg_pool3d(
+        ir::node_data<double>&& arg, ir::range&& pool_size,
+        ir::range&& strides) const
+    {
+        auto t = arg.tensor();
+        auto it = pool_size.begin();
+        std::size_t filter_depth = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_height = extract_scalar_integer_value_strict(*++it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_depth = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_height =
+            extract_scalar_integer_value_strict(*++it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        blaze::DynamicTensor<double> result(
+            (t.pages() - filter_depth) / stride_depth + 1,
+            (t.rows() - filter_height) / stride_height + 1,
+            (t.columns() - filter_width) / stride_width + 1);
+
+        for (std::size_t p = 0; p != result.pages(); ++p)
+            for (std::size_t r = 0; r != result.rows(); ++r)
+                for (std::size_t c = 0; c != result.columns(); ++c)
+
+                    result(p, r, c) = blaze::sum(blaze::subtensor(t,
+                        p * stride_depth, r * stride_height, c * stride_width,
+                        filter_depth, filter_height, filter_width));
+
+        result /= (filter_depth * filter_height * filter_width);
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type pool_operation::max_pool3d_with_pad(
         ir::node_data<T>&& arg,
@@ -453,42 +864,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r,
-                                    c) = blaze::max(blaze::subtensor(t, 0, 0, 0,
-                                    filter_depth + p_rel, filter_height + r_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, 0, 0, filter_depth + p_rel,
+                                    filter_height + r_rel,
                                     filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, 0, c_rel, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, 0, c_rel, filter_depth + p_rel,
                                     filter_height + r_rel, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, 0, c_rel, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, 0, c_rel, filter_depth + p_rel,
                                     filter_height + r_rel, filter_width));
                             }
                         }
-                        else if (r_rel > nrows - filter_height)
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, r_rel, 0, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, 0, filter_depth + p_rel,
                                     nrows - r_rel, filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, r_rel, c_rel, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
                                     nrows - r_rel, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, r_rel, c_rel, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
                                     nrows - r_rel, filter_width));
                             }
                         }
@@ -496,66 +912,74 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, r_rel, 0, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, 0, filter_depth + p_rel,
                                     filter_height, filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, r_rel, c_rel, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
                                     filter_height, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    0, r_rel, c_rel, filter_depth + p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
                                     filter_height, filter_width));
                             }
                         }
                     }
-                    else if (p_rel > npages - filter_depth)
+                    else if (p_rel > static_cast<std::int64_t>(npages) -
+                            static_cast<std::int64_t>(filter_depth))
                     {
                         if (r_rel < 0)
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) =
-                                    blaze::max(blaze::subtensor(t, p_rel, 0, 0,
+                                result(p, r, c) = (blaze::max)(
+                                    blaze::subtensor(t, p_rel, 0, 0,
                                         npages - p_rel, filter_height + r_rel,
                                         filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, 0, c_rel, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, npages - p_rel,
                                     filter_height + r_rel, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, 0, c_rel, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, npages - p_rel,
                                     filter_height + r_rel, filter_width));
                             }
                         }
-                        else if (r_rel > nrows - filter_height)
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, 0, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, npages - p_rel,
                                     nrows - r_rel, filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
                                     nrows - r_rel, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
                                     nrows - r_rel, filter_width));
                             }
                         }
@@ -563,20 +987,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, 0, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, npages - p_rel,
                                     filter_height, filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
                                     filter_height, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, npages - p_rel,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
                                     filter_height, filter_width));
                             }
                         }
@@ -588,41 +1014,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             if (c_rel < 0)
                             {
                                 result(p, r, c) =
-                                    blaze::max(blaze::subtensor(t, p_rel, 0, 0,
-                                        filter_depth, filter_height + r_rel,
+                                    (blaze::max)(blaze::subtensor(t, p_rel, 0,
+                                        0, filter_depth, filter_height + r_rel,
                                         filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, 0, c_rel, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, filter_depth,
                                     filter_height + r_rel, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, 0, c_rel, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, filter_depth,
                                     filter_height + r_rel, filter_width));
                             }
                         }
-                        else if (r_rel > nrows - filter_height)
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, 0, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, filter_depth,
                                     nrows - r_rel, filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
                                     nrows - r_rel, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
                                     nrows - r_rel, filter_width));
                             }
                         }
@@ -630,20 +1061,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             if (c_rel < 0)
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, 0, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, filter_depth,
                                     filter_height, filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
                                     filter_height, ncolumns - c_rel));
                             }
                             else
                             {
-                                result(p, r, c) = blaze::max(blaze::subtensor(t,
-                                    p_rel, r_rel, c_rel, filter_depth,
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
                                     filter_height, filter_width));
                             }
                         }
@@ -702,7 +1135,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         (filter_height + r_rel) *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, 0, 0, c_rel,
@@ -724,7 +1159,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         (filter_width));
                             }
                         }
-                        else if (r_rel > nrows - filter_height)
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
                         {
                             if (c_rel < 0)
                             {
@@ -735,7 +1171,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     ((filter_depth + p_rel) * (nrows - r_rel) *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, 0, r_rel,
@@ -765,7 +1203,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     ((filter_depth + p_rel) * filter_height *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, 0, r_rel,
@@ -785,7 +1225,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             }
                         }
                     }
-                    else if (p_rel > npages - filter_depth)
+                    else if (p_rel > static_cast<std::int64_t>(npages) -
+                            static_cast<std::int64_t>(filter_depth))
                     {
                         if (r_rel < 0)
                         {
@@ -799,7 +1240,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         (filter_height + r_rel) *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, p_rel, 0,
@@ -820,7 +1263,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         (filter_height + r_rel) * filter_width);
                             }
                         }
-                        else if (r_rel > nrows - filter_height)
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
                         {
                             if (c_rel < 0)
                             {
@@ -831,7 +1275,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     ((npages - p_rel) * (nrows - r_rel) *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, p_rel, r_rel,
@@ -861,7 +1307,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     ((npages - p_rel) * filter_height *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, p_rel, r_rel,
@@ -894,7 +1342,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     (filter_depth * (filter_height + r_rel) *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(
@@ -914,7 +1364,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         filter_width);
                             }
                         }
-                        else if (r_rel > nrows - filter_height)
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
                         {
                             if (c_rel < 0)
                             {
@@ -925,7 +1376,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     (filter_depth * (nrows - r_rel) *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, p_rel, r_rel,
@@ -955,7 +1408,705 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     (filter_depth * filter_height *
                                         (filter_width + c_rel));
                             }
-                            else if (c_rel > ncolumns - filter_width)
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, filter_depth, filter_height,
+                                        ncolumns - c_rel)) /
+                                    (filter_depth * filter_height *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, filter_depth, filter_height,
+                                        filter_width)) /
+                                    (filter_depth * filter_height *
+                                        filter_width);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type pool_operation::max_pool3d_with_pad(
+        ir::node_data<T>&& arg, ir::range&& pool_size,
+        ir::range&& strides) const
+    {
+        auto t = arg.tensor();
+        auto it = pool_size.begin();
+        std::size_t filter_depth = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_height = extract_scalar_integer_value_strict(*++it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_depth = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_height = extract_scalar_integer_value_strict(*++it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        std::size_t pad_front;
+        std::size_t pad_top;
+        std::size_t pad_left;
+        std::size_t pad_depth;
+        std::size_t pad_height;
+        std::size_t pad_width;
+
+        std::size_t npages = t.pages();
+        std::size_t nrows = t.rows();
+        std::size_t ncolumns = t.columns();
+
+        if (npages % stride_depth == 0)
+            pad_depth = (blaze::max)(
+                filter_depth - stride_depth, static_cast<std::size_t>(0));
+        else
+            pad_depth = (blaze::max)(filter_depth - (npages % stride_depth),
+                static_cast<std::size_t>(0));
+
+        if (nrows % stride_height == 0)
+            pad_height = (blaze::max)(
+                filter_height - stride_height, static_cast<std::size_t>(0));
+        else
+            pad_height = (blaze::max)(filter_height - (nrows % stride_height),
+                static_cast<std::size_t>(0));
+
+        if (ncolumns % stride_width == 0)
+            pad_width = (blaze::max)(
+                filter_width - stride_width, static_cast<std::size_t>(0));
+        else
+            pad_width = (blaze::max)(filter_width - (ncolumns % stride_width),
+                static_cast<std::size_t>(0));
+
+        pad_front = pad_depth / 2;
+        pad_top = pad_height / 2;
+        pad_left = pad_width / 2;
+
+        std::int64_t p_rel;    //relative page
+        std::int64_t r_rel;    //relative row
+        std::int64_t c_rel;    //relative column
+
+        blaze::DynamicTensor<T> result(
+            blaze::ceil(
+                static_cast<float>((npages + pad_depth - filter_depth + 1)) /
+                static_cast<float>(stride_depth)),
+            blaze::ceil(
+                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(stride_height)),
+            blaze::ceil(
+                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(stride_width)));
+
+        for (std::size_t p = 0; p != result.pages(); ++p)
+        {
+            p_rel = p * stride_depth - pad_front;
+            for (std::size_t r = 0; r != result.rows(); ++r)
+            {
+                r_rel = r * stride_height - pad_top;
+                for (std::size_t c = 0; c != result.columns(); ++c)
+                {
+                    c_rel = c * stride_width - pad_left;
+                    if (p_rel < 0)
+                    {
+                        if (r_rel < 0)
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, 0, 0, filter_depth + p_rel,
+                                    filter_height + r_rel,
+                                    filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, 0, c_rel, filter_depth + p_rel,
+                                    filter_height + r_rel, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, 0, c_rel, filter_depth + p_rel,
+                                    filter_height + r_rel, filter_width));
+                            }
+                        }
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, 0, filter_depth + p_rel,
+                                    nrows - r_rel, filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
+                                    nrows - r_rel, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
+                                    nrows - r_rel, filter_width));
+                            }
+                        }
+                        else
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, 0, filter_depth + p_rel,
+                                    filter_height, filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
+                                    filter_height, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, 0, r_rel, c_rel, filter_depth + p_rel,
+                                    filter_height, filter_width));
+                            }
+                        }
+                    }
+                    else if (p_rel > static_cast<std::int64_t>(npages) -
+                            static_cast<std::int64_t>(filter_depth))
+                    {
+                        if (r_rel < 0)
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(
+                                    blaze::subtensor(t, p_rel, 0, 0,
+                                        npages - p_rel, filter_height + r_rel,
+                                        filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, npages - p_rel,
+                                    filter_height + r_rel, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, npages - p_rel,
+                                    filter_height + r_rel, filter_width));
+                            }
+                        }
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, npages - p_rel,
+                                    nrows - r_rel, filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
+                                    nrows - r_rel, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
+                                    nrows - r_rel, filter_width));
+                            }
+                        }
+                        else
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, npages - p_rel,
+                                    filter_height, filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
+                                    filter_height, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, npages - p_rel,
+                                    filter_height, filter_width));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (r_rel < 0)
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    (blaze::max)(blaze::subtensor(t, p_rel, 0,
+                                        0, filter_depth, filter_height + r_rel,
+                                        filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, filter_depth,
+                                    filter_height + r_rel, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, 0, c_rel, filter_depth,
+                                    filter_height + r_rel, filter_width));
+                            }
+                        }
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, filter_depth,
+                                    nrows - r_rel, filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
+                                    nrows - r_rel, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
+                                    nrows - r_rel, filter_width));
+                            }
+                        }
+                        else
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, 0, filter_depth,
+                                    filter_height, filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
+                                    filter_height, ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) = (blaze::max)(blaze::subtensor(
+                                    t, p_rel, r_rel, c_rel, filter_depth,
+                                    filter_height, filter_width));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type pool_operation::avg_pool3d_with_pad(
+        ir::node_data<double>&& arg, ir::range&& pool_size,
+        ir::range&& strides) const
+    {
+        auto t = arg.tensor();
+        auto it = pool_size.begin();
+        std::size_t filter_depth = extract_scalar_integer_value_strict(*it);
+        std::size_t filter_height = extract_scalar_integer_value_strict(*++it);
+        std::size_t filter_width = extract_scalar_integer_value_strict(*++it);
+
+        auto it_s = strides.begin();
+        std::size_t stride_depth = extract_scalar_integer_value_strict(*it_s);
+        std::size_t stride_height = extract_scalar_integer_value_strict(*++it_s);
+        std::size_t stride_width = extract_scalar_integer_value_strict(*++it_s);
+
+        std::size_t pad_front;
+        std::size_t pad_top;
+        std::size_t pad_left;
+        std::size_t pad_depth;
+        std::size_t pad_height;
+        std::size_t pad_width;
+
+        std::size_t npages = t.pages();
+        std::size_t nrows = t.rows();
+        std::size_t ncolumns = t.columns();
+
+        if (npages % stride_depth == 0)
+            pad_depth = (blaze::max)(
+                filter_depth - stride_depth, static_cast<std::size_t>(0));
+        else
+            pad_depth = (blaze::max)(filter_depth - (npages % stride_depth),
+                static_cast<std::size_t>(0));
+
+        if (nrows % stride_height == 0)
+            pad_height = (blaze::max)(
+                filter_height - stride_height, static_cast<std::size_t>(0));
+        else
+            pad_height = (blaze::max)(filter_height - (nrows % stride_height),
+                static_cast<std::size_t>(0));
+
+        if (ncolumns % stride_width == 0)
+            pad_width = (blaze::max)(
+                filter_width - stride_width, static_cast<std::size_t>(0));
+        else
+            pad_width = (blaze::max)(filter_width - (ncolumns % stride_width),
+                static_cast<std::size_t>(0));
+
+        pad_front = pad_depth / 2;
+        pad_top = pad_height / 2;
+        pad_left = pad_width / 2;
+
+        std::int64_t p_rel;    //relative page
+        std::int64_t r_rel;    //relative row
+        std::int64_t c_rel;    //relative column
+
+        blaze::DynamicTensor<double> result(
+            blaze::ceil(
+                static_cast<float>((npages + pad_depth - filter_depth + 1)) /
+                static_cast<float>(stride_depth)),
+            blaze::ceil(
+                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(stride_height)),
+            blaze::ceil(
+                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(stride_width)));
+
+        for (std::size_t p = 0; p != result.pages(); ++p)
+        {
+            p_rel = p * stride_depth - pad_front;
+            for (std::size_t r = 0; r != result.rows(); ++r)
+            {
+                r_rel = r * stride_height - pad_top;
+                for (std::size_t c = 0; c != result.columns(); ++c)
+                {
+                    c_rel = c * stride_width - pad_left;
+                    if (p_rel < 0)
+                    {
+                        if (r_rel < 0)
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, 0, 0,
+                                        filter_depth + p_rel,
+                                        filter_height + r_rel,
+                                        filter_width + c_rel)) /
+                                    ((filter_depth + p_rel) *
+                                        (filter_height + r_rel) *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, 0, c_rel,
+                                        filter_depth + p_rel,
+                                        filter_height + r_rel,
+                                        ncolumns - c_rel)) /
+                                    ((filter_depth + p_rel) *
+                                        (filter_height + r_rel) *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, 0, c_rel,
+                                        filter_depth + p_rel,
+                                        filter_height + r_rel, filter_width)) /
+                                    ((filter_depth + p_rel) *
+                                        (filter_height + r_rel) *
+                                        (filter_width));
+                            }
+                        }
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, r_rel, 0,
+                                        filter_depth + p_rel, nrows - r_rel,
+                                        filter_width + c_rel)) /
+                                    ((filter_depth + p_rel) * (nrows - r_rel) *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, r_rel,
+                                        c_rel, filter_depth + p_rel,
+                                        nrows - r_rel, ncolumns - c_rel)) /
+                                    ((filter_depth + p_rel) * (nrows - r_rel) *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, r_rel,
+                                        c_rel, filter_depth + p_rel,
+                                        nrows - r_rel, filter_width)) /
+                                    ((filter_depth + p_rel) * (nrows - r_rel) *
+                                        (filter_width));
+                            }
+                        }
+                        else
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, r_rel, 0,
+                                        filter_depth + p_rel, filter_height,
+                                        filter_width + c_rel)) /
+                                    ((filter_depth + p_rel) * filter_height *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, r_rel,
+                                        c_rel, filter_depth + p_rel,
+                                        filter_height, ncolumns - c_rel)) /
+                                    ((filter_depth + p_rel) * filter_height *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, 0, r_rel,
+                                        c_rel, filter_depth + p_rel,
+                                        filter_height, filter_width)) /
+                                    ((filter_depth + p_rel) * filter_height *
+                                        filter_width);
+                            }
+                        }
+                    }
+                    else if (p_rel > static_cast<std::int64_t>(npages) -
+                            static_cast<std::int64_t>(filter_depth))
+                    {
+                        if (r_rel < 0)
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, 0, 0,
+                                        npages - p_rel, filter_height + r_rel,
+                                        filter_width + c_rel)) /
+                                    ((npages - p_rel) *
+                                        (filter_height + r_rel) *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, 0,
+                                        c_rel, npages - p_rel,
+                                        filter_height + r_rel,
+                                        ncolumns - c_rel)) /
+                                    ((npages - p_rel) *
+                                        (filter_height + r_rel) *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, 0,
+                                        c_rel, npages - p_rel,
+                                        filter_height + r_rel, filter_width)) /
+                                    ((npages - p_rel) *
+                                        (filter_height + r_rel) * filter_width);
+                            }
+                        }
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        0, npages - p_rel, nrows - r_rel,
+                                        filter_width + c_rel)) /
+                                    ((npages - p_rel) * (nrows - r_rel) *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, npages - p_rel, nrows - r_rel,
+                                        ncolumns - c_rel)) /
+                                    ((npages - p_rel) * (nrows - r_rel) *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, npages - p_rel, nrows - r_rel,
+                                        filter_width)) /
+                                    ((npages - p_rel) * (nrows - r_rel) *
+                                        filter_width);
+                            }
+                        }
+                        else
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        0, npages - p_rel, filter_height,
+                                        filter_width + c_rel)) /
+                                    ((npages - p_rel) * filter_height *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, npages - p_rel, filter_height,
+                                        ncolumns - c_rel)) /
+                                    ((npages - p_rel) * filter_height *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, npages - p_rel, filter_height,
+                                        filter_width)) /
+                                    ((npages - p_rel) * filter_height *
+                                        filter_width);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (r_rel < 0)
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, 0, 0,
+                                        filter_depth, filter_height + r_rel,
+                                        filter_width + c_rel)) /
+                                    (filter_depth * (filter_height + r_rel) *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(
+                                        blaze::subtensor(t, p_rel, 0, c_rel,
+                                            filter_depth, filter_height + r_rel,
+                                            ncolumns - c_rel)) /
+                                    (filter_depth * (filter_height + r_rel) *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, 0,
+                                        c_rel, filter_depth,
+                                        filter_height + r_rel, filter_width)) /
+                                    (filter_depth * (filter_height + r_rel) *
+                                        filter_width);
+                            }
+                        }
+                        else if (r_rel > static_cast<std::int64_t>(nrows) -
+                                static_cast<std::int64_t>(filter_height))
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        0, filter_depth, nrows - r_rel,
+                                        filter_width + c_rel)) /
+                                    (filter_depth * (nrows - r_rel) *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, filter_depth, nrows - r_rel,
+                                        ncolumns - c_rel)) /
+                                    (filter_depth * (nrows - r_rel) *
+                                        (ncolumns - c_rel));
+                            }
+                            else
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        c_rel, filter_depth, nrows - r_rel,
+                                        filter_width)) /
+                                    (filter_depth * (nrows - r_rel) *
+                                        filter_width);
+                            }
+                        }
+                        else
+                        {
+                            if (c_rel < 0)
+                            {
+                                result(p, r, c) =
+                                    blaze::sum(blaze::subtensor(t, p_rel, r_rel,
+                                        0, filter_depth, filter_height,
+                                        filter_width + c_rel)) /
+                                    (filter_depth * filter_height *
+                                        (filter_width + c_rel));
+                            }
+                            else if (c_rel >
+                                static_cast<std::int64_t>(ncolumns) -
+                                    static_cast<std::int64_t>(filter_width))
                             {
                                 result(p, r, c) =
                                     blaze::sum(blaze::subtensor(t, p_rel, r_rel,
@@ -1040,6 +2191,70 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("invalid number of dimensions"));
     }
 
+    template <typename T>
+    primitive_argument_type pool_operation::max_pool_nd(ir::node_data<T>&& arg,
+        ir::range&& pool_size, std::string&& padding, ir::range&& strides) const
+    {
+        if (padding == "valid")
+        {
+            if (arg.num_dimensions() == 2)
+                return max_pool2d(
+                    std::move(arg), std::move(pool_size), std::move(strides));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            //arg.num_dimensions == 3
+            return max_pool3d(
+                std::move(arg), std::move(pool_size), std::move(strides));
+#endif
+        }
+        else if (padding == "same")
+        {
+            if (arg.num_dimensions() == 2)
+                return max_pool2d_with_pad(
+                    std::move(arg), std::move(pool_size), std::move(strides));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            // arg.num_dimensions == 3
+            return max_pool3d_with_pad(
+                std::move(arg), std::move(pool_size), std::move(strides));
+#endif
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "pool_operation::max_pool_nd",
+            generate_error_message("invalid number of dimensions"));
+    }
+
+    primitive_argument_type pool_operation::avg_pool_nd(
+        ir::node_data<double>&& arg, ir::range&& pool_size,
+        std::string&& padding, ir::range&& strides) const
+    {
+        if (padding == "valid")
+        {
+            if (arg.num_dimensions() == 2)
+                return avg_pool2d(
+                    std::move(arg), std::move(pool_size), std::move(strides));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            //arg.num_dimensions == 3
+            return avg_pool3d(
+                std::move(arg), std::move(pool_size), std::move(strides));
+#endif
+        }
+        else if (padding == "same")
+        {
+            if (arg.num_dimensions() == 2)
+                return avg_pool2d_with_pad(
+                    std::move(arg), std::move(pool_size), std::move(strides));
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            // arg.num_dimensions == 3
+            return avg_pool3d_with_pad(
+                std::move(arg), std::move(pool_size), std::move(strides));
+#endif
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "pool_operation::avg_pool_nd",
+            generate_error_message("invalid number of dimensions"));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> pool_operation::eval(
         primitive_arguments_type const& operands,
@@ -1064,18 +2279,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        if (operands.size() == 2 || operands.size() == 3)
-        {
-            return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping([this_ = std::move(this_)](
-                    primitive_arguments_type&& args)
-                    ->primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping([this_ = std::move(this_)](
+                                      primitive_arguments_type&& args)
+                                      -> primitive_argument_type {
+
+                std::size_t ndim = extract_numeric_value_dimension(
+                    args[0], this_->name_, this_->codename_);
 
                 ir::range pool_size = extract_list_value_strict(
                     args[1], this_->name_, this_->codename_);
 
                 std::string padding = "valid";
-                if (args.size() == 3)
+                if (args.size() > 2)
                 {
                     padding = extract_string_value(
                         args[2], this_->name_, this_->codename_);
@@ -1088,8 +2304,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "or same"));
                 }
 
-                if (this_->validate_pooling(extract_numeric_value_dimension(
-                    args[0], this_->name_, this_->codename_), pool_size))
+                if (!this_->validate_pooling(ndim, pool_size))
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "pool_operation::eval",
+                        this_->generate_error_message(
+                            "invalid combination of arguments for pooling"));
+
+                ir::range strides(0); // an empty range
+                if (args.size() == 4)
+                {
+                    strides = extract_list_value_strict(
+                        args[3], this_->name_, this_->codename_);
+
+                    if (!this_->validate_strides(ndim, strides))
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "pool_operation::eval",
+                            this_->generate_error_message(
+                                "invalid strides. padding can be either valid "
+                                "or same"));
+                }
+
+                if (strides.size() == 0) // strides contain only 1s
                 {
                     if (this_->mode_ == max_pool)
                     {
@@ -1130,14 +2365,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         this_->generate_error_message(
                             "unsupported mode requested"));
                 }
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "pool_operation::eval",
-                    this_->generate_error_message(
-                        "invalid combination of arguments for pooling"));
+                // non-default strides
+                if (this_->mode_ == max_pool)
+                    {
+                        switch (extract_common_type(args[0]))
+                        {
+                        case node_data_type_bool:
+                            return this_->max_pool_nd(
+                                extract_boolean_value(std::move(args[0]),
+                                    this_->name_, this_->codename_),
+                                std::move(pool_size), std::move(padding),
+                                std::move(strides));
+                        case node_data_type_int64:
+                            return this_->max_pool_nd(
+                                extract_integer_value(std::move(args[0]),
+                                    this_->name_, this_->codename_),
+                                std::move(pool_size), std::move(padding),
+                                std::move(strides));
+                        case node_data_type_double:
+                            return this_->max_pool_nd(
+                                extract_numeric_value(std::move(args[0]),
+                                    this_->name_, this_->codename_),
+                                std::move(pool_size), std::move(padding),
+                                std::move(strides));
+                        default:
+                            break;
+                        }
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "pool_operation::eval",
+                            this_->generate_error_message(
+                                "the pool primitive requires for all arguments "
+                                "to be numeric data types"));
+                    }
+                    else if(this_->mode_ == avg_pool)
+                        return this_->avg_pool_nd(
+                            extract_numeric_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            std::move(pool_size), std::move(padding),
+                            std::move(strides));
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "pool_operation::eval",
+                        this_->generate_error_message(
+                            "unsupported mode requested"));
+
             }),
-                detail::map_operands(
-                    operands, functional::value_operand{}, args, name_, codename_));
-        }
-        // operands.size() == 4
+            detail::map_operands(
+                operands, functional::value_operand{}, args, name_, codename_));
     }
 }}}

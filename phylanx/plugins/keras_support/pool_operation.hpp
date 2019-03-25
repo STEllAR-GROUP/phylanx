@@ -14,6 +14,7 @@
 #include <hpx/lcos/future.hpp>
 #include <hpx/util/optional.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -56,6 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     private:
         bool validate_pooling(
             std::size_t const& ndim, ir::range const& pool_size) const;
+        bool validate_strides(
+            std::size_t const& ndim, ir::range& strides) const;
 
         template <typename T>
         primitive_argument_type max_pool2d(ir::node_data<T>&& arg,
@@ -63,10 +66,21 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type avg_pool2d(ir::node_data<double>&& arg,
             ir::range&& pool_size) const;
         template <typename T>
+        primitive_argument_type max_pool2d(ir::node_data<T>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
+        primitive_argument_type avg_pool2d(ir::node_data<double>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
+
+        template <typename T>
         primitive_argument_type max_pool2d_with_pad(ir::node_data<T>&& arg,
             ir::range&& pool_size) const;
         primitive_argument_type avg_pool2d_with_pad(ir::node_data<double>&& arg,
             ir::range&& pool_size) const;
+        template <typename T>
+        primitive_argument_type max_pool2d_with_pad(ir::node_data<T>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
+        primitive_argument_type avg_pool2d_with_pad(ir::node_data<double>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
@@ -75,10 +89,21 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type avg_pool3d(ir::node_data<double>&& arg,
             ir::range&& pool_size) const;
         template <typename T>
+        primitive_argument_type max_pool3d(ir::node_data<T>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
+        primitive_argument_type avg_pool3d(ir::node_data<double>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
+
+        template <typename T>
         primitive_argument_type max_pool3d_with_pad(ir::node_data<T>&& arg,
             ir::range&& pool_size) const;
         primitive_argument_type avg_pool3d_with_pad(ir::node_data<double>&& arg,
             ir::range&& pool_size) const;
+        template <typename T>
+        primitive_argument_type max_pool3d_with_pad(ir::node_data<T>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
+        primitive_argument_type avg_pool3d_with_pad(ir::node_data<double>&& arg,
+            ir::range&& pool_size, ir::range&& strides) const;
 #endif
 
         template <typename T>
@@ -86,7 +111,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::range&& pool_size, std::string&& padding) const;
         primitive_argument_type avg_pool_nd(ir::node_data<double>&& arg,
             ir::range&& pool_size, std::string&& padding) const;
-
+        template <typename T>
+        primitive_argument_type max_pool_nd(ir::node_data<T>&& arg,
+            ir::range&& pool_size, std::string&& padding,
+            ir::range&& strides) const;
+        primitive_argument_type avg_pool_nd(ir::node_data<double>&& arg,
+            ir::range&& pool_size, std::string&& padding,
+            ir::range&& strides) const;
 
     private:
         pool_mode mode_;
