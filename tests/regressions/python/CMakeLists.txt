@@ -28,6 +28,7 @@ set(tests
     862_var_std_two_axis
     866_dynamic_dtype
     886_notnone
+    896_return_none
     array_len_494
     array_shape_486
     array_subscript_403
