@@ -9,6 +9,7 @@
 #define PHYLANX_EXECUTION_TREE_COMPILER_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -33,13 +34,63 @@ namespace phylanx { namespace execution_tree { namespace compiler
     class environment;
 
     ///////////////////////////////////////////////////////////////////////////
-    using expression_pattern = hpx::util::tuple<
-        std::string, ast::expression, factory_function_type>;
+    struct expression_pattern
+    {
+        std::size_t num_default_value_arguments() const
+        {
+            return defaults_.size();
+        }
+
+        std::size_t num_keyword_arguments() const
+        {
+            std::size_t count = 0;
+            for (auto const& arg : args_)
+            {
+                if (!arg.empty() && !ast::detail::is_placeholder_ellipses(arg))
+                {
+                    ++count;
+                }
+            }
+            return count;
+        }
+
+        std::size_t keyword_position(std::string const& name) const
+        {
+            std::size_t pos = 0;
+            for (auto const& arg : args_)
+            {
+                if (arg == name)
+                {
+                    return pos;
+                }
+                ++pos;
+            }
+            return std::size_t(-1);
+        }
+
+        bool expect_variadics() const
+        {
+            for (auto const& arg : args_)
+            {
+                if (ast::detail::is_placeholder_ellipses(arg))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        std::string pattern_;               // pattern
+        ast::expression pattern_ast_;       // simplified pattern AST (no arg())
+        factory_function_type creator_;     // creator function for the primitive
+        std::vector<std::string> args_;     // argument names
+        std::vector<std::string> defaults_; // default values
+    };
+
     using expression_pattern_list =
         std::multimap<std::string, expression_pattern>;
 
-    PHYLANX_EXPORT expression_pattern_list generate_patterns(
-        pattern_list const& patterns_list);
+    PHYLANX_EXPORT expression_pattern_list const& generate_patterns();
 
     /// Create default compilation environment based on the given list of
     /// patterns and using the given default locality.
@@ -131,6 +182,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     private:
         factory_function_type f_;
+    };
+
+    // compose a nil
+    struct list_value : compiled_actor<list_value>
+    {
+        list_value(hpx::id_type const& locality)
+          : compiled_actor<list_value>(locality)
+        {}
+
+        function compose(std::list<function>&& elements,
+            primitive_name_parts&& name_parts,
+            std::string const& codename = "<unknown>") const
+        {
+            primitive_arguments_type fargs;
+            fargs.reserve(elements.size());
+
+            for (auto&& arg : elements)
+            {
+                fargs.emplace_back(std::move(arg.arg_));
+            }
+
+            return function{primitive_argument_type{std::move(fargs)}};
+        }
     };
 
     // compose a literal value
@@ -244,7 +318,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive_arguments_type fargs;
             fargs.reserve(elements.size() + 2);
 
-            fargs.push_back(primitive_argument_type{argnum_});
+            fargs.emplace_back(argnum_);
             fargs.push_back(default_value_);
 
             if (elements.empty())
@@ -475,6 +549,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT environment default_environment(
         pattern_list const& patterns_list,
+        hpx::id_type const& default_locality);
+
+    PHYLANX_EXPORT environment default_environment(
+        compiler::expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);
 
     ///////////////////////////////////////////////////////////////////////////

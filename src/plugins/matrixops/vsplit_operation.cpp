@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         match_pattern_type{
             "vsplit",
-            std::vector<std::string>{"vsplit(_1, _s_2)"},
+            std::vector<std::string>{"vsplit(_1, __2)"},
             &create_vsplit_operation, &create_primitive<vsplit_operation>, R"(
             args
             Args:

@@ -28,23 +28,21 @@ namespace phylanx { namespace execution_tree
             ast::expression const& expr, compiler::function_list& snippets,
             compiler::environment& env, hpx::id_type const& default_locality)
         {
-            pattern_list const& patterns = get_all_known_patterns();
             ++snippets.compile_id_;
             return compiler::compile(name, expr, snippets, env,
-                compiler::generate_patterns(patterns), default_locality);
+                compiler::generate_patterns(), default_locality);
         }
 
         compiler::function compile(std::string const& name,
             ast::expression const& expr, compiler::function_list& snippets,
             hpx::id_type const& default_locality)
         {
-            pattern_list const& patterns = get_all_known_patterns();
             compiler::environment env =
                 compiler::default_environment(default_locality);
 
             ++snippets.compile_id_;
             return compiler::compile(name, expr, snippets, env,
-                compiler::generate_patterns(patterns), default_locality);
+                compiler::generate_patterns(), default_locality);
         }
 
         compiler::function compile(std::string const& name,
@@ -173,6 +171,23 @@ namespace phylanx { namespace execution_tree
     {
         return compiler::define_variable(
             codename, name_parts, snippets, env, body, default_locality);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace compiler { namespace detail
+    {
+        void insert_pattern(expression_pattern_list& result,
+            std::string pattern, match_pattern_type const& p,
+            std::string const& suffix);
+    }}
+
+    void add_patterns(compiler::expression_pattern_list& patterns,
+        match_pattern_type const& match)
+    {
+        for (auto const& p : match.patterns_)
+        {
+            compiler::detail::insert_pattern(patterns, p, match, "");
+        }
     }
 }}
 

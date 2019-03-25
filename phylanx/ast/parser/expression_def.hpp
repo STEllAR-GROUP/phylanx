@@ -140,14 +140,14 @@ namespace phylanx { namespace ast { namespace parser
 #endif
         int64_matrix %= '[' >> (int64_vector % ',') >> ']';
 
-        int64_vector %= '[' >> (long_long % ',') >> ']';
+        int64_vector %= '[' >> -(long_long % ',') >> ']';
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         double_tensor %= '[' >> (double_matrix % ',') > ']';
 #endif
         double_matrix %= '[' >> (double_vector % ',') > ']';
 
-        double_vector %= '[' > (double_ % ',') > ']';
+        double_vector %= '[' > -(double_ % ',') > ']';
 
         function_call %=
                 identifier

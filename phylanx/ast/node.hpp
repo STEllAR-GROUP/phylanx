@@ -201,11 +201,11 @@ namespace phylanx { namespace ast
     {
         identifier() = default;
 
-        identifier(std::string const& name)
+        explicit identifier(std::string const& name)
           : name(name)
         {
         }
-        identifier(std::string && name)
+        explicit identifier(std::string && name)
           : name(std::move(name))
         {
         }
@@ -780,7 +780,8 @@ namespace phylanx { namespace ast
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, std::vector<ast::expression> const& fc);
 
-    PHYLANX_EXPORT std::string to_string(expression const& expr);
+    PHYLANX_EXPORT std::string to_string(
+        expression const& expr, bool repr = false);
 
     namespace detail
     {

@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{
             "cumsum",
             std::vector<std::string>{
-                "cumsum(_1)", "cumsum(_1, _2)"
+                "cumsum(_1_a, __arg(_2_axis, nil), __arg(_3_dtype, nil))"
             },
             &create_cumsum, &create_primitive<cumsum>, R"(
             a, axis
@@ -33,11 +33,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 axis (int, optional) : Axis along which the cumulative sum is
                     computed. The default (None) is to compute the cumsum over
                     the flattened array.
+                dtype (nil, optional) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
-            Return the cumulative sum of the elements along a given axis.)",
-            true
+            Return the cumulative sum of the elements along a given axis.)"
         }
     };
 

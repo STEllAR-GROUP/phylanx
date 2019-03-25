@@ -20,7 +20,10 @@ void dstack_operation_empty()
     phylanx::execution_tree::primitive dstack =
         phylanx::execution_tree::primitives::create_dstack_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{}, "dstack");
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{}}},
+            "dstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dstack.eval();
@@ -47,9 +50,10 @@ void dstack_operation_0d()
         phylanx::execution_tree::primitives::create_dstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                phylanx::execution_tree::primitive_argument_type{std::move(first)},
-                phylanx::execution_tree::primitive_argument_type{std::move(second)}
-            }, "dstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "dstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dstack.eval();
@@ -81,9 +85,10 @@ void dstack_operation_1d()
         phylanx::execution_tree::primitives::create_dstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                phylanx::execution_tree::primitive_argument_type{std::move(first)},
-                phylanx::execution_tree::primitive_argument_type{std::move(second)}
-            }, "dstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "dstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dstack.eval();
@@ -116,9 +121,10 @@ void dstack_operation_2d()
         phylanx::execution_tree::primitives::create_dstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                phylanx::execution_tree::primitive_argument_type{std::move(first)},
-                phylanx::execution_tree::primitive_argument_type{std::move(second)}
-            }, "dstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "dstack");
 
     blaze::DynamicTensor<double> expected{
         {{1, 11}, {2, 12}, {3, 13}}, {{4, 14}, {5, 15}, {6, 16}}};
@@ -166,14 +172,10 @@ void dstack_operation_2d_3d_mix()
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{
-                    std::move(first)},
-                phylanx::execution_tree::primitive_argument_type{
-                    std::move(firstvec)},
-                phylanx::execution_tree::primitive_argument_type{
-                    std::move(secondvec)},
-                phylanx::execution_tree::primitive_argument_type{
-                    std::move(second)}
-            }, "dstack");
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(firstvec),
+                        std::move(secondvec), std::move(second)}}},
+            "dstack");
 
     blaze::DynamicTensor<double> expected{
         {{1, 2, 1, 11, 11, 12, 13}, {3, 4, 2, 12, 14, 15, 16},

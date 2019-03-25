@@ -8,6 +8,7 @@ set(tests
     car_cdr_operation
     dictionary_operation
     len_operation
+    prepend_operation
    )
 
 foreach(test ${tests})
