@@ -1,38 +1,4 @@
-<!-- Copyright (c) 2017 Louisiana State University                                  -->
-<!-- Copyright (c) 2017 Oregon University                                           -->
-<!--                                                                                -->
-<!--   Distributed under the Boost Software License, Version 1.0. (See accompanying -->
-<!--   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)        -->
-
-# Phylanx: An Asynchronous Distributed Array Computing Toolkit
-
-Find our project website [here](http://phylanx.stellar-group.org/). This site provides an overview of the project as well 
-as information on who we are and what we plan to do! 
-
-The full documentation for the project can be found [here](https://stellar-group.github.io/phylanx/). If you can't find what you are looking for in the documentation or you suspect you've found a bug in Phylanx we very much encourage and appreciate any issue reports through the [issue tracker for this Github project](https://github.com/STEllAR-GROUP/phylanx/issues).
-
-The [CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx) contiguous
-integration service tracks the current build status for the master branch:
-[![CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx.svg?style=svg)](https://circleci.com/gh/STEllAR-GROUP/phylanx).
-
-The [AppVeyor](https://ci.appveyor.com/project/hkaiser/phylanx) contiguous
-integration tracks the status for Windows builds using the native Visual
-Studio toolchain:
-[![Build status](https://ci.appveyor.com/api/projects/status/2ewum879yi7akxc1/branch/master?svg=true)](https://ci.appveyor.com/project/hkaiser/phylanx).
-
-The [Buildbot](http://ktau.nic.uoregon.edu:8020/tgrid) continuous integration
-service tracks the current build status on several platforms and compilers:
-[![x86_64 release build status](http://ktau.nic.uoregon.edu:8020/badges/x86_64-gcc7-release.svg?left_text=x86_64-gcc7-release)](http://ktau.nic.uoregon.edu:8020/#/)
-[![KNL release build status](http://ktau.nic.uoregon.edu:8020/badges/knl-gcc7-release.svg?left_text=KNL-gcc7-release)](http://ktau.nic.uoregon.edu:8020/#/)
-[![POWER8 release build status](http://ktau.nic.uoregon.edu:8020/badges/ppc64le-clang5-release.svg?left_text=POWER8-clang5-release)](http://ktau.nic.uoregon.edu:8020/#/)
-
-[![x86_64 release build status](http://ktau.nic.uoregon.edu:8020/badges/x86_64-gcc7-relwithdebinfo.svg?left_text=x86_64-gcc7-relwithdebinfo)](http://ktau.nic.uoregon.edu:8020/#/)
-[![KNL release build status](http://ktau.nic.uoregon.edu:8020/badges/knl-gcc7-relwithdebinfo.svg?left_text=KNL-gcc7-relwithdebinfo)](http://ktau.nic.uoregon.edu:8020/#/)
-[![POWER8 release build status](http://ktau.nic.uoregon.edu:8020/badges/ppc64le-clang5-relwithdebinfo.svg?left_text=POWER8-clang5-relwithdebinfo)](http://ktau.nic.uoregon.edu:8020/#/)
-
-[![x86_64 debug build status](http://ktau.nic.uoregon.edu:8020/badges/x86_64-gcc7-debug.svg?left_text=x86_64-gcc7-debug)](http://ktau.nic.uoregon.edu:8020/#/)
-[![KNL debug build status](http://ktau.nic.uoregon.edu:8020/badges/knl-gcc7-debug.svg?left_text=KNL-gcc7-debug)](http://ktau.nic.uoregon.edu:8020/#/)
-[![POWER8 debug build status](http://ktau.nic.uoregon.edu:8020/badges/ppc64le-clang5-debug.svg?left_text=POWER8-clang5-debug)](http://ktau.nic.uoregon.edu:8020/#/)
+<
 
 ### Acknowledgements
 
