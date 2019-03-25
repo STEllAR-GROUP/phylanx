@@ -60,6 +60,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         bool validate_strides(
             std::size_t const& ndim, ir::range& strides) const;
 
+        template <typename Tensor>
+        double mean(const Tensor& t) const;
+
         template <typename T>
         primitive_argument_type max_pool2d(ir::node_data<T>&& arg,
             ir::range&& pool_size) const;
