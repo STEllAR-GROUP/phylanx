@@ -433,6 +433,8 @@ arange (start, stop, step)
                     values, `out[i+1] - out[i]`. The default step size is `1`.
                     If step is specified as a position argument, start must
                     also be given.
+                dtype (nil, optional) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
@@ -543,8 +545,8 @@ concatenate (ar, axis)
             Args:
 
                 ar (array) : sequence of array_like
-                axis (optional, int) : the axis along which the arrays will be joined,
-                    default is 0, if axis is None arrays are flattened
+                axis (optional, int) : the axis along which the arrays will be
+                    joined, default is 0, if axis is None arrays are flattened
                     before use
 
             Returns:
@@ -626,6 +628,8 @@ cumprod (a, axis)
                 axis (int, optional) : Axis along which the cumulative product is
                     computed. The default (None) is to compute the cumprod over
                     the flattened array.
+                dtype (nil, optional) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
@@ -641,6 +645,8 @@ cumsum (a, axis)
                 axis (int, optional) : Axis along which the cumulative sum is
                     computed. The default (None) is to compute the cumsum over
                     the flattened array.
+                dtype (nil, optional) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
@@ -728,10 +734,12 @@ dot (a, b)
 
 dstack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-dstack (args)
+dstack (args, dtype)
             Args:
 
                 *args (list, optional) : a list of array-like objects
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
@@ -780,7 +788,7 @@ expand_dims (arg, axis)
 
 eye
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-eye (N, M, k)
+eye (N, M, k, dtype)
             Args:
 
                 N (integer) : number of rows in the output.
@@ -789,6 +797,8 @@ eye (N, M, k)
                 k (optional, integer) : index of the diagonal: 0 (the default)
                   refers to the main diagonal, a positive value refers to an
                   upper diagonal, and a negative value to a lower diagonal.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
@@ -1141,10 +1151,12 @@ hsplit (args)
 
 hstack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-hstack (args)
+hstack (args, dtype)
             Args:
 
                 *args (list, optional) : a list of array-like objects
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
@@ -1563,6 +1575,20 @@ power (base, pow)
             The value `base`**`pow`.
 
 
+prepend
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+prepend (val,li)
+            Args:
+
+                val (object) : a value to prepend to the list 'li'
+                li (list) : a list to which a value should be pre-pended
+
+            Returns:
+
+            A new list with the value `val` pre-pended. Note that `li` is
+            not modified by this operation.
+
+
 prod
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 prod (v, axis, keepdims, initial)
@@ -1837,11 +1863,14 @@ squeeze (a, axis)
 
 stack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-stack (args, axis)
+stack (args, axis, dtype)
             Args:
 
                 *args (list, optional) : a list of array-like objects
-                axis (int, optional) : the axis along which to stack input values
+                axis (int, optional) : the axis along which to stack input
+                    values, the default value is '0'
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
@@ -1997,10 +2026,12 @@ vsplit (args)
 
 vstack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-vstack (args)
+vstack (args, dtype)
             Args:
 
                 *args (list, optional) : a list of array-like objects
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 

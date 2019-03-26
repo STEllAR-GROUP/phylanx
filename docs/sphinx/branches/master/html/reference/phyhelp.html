@@ -207,6 +207,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#parallel-block">parallel_block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-map">parallel_map</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#power">power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepend">prepend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prod">prod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random">random</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#range">range</a></li>
@@ -797,6 +798,8 @@ affects the length of out.</dd>
 values, <cite>out[i+1] - out[i]</cite>. The default step size is <cite>1</cite>.
 If step is specified as a position argument, start must
 also be given.</dd>
+<dt>dtype (nil, optional) <span class="classifier-delimiter">:</span> <span class="classifier">the data-type of the returned array,</span></dt>
+<dd>defaults to dtype of input arrays.</dd>
 </dl>
 </div></blockquote>
 <p>Returns:</p>
@@ -915,9 +918,9 @@ a_min, and those &gt; a_max with a_max.”</p>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div><p>ar (array) : sequence of array_like
-axis (optional, int) : the axis along which the arrays will be joined,</p>
+axis (optional, int) : the axis along which the arrays will be</p>
 <blockquote>
-<div>default is 0, if axis is None arrays are flattened
+<div>joined, default is 0, if axis is None arrays are flattened
 before use</div></blockquote>
 </div></blockquote>
 <p>Returns:</p>
@@ -1005,6 +1008,10 @@ axis (int, optional) : Axis along which the cumulative product is</p>
 <blockquote>
 <div>computed. The default (None) is to compute the cumprod over
 the flattened array.</div></blockquote>
+<dl class="docutils">
+<dt>dtype (nil, optional) <span class="classifier-delimiter">:</span> <span class="classifier">the data-type of the returned array,</span></dt>
+<dd>defaults to dtype of input arrays.</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
 <p class="last">Return the cumulative product of the elements along a given axis.</p>
@@ -1022,6 +1029,10 @@ axis (int, optional) : Axis along which the cumulative sum is</p>
 <blockquote>
 <div>computed. The default (None) is to compute the cumsum over
 the flattened array.</div></blockquote>
+<dl class="docutils">
+<dt>dtype (nil, optional) <span class="classifier-delimiter">:</span> <span class="classifier">the data-type of the returned array,</span></dt>
+<dd>defaults to dtype of input arrays.</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
 <p class="last">Return the cumulative sum of the elements along a given axis.</p>
@@ -1119,10 +1130,14 @@ N-D array and an M-D array is of dimension N+M-2</p>
 <div class="section" id="dstack">
 <h2>dstack<a class="headerlink" href="#dstack" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>dstack (args)</dt>
+<dt>dstack (args, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id21"><span class="problematic" id="id22">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
+<div><p><a href="#id21"><span class="problematic" id="id22">*</span></a>args (list, optional) : a list of array-like objects
+dtype (optional, string) : the data-type of the returned array,</p>
+<blockquote>
+<div>defaults to dtype of input arrays.</div></blockquote>
+</div></blockquote>
 <p>Returns:</p>
 <p class="last">A vertically (depth wise) stacked sequence of array-like objects</p>
 </dd>
@@ -1171,7 +1186,7 @@ axis (integer): an axis to expand along</div></blockquote>
 <div class="section" id="eye">
 <h2>eye<a class="headerlink" href="#eye" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>eye (N, M, k)</dt>
+<dt>eye (N, M, k, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div><p>N (integer) : number of rows in the output.
@@ -1182,6 +1197,8 @@ M (optional, integer) : number of columns in the output. If</p>
 <dt>k (optional, integer) <span class="classifier-delimiter">:</span> <span class="classifier">index of the diagonal: 0 (the default)</span></dt>
 <dd>refers to the main diagonal, a positive value refers to an
 upper diagonal, and a negative value to a lower diagonal.</dd>
+<dt>dtype (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">the data-type of the returned array,</span></dt>
+<dd>defaults to ‘float’.</dd>
 </dl>
 </div></blockquote>
 <p>Returns:</p>
@@ -1552,10 +1569,14 @@ approximation of the sigmoid function.</p>
 <div class="section" id="hstack">
 <h2>hstack<a class="headerlink" href="#hstack" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>hstack (args)</dt>
+<dt>hstack (args, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id27"><span class="problematic" id="id28">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
+<div><p><a href="#id27"><span class="problematic" id="id28">*</span></a>args (list, optional) : a list of array-like objects
+dtype (optional, string) : the data-type of the returned array,</p>
+<blockquote>
+<div>defaults to dtype of input arrays.</div></blockquote>
+</div></blockquote>
 <p>Returns:</p>
 <p class="last">A horizontally (column wise) stacked sequence of array-like objects</p>
 </dd>
@@ -1986,6 +2007,20 @@ pow (float) : the power of the exponent</div></blockquote>
 </dd>
 </dl>
 </div>
+<div class="section" id="prepend">
+<h2>prepend<a class="headerlink" href="#prepend" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>prepend (val,li)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>val (object) : a value to prepend to the list ‘li’
+li (list) : a list to which a value should be pre-pended</div></blockquote>
+<p>Returns:</p>
+<p class="last">A new list with the value <cite>val</cite> pre-pended. Note that <cite>li</cite> is
+not modified by this operation.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="prod">
 <h2>prod<a class="headerlink" href="#prod" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2268,11 +2303,18 @@ axis (optional, integer): an axis to squeeze along. If an axis is</p>
 <div class="section" id="stack">
 <h2>stack<a class="headerlink" href="#stack" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>stack (args, axis)</dt>
+<dt>stack (args, axis, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id49"><span class="problematic" id="id50">*</span></a>args (list, optional) : a list of array-like objects
-axis (int, optional) : the axis along which to stack input values</div></blockquote>
+<div><p><a href="#id49"><span class="problematic" id="id50">*</span></a>args (list, optional) : a list of array-like objects
+axis (int, optional) : the axis along which to stack input</p>
+<blockquote>
+<div>values, the default value is ‘0’</div></blockquote>
+<dl class="docutils">
+<dt>dtype (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">the data-type of the returned array,</span></dt>
+<dd>defaults to dtype of input arrays.</dd>
+</dl>
+</div></blockquote>
 <p>Returns:</p>
 <p class="last">A joined sequence of array-like objects along a new axis.</p>
 </dd>
@@ -2432,10 +2474,14 @@ keepdims (optional, boolean): keep dimension of input</div></blockquote>
 <div class="section" id="vstack">
 <h2>vstack<a class="headerlink" href="#vstack" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>vstack (args)</dt>
+<dt>vstack (args, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id55"><span class="problematic" id="id56">*</span></a>args (list, optional) : a list of array-like objects</div></blockquote>
+<div><p><a href="#id55"><span class="problematic" id="id56">*</span></a>args (list, optional) : a list of array-like objects
+dtype (optional, string) : the data-type of the returned array,</p>
+<blockquote>
+<div>defaults to dtype of input arrays.</div></blockquote>
+</div></blockquote>
 <p>Returns:</p>
 <p class="last">A vertically (row wise) stacked sequence of array-like objects</p>
 </dd>
@@ -2509,7 +2555,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Mar 21, 2019.
+      Last updated on Mar 26, 2019.
 
     </p>
   </div>
