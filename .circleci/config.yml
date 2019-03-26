@@ -136,7 +136,8 @@ jobs:
                         -DPHYLANX_WITH_BLAZE_TENSOR=ON              \
                         -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
                         -DPHYLANX_WITH_DOCUMENTATION=On             \
-                        -DPHYLANX_WITH_HIGHFIVE=On
+                        -DPHYLANX_WITH_HIGHFIVE=On                  \
+                        -DPHYLANX_WITH_CXX14=On
             - persist_to_workspace:
                 root: /
                 paths:
