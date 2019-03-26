@@ -785,10 +785,9 @@ namespace pybind11 { namespace detail
             if (0 == src->index())      // T
             {
                 // convert scalars to the corresponding numpy scalar type
-                using T =
-                    typename casted_type<typename Type::storage0d_type>::type;
-
-                pybind11::object dtype = pybind11::dtype::of<T>().attr("type");
+                pybind11::object dtype =
+                    pybind11::dtype::of<typename casted_type<T>::type>().attr(
+                        "type");
                 pybind11::object result = dtype(src->scalar());
                 return result.release();
             }
