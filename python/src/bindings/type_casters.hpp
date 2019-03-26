@@ -408,11 +408,11 @@ namespace pybind11 { namespace detail
             // np.array([0]) is convertible to a scalar value
             if (!is_scalar_instance<result_type>::call(src))
             {
-                if (is_array_instance<result_type>::call(src))
-                {
-                    auto buf = array::ensure(src);
-                    if (!buf) return false;
+                auto buf = array::ensure(src);
+                if (!buf) return false;
 
+                if (is_array_instance<result_type>::call(buf))
+                {
                     auto dims = buf.ndim();
                     if (dims != 0) return false;
 
@@ -457,6 +457,11 @@ namespace pybind11 { namespace detail
             auto buf = array::ensure(src);
             if (!buf) return false;
 
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
+
             auto dims = buf.ndim();
             if (dims != 1) return false;
 
@@ -495,6 +500,11 @@ namespace pybind11 { namespace detail
             // below handles it.
             auto buf = array::ensure(src);
             if (!buf) return false;
+
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
 
             auto dims = buf.ndim();
             if (dims != 2) return false;
@@ -535,6 +545,11 @@ namespace pybind11 { namespace detail
             // below handles it.
             auto buf = array::ensure(src);
             if (!buf) return false;
+
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
 
             auto dims = buf.ndim();
             if (dims != 3) return false;
@@ -769,8 +784,12 @@ namespace pybind11 { namespace detail
         {
             if (0 == src->index())      // T
             {
-                return make_caster<result_type>::cast(
-                    src->scalar(), policy, parent);
+                // convert scalars to the corresponding numpy scalar type
+                pybind11::object dtype =
+                    pybind11::dtype::of<typename casted_type<T>::type>().attr(
+                        "type");
+                pybind11::object result = dtype(src->scalar());
+                return result.release();
             }
 
             switch (policy)
