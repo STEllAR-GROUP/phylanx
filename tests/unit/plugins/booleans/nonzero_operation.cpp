@@ -35,43 +35,53 @@ void test_nonzero_operation(std::string const& code,
 int main(int argc, char* argv[])
 {
     // test 0d data (scalars)
-    test_nonzero_operation("nonzero(false)", "list(hstack__int())");
-    test_nonzero_operation("nonzero(0)", "list(hstack__int())");
-    test_nonzero_operation("nonzero(0.)", "list(hstack__int())");
-    test_nonzero_operation("nonzero(true)", "list(hstack(0))");
-    test_nonzero_operation("nonzero(1)", "list(hstack(0))");
-    test_nonzero_operation("nonzero(1.)", "list(hstack(0))");
+    test_nonzero_operation("nonzero(false)",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_nonzero_operation("nonzero(0)",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_nonzero_operation("nonzero(0.)",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_nonzero_operation("nonzero(true)", "list([0])");
+    test_nonzero_operation("nonzero(1)", "list([0])");
+    test_nonzero_operation("nonzero(1.)", "list([0])");
 
     // test 1d data (vectors)
-    test_nonzero_operation("nonzero(hstack())", "list(hstack__int())");
+    test_nonzero_operation("nonzero([])",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
 
-    test_nonzero_operation("nonzero(hstack(false))", "list(hstack__int())");
-    test_nonzero_operation("nonzero(hstack(0))", "list(hstack__int())");
-    test_nonzero_operation("nonzero(hstack(0.))", "list(hstack__int())");
+    test_nonzero_operation("nonzero(hstack(list(false)))",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_nonzero_operation("nonzero([0])",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_nonzero_operation("nonzero([0.])",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
 
-    test_nonzero_operation("nonzero(hstack(true))", "list(hstack(0))");
-    test_nonzero_operation("nonzero(hstack(1))", "list(hstack(0))");
-    test_nonzero_operation("nonzero(hstack(1.))", "list(hstack(0))");
+    test_nonzero_operation("nonzero(hstack(list(true)))", "list([0])");
+    test_nonzero_operation("nonzero([1])", "list([0])");
+    test_nonzero_operation("nonzero([1.])", "list([0])");
 
     test_nonzero_operation(
-        "nonzero(hstack(false, true, false, true))", "list(hstack(1, 3))");
-    test_nonzero_operation("nonzero(hstack(0, 1, 2, 0))", "list(hstack(1, 2))");
+        "nonzero(hstack(list(false, true, false, true)))", "list([1, 3])");
+    test_nonzero_operation("nonzero([0, 1, 2, 0])", "list([1, 2])");
     test_nonzero_operation(
-        "nonzero(hstack(1., 0., 42., 43.))", "list(hstack(0, 2, 3))");
+        "nonzero([1., 0., 42., 43.])", "list([0, 2, 3])");
 
     // test 2d data (matrix)
     test_nonzero_operation(
-        "nonzero(vstack(hstack()))", "list(hstack__int(), hstack__int())");
+        "nonzero([[]])",
+        R"(list(hstack(list(), __arg(dtype, "int")),
+                hstack(list(), __arg(dtype, "int"))))");
     test_nonzero_operation(
-        "nonzero(vstack(hstack(0, 0), hstack(0, 0)))",
-        "list(hstack__int(), hstack__int())");
+        "nonzero([[0, 0], [0, 0]])",
+        R"(list(hstack(list(), __arg(dtype, "int")),
+                hstack(list(), __arg(dtype, "int"))))");
 
     test_nonzero_operation(
-        "nonzero(vstack(hstack(0, 1), hstack(2, 0)))",
-        "list(hstack(0, 1), hstack(1, 0))");
+        "nonzero([[0, 1], [2, 0]])",
+        "list([0, 1], [1, 0])");
     test_nonzero_operation(
-        "nonzero(vstack(hstack(0., 1.), hstack(2., 0.)))",
-        "list(hstack(0, 1), hstack(1, 0))");
+        "nonzero([[0., 1.], [2., 0.]])",
+        "list([0, 1], [1, 0])");
 
     return hpx::util::report_errors();
 }

@@ -46,8 +46,8 @@ void test_store_operation()
 void test_set_operation_1d()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
-        define(val, hstack(0.152, 0.195)),
+        define(a, [0.052, 0.95, 0.55, 0.17, 0.85]),
+        define(val, [0.152, 0.195]),
         store(slice(a, list(1, 4, 2), nil), val),
         a
     ))";
@@ -66,8 +66,8 @@ void test_set_operation_1d()
 void test_set_operation_1d_single_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
-        define(val, hstack(0.152, 0.195)),
+        define(a, [0.052, 0.95, 0.55, 0.17, 0.85]),
+        define(val, [0.152, 0.195]),
         store(slice(a, list(1, 3, 1), nil), val),
         a
     ))";
@@ -86,8 +86,8 @@ void test_set_operation_1d_single_step()
 void test_set_operation_1d_single_negative_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
-        define(val, hstack(0.152, 0.195)),
+        define(a, [0.052, 0.95, 0.55, 0.17, 0.85]),
+        define(val, [0.152, 0.195]),
         store(slice(a, list(3, 1, -1), nil), val),
         a
     ))";
@@ -106,15 +106,15 @@ void test_set_operation_1d_single_negative_step()
 void test_set_operation_2d()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(f, hstack(0.42, 0.84)),
-        define(g, hstack(0.34, 0.69)),
-        define(input, vstack(a,b,c,d,e)),
-        define(val,vstack(f,g)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(f, [0.42, 0.84]),
+        define(g, [0.34, 0.69]),
+        define(input, vstack(list(a,b,c,d,e))),
+        define(val,vstack(list(f,g))),
         store(slice(input, list(1, 4, 2), list(1, 4, 2)), val),
         input
     ))";
@@ -134,13 +134,13 @@ void test_set_operation_2d()
 void test_set_operation_2d_vector_input()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(input, vstack(a,b,c,d,e)),
-        define(val, hstack(0.34, 0.69)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(input, vstack(list(a,b,c,d,e))),
+        define(val, [0.34, 0.69]),
         store(slice(input, list(1, 4, 2), list(1, 4, 2)), val),
         input
     ))";
@@ -160,13 +160,13 @@ void test_set_operation_2d_vector_input()
 void test_set_operation_2d_vector_input_single_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(input, vstack(a,b,c,d,e)),
-        define(val, hstack(0.34, 0.97, 0.69)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(input, vstack(list(a,b,c,d,e))),
+        define(val, [0.34, 0.97, 0.69]),
         store(slice(input, list(1, 4, 1), list(1, 4, 1)), val),
         input
     ))";
@@ -186,13 +186,13 @@ void test_set_operation_2d_vector_input_single_step()
 void test_set_operation_2d_vector_input_negative_single_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(input, vstack(a,b,c,d,e)),
-        define(val, hstack(0.69, 0.97, 0.34)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(input, vstack(list(a,b,c,d,e))),
+        define(val, [0.69, 0.97, 0.34]),
         store(slice(input, list(4, 1, -1), list(4, 1, -1)), val),
         input
     ))";
@@ -212,15 +212,15 @@ void test_set_operation_2d_vector_input_negative_single_step()
 void test_set_operation_2d_negative_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(f, hstack(0.42, 0.84)),
-        define(g, hstack(0.34, 0.69)),
-        define(input, vstack(a,b,c,d,e)),
-        define(val,vstack(f,g)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(f, [0.42, 0.84]),
+        define(g, [0.34, 0.69]),
+        define(input, vstack(list(a,b,c,d,e))),
+        define(val,vstack(list(f,g))),
         store(slice(input, list(3, 1, -1), list(3, 1, -1)), val),
         input
     ))";
@@ -240,12 +240,12 @@ void test_set_operation_2d_negative_step()
 void test_set_operation_2d_single_element_input()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(input, vstack(a,b,c,d,e)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(input, vstack(list(a,b,c,d,e))),
         define(val,0.42),
         store(slice(input, list(4, 1, -1), list(4, 1, -1)), val),
         input
@@ -266,7 +266,7 @@ void test_set_operation_2d_single_element_input()
 void test_set_single_value_to_vector()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
+        define(a, [0.052, 0.95, 0.55, 0.17, 0.85]),
         define(val, 0.42),
         store(slice(a, 1, nil), val),
         a
@@ -286,7 +286,7 @@ void test_set_single_value_to_vector()
 void test_set_single_value_to_vector_negative_dir()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
+        define(a, [0.052, 0.95, 0.55, 0.17, 0.85]),
         define(val, 0.42),
         store(slice(a, -1, nil), val),
         a
@@ -306,12 +306,12 @@ void test_set_single_value_to_vector_negative_dir()
 void test_set_single_value_to_matrix()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(input, vstack(a,b,c,d,e)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(input, vstack(list(a,b,c,d,e))),
         define(val,42.42),
         store(slice(input, 3, 3), val),
         input
@@ -332,12 +332,12 @@ void test_set_single_value_to_matrix()
 void test_set_single_value_to_matrix_negative_dir()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
-        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
-        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
-        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
-        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
-        define(input, vstack(a,b,c,d,e)),
+        define(a, [0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998]),
+        define(b, [0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144]),
+        define(c, [0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486]),
+        define(d, [0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563]),
+        define(e, [0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477]),
+        define(input, vstack(list(a,b,c,d,e))),
         define(val,42.42),
         store(slice(input, -3, -3), val),
         input

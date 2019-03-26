@@ -205,8 +205,13 @@ namespace phylanx { namespace execution_tree
         bool supports_dtype_;
     };
 
-    using pattern_list =
-        std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
+    struct pattern
+    {
+        std::string name_;
+        match_pattern_type data_;
+    };
+
+    using pattern_list = std::vector<pattern>;
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT void register_pattern(std::string const& name,

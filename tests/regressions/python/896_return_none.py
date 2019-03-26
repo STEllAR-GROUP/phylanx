@@ -3,14 +3,15 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-import numpy as np
+# 896: Returned `nil`
+
 from phylanx import Phylanx
 
 
 @Phylanx
-def if_expr(n):
-    return True if n else False
+def return_none(x):
+    return x
 
 
-assert if_expr(True) is np.bool_(True)
-assert if_expr(False) is np.bool_(False)
+result = return_none(None)
+assert result == None, result  # noqa

@@ -11,5 +11,6 @@
 #include <phylanx/plugins/listops/dictionary_operation.hpp>
 #include <phylanx/plugins/listops/len_operation.hpp>
 #include <phylanx/plugins/listops/make_list.hpp>
+#include <phylanx/plugins/listops/prepend_operation.hpp>
 
 #endif

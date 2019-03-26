@@ -13,8 +13,8 @@ def hstack():
 
 @Phylanx
 def test1():
-    a = hstack(0, 1, 2, 3, 4, 5)
-    b = hstack(True, True, False, False, True, False)
+    a = hstack((0, 1, 2, 3, 4, 5))
+    b = hstack((True, True, False, False, True, False))
     a[b] = 9
     return a
 
@@ -24,8 +24,8 @@ assert ([9, 9, 2, 3, 9, 5] == test1()).all()
 
 @Phylanx
 def test2():
-    a = hstack(0, 1, 2, 3, 4, 5)
-    b = hstack(1, 3, 5)
+    a = hstack((0, 1, 2, 3, 4, 5))
+    b = hstack((1, 3, 5))
     a[b] = 7
     return a
 

@@ -35,14 +35,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const concatenate::match_data = {
         hpx::util::make_tuple("concatenate",
-            std::vector<std::string>{"concatenate(_1)", "concatenate(_1, _2)"},
+            std::vector<std::string>{
+                "concatenate(_1, __arg(_2_axis, 0))"
+            },
             &create_concatenate, &create_primitive<concatenate>, R"(
             ar, axis
             Args:
 
                 ar (array) : sequence of array_like
-                axis (optional, int) : the axis along which the arrays will be joined,
-                    default is 0, if axis is None arrays are flattened
+                axis (optional, int) : the axis along which the arrays will be
+                    joined, default is 0, if axis is None arrays are flattened
                     before use
 
             Returns:
@@ -828,7 +830,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type ops;
         if (is_list_operand_strict(arg1))
         {
-            auto && r = extract_list_value_strict(arg1, name_, codename_);
+            auto&& r =
+                extract_list_value_strict(std::move(arg1), name_, codename_);
             ops.reserve(r.size());
             for (auto && op : r)
             {

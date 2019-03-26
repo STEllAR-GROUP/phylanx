@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         match_pattern_type{"tensordot",
             std::vector<std::string>{
-                "tensordot(_1, _2)", "tensordot(_1, _2,_3)"},
+                "tensordot(_1, _2)", "tensordot(_1, _2, _3)"},
             &create_dot_operation, &create_primitive<dot_operation>, R"(
             a, b, axes
             Args:

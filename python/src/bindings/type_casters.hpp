@@ -408,11 +408,11 @@ namespace pybind11 { namespace detail
             // np.array([0]) is convertible to a scalar value
             if (!is_scalar_instance<result_type>::call(src))
             {
-                if (is_array_instance<result_type>::call(src))
-                {
-                    auto buf = array::ensure(src);
-                    if (!buf) return false;
+                auto buf = array::ensure(src);
+                if (!buf) return false;
 
+                if (is_array_instance<result_type>::call(buf))
+                {
                     auto dims = buf.ndim();
                     if (dims != 0) return false;
 
@@ -457,6 +457,11 @@ namespace pybind11 { namespace detail
             auto buf = array::ensure(src);
             if (!buf) return false;
 
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
+
             auto dims = buf.ndim();
             if (dims != 1) return false;
 
@@ -495,6 +500,11 @@ namespace pybind11 { namespace detail
             // below handles it.
             auto buf = array::ensure(src);
             if (!buf) return false;
+
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
 
             auto dims = buf.ndim();
             if (dims != 2) return false;
@@ -535,6 +545,11 @@ namespace pybind11 { namespace detail
             // below handles it.
             auto buf = array::ensure(src);
             if (!buf) return false;
+
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
 
             auto dims = buf.ndim();
             if (dims != 3) return false;
@@ -769,8 +784,12 @@ namespace pybind11 { namespace detail
         {
             if (0 == src->index())      // T
             {
-                return make_caster<result_type>::cast(
-                    src->scalar(), policy, parent);
+                // convert scalars to the corresponding numpy scalar type
+                pybind11::object dtype =
+                    pybind11::dtype::of<typename casted_type<T>::type>().attr(
+                        "type");
+                pybind11::object result = dtype(src->scalar());
+                return result.release();
             }
 
             switch (policy)
@@ -939,6 +958,10 @@ namespace pybind11 { namespace detail
         template <typename U, typename... Us>
         inline bool load_alternative(
             handle src, bool convert, type_list<U, Us...>);
+
+        template <typename... Us>
+        bool load_alternative(
+            handle src, bool convert, type_list<phylanx::ast::nil, Us...>);
 
         template <typename U, typename... Us>
         inline bool load_alternative(handle src, bool convert,
@@ -1119,6 +1142,20 @@ namespace pybind11 { namespace detail
     }
 
     template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename... Us>
+    bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
+        bool convert, type_list<phylanx::ast::nil, Us...>)
+    {
+        if (src.is_none())
+        {
+            value = phylanx::execution_tree::primitive_argument_type(
+                phylanx::ast::nil{true});
+            return true;
+        }
+        return load_alternative(src, convert, type_list<Us...>{});
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename U, typename... Us>
     bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
         bool convert, type_list<phylanx::util::recursive_wrapper<U>, Us...>)
@@ -1132,13 +1169,30 @@ namespace pybind11 { namespace detail
         return load_alternative(src, convert, type_list<Us...>{});
     }
 
+    struct caster_variant_visitor
+    {
+        return_value_policy policy;
+        handle parent;
+
+        template <typename T>
+        handle operator()(T&& src) const
+        {
+            return make_caster<T>::cast(std::forward<T>(src), policy, parent);
+        }
+
+        handle operator()(phylanx::ast::nil&&) const
+        {
+            return pybind11::none();
+        }
+    };
+
     template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename Derived_>
     handle variant_caster_helper<Derived, V<Ts...>>::cast(
         Derived_&& src, return_value_policy policy, handle parent)
     {
-        return visit_helper<V>::call(variant_caster_visitor{policy, parent},
-                                        std::forward<Derived_>(src));
+        return visit_helper<V>::call(caster_variant_visitor{policy, parent},
+            std::forward<Derived_>(src));
     }
 
     template <typename Derived, template <typename...> class V, typename... Ts>

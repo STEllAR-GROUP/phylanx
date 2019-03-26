@@ -7,6 +7,7 @@ set(tests
     compiler
     compiler_component
     expression_topology
+    function_call_arguments
     generate_tree
     parse_primitive_name
     variable_definition

@@ -27,21 +27,21 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 void test_parse_int_array()
 {
     HPX_TEST_EQ(compile_and_run("[1, 2, 3, 4]"),
-        compile_and_run("hstack(1, 2, 3, 4)"));
+        compile_and_run("hstack(list(1, 2, 3, 4))"));
 
     HPX_TEST_NEQ(compile_and_run("[1., 2., 3., 4.]"),
-        compile_and_run("hstack(1, 2, 3, 4)"));
+        compile_and_run("hstack(list(1, 2, 3, 4))"));
     HPX_TEST_NEQ(compile_and_run("[1, 2, 3, 4.]"),
-        compile_and_run("hstack(1, 2, 3, 4)"));
+        compile_and_run("hstack(list(1, 2, 3, 4))"));
 }
 
 void test_parse_double_array()
 {
     HPX_TEST_EQ(compile_and_run("[1., 2., 3., 4.]"),
-        compile_and_run("hstack(1., 2., 3., 4.)"));
+        compile_and_run("hstack(list(1., 2., 3., 4.))"));
 
     HPX_TEST_NEQ(compile_and_run("[1, 2, 3, 4]"),
-        compile_and_run("hstack(1., 2., 3., 4.)"));
+        compile_and_run("hstack(list(1., 2., 3., 4.))"));
 }
 
 int main(int argc, char* argv[])

@@ -89,7 +89,7 @@ def find_optimal_sigmas(distances, target_perplexity):
     #
     for i in range(N):
         correct_sigma = bin_search(eval_fn, target_perplexity, i, sigma)
-        sigmas = vstack(sigmas, correct_sigma)
+        sigmas = vstack((sigmas, correct_sigma))
     return sigmas
 
 
