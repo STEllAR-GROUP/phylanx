@@ -29,6 +29,7 @@ set(tests
     866_dynamic_dtype
     874_0d_shape
     886_notnone
+    896_return_none
     array_len_494
     array_shape_486
     array_subscript_403
