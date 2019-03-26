@@ -502,14 +502,15 @@ void test_slicing_operation_3d_value()
         define(x2, vstack(list(b,c,d,a))),
         define(x3, vstack(list(c,d,a,b))),
         define(input, dstack(list(x1, x2, x3))),
-        slice(input, 1, 2, 3)
+        slice(input, 0, 1, 2)
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 104);
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result[0], 2);
 }
 
 void test_slicing_operation_3d_value_negative_index()
@@ -527,10 +528,11 @@ void test_slicing_operation_3d_value_negative_index()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 6);
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result[0], 107);
 }
 
 void test_slicing_operation_3d_single_slice()
@@ -544,14 +546,15 @@ void test_slicing_operation_3d_single_slice()
         define(x2, vstack(list(b,c,d,a))),
         define(x3, vstack(list(c,d,a,b))),
         define(input, dstack(list(x1, x2, x3))),
-        slice(input, list(1), list(2), list(3))
+        slice(input, list(0, 1), list(1, 2), list(2, 3))
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 104);
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(3));
+    HPX_TEST_EQ(result.tensor()(0, 0, 0), 2);
 }
 
 #endif
@@ -594,7 +597,7 @@ int main(int argc, char* argv[])
     test_slicing_operation_3d_value();
     test_slicing_operation_3d_value_negative_index();
 
-//     test_slicing_operation_3d_single_slice();
+    test_slicing_operation_3d_single_slice();
 #endif
 
     return hpx::util::report_errors();
