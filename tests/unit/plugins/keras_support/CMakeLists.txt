@@ -38,4 +38,3 @@ foreach(test ${tests})
     ${test}_test_exe)
 
 endforeach()
-

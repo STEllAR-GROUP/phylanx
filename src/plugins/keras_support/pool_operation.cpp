@@ -15,6 +15,7 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/optional.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -37,14 +38,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::string>{"max_pool(_1, _2)", "max_pool(_1, _2, _3)",
         "max_pool(_1, _2, _3, _4)"},
         &create_pool_operation, &create_primitive<pool_operation>,
-        R"(x, pool_size, padding, stride
+        R"(x, pool_size, padding, strides
         Args:
 
             x (array) : a matrix or a tensor
             pool_size (a tuple of integers) : the size of pooling over each
                 dimension
             padding (string) : padding mode, it can be either `same` or `valid`
-            stride (a tuple of integers) : the step to apply pooling over each
+            strides (a tuple of integers) : the step to apply pooling over each
                 dimension
 
         Returns:
@@ -55,14 +56,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::string>{"avg_pool(_1, _2)", "avg_pool(_1, _2, _3)",
         "avg_pool(_1, _2, _3, _4)"},
         &create_pool_operation, &create_primitive<pool_operation>,
-        R"(x, pool_size, padding, stride
+        R"(x, pool_size, padding, strides
         Args:
 
             x (array) : a matrix or a tensor
             pool_size (a tuple of integers) : the size of pooling oevr each
                 dimension
             padding (string) : padding mode, it can be either `same` or `valid`
-            stride (a tuple of integers) : the step to apply pooling oevr each
+            strides (a tuple of integers) : the step to apply pooling oevr each
                 dimension
 
         Returns:
@@ -108,10 +109,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "two integers and for tensors pool_size should be a tuple "
                     "of 3 integers"));
 
-        auto it = pool_size.begin();
-        for (std::size_t i = 0; i != pool_size.size(); ++i, ++it)
+        for (auto const it : pool_size)
         {
-            if (extract_scalar_integer_value_strict(*it) <= 0)
+            if (extract_scalar_integer_value_strict(it) <= 0)
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "pool_operation::validate_pooling",
                     generate_error_message(
@@ -133,20 +133,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "two positive integers and for tensors strides should be a "
                     "tuple of three positive integers"));
 
-        auto it = strides.begin();
         bool flag = true;
-        for (std::size_t i = 0; i != strides.size(); ++i, ++it)
+        for (auto const it : strides)
         {
-            if (extract_scalar_integer_value_strict(*it) <= 0)
+            std::int64_t temp = extract_scalar_integer_value_strict(it);
+            if (temp <= 0)
+
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "pool_operation::validate_strides",
                     generate_error_message(
                         "the strides on each dimension should be positive"));
-            if (extract_scalar_integer_value_strict(*it) != 1)
+
+            if (temp != 1)
                 flag = false;
         }
         if (flag == true)
             strides = ir::range(0);
+        return true;
+    }
+
+    bool pool_operation::validate_pool_sizes_no_padding(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims,
+        ir::range const& pool_size) const
+    {
+        auto it = pool_size.begin();
+        for (std::size_t i = 0; i != pool_size.size(); ++i, ++it)
+        {
+            if (dims[i] < extract_scalar_integer_value_strict(*it))
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "pool_operation::validate_pool_sizes_no_padding",
+                    generate_error_message(
+                        "in the valid padding mode, each element of "
+                        "pool_size should be not greater than the size of "
+                        "array in the corresponding dimension"));
+        }
         return true;
     }
 
@@ -481,10 +502,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicMatrix<T> result(
             blaze::ceil(
-                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(nrows + pad_height - filter_height + 1) /
                 static_cast<float>(stride_height)),
             blaze::ceil(
-                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(ncolumns + pad_width - filter_width + 1) /
                 static_cast<float>(stride_width)));
 
         for (std::size_t r = 0; r != result.rows(); ++r)
@@ -599,10 +620,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicMatrix<double> result(
             blaze::ceil(
-                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(nrows + pad_height - filter_height + 1) /
                 static_cast<float>(stride_height)),
             blaze::ceil(
-                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(ncolumns + pad_width - filter_width + 1) /
                 static_cast<float>(stride_width)));
 
         for (std::size_t r = 0; r != result.rows(); ++r)
@@ -1370,13 +1391,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicTensor<T> result(
             blaze::ceil(
-                static_cast<float>((npages + pad_depth - filter_depth + 1)) /
+                static_cast<float>(npages + pad_depth - filter_depth + 1) /
                 static_cast<float>(stride_depth)),
             blaze::ceil(
-                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(nrows + pad_height - filter_height + 1) /
                 static_cast<float>(stride_height)),
             blaze::ceil(
-                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(ncolumns + pad_width - filter_width + 1) /
                 static_cast<float>(stride_width)));
 
         for (std::size_t p = 0; p != result.pages(); ++p)
@@ -1674,13 +1695,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicTensor<double> result(
             blaze::ceil(
-                static_cast<float>((npages + pad_depth - filter_depth + 1)) /
+                static_cast<float>(npages + pad_depth - filter_depth + 1) /
                 static_cast<float>(stride_depth)),
             blaze::ceil(
-                static_cast<float>((nrows + pad_height - filter_height + 1)) /
+                static_cast<float>(nrows + pad_height - filter_height + 1) /
                 static_cast<float>(stride_height)),
             blaze::ceil(
-                static_cast<float>((ncolumns + pad_width - filter_width + 1)) /
+                static_cast<float>(ncolumns + pad_width - filter_width + 1) /
                 static_cast<float>(stride_width)));
 
         for (std::size_t p = 0; p != result.pages(); ++p)
@@ -2098,6 +2119,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "pool_operation::eval",
                         this_->generate_error_message(
                             "invalid combination of arguments for pooling"));
+
+                if (padding == "valid")
+                {
+                    if (!this_->validate_pool_sizes_no_padding(
+                            extract_numeric_value_dimensions(
+                                args[0], this_->name_, this_->codename_),
+                            pool_size))
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "pool_operation::eval",
+                            this_->generate_error_message(
+                                "at least one of the filter sizes is greater "
+                                "than the array size in that dimension"));
+                }
 
                 ir::range strides(0); // an empty range
                 if (args.size() == 4)

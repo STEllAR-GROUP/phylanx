@@ -14,6 +14,7 @@
 #include <hpx/lcos/future.hpp>
 #include <hpx/util/optional.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -57,6 +58,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     private:
         bool validate_pooling(
             std::size_t const& ndim, ir::range const& pool_size) const;
+        bool validate_pool_sizes_no_padding(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims,
+            ir::range const& pool_size) const;
         bool validate_strides(
             std::size_t const& ndim, ir::range& strides) const;
 
