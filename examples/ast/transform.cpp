@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
         define(B21, slice(_2, rowsB / 2, rowsB, 0, columnsB / 2)),
         define(B22, slice(_2, rowsB / 2, rowsB, columnsB / 2, columnsB)),
         vstack(
-            hstack((A11 * B11) + (A12 * B21), (A11 * B12) + (A12 * B22)),
-            hstack((A21 * B11) + (A22 * B21), (A21 * B12) + (A22 * B22))
+            hstack(list((A11 * B11) + (A12 * B21), (A11 * B12) + (A12 * B22))),
+            hstack(list((A21 * B11) + (A22 * B21), (A21 * B12) + (A22 * B22)))
         )
     ))";
 

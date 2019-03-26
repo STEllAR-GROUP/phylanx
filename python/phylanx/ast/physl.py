@@ -44,7 +44,6 @@ numpy_constants = {
 
 methods_supporting_dtype = [
     'absolute',
-    'arange',
     'arccos',
     'arccosh',
     'arcsin',
@@ -56,8 +55,6 @@ methods_supporting_dtype = [
     'conj',
     'cos',
     'cosh',
-    'cumsum',
-    'dstack',
     'erf',
     'erfc',
     'square',
@@ -65,9 +62,7 @@ methods_supporting_dtype = [
     'exp',
     'exp2',
     'exp10',
-    'eye',
     'floor',
-    'hstack',
     'identity',
     'imag',
     'invcbrt',
@@ -86,25 +81,19 @@ methods_supporting_dtype = [
     'sin',
     'sinh',
     'sqrt',
-    'stack',
     'tan',
     'tanh',
     'trace'
     'trunc',
-    'vstack',
 ]
 
 
-def create_array(array_tree, dtype):
+def create_array(array_tree, kwargs):
     symbol_info = []
 
     hstack_symbol = 'hstack'
     vstack_symbol = 'vstack'
     dstack_symbol = 'dstack'
-    if dtype:
-        hstack_symbol += dtype
-        vstack_symbol += dtype
-        dstack_symbol += dtype
 
     def extract_data(arr):
         if isinstance(arr, tuple):
@@ -122,11 +111,14 @@ def create_array(array_tree, dtype):
             return extract_data(arr[1])
 
     data = extract_data(array_tree)
+
     if not symbol_info:
-        if isinstance(data[0], str):
-            return [hstack_symbol, (data,)]
+        if kwargs:
+            args = (['list', tuple(data)], kwargs)
         else:
-            return [hstack_symbol, tuple(data)]
+            args = (['list', tuple(data)], )
+        return [hstack_symbol, args]
+
     data = np.array(*extract_data(array_tree))
     num_dim = len(data.shape)
 
@@ -135,24 +127,51 @@ def create_array(array_tree, dtype):
         dstacks = []
         for i, column in enumerate(columns):
             dstacks.append([])
-            [dstacks[i].append(tuple(data)) for data in column]
+            if kwargs:
+                [dstacks[i].append((['list', tuple(data)], kwargs)) for data in column]
+            else:
+                [dstacks[i].append((['list', tuple(data)], )) for data in column]
 
-        outer_symbol = symbol_info.pop(0)
+        outer_symbol = '' if not symbol_info else symbol_info.pop(0)
         arr = []
         for d in dstacks:
             vstack = []
             for hstacks in d:
                 vstack.append([hstack_symbol + symbol_info.pop(0), hstacks])
-            vstack = [vstack_symbol + symbol_info.pop(0), tuple(vstack)]
+            sym_info = '' if not symbol_info else symbol_info.pop(0)
+            if kwargs:
+                args = (['list', tuple(vstack)], kwargs)
+            else:
+                args = (['list', tuple(vstack)], )
+            vstack = [vstack_symbol + sym_info, args]
             arr.append(vstack)
-        arr = [dstack_symbol + outer_symbol, tuple(arr)]
+        if kwargs:
+            args = (['list', tuple(arr)], kwargs, )
+        else:
+            args = (['list', tuple(arr)], )
+        arr = [dstack_symbol + outer_symbol, args]
     elif 2 == num_dim:
         arr = []
         for hstacks in data:
-            arr.append([hstack_symbol + symbol_info.pop(0), tuple(hstacks)])
-        arr = [vstack_symbol + symbol_info.pop(0), tuple(arr)]
+            sym_info = '' if not symbol_info else symbol_info.pop(0)
+            if kwargs:
+                args = (['list', tuple(hstacks)], kwargs)
+            else:
+                args = (['list', tuple(hstacks)], )
+            arr.append([hstack_symbol + sym_info, args])
+        sym_info = '' if not symbol_info else symbol_info.pop(0)
+        if kwargs:
+            args = (['list', tuple(arr)], kwargs)
+        else:
+            args = (['list', tuple(arr)], )
+        arr = [vstack_symbol + sym_info, args]
     elif 1 == num_dim:
-        arr = [hstack_symbol + symbol_info.pop(0), tuple(data)]
+        sym_info = '' if not symbol_info else symbol_info.pop(0)
+        if kwargs:
+            args = (['list', tuple(data)], kwargs)
+        else:
+            args = (['list', tuple(data)], )
+        arr = [hstack_symbol + sym_info, args]
     else:
         ValueError("Phylanx supports arrays with 3 dimensions or less.")
     return (arr,)
@@ -517,7 +536,7 @@ class PhySL:
             if default is None:
                 result = (*result, a)
             else:
-                op = get_symbol_info(arg, 'arg')
+                op = get_symbol_info(arg, '__arg')
                 result = (*result, [op, (a, default)])
         return result
 
@@ -618,39 +637,30 @@ class PhySL:
             Add support for keywords, starargs, and kwargs
         """
 
+        def __apply(self, k):
+            kw = self.apply_rule(k.value)
+            if k.arg == 'dtype' and '$' in kw:
+                kw = '"' + kw.split('$', 1)[0] + '"'
+            return (k.arg, kw)
+
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
-        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
-        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
-        dtypes_bools = ['b', 'bool']
-        phylanx_dtype = {
-            **dict.fromkeys(dtype_floats, 'float'),
-            **dict.fromkeys(dtype_ints, 'int'),
-            **dict.fromkeys(dtypes_bools, 'bool')
-        }
+        op = get_symbol_info(node.func, '__arg')
+        kwargs = tuple([op, __apply(self, k)] for k in node.keywords)
+
         dtype = ''
-        for k in node.keywords:
-            if k.arg == 'dtype':
-                if isinstance(k.value, ast.Name):
-                    type_str = phylanx_dtype.get(k.value.id)
-                    if not type_str:
-                        raise ValueError("dtype must a be string literal.")
-                if isinstance(k.value, ast.Str):
-                    type_str = phylanx_dtype.get(k.value.s)
-                if type_str:
-                    dtype = '__' + type_str
-                else:
-                    raise NotImplementedError(
-                        'Only the followig are acceptable Phylanx array types:\n'
-                        'booleans: %s\nfloats: %s\nintegers %s' %
-                        (dtypes_bools, dtype_floats, dtype_ints))
-                break
 
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol:
-            return create_array(args, dtype)
+            return create_array(args, kwargs)
+        elif 'vstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = (['list', (tuple(args), )],)
+        elif 'dstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = (['list', (tuple(args), )],)
         elif 'zeros_like' in symbol:
             symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
             return [symbol, ('0', args)]
@@ -688,6 +698,8 @@ class PhySL:
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+        if kwargs:
+            args += kwargs
         return [symbol, args]
 
     # def _ClassDef(self, node):

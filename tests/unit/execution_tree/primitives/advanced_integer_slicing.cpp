@@ -40,18 +40,18 @@ void test_integer_slicing(char const* code, char const* expected)
 void test_integer_slicing_1d_0d()
 {
     // direct array based indexing
-    test_integer_slicing("slice(hstack(42), 0, nil)", "42");
-    test_integer_slicing("slice(hstack(42), -1, nil)", "42");
+    test_integer_slicing("slice([42], 0, nil)", "42");
+    test_integer_slicing("slice([42], -1, nil)", "42");
 
-    test_integer_slicing("slice(hstack(42, 43), 0, nil)", "42");
-    test_integer_slicing("slice(hstack(42, 43), -1, nil)", "43");
+    test_integer_slicing("slice([42, 43], 0, nil)", "42");
+    test_integer_slicing("slice([42, 43], -1, nil)", "43");
 
     // indexing using a list of arrays
-    test_integer_slicing("slice(hstack(42), list(0), nil)", "42");
-    test_integer_slicing("slice(hstack(42), list(-1), nil)", "42");
+    test_integer_slicing("slice([42], list(0), nil)", "42");
+    test_integer_slicing("slice([42], list(-1), nil)", "42");
 
-    test_integer_slicing("slice(hstack(42, 43), list(0), nil)", "42");
-    test_integer_slicing("slice(hstack(42, 43), list(-1), nil)", "43");
+    test_integer_slicing("slice([42, 43], list(0), nil)", "42");
+    test_integer_slicing("slice([42, 43], list(-1), nil)", "43");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,47 +59,47 @@ void test_integer_slicing_1d_1d()
 {
     // direct array based indexing
     test_integer_slicing(
-        "slice(hstack(42), hstack(0), nil)", "hstack(42)");
+        "slice([42], [0], nil)", "[42]");
     test_integer_slicing(
-        "slice(hstack(42), hstack(-1), nil)", "hstack(42)");
+        "slice([42], [-1], nil)", "[42]");
 
     test_integer_slicing(
-        "slice(hstack(42), hstack(0, 0), nil)", "hstack(42, 42)");
+        "slice([42], [0, 0], nil)", "[42, 42]");
     test_integer_slicing(
-        "slice(hstack(42), hstack(-1, 0), nil)", "hstack(42, 42)");
+        "slice([42], [-1, 0], nil)", "[42, 42]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(0), nil)", "hstack(42)");
+        "slice([42, 43], [0], nil)", "[42]");
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(-1), nil)", "hstack(43)");
+        "slice([42, 43], [-1], nil)", "[43]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(0, 1, 0), nil)", "hstack(42, 43, 42)");
+        "slice([42, 43], [0, 1, 0], nil)", "[42, 43, 42]");
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(-2, -1, 0), nil)", "hstack(42, 43, 42)");
+        "slice([42, 43], [-2, -1, 0], nil)", "[42, 43, 42]");
 
     // indexing using a list of arrays
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(0)), nil)", "hstack(42)");
+        "slice([42], list([0]), nil)", "[42]");
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(-1)), nil)", "hstack(42)");
+        "slice([42], list([-1]), nil)", "[42]");
 
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(0, 0)), nil)", "hstack(42, 42)");
+        "slice([42], list([0, 0]), nil)", "[42, 42]");
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(-1, 0)), nil)", "hstack(42, 42)");
+        "slice([42], list([-1, 0]), nil)", "[42, 42]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(0)), nil)", "hstack(42)");
+        "slice([42, 43], list([0]), nil)", "[42]");
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(-1)), nil)", "hstack(43)");
+        "slice([42, 43], list([-1]), nil)", "[43]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(0, 1, 0)), nil)",
-        "hstack(42, 43, 42)");
+        "slice([42, 43], list([0, 1, 0]), nil)",
+        "[42, 43, 42]");
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(-2, -1, 0)), nil)",
-        "hstack(42, 43, 42)");
+        "slice([42, 43], list([-2, -1, 0]), nil)",
+        "[42, 43, 42]");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,131 +107,129 @@ void test_integer_slicing_1d_2d()
 {
     // direct array based indexing
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(0)), nil)",
-        "hstack(vstack(42))");
+        "slice([42], [[0]], nil)",
+        "[[42]]");
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(-1)), nil)",
-        "hstack(vstack(42))");
+        "slice([42], [[-1]], nil)",
+        "[[42]]");
 
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(0, 0)), nil)",
-        "hstack(vstack(42, 42))");
+        "slice([42], [[0, 0]], nil)",
+        "[[42, 42]]");
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(-1, 0)), nil)",
-        "hstack(vstack(42, 42))");
+        "slice([42], [[-1, 0]], nil)",
+        "[[42, 42]]");
 
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(0), vstack(0)), nil)",
-        "hstack(vstack(42), vstack(42))");
+        "slice([42], [[0], [0]], nil)",
+        "[[42], [42]]");
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(-1), vstack(0)), nil)",
-        "hstack(vstack(42), vstack(42))");
+        "slice([42], [[-1], [0]], nil)",
+        "[[42], [42]]");
 
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(0, 0), vstack(0, 0)), nil)",
-        "hstack(vstack(42, 42), vstack(42, 42))");
+        "slice([42], [[0, 0], [0, 0]], nil)",
+        "[[42, 42], [42, 42]]");
     test_integer_slicing(
-        "slice(hstack(42), hstack(vstack(-1, 0), vstack(0, -1)), nil)",
-        "hstack(vstack(42, 42), vstack(42, 42))");
+        "slice([42], [[-1, 0], [0, -1]], nil)",
+        "[[42, 42], [42, 42]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(0)), nil)",
-        "hstack(vstack(42))");
+        "slice([42, 43], [[0]], nil)",
+        "[[42]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(-1)), nil)",
-        "hstack(vstack(43))");
+        "slice([42, 43], [[-1]], nil)",
+        "[[43]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(0, 1)), nil)",
-        "hstack(vstack(42, 43))");
+        "slice([42, 43], [[0, 1]], nil)",
+        "[[42, 43]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(-1, 0)), nil)",
-        "hstack(vstack(43, 42))");
+        "slice([42, 43], [[-1, 0]], nil)",
+        "[[43, 42]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(0), vstack(1)), nil)",
-        "hstack(vstack(42), vstack(43))");
+        "slice([42, 43], [[0], [1]], nil)",
+        "[[42], [43]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(-1), vstack(0)), nil)",
-        "hstack(vstack(43), vstack(42))");
+        "slice([42, 43], [[-1], [0]], nil)",
+        "[[43], [42]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(0, 1, 0), vstack(0, 0, 1)), nil)",
-        "hstack(vstack(42, 43, 42), vstack(42, 42, 43))");
+        "slice([42, 43], [[0, 1, 0], [0, 0, 1]], nil)",
+        "[[42, 43, 42], [42, 42, 43]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), hstack(vstack(-2, -1, 0), vstack(0, -2, -1)), nil)",
-        "hstack(vstack(42, 43, 42), vstack(42, 42, 43))");
+        "slice([42, 43], [[-2, -1, 0], [0, -2, -1]], nil)",
+        "[[42, 43, 42], [42, 42, 43]]");
 
     // indexing using a list of arrays
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(0))), nil)",
-        "hstack(vstack(42))");
+        "slice([42], list([[0]]), nil)",
+        "[[42]]");
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(-1))), nil)",
-        "hstack(vstack(42))");
+        "slice([42], list([[-1]]), nil)",
+        "[[42]]");
 
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(0, 0))), nil)",
-        "hstack(vstack(42, 42))");
+        "slice([42], list([[0, 0]]), nil)",
+        "[[42, 42]]");
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(-1, 0))), nil)",
-        "hstack(vstack(42, 42))");
+        "slice([42], list([[-1, 0]]), nil)",
+        "[[42, 42]]");
 
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(0), vstack(0))), nil)",
-        "hstack(vstack(42), vstack(42))");
+        "slice([42], list([[0], [0]]), nil)",
+        "[[42], [42]]");
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(-1), vstack(0))), nil)",
-        "hstack(vstack(42), vstack(42))");
+        "slice([42], list([[-1], [0]]), nil)",
+        "[[42], [42]]");
 
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(0, 0), vstack(0, 0))), nil)",
-        "hstack(vstack(42, 42), vstack(42, 42))");
+        "slice([42], list([[0, 0], [0, 0]]), nil)",
+        "[[42, 42], [42, 42]]");
     test_integer_slicing(
-        "slice(hstack(42), list(hstack(vstack(-1, 0), vstack(0, -1))), nil)",
-        "hstack(vstack(42, 42), vstack(42, 42))");
+        "slice([42], list([[-1, 0], [0, -1]]), nil)",
+        "[[42, 42], [42, 42]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(0))), nil)",
-        "hstack(vstack(42))");
+        "slice([42, 43], list([[0]]), nil)",
+        "[[42]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(-1))), nil)",
-        "hstack(vstack(43))");
+        "slice([42, 43], list([[-1]]), nil)",
+        "[[43]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(0, 1))), nil)",
-        "hstack(vstack(42, 43))");
+        "slice([42, 43], list([[0, 1]]), nil)",
+        "[[42, 43]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(-1, 0))), nil)",
-        "hstack(vstack(43, 42))");
+        "slice([42, 43], list([[-1, 0]]), nil)",
+        "[[43, 42]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(0), vstack(1))), nil)",
-        "hstack(vstack(42), vstack(43))");
+        "slice([42, 43], list([[0], [1]]), nil)",
+        "[[42], [43]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(-1), vstack(0))), nil)",
-        "hstack(vstack(43), vstack(42))");
+        "slice([42, 43], list([[-1], [0]]), nil)",
+        "[[43], [42]]");
 
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(0, 1, 0), "
-            "vstack(0, 0, 1))), nil)",
-        "hstack(vstack(42, 43, 42), vstack(42, 42, 43))");
+        "slice([42, 43], list([[0, 1, 0], [0, 0, 1]]), nil)",
+        "[[42, 43, 42], [42, 42, 43]]");
     test_integer_slicing(
-        "slice(hstack(42, 43), list(hstack(vstack(-2, -1, 0), "
-            "vstack(0, -2, -1))), nil)",
-        "hstack(vstack(42, 43, 42), vstack(42, 42, 43))");
+        "slice([42, 43], list([[-2, -1, 0], [0, -2, -1]]), nil)",
+        "[[42, 43, 42], [42, 42, 43]]");
 }
 
 // void test_integer_slicing_2d_0d()
 // {
 //     // direct array based indexing
 //     test_integer_slicing(
-//         "slice(hstack(vstack(42, 43)), 0, nil)", "hstack(42)");
+//         "slice([[42, 43]], 0, nil)", "[42]");
 //     test_integer_slicing(
-//         "slice(hstack(vstack(42), vstack(43)), 0, nil)", "hstack(42, 43)");
+//         "slice([[42], [43]], 0, nil)", "[42, 43]");
 //
 //     test_integer_slicing(
-//         "slice(hstack(vstack(42, 43)), nil, 0)", "hstack(vstack(42))");
+//         "slice([[42, 43]], nil, 0)", "[[42]]");
 // }
 
 ///////////////////////////////////////////////////////////////////////////////

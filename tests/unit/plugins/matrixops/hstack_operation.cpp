@@ -19,7 +19,10 @@ void hstack_operation_empty()
     phylanx::execution_tree::primitive hstack =
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{}, "hstack");
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{}}},
+            "hstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
@@ -44,7 +47,10 @@ void hstack_operation_0d()
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first), std::move(second)}, "hstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "hstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
@@ -72,7 +78,10 @@ void hstack_operation_1d()
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first), std::move(second)}, "hstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "hstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
@@ -103,7 +112,10 @@ void hstack_operation_2d()
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first), std::move(second)}, "hstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "hstack");
 
     blaze::DynamicMatrix<double> expected{{1, 2, 3, 11, 22},
                                           {4, 5, 6, 12, 13}};
@@ -140,8 +152,11 @@ void hstack_operation_0d_1d_1d_0d()
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first), std::move(firstvec), std::move(secondvec),
-                std::move(second)}, "hstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(firstvec),
+                        std::move(secondvec), std::move(second)}}},
+            "hstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
@@ -178,8 +193,11 @@ void hstack_operation_1d_0d_0d_1d()
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(firstvec), std::move(first), std::move(second),
-                std::move(secondvec)}, "hstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(firstvec), std::move(first),
+                        std::move(second), std::move(secondvec)}}},
+            "hstack");
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
@@ -211,7 +229,10 @@ void hstack_operation_3d()
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first), std::move(second)}, "hstack");
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        std::move(first), std::move(second)}}},
+            "hstack");
 
     blaze::DynamicTensor<double> expected{
         {{1, 2, 3}, {4, 5, 6}, {11, 22, 33}, {12, 13, 14}},

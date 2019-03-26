@@ -284,7 +284,8 @@ namespace phylanx { namespace ir
 
     template <typename T>
     node_data<T>::node_data(std::vector<std::vector<T>> const& values)
-      : data_(storage2d_type{values.size(), values[0].size()})
+      : data_(storage2d_type{
+            values.size(), !values.empty() ? values[0].size() : 0})
     {
         std::size_t const nx = values.size();
         for (std::size_t i = 0; i != nx; ++i)
@@ -303,7 +304,8 @@ namespace phylanx { namespace ir
     node_data<T>::node_data(
             std::vector<std::vector<std::vector<T>>> const& values)
       : data_(storage3d_type{
-              values.size(), values[0].size(), values[0][0].size()})
+              values.size(), !values.empty() ? values[0].size() : 0,
+              !values.empty() && !values[0].empty() ? values[0][0].size() : 0})
     {
         std::size_t const nx = values.size();
         for (std::size_t k = 0; k != nx; ++k)

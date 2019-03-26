@@ -27,22 +27,22 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 void test_fold_right_copy_list()
 {
     std::string const code = R"(block(
-            define(copy_list, l, fold_right(hstack, list(), l)),
+            define(copy_list, l, fold_right(prepend, list(), l)),
             copy_list(list(1, 2, 3, 4))
         ))";
 
-    auto result = phylanx::execution_tree::extract_integer_value_strict(
+    auto result = phylanx::execution_tree::extract_list_value_strict(
         compile_and_run(code));
 
     std::string const expected_str = R"(
-            hstack(1, 2, 3, 4)
+            list(1, 2, 3, 4)
         )";
 
     auto expected_result =
-        phylanx::execution_tree::extract_integer_value_strict(
+        phylanx::execution_tree::extract_list_value_strict(
             compile_and_run(expected_str));
 
-    HPX_TEST_EQ(result, expected_result);
+    HPX_TEST(result == expected_result);
 }
 
 int main(int argc, char* argv[])

@@ -35,97 +35,99 @@ void test_stack_operation_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_stack_operation_operation("stack(make_list([1., 2.]))", "[1., 2.]");
-    test_stack_operation_operation("stack(make_list([1., 2.]), 0)", "[1., 2.]");
-    test_stack_operation_operation("stack(make_list([1., 2.]), -1)", "[1., 2.]");
+    test_stack_operation_operation("stack(list([1., 2.]))", "[1., 2.]");
+    test_stack_operation_operation("stack(list([1., 2.]), 0)", "[1., 2.]");
+    test_stack_operation_operation("stack(list([1., 2.]), -1)", "[1., 2.]");
     test_stack_operation_operation(
-            "stack(make_list([[1., 2., 3.], [4., 5., 6.]]))",
+            "stack(list([[1., 2., 3.], [4., 5., 6.]]))",
             "[[1., 2., 3.],[4., 5., 6.]]");
     test_stack_operation_operation(
-            "stack(make_list([[1., 2., 3.], [4., 5., 6.]]), 0)",
+            "stack(list([[1., 2., 3.], [4., 5., 6.]]), __arg(axis, 0))",
             "[[1., 2., 3.],[4., 5., 6.]]");
     test_stack_operation_operation(
-            "stack(make_list([[1., 2., 3.], [4., 5., 6.]]), 1)",
+            "stack(list([[1., 2., 3.], [4., 5., 6.]]), __arg(axis, 1))",
             "[[1., 4.], [2., 5.], [3., 6.]]");
     test_stack_operation_operation(
-            "stack(make_list([[1., 2., 3.], [4., 5., 6.]]), -1)",
+            "stack(list([[1., 2., 3.], [4., 5., 6.]]), __arg(axis, -1))",
             "[[1., 4.], [2., 5.], [3., 6.]]");
-    test_stack_operation_operation("stack(make_list(1., 2.))", "[1., 2.]");
-    test_stack_operation_operation("stack(make_list(1., 2.), 0)", "[1., 2.]");
+    test_stack_operation_operation("stack(list(1., 2.))", "[1., 2.]");
+    test_stack_operation_operation("stack(list(1., 2.), 0)", "[1., 2.]");
     test_stack_operation_operation(
-        "stack(make_list([1., 2., 3.], [4., 5., 6.]))",
+        "stack(list([1., 2., 3.], [4., 5., 6.]))",
         "[[1., 2., 3.],[4., 5., 6.]]");
     test_stack_operation_operation(
-        "stack(make_list([1., 2., 3.], [4., 5., 6.]), 0)",
+        "stack(list([1., 2., 3.], [4., 5., 6.]), __arg(axis, 0))",
         "[[1., 2., 3.],[4., 5., 6.]]");
     test_stack_operation_operation(
-        "stack(make_list([1., 2., 3.], [4., 5., 6.]), 1)",
+        "stack(list([1., 2., 3.], [4., 5., 6.]), __arg(axis, 1))",
         "[[1., 4.], [2., 5.],[3., 6.]]");
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_stack_operation_operation(
-            "stack(make_list([[[1., 2., 3.]], [[4., 5., 6.]]]))",
-            "[[[1., 2., 3.]], [[4., 5., 6.]]]");
-    test_stack_operation_operation(
-            "stack(make_list([[[1., 2., 3.]], [[4., 5., 6.]]]), 0)",
-            "[[[1., 2., 3.]], [[4., 5., 6.]]]");
-    test_stack_operation_operation(
-            "stack(make_list([[[1., 2., 3.]], [[4., 5., 6.]]]), -1)",
-            "[[[1., 4.], [2., 5.],[3., 6.]]]");
-    test_stack_operation_operation(
-            "stack(make_list([[[1., 2., 3.]], [[4., 5., 6.]]]), 2)",
-            "[[[1., 4.], [2., 5.],[3., 6.]]]");
-    test_stack_operation_operation(
-            "stack(make_list([[[1., 2., 3.]], [[4., 5., 6.]]]), 1)",
-            "[[[1., 2., 3.], [4., 5., 6.]]]");
-    test_stack_operation_operation("stack(make_list([[[1., 2., 3.], [4., 5., "
-                                   "6.]], [[7., 8., 9.], [10., 11., 12.]]]))",
-        "[[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., 11., 12.]]]");
-    test_stack_operation_operation(
-        "stack(make_list([[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., "
-        "11., 12.]]]), 0)",
-        "[[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., 11., 12.]]]");
-    test_stack_operation_operation(
-        "stack(make_list([[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., "
-        "11., 12.]]]), -1)",
-        "[[[1., 7.], [2., 8.], [3., 9.]], [[4., 10.], [5., 11.], [6., 12.]]]");
-    test_stack_operation_operation(
-        "stack(make_list([[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., "
-        "11., 12.]]]), 2)",
-        "[[[1., 7.], [2., 8.], [3., 9.]], [[4., 10.], [5., 11.], [6., 12.]]]");
-    test_stack_operation_operation(
-        "stack(make_list([[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., "
-        "11., 12.]]]), 1)",
-        "[[[1., 2., 3.], [7., 8., 9.]], [[4., 5., 6.], [10., 11., 12.]]]");
-    test_stack_operation_operation(
-        "stack(make_list([[1., 2., 3.]], [[4., 5., 6.]]))",
+        "stack(list([[[1., 2., 3.]], [[4., 5., 6.]]]))",
         "[[[1., 2., 3.]], [[4., 5., 6.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2., 3.]], [[4., 5., 6.]]), 0)",
+        "stack(list([[[1., 2., 3.]], [[4., 5., 6.]]]), 0)",
         "[[[1., 2., 3.]], [[4., 5., 6.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2., 3.]], [[4., 5., 6.]]), 1)",
+        "stack(list([[[1., 2., 3.]], [[4., 5., 6.]]]), -1)",
+        "[[[1., 4.], [2., 5.],[3., 6.]]]");
+    test_stack_operation_operation(
+        "stack(list([[[1., 2., 3.]], [[4., 5., 6.]]]), 2)",
+        "[[[1., 4.], [2., 5.],[3., 6.]]]");
+    test_stack_operation_operation(
+        "stack(list([[[1., 2., 3.]], [[4., 5., 6.]]]), 1)",
         "[[[1., 2., 3.], [4., 5., 6.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]))",
+        "stack(list([[[1., 2., 3.], [4., 5., 6.]], "
+            "[[7., 8., 9.], [10., 11., 12.]]]))",
+        "[[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., 11., 12.]]]");
+    test_stack_operation_operation(
+        "stack(list([[[1., 2., 3.], [4., 5., 6.]], "
+            "[[7., 8., 9.], [10., 11., 12.]]]), 0)",
+        "[[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., 11., 12.]]]");
+    test_stack_operation_operation(
+        "stack(list([[[1., 2., 3.], [4., 5., 6.]], "
+            "[[7., 8., 9.], [10., 11., 12.]]]), -1)",
+        "[[[1., 7.], [2., 8.], [3., 9.]], [[4., 10.], [5., 11.], [6., 12.]]]");
+    test_stack_operation_operation(
+        "stack(list([[[1., 2., 3.], [4., 5., 6.]], "
+            "[[7., 8., 9.], [10., 11., 12.]]]), 2)",
+        "[[[1., 7.], [2., 8.], [3., 9.]], [[4., 10.], [5., 11.], [6., 12.]]]");
+    test_stack_operation_operation(
+        "stack(list([[[1., 2., 3.], [4., 5., 6.]], "
+            "[[7., 8., 9.], [10., 11., 12.]]]), 1)",
+        "[[[1., 2., 3.], [7., 8., 9.]], [[4., 5., 6.], [10., 11., 12.]]]");
+    test_stack_operation_operation(
+        "stack(list([[1., 2., 3.]], [[4., 5., 6.]]))",
+        "[[[1., 2., 3.]], [[4., 5., 6.]]]");
+    test_stack_operation_operation(
+        "stack(list([[1., 2., 3.]], [[4., 5., 6.]]), 0)",
+        "[[[1., 2., 3.]], [[4., 5., 6.]]]");
+    test_stack_operation_operation(
+        "stack(list([[1., 2., 3.]], [[4., 5., 6.]]), 1)",
+        "[[[1., 2., 3.], [4., 5., 6.]]]");
+    test_stack_operation_operation(
+        "stack(list([[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]))",
         "[[[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]), 0)",
+        "stack(list([[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]), 0)",
         "[[[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]), 1)",
+        "stack(list([[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]), 1)",
         "[[[1., 2.], [5., 6.]], [[3., 4.], [7., 8.]]]");
-    test_stack_operation_operation("stack(make_list([[1., 2.], [3., 4.], [5., "
-                                   "6.]], [[7., 8.], [9., 10.], [11., 12.]]))",
+    test_stack_operation_operation(
+        "stack(list([[1., 2.], [3., 4.], [5., 6.]], "
+            "[[7., 8.], [9., 10.], [11., 12.]]))",
         "[[[1., 2.], [3., 4.], [5., 6.]], [[7., 8.], [9., 10.], [11., 12.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2.], [3., 4.], [5., 6.]], [[7., 8.], [9., 10.], "
-        "[11., 12.]]), 0)",
+        "stack(list([[1., 2.], [3., 4.], [5., 6.]], "
+            "[[7., 8.], [9., 10.], [11., 12.]]), __arg(axis, 0))",
         "[[[1., 2.], [3., 4.], [5., 6.]], [[7., 8.], [9., 10.], [11., 12.]]]");
     test_stack_operation_operation(
-        "stack(make_list([[1., 2.], [3., 4.], [5., 6.]], [[7., 8.], [9., 10.], "
-        "[11., 12.]]), 1)",
-        "[[[1., 2.], [7., 8.]], [[3., 4.], [9., 10.]], [[5., 6.], [11., "
-        "12.]]]");
+        "stack(list([[1., 2.], [3., 4.], [5., 6.]], "
+            "[[7., 8.], [9., 10.], [11., 12.]]), __arg(axis, 1))",
+        "[[[1., 2.], [7., 8.]], [[3., 4.], [9., 10.]], "
+            "[[5., 6.], [11., 12.]]]");
 #endif
     return hpx::util::report_errors();
 }

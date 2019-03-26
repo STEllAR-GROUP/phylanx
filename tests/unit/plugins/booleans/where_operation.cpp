@@ -35,43 +35,53 @@ void test_where_operation(std::string const& code,
 void test_one_argument_where()
 {
     // test 0d data (scalars)
-    test_where_operation("where(false)", "list(hstack__int())");
-    test_where_operation("where(0)", "list(hstack__int())");
-    test_where_operation("where(0.)", "list(hstack__int())");
-    test_where_operation("where(true)", "list(hstack(0))");
-    test_where_operation("where(1)", "list(hstack(0))");
-    test_where_operation("where(1.)", "list(hstack(0))");
+    test_where_operation("where(false)",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_where_operation("where(0)",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_where_operation("where(0.)",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_where_operation("where(true)", "list([0])");
+    test_where_operation("where(1)", "list([0])");
+    test_where_operation("where(1.)", "list([0])");
 
     // test 1d data (vectors)
-    test_where_operation("where(hstack())", "list(hstack__int())");
+    test_where_operation("where([])",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
 
-    test_where_operation("where(hstack(false))", "list(hstack__int())");
-    test_where_operation("where(hstack(0))", "list(hstack__int())");
-    test_where_operation("where(hstack(0.))", "list(hstack__int())");
+    test_where_operation("where(hstack(list(false)))",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_where_operation("where([0])",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
+    test_where_operation("where([0.])",
+        R"(list(hstack(list(), __arg(dtype, "int"))))");
 
-    test_where_operation("where(hstack(true))", "list(hstack(0))");
-    test_where_operation("where(hstack(1))", "list(hstack(0))");
-    test_where_operation("where(hstack(1.))", "list(hstack(0))");
+    test_where_operation("where(hstack(list(true)))", "list([0])");
+    test_where_operation("where([1])", "list([0])");
+    test_where_operation("where([1.])", "list([0])");
 
     test_where_operation(
-        "where(hstack(false, true, false, true))", "list(hstack(1, 3))");
-    test_where_operation("where(hstack(0, 1, 2, 0))", "list(hstack(1, 2))");
+        "where(hstack(list(false, true, false, true)))", "list([1, 3])");
+    test_where_operation("where([0, 1, 2, 0])", "list([1, 2])");
     test_where_operation(
-        "where(hstack(1., 0., 42., 43.))", "list(hstack(0, 2, 3))");
+        "where([1., 0., 42., 43.])", "list([0, 2, 3])");
 
     // test 2d data (matrix)
     test_where_operation(
-        "where(vstack(hstack()))", "list(hstack__int(), hstack__int())");
+        "where([[]])",
+        R"(list(hstack(list(), __arg(dtype, "int")),
+                hstack(list(), __arg(dtype, "int"))))");
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)))",
-        "list(hstack__int(), hstack__int())");
+        "where([[0, 0], [0, 0]])",
+        R"(list(hstack(list(), __arg(dtype, "int")),
+                hstack(list(), __arg(dtype, "int"))))");
 
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(2, 0)))",
-        "list(hstack(0, 1), hstack(1, 0))");
+        "where([[0, 1], [2, 0]])",
+        "list([0, 1], [1, 0])");
     test_where_operation(
-        "where(vstack(hstack(0., 1.), hstack(2., 0.)))",
-        "list(hstack(0, 1), hstack(1, 0))");
+        "where([[0., 1.], [2., 0.]])",
+        "list([0, 1], [1, 0])");
 }
 
 void test_three_argument_where_0d()
@@ -83,538 +93,538 @@ void test_three_argument_where_0d()
 
     ///////////////////////////////////////////////////////////////////////////
     // test vector result
-    test_where_operation("where(false, hstack(1), hstack(2))", "hstack(2)");
-    test_where_operation("where(true, hstack(1), hstack(2))", "hstack(1)");
+    test_where_operation("where(false, [1], [2])", "[2]");
+    test_where_operation("where(true, [1], [2])", "[1]");
 
     test_where_operation(
-        "where(false, hstack(1, 2), hstack(2, 3))", "hstack(2, 3)");
+        "where(false, [1, 2], [2, 3])", "[2, 3]");
     test_where_operation(
-        "where(true, hstack(1, 2), hstack(2, 3))", "hstack(1, 2)");
+        "where(true, [1, 2], [2, 3])", "[1, 2]");
 
     // test vector result with broadcasting a scalar
-    test_where_operation("where(false, hstack(1), 2)", "hstack(2)");
-    test_where_operation("where(true, hstack(1), 2)", "hstack(1)");
-    test_where_operation("where(false, 1, hstack(2))", "hstack(2)");
-    test_where_operation("where(true, 1, hstack(2))", "hstack(1)");
+    test_where_operation("where(false, [1], 2)", "[2]");
+    test_where_operation("where(true, [1], 2)", "[1]");
+    test_where_operation("where(false, 1, [2])", "[2]");
+    test_where_operation("where(true, 1, [2])", "[1]");
 
-    test_where_operation("where(false, hstack(1, 2), 2)", "hstack(2, 2)");
-    test_where_operation("where(true, hstack(1, 2), 2)", "hstack(1, 2)");
-    test_where_operation("where(false, 1, hstack(2, 3))", "hstack(2, 3)");
-    test_where_operation("where(true, 1, hstack(2, 3))", "hstack(1, 1)");
+    test_where_operation("where(false, [1, 2], 2)", "[2, 2]");
+    test_where_operation("where(true, [1, 2], 2)", "[1, 2]");
+    test_where_operation("where(false, 1, [2, 3])", "[2, 3]");
+    test_where_operation("where(true, 1, [2, 3])", "[1, 1]");
 
     // test vector result with broadcasting a single element vector
     test_where_operation(
-        "where(false, hstack(1, 2), hstack(2))", "hstack(2, 2)");
+        "where(false, [1, 2], [2])", "[2, 2]");
     test_where_operation(
-        "where(true, hstack(1, 2), hstack(2))", "hstack(1, 2)");
+        "where(true, [1, 2], [2])", "[1, 2]");
     test_where_operation(
-        "where(false, hstack(2), hstack(2, 3))", "hstack(2, 3)");
+        "where(false, [2], [2, 3])", "[2, 3]");
     test_where_operation(
-        "where(true, hstack(2), hstack(2, 3))", "hstack(2, 2)");
+        "where(true, [2], [2, 3])", "[2, 2]");
 
     ///////////////////////////////////////////////////////////////////////////
     // test matrix result
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1), hstack(2)), vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(2), hstack(1))");
+            [[1], [2]], [[2], [1]]
+          ))", "[[2], [1]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1), hstack(2)), vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(1), hstack(2))");
+            [[1], [2]], [[2], [1]]
+          ))", "[[1], [2]]");
 
     // test matrix result with broadcasting a scalar
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1), hstack(2)), 3
-          ))", "vstack(hstack(3), hstack(3))");
+            [[1], [2]], 3
+          ))", "[[3], [3]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1), hstack(2)), 3
-          ))", "vstack(hstack(1), hstack(2))");
+            [[1], [2]], 3
+          ))", "[[1], [2]]");
     test_where_operation(
         R"(where(false,
-            3, vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(2), hstack(1))");
+            3, [[2], [1]]
+          ))", "[[2], [1]]");
     test_where_operation(
         R"(where(true,
-            3, vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(3), hstack(3))");
+            3, [[2], [1]]
+          ))", "[[3], [3]]");
 
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2), hstack(2, 3)), 3
-          ))", "vstack(hstack(3, 3), hstack(3, 3))");
+            [[1, 2], [2, 3]], 3
+          ))", "[[3, 3], [3, 3]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2), hstack(2, 3)), 3
-          ))", "vstack(hstack(1, 2), hstack(2, 3))");
+            [[1, 2], [2, 3]], 3
+          ))", "[[1, 2], [2, 3]]");
     test_where_operation(
         R"(where(false,
-            3, vstack(hstack(1, 2), hstack(2, 3))
-          ))", "vstack(hstack(1, 2), hstack(2, 3))");
+            3, [[1, 2], [2, 3]]
+          ))", "[[1, 2], [2, 3]]");
     test_where_operation(
         R"(where(true,
-            3, vstack(hstack(1, 2), hstack(2, 3))
-          ))", "vstack(hstack(3, 3), hstack(3, 3))");
+            3, [[1, 2], [2, 3]]
+          ))", "[[3, 3], [3, 3]]");
 
     // test matrix result with broadcasting a single element vector
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1), hstack(2)), hstack(3)
-          ))", "vstack(hstack(3), hstack(3))");
+            [[1], [2]], [3]
+          ))", "[[3], [3]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1), hstack(2)), hstack(3)
-          ))", "vstack(hstack(1), hstack(2))");
+            [[1], [2]], [3]
+          ))", "[[1], [2]]");
     test_where_operation(
         R"(where(false,
-            hstack(3), vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(2), hstack(1))");
+            [3], [[2], [1]]
+          ))", "[[2], [1]]");
     test_where_operation(
         R"(where(true,
-            hstack(3), vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(3), hstack(3))");
+            [3], [[2], [1]]
+          ))", "[[3], [3]]");
 
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2), hstack(2, 3)), hstack(3)
-          ))", "vstack(hstack(3, 3), hstack(3, 3))");
+            [[1, 2], [2, 3]], [3]
+          ))", "[[3, 3], [3, 3]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2), hstack(2, 3)), hstack(3)
-          ))", "vstack(hstack(1, 2), hstack(2, 3))");
+            [[1, 2], [2, 3]], [3]
+          ))", "[[1, 2], [2, 3]]");
     test_where_operation(
         R"(where(false,
-            hstack(3), vstack(hstack(1, 2), hstack(2, 3))
-          ))", "vstack(hstack(1, 2), hstack(2, 3))");
+            [3], [[1, 2], [2, 3]]
+          ))", "[[1, 2], [2, 3]]");
     test_where_operation(
         R"(where(true,
-            hstack(3), vstack(hstack(1, 2), hstack(2, 3))
-          ))", "vstack(hstack(3, 3), hstack(3, 3))");
+            [3], [[1, 2], [2, 3]]
+          ))", "[[3, 3], [3, 3]]");
 
     // test matrix result with broadcasting a vector
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1), hstack(2)), hstack(3, 4)
-          ))", "vstack(hstack(3, 4), hstack(3, 4))");
+            [[1], [2]], [3, 4]
+          ))", "[[3, 4], [3, 4]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1), hstack(2)), hstack(3, 4)
-          ))", "vstack(hstack(1, 1), hstack(2, 2))");
+            [[1], [2]], [3, 4]
+          ))", "[[1, 1], [2, 2]]");
     test_where_operation(
         R"(where(false,
-            hstack(3, 4), vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(2, 2), hstack(1, 1))");
+            [3, 4], [[2], [1]]
+          ))", "[[2, 2], [1, 1]]");
     test_where_operation(
         R"(where(true,
-            hstack(3, 4), vstack(hstack(2), hstack(1))
-          ))", "vstack(hstack(3, 4), hstack(3, 4))");
+            [3, 4], [[2], [1]]
+          ))", "[[3, 4], [3, 4]]");
 
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2)), hstack(3, 4)
-          ))", "vstack(hstack(3, 4))");
+            [[1, 2]], [3, 4]
+          ))", "[[3, 4]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2)), hstack(3, 4)
-          ))", "vstack(hstack(1, 2))");
+            [[1, 2]], [3, 4]
+          ))", "[[1, 2]]");
     test_where_operation(
         R"(where(false,
-            hstack(3, 4), vstack(hstack(2, 1))
-          ))", "vstack(hstack(2, 1))");
+            [3, 4], [[2, 1]]
+          ))", "[[2, 1]]");
     test_where_operation(
         R"(where(true,
-            hstack(3, 4), vstack(hstack(2, 1))
-          ))", "vstack(hstack(3, 4))");
+            [3, 4], [[2, 1]]
+          ))", "[[3, 4]]");
 
     // test matrix result with broadcasting a matrix
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2)), vstack(hstack(3))
-          ))", "vstack(hstack(3, 3))");
+            [[1, 2]], [[3]]
+          ))", "[[3, 3]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2)), vstack(hstack(3))
-          ))", "vstack(hstack(1, 2))");
+            [[1, 2]], [[3]]
+          ))", "[[1, 2]]");
     test_where_operation(
         R"(where(false,
-            vstack(hstack(3)), vstack(hstack(2, 1))
-          ))", "vstack(hstack(2, 1))");
+            [[3]], [[2, 1]]
+          ))", "[[2, 1]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(3)), vstack(hstack(2, 1))
-          ))", "vstack(hstack(3, 3))");
+            [[3]], [[2, 1]]
+          ))", "[[3, 3]]");
 
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2)), vstack(hstack(3, 4))
-          ))", "vstack(hstack(3, 4))");
+            [[1, 2]], [[3, 4]]
+          ))", "[[3, 4]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2)), vstack(hstack(3, 4))
-          ))", "vstack(hstack(1, 2))");
+            [[1, 2]], [[3, 4]]
+          ))", "[[1, 2]]");
     test_where_operation(
         R"(where(false,
-            vstack(hstack(3, 4)), vstack(hstack(2, 1))
-          ))", "vstack(hstack(2, 1))");
+            [[3, 4]], [[2, 1]]
+          ))", "[[2, 1]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(3, 4)), vstack(hstack(2, 1))
-          ))", "vstack(hstack(3, 4))");
+            [[3, 4]], [[2, 1]]
+          ))", "[[3, 4]]");
 
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2), hstack(3, 4)), vstack(hstack(5, 6))
-          ))", "vstack(hstack(5, 6), hstack(5, 6))");
+            [[1, 2], [3, 4]], [[5, 6]]
+          ))", "[[5, 6], [5, 6]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2), hstack(3, 4)), vstack(hstack(5, 6))
-          ))", "vstack(hstack(1, 2), hstack(3, 4))");
+            [[1, 2], [3, 4]], [[5, 6]]
+          ))", "[[1, 2], [3, 4]]");
     test_where_operation(
         R"(where(false,
-            vstack(hstack(5, 6)), vstack(hstack(1, 2), hstack(3, 4))
-          ))", "vstack(hstack(1, 2), hstack(3, 4))");
+            [[5, 6]], [[1, 2], [3, 4]]
+          ))", "[[1, 2], [3, 4]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(5, 6)), vstack(hstack(1, 2), hstack(3, 4))
-          ))", "vstack(hstack(5, 6), hstack(5, 6))");
+            [[5, 6]], [[1, 2], [3, 4]]
+          ))", "[[5, 6], [5, 6]]");
 
     test_where_operation(
         R"(where(false,
-            vstack(hstack(1, 2), hstack(3, 4)), vstack(hstack(5), hstack(6))
-          ))", "vstack(hstack(5, 5), hstack(6, 6))");
+            [[1, 2], [3, 4]], [[5], [6]]
+          ))", "[[5, 5], [6, 6]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(1, 2), hstack(3, 4)), vstack(hstack(5), hstack(6))
-          ))", "vstack(hstack(1, 2), hstack(3, 4))");
+            [[1, 2], [3, 4]], [[5], [6]]
+          ))", "[[1, 2], [3, 4]]");
     test_where_operation(
         R"(where(false,
-            vstack(hstack(5), hstack(6)), vstack(hstack(1, 2), hstack(3, 4))
-          ))", "vstack(hstack(1, 2), hstack(3, 4))");
+            [[5], [6]], [[1, 2], [3, 4]]
+          ))", "[[1, 2], [3, 4]]");
     test_where_operation(
         R"(where(true,
-            vstack(hstack(5), hstack(6)), vstack(hstack(1, 2), hstack(3, 4))
-          ))", "vstack(hstack(5, 5), hstack(6, 6))");
+            [[5], [6]], [[1, 2], [3, 4]]
+          ))", "[[5, 5], [6, 6]]");
 }
 
 void test_three_argument_where_1d()
 {
     ///////////////////////////////////////////////////////////////////////////
     // test scalar right hand sides
-    test_where_operation("where(hstack(0, 0), 1, 2)", "hstack(2, 2)");
-    test_where_operation("where(hstack(0, 1), 1, 2)", "hstack(2, 1)");
-    test_where_operation("where(hstack(1, 0), 1, 2)", "hstack(1, 2)");
-    test_where_operation("where(hstack(1, 1), 1, 2)", "hstack(1, 1)");
+    test_where_operation("where([0, 0], 1, 2)", "[2, 2]");
+    test_where_operation("where([0, 1], 1, 2)", "[2, 1]");
+    test_where_operation("where([1, 0], 1, 2)", "[1, 2]");
+    test_where_operation("where([1, 1], 1, 2)", "[1, 1]");
 
-    test_where_operation("where(hstack(0, 0), hstack(1), 2)", "hstack(2, 2)");
-    test_where_operation("where(hstack(0, 1), hstack(1), 2)", "hstack(2, 1)");
-    test_where_operation("where(hstack(1, 0), 1, hstack(2))", "hstack(1, 2)");
-    test_where_operation("where(hstack(1, 1), 1, hstack(2))", "hstack(1, 1)");
+    test_where_operation("where([0, 0], [1], 2)", "[2, 2]");
+    test_where_operation("where([0, 1], [1], 2)", "[2, 1]");
+    test_where_operation("where([1, 0], 1, [2])", "[1, 2]");
+    test_where_operation("where([1, 1], 1, [2])", "[1, 1]");
 
-    test_where_operation("where(hstack(0, 0), hstack(1, 2), 3)", "hstack(3, 3)");
-    test_where_operation("where(hstack(0, 1), hstack(1, 2), 3)", "hstack(3, 2)");
-    test_where_operation("where(hstack(1, 0), hstack(1, 2), 3)", "hstack(1, 3)");
-    test_where_operation("where(hstack(1, 1), hstack(1, 2), 3)", "hstack(1, 2)");
+    test_where_operation("where([0, 0], [1, 2], 3)", "[3, 3]");
+    test_where_operation("where([0, 1], [1, 2], 3)", "[3, 2]");
+    test_where_operation("where([1, 0], [1, 2], 3)", "[1, 3]");
+    test_where_operation("where([1, 1], [1, 2], 3)", "[1, 2]");
 
-    test_where_operation("where(hstack(0, 0), 1, hstack(2, 3))", "hstack(2, 3)");
-    test_where_operation("where(hstack(0, 1), 1, hstack(2, 3))", "hstack(2, 1)");
-    test_where_operation("where(hstack(1, 0), 1, hstack(2, 3))", "hstack(1, 3)");
-    test_where_operation("where(hstack(1, 1), 1, hstack(2, 3))", "hstack(1, 1)");
+    test_where_operation("where([0, 0], 1, [2, 3])", "[2, 3]");
+    test_where_operation("where([0, 1], 1, [2, 3])", "[2, 1]");
+    test_where_operation("where([1, 0], 1, [2, 3])", "[1, 3]");
+    test_where_operation("where([1, 1], 1, [2, 3])", "[1, 1]");
 
     ///////////////////////////////////////////////////////////////////////////
     // test vector right hand sides
     test_where_operation(
-        "where(hstack(0, 0), hstack(1), hstack(2))", "hstack(2, 2)");
+        "where([0, 0], [1], [2])", "[2, 2]");
     test_where_operation(
-        "where(hstack(0, 1), hstack(1), hstack(2))", "hstack(2, 1)");
+        "where([0, 1], [1], [2])", "[2, 1]");
     test_where_operation(
-        "where(hstack(1, 0), hstack(1), hstack(2))", "hstack(1, 2)");
+        "where([1, 0], [1], [2])", "[1, 2]");
     test_where_operation(
-        "where(hstack(1, 1), hstack(1), hstack(2))", "hstack(1, 1)");
+        "where([1, 1], [1], [2])", "[1, 1]");
 
     test_where_operation(
-        "where(hstack(0, 0), hstack(1, 2), hstack(3))", "hstack(3, 3)");
+        "where([0, 0], [1, 2], [3])", "[3, 3]");
     test_where_operation(
-        "where(hstack(0, 1), hstack(1, 2), hstack(3))", "hstack(3, 2)");
+        "where([0, 1], [1, 2], [3])", "[3, 2]");
     test_where_operation(
-        "where(hstack(1, 0), hstack(1, 2), hstack(3))", "hstack(1, 3)");
+        "where([1, 0], [1, 2], [3])", "[1, 3]");
     test_where_operation(
-        "where(hstack(1, 1), hstack(1, 2), hstack(3))", "hstack(1, 2)");
+        "where([1, 1], [1, 2], [3])", "[1, 2]");
 
     test_where_operation(
-        "where(hstack(0, 0), hstack(1), hstack(2, 3))", "hstack(2, 3)");
+        "where([0, 0], [1], [2, 3])", "[2, 3]");
     test_where_operation(
-        "where(hstack(0, 1), hstack(1), hstack(2, 3))", "hstack(2, 1)");
+        "where([0, 1], [1], [2, 3])", "[2, 1]");
     test_where_operation(
-        "where(hstack(1, 0), hstack(1), hstack(2, 3))", "hstack(1, 3)");
+        "where([1, 0], [1], [2, 3])", "[1, 3]");
     test_where_operation(
-        "where(hstack(1, 1), hstack(1), hstack(2, 3))", "hstack(1, 1)");
+        "where([1, 1], [1], [2, 3])", "[1, 1]");
 
     test_where_operation(
-        "where(hstack(0, 0), hstack(1, 2), hstack(3, 4))", "hstack(3, 4)");
+        "where([0, 0], [1, 2], [3, 4])", "[3, 4]");
     test_where_operation(
-        "where(hstack(0, 1), hstack(1, 2), hstack(3, 4))", "hstack(3, 2)");
+        "where([0, 1], [1, 2], [3, 4])", "[3, 2]");
     test_where_operation(
-        "where(hstack(1, 0), hstack(1, 2), hstack(3, 4))", "hstack(1, 4)");
+        "where([1, 0], [1, 2], [3, 4])", "[1, 4]");
     test_where_operation(
-        "where(hstack(1, 1), hstack(1, 2), hstack(3, 4))", "hstack(1, 2)");
+        "where([1, 1], [1, 2], [3, 4])", "[1, 2]");
 
     test_where_operation(
-        "where(hstack(0, 0), hstack(1, 4), hstack(2, 3))", "hstack(2, 3)");
+        "where([0, 0], [1, 4], [2, 3])", "[2, 3]");
     test_where_operation(
-        "where(hstack(0, 1), hstack(1, 4), hstack(2, 3))", "hstack(2, 4)");
+        "where([0, 1], [1, 4], [2, 3])", "[2, 4]");
     test_where_operation(
-        "where(hstack(1, 0), hstack(1, 4), hstack(2, 3))", "hstack(1, 3)");
+        "where([1, 0], [1, 4], [2, 3])", "[1, 3]");
     test_where_operation(
-        "where(hstack(1, 1), hstack(1, 4), hstack(2, 3))", "hstack(1, 4)");
+        "where([1, 1], [1, 4], [2, 3])", "[1, 4]");
 
     ///////////////////////////////////////////////////////////////////////////
     // test matrix right hand sides
     test_where_operation(
-        "where(hstack(0, 0), vstack(hstack(1)), 2)",
-        "vstack(hstack(2, 2))");
+        "where([0, 0], [[1]], 2)",
+        "[[2, 2]]");
     test_where_operation(
-        "where(hstack(0, 1), vstack(hstack(1)), 2)",
-        "vstack(hstack(2, 1))");
+        "where([0, 1], [[1]], 2)",
+        "[[2, 1]]");
     test_where_operation(
-        "where(hstack(1, 0), vstack(hstack(1)), 2)",
-        "vstack(hstack(1, 2))");
+        "where([1, 0], [[1]], 2)",
+        "[[1, 2]]");
     test_where_operation(
-        "where(hstack(1, 1), vstack(hstack(1)), 2)",
-        "vstack(hstack(1, 1))");
+        "where([1, 1], [[1]], 2)",
+        "[[1, 1]]");
 
     test_where_operation(
-        "where(hstack(0, 0), 2, vstack(hstack(1)))",
-        "vstack(hstack(1, 1))");
+        "where([0, 0], 2, [[1]])",
+        "[[1, 1]]");
     test_where_operation(
-        "where(hstack(0, 1), 2, vstack(hstack(1)))",
-        "vstack(hstack(1, 2))");
+        "where([0, 1], 2, [[1]])",
+        "[[1, 2]]");
     test_where_operation(
-        "where(hstack(1, 0), 2, vstack(hstack(1)))",
-        "vstack(hstack(2, 1))");
+        "where([1, 0], 2, [[1]])",
+        "[[2, 1]]");
     test_where_operation(
-        "where(hstack(1, 1), 2, vstack(hstack(1)))",
-        "vstack(hstack(2, 2))");
+        "where([1, 1], 2, [[1]])",
+        "[[2, 2]]");
 
     test_where_operation(
-        "where(hstack(0, 0), vstack(hstack(1)), hstack(2))",
-        "vstack(hstack(2, 2))");
+        "where([0, 0], [[1]], [2])",
+        "[[2, 2]]");
     test_where_operation(
-        "where(hstack(0, 1), vstack(hstack(1)), hstack(2))",
-        "vstack(hstack(2, 1))");
+        "where([0, 1], [[1]], [2])",
+        "[[2, 1]]");
     test_where_operation(
-        "where(hstack(1, 0), vstack(hstack(1)), hstack(2))",
-        "vstack(hstack(1, 2))");
+        "where([1, 0], [[1]], [2])",
+        "[[1, 2]]");
     test_where_operation(
-        "where(hstack(1, 1), vstack(hstack(1)), hstack(2))",
-        "vstack(hstack(1, 1))");
+        "where([1, 1], [[1]], [2])",
+        "[[1, 1]]");
 
     test_where_operation(
-        "where(hstack(0, 0), hstack(2), vstack(hstack(1)))",
-        "vstack(hstack(1, 1))");
+        "where([0, 0], [2], [[1]])",
+        "[[1, 1]]");
     test_where_operation(
-        "where(hstack(0, 1), hstack(2), vstack(hstack(1)))",
-        "vstack(hstack(1, 2))");
+        "where([0, 1], [2], [[1]])",
+        "[[1, 2]]");
     test_where_operation(
-        "where(hstack(1, 0), hstack(2), vstack(hstack(1)))",
-        "vstack(hstack(2, 1))");
+        "where([1, 0], [2], [[1]])",
+        "[[2, 1]]");
     test_where_operation(
-        "where(hstack(1, 1), hstack(2), vstack(hstack(1)))",
-        "vstack(hstack(2, 2))");
+        "where([1, 1], [2], [[1]])",
+        "[[2, 2]]");
 
     test_where_operation(
-        "where(hstack(0, 0), vstack(hstack(1)), vstack(hstack(2)))",
-        "vstack(hstack(2, 2))");
+        "where([0, 0], [[1]], [[2]])",
+        "[[2, 2]]");
     test_where_operation(
-        "where(hstack(0, 1), vstack(hstack(1)), vstack(hstack(2)))",
-        "vstack(hstack(2, 1))");
+        "where([0, 1], [[1]], [[2]])",
+        "[[2, 1]]");
     test_where_operation(
-        "where(hstack(1, 0), vstack(hstack(1)), vstack(hstack(2)))",
-        "vstack(hstack(1, 2))");
+        "where([1, 0], [[1]], [[2]])",
+        "[[1, 2]]");
     test_where_operation(
-        "where(hstack(1, 1), vstack(hstack(1)), vstack(hstack(2)))",
-        "vstack(hstack(1, 1))");
+        "where([1, 1], [[1]], [[2]])",
+        "[[1, 1]]");
 
     test_where_operation(
-        "where(hstack(0, 0), vstack(hstack(2)), vstack(hstack(1)))",
-        "vstack(hstack(1, 1))");
+        "where([0, 0], [[2]], [[1]])",
+        "[[1, 1]]");
     test_where_operation(
-        "where(hstack(0, 1), vstack(hstack(2)), vstack(hstack(1)))",
-        "vstack(hstack(1, 2))");
+        "where([0, 1], [[2]], [[1]])",
+        "[[1, 2]]");
     test_where_operation(
-        "where(hstack(1, 0), vstack(hstack(2)), vstack(hstack(1)))",
-        "vstack(hstack(2, 1))");
+        "where([1, 0], [[2]], [[1]])",
+        "[[2, 1]]");
     test_where_operation(
-        "where(hstack(1, 1), vstack(hstack(2)), vstack(hstack(1)))",
-        "vstack(hstack(2, 2))");
+        "where([1, 1], [[2]], [[1]])",
+        "[[2, 2]]");
 
     test_where_operation(
-        "where(hstack(0, 0), vstack(hstack(1), hstack(2)), vstack(hstack(3)))",
-        "vstack(hstack(3, 3), hstack(3, 3))");
+        "where([0, 0], [[1], [2]], [[3]])",
+        "[[3, 3], [3, 3]]");
     test_where_operation(
-        "where(hstack(0, 1), vstack(hstack(1), hstack(2)), vstack(hstack(3)))",
-        "vstack(hstack(3, 1), hstack(3, 2))");
+        "where([0, 1], [[1], [2]], [[3]])",
+        "[[3, 1], [3, 2]]");
     test_where_operation(
-        "where(hstack(1, 0), vstack(hstack(1), hstack(2)), vstack(hstack(3)))",
-        "vstack(hstack(1, 3), hstack(2, 3))");
+        "where([1, 0], [[1], [2]], [[3]])",
+        "[[1, 3], [2, 3]]");
     test_where_operation(
-        "where(hstack(1, 1), vstack(hstack(1), hstack(2)), vstack(hstack(3)))",
-        "vstack(hstack(1, 1), hstack(2, 2))");
+        "where([1, 1], [[1], [2]], [[3]])",
+        "[[1, 1], [2, 2]]");
 
     test_where_operation(
-        "where(hstack(0, 0), vstack(hstack(1, 2)), vstack(hstack(3)))",
-        "vstack(hstack(3, 3))");
+        "where([0, 0], [[1, 2]], [[3]])",
+        "[[3, 3]]");
     test_where_operation(
-        "where(hstack(0, 1), vstack(hstack(1, 2)), vstack(hstack(3)))",
-        "vstack(hstack(3, 2))");
+        "where([0, 1], [[1, 2]], [[3]])",
+        "[[3, 2]]");
     test_where_operation(
-        "where(hstack(1, 0), vstack(hstack(1, 2)), vstack(hstack(3)))",
-        "vstack(hstack(1, 3))");
+        "where([1, 0], [[1, 2]], [[3]])",
+        "[[1, 3]]");
     test_where_operation(
-        "where(hstack(1, 1), vstack(hstack(1, 2)), vstack(hstack(3)))",
-        "vstack(hstack(1, 2))");
+        "where([1, 1], [[1, 2]], [[3]])",
+        "[[1, 2]]");
 }
 
 void test_three_argument_where_2d()
 {
     ///////////////////////////////////////////////////////////////////////////
     // test scalar right hand sides
-    test_where_operation("where(vstack(hstack(0, 0), hstack(0, 0)), 1, 2)",
-        "vstack(hstack(2, 2), hstack(2, 2))");
-    test_where_operation("where(vstack(hstack(0, 1), hstack(1, 0)), 1, 2)",
-        "vstack(hstack(2, 1), hstack(1, 2))");
-    test_where_operation("where(vstack(hstack(1, 0), hstack(0, 1)), 1, 2)",
-        "vstack(hstack(1, 2), hstack(2, 1))");
-    test_where_operation("where(vstack(hstack(1, 1), hstack(1, 1)), 1, 2)",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+    test_where_operation("where([[0, 0], [0, 0]], 1, 2)",
+        "[[2, 2], [2, 2]]");
+    test_where_operation("where([[0, 1], [1, 0]], 1, 2)",
+        "[[2, 1], [1, 2]]");
+    test_where_operation("where([[1, 0], [0, 1]], 1, 2)",
+        "[[1, 2], [2, 1]]");
+    test_where_operation("where([[1, 1], [1, 1]], 1, 2)",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), hstack(1), 2)",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], [1], 2)",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), hstack(1), 2)",
-        "vstack(hstack(2, 1), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], [1], 2)",
+        "[[2, 1], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), hstack(1), 2)",
-        "vstack(hstack(1, 2), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], [1], 2)",
+        "[[1, 2], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), hstack(1), 2)",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], [1], 2)",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), 1, hstack(2))",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], 1, [2])",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), 1, hstack(2))",
-        "vstack(hstack(2, 1), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], 1, [2])",
+        "[[2, 1], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), 1, hstack(2))",
-        "vstack(hstack(1, 2), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], 1, [2])",
+        "[[1, 2], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), 1, hstack(2))",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], 1, [2])",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), vstack(hstack(1)), 2)",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], [[1]], 2)",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), vstack(hstack(1)), 2)",
-        "vstack(hstack(2, 1), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], [[1]], 2)",
+        "[[2, 1], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), vstack(hstack(1)), 2)",
-        "vstack(hstack(1, 2), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], [[1]], 2)",
+        "[[1, 2], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), vstack(hstack(1)), 2)",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], [[1]], 2)",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), 1, vstack(hstack(2)))",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], 1, [[2]])",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), 1, vstack(hstack(2)))",
-        "vstack(hstack(2, 1), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], 1, [[2]])",
+        "[[2, 1], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), 1, vstack(hstack(2)))",
-        "vstack(hstack(1, 2), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], 1, [[2]])",
+        "[[1, 2], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), 1, vstack(hstack(2)))",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], 1, [[2]])",
+        "[[1, 1], [1, 1]]");
 
     ///////////////////////////////////////////////////////////////////////////
     // test vector right hand sides
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), hstack(1), hstack(2))",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], [1], [2])",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), hstack(1), hstack(2))",
-        "vstack(hstack(2, 1), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], [1], [2])",
+        "[[2, 1], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), hstack(1), hstack(2))",
-        "vstack(hstack(1, 2), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], [1], [2])",
+        "[[1, 2], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), hstack(1), hstack(2))",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], [1], [2])",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), hstack(1, 3), hstack(2))",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], [1, 3], [2])",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), hstack(1, 3), hstack(2))",
-        "vstack(hstack(2, 3), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], [1, 3], [2])",
+        "[[2, 3], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), hstack(1, 3), hstack(2))",
-        "vstack(hstack(1, 2), hstack(2, 3))");
+        "where([[1, 0], [0, 1]], [1, 3], [2])",
+        "[[1, 2], [2, 3]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), hstack(1, 3), hstack(2))",
-        "vstack(hstack(1, 3), hstack(1, 3))");
+        "where([[1, 1], [1, 1]], [1, 3], [2])",
+        "[[1, 3], [1, 3]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), hstack(1), hstack(2, 3))",
-        "vstack(hstack(2, 3), hstack(2, 3))");
+        "where([[0, 0], [0, 0]], [1], [2, 3])",
+        "[[2, 3], [2, 3]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), hstack(1), hstack(2, 3))",
-        "vstack(hstack(2, 1), hstack(1, 3))");
+        "where([[0, 1], [1, 0]], [1], [2, 3])",
+        "[[2, 1], [1, 3]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), hstack(1), hstack(2, 3))",
-        "vstack(hstack(1, 3), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], [1], [2, 3])",
+        "[[1, 3], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), hstack(1), hstack(2, 3))",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], [1], [2, 3])",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), "
-            "vstack(hstack(1)), hstack(2, 3))",
-        "vstack(hstack(2, 3), hstack(2, 3))");
+        "where([[0, 0], [0, 0]], "
+            "[[1]], [2, 3])",
+        "[[2, 3], [2, 3]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), "
-            "vstack(hstack(1)), hstack(2, 3))",
-        "vstack(hstack(2, 1), hstack(1, 3))");
+        "where([[0, 1], [1, 0]], "
+            "[[1]], [2, 3])",
+        "[[2, 1], [1, 3]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), "
-            "vstack(hstack(1)), hstack(2, 3))",
-        "vstack(hstack(1, 3), hstack(2, 1))");
+        "where([[1, 0], [0, 1]], "
+            "[[1]], [2, 3])",
+        "[[1, 3], [2, 1]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), "
-            "vstack(hstack(1)), hstack(2, 3))",
-        "vstack(hstack(1, 1), hstack(1, 1))");
+        "where([[1, 1], [1, 1]], "
+            "[[1]], [2, 3])",
+        "[[1, 1], [1, 1]]");
 
     test_where_operation(
-        "where(vstack(hstack(0, 0), hstack(0, 0)), "
-            "hstack(1, 3), vstack(hstack(2)))",
-        "vstack(hstack(2, 2), hstack(2, 2))");
+        "where([[0, 0], [0, 0]], "
+            "[1, 3], [[2]])",
+        "[[2, 2], [2, 2]]");
     test_where_operation(
-        "where(vstack(hstack(0, 1), hstack(1, 0)), "
-            "hstack(1, 3), vstack(hstack(2)))",
-        "vstack(hstack(2, 3), hstack(1, 2))");
+        "where([[0, 1], [1, 0]], "
+            "[1, 3], [[2]])",
+        "[[2, 3], [1, 2]]");
     test_where_operation(
-        "where(vstack(hstack(1, 0), hstack(0, 1)), "
-            "hstack(1, 3), vstack(hstack(2)))",
-        "vstack(hstack(1, 2), hstack(2, 3))");
+        "where([[1, 0], [0, 1]], "
+            "[1, 3], [[2]])",
+        "[[1, 2], [2, 3]]");
     test_where_operation(
-        "where(vstack(hstack(1, 1), hstack(1, 1)), "
-            "hstack(1, 3), vstack(hstack(2)))",
-        "vstack(hstack(1, 3), hstack(1, 3))");
+        "where([[1, 1], [1, 1]], "
+            "[1, 3], [[2]])",
+        "[[1, 3], [1, 3]]");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

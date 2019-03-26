@@ -808,7 +808,7 @@ void test_define_variable_function_call()
 void test_define_function_default_arguments()
 {
     auto expr = phylanx::ast::generate_ast(R"(
-        define(add, arg(x, 0), arg(y, 1), x + y)
+        define(add, __arg(x, 0), __arg(y, 1), x + y)
         add
     )");
 

@@ -17,9 +17,9 @@
 std::string const codestr = R"(block(
     define(f, a, block(
         define(b, 6),
-        define(vec1, hstack(a, b, 42)),
+        define(vec1, hstack(list(a, b, 42))),
         debug(vec1),
-        define(vec2, hstack(a, vec1, b)),
+        define(vec2, hstack(list(a, vec1, b))),
         debug(vec2)
     )),
     f

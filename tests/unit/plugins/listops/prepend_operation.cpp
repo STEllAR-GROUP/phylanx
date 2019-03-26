@@ -1,19 +1,16 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Weile Wei
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-// #406: slicing() accepts anything for its second argument
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <string>
-#include <utility>
-#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -27,30 +24,25 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
     return code.run();
 }
 
-void test_slicing_operation(std::string const& code,
+///////////////////////////////////////////////////////////////////////////////
+void test_prepend_operation(std::string const& code,
     std::string const& expected_str)
 {
     HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_slicing()
-{
-    std::string const code = R"(
-        define(test, x, block(
-            define(result, slice(x, list(nil, nil, -(1)))),
-            result
-        ))
-        test(hstack(list(1, 2, 3, 4, 5)))
-    )";
-
-    test_slicing_operation(code, "hstack(list(5, 4, 3, 2, 1))");
-}
-
-///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_slicing();
+    test_prepend_operation("prepend( 3, list(1, 42) )", "list(3, 1, 42)");
+
+    test_prepend_operation("prepend( list(1, 42), list(3, 4) )",
+        "list(list(1, 42), 3, 4)");
+    test_prepend_operation("prepend( list(), list() )", "list(list())");
+    test_prepend_operation(
+        "prepend( list(1, 42), list() )", "list(list(1, 42))");
+    test_prepend_operation(
+        "prepend( list(), list(1, 42) )", "list(list(), 1, 42)");
 
     return hpx::util::report_errors();
 }

@@ -36,95 +36,186 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         match_pattern_type{
             "hstack",
-            std::vector<std::string>{"hstack(__1)"},
+            std::vector<std::string>{"hstack(_1, __arg(_2_dtype, nil))"},
             &create_stack_operation, &create_primitive<stack_operation>, R"(
-            args
+            args, dtype
             Args:
 
                 *args (list, optional) : a list of array-like objects
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
-            A horizontally (column wise) stacked sequence of array-like objects)",
-            true
+            A horizontally (column wise) stacked sequence of array-like objects)"
         },
         match_pattern_type{
             "vstack",
-            std::vector<std::string>{"vstack(__1)"},
+            std::vector<std::string>{"vstack(_1, __arg(_2_dtype, nil))"},
             &create_stack_operation, &create_primitive<stack_operation>, R"(
-            args
+            args, dtype
             Args:
 
                 *args (list, optional) : a list of array-like objects
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
-            A vertically (row wise) stacked sequence of array-like objects)",
-            true
+            A vertically (row wise) stacked sequence of array-like objects)"
         },
         match_pattern_type{
             "stack",
-            std::vector<std::string>{"stack(_1)", "stack(_1, _2)"},
+            std::vector<std::string>{
+                "stack(_1, __arg(_2_axis, 0), __arg(_3_dtype, nil))"
+            },
             &create_stack_operation, &create_primitive<stack_operation>, R"(
-            args, axis
+            args, axis, dtype
             Args:
 
                 *args (list, optional) : a list of array-like objects
-                axis (int, optional) : the axis along which to stack input values
+                axis (int, optional) : the axis along which to stack input
+                    values, the default value is '0'
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
-            A joined sequence of array-like objects along a new axis.)",
-            true
+            A joined sequence of array-like objects along a new axis.)"
         }
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , match_pattern_type{
             "dstack",
-            std::vector<std::string>{"dstack(__1)"},
+            std::vector<std::string>{"dstack(_1, __arg(_2_dtype, nil))"},
             &create_stack_operation, &create_primitive<stack_operation>, R"(
-            args
+            args, dtype
             Args:
 
                 *args (list, optional) : a list of array-like objects
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input arrays.
 
             Returns:
 
-            A vertically (depth wise) stacked sequence of array-like objects)",
-            true
+            A vertically (depth wise) stacked sequence of array-like objects)"
         }
 #endif
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    stack_operation::stacking_mode extract_stacking_mode(
-        std::string const& name)
+    namespace detail
     {
-        stack_operation::stacking_mode result =
-            stack_operation::stacking_mode_axis;
+        stack_operation::stacking_mode extract_stacking_mode(
+            std::string const& name)
+        {
+            stack_operation::stacking_mode result =
+                stack_operation::stacking_mode_axis;
 
-        if (name.find("vstack") != std::string::npos)
-        {
-            result = stack_operation::stacking_mode_row_wise;
+            if (name.find("vstack") != std::string::npos)
+            {
+                result = stack_operation::stacking_mode_row_wise;
+            }
+            else if (name.find("hstack") != std::string::npos)
+            {
+                result = stack_operation::stacking_mode_column_wise;
+            }
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            else if (name.find("dstack") != std::string::npos)
+            {
+                result = stack_operation::stacking_mode_depth_wise;
+            }
+    #endif
+            return result;
         }
-        else if (name.find("hstack") != std::string::npos)
+
+        template <typename T>
+        primitive_argument_type empty_helper(std::size_t dims,
+            std::string const& name, std::string const& codename)
         {
-            result = stack_operation::stacking_mode_column_wise;
+            switch (dims)
+            {
+            case 1:
+                {
+                    // hstack() without arguments returns an empty 1D vector
+                    using storage1d_type =
+                        typename ir::node_data<T>::storage1d_type;
+                    return primitive_argument_type{
+                        ir::node_data<T>{storage1d_type(0)}};
+                }
+
+            case 2:
+                {
+                    // vstack() without arguments returns an empty 2D matrix
+                    using storage2d_type =
+                        typename ir::node_data<T>::storage2d_type;
+                    return primitive_argument_type{
+                        ir::node_data<T>{storage2d_type(0, 0)}};
+                }
+
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case 3:
+                {
+                    // dstack without arguments returns an empty 3D tensor
+                    using storage3d_type =
+                        typename ir::node_data<T>::storage3d_type;
+                    return primitive_argument_type{
+                        ir::node_data<T>{storage3d_type(0, 0, 0)}};
+                }
+    #endif
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "detail::empty_helper",
+                util::generate_error_message(
+                    "unsupported stacking mode requested", name, codename));
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        else if (name.find("dstack") != std::string::npos)
-        {
-            result = stack_operation::stacking_mode_depth_wise;
-        }
-#endif
-        return result;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    hpx::future<primitive_argument_type> stack_operation::empty_helper() const
+    {
+        switch (mode_)
+        {
+        case stacking_mode_column_wise:
+            {
+                // hstack() without arguments returns an empty 1D vector
+                return hpx::make_ready_future(
+                    detail::empty_helper<T>(1, name_, codename_));
+            }
+
+        case stacking_mode_row_wise:
+            {
+                // vstack() without arguments returns an empty 2D matrix
+                return hpx::make_ready_future(
+                    detail::empty_helper<T>(2, name_, codename_));
+            }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case stacking_mode_depth_wise:
+            {
+                // dstack without arguments returns an empty 3D tensor
+                return hpx::make_ready_future(
+                    detail::empty_helper<T>(3, name_, codename_));
+            }
+#endif
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "stack_operation::empty",
+            generate_error_message("unsupported stacking mode requested"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     stack_operation::stack_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
-      , mode_(extract_stacking_mode(name_))
+      , mode_(detail::extract_stacking_mode(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -167,6 +258,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::hstack0d1d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(1, name_, codename_);
+        }
+
         blaze::DynamicVector<T> result(get_vecsize(args));
 
         auto iter = result.begin();
@@ -189,9 +285,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::hstack0d1d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -225,6 +328,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::hstack2d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t args_size = args.size();
 
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
@@ -281,9 +389,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::hstack2d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -318,6 +433,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::hstack3d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 3)
@@ -368,7 +488,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             total_rows += dim[1];
         }
 
-        blaze::DynamicTensor<double> result(num_pages, total_rows, num_cols);
+        blaze::DynamicTensor<T> result(num_pages, total_rows, num_cols);
 
         std::size_t step = 0;
         for (auto && arg : args)
@@ -388,9 +508,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::hstack3d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -425,6 +552,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::vstack0d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t vec_size = args.size();
 
         blaze::DynamicMatrix<T> result(vec_size, 1);
@@ -452,9 +584,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::vstack0d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -488,6 +627,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::vstack1d2d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t args_size = args.size();
 
         std::size_t num_dims_first =
@@ -578,9 +722,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::vstack1d2d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -615,6 +766,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::vstack3d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 3)
@@ -665,7 +821,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             total_pages += dim[0];
         }
 
-        blaze::DynamicTensor<double> result(total_pages, num_rows, num_cols);
+        blaze::DynamicTensor<T> result(total_pages, num_rows, num_cols);
 
         std::size_t step = 0;
         for (auto && arg : args)
@@ -685,9 +841,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::vstack3d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -721,6 +884,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::dstack0d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t vec_size = args.size();
 
         blaze::DynamicTensor<T> result(vec_size, 1, 1);
@@ -748,9 +916,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::dstack0d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -783,6 +958,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::dstack1d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 1)
@@ -826,7 +1006,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        blaze::DynamicTensor<double> result(1, size, args_size);
+        blaze::DynamicTensor<T> result(1, size, args_size);
         auto page = blaze::pageslice(result, 0);
 
         std::size_t j = 0;
@@ -841,9 +1021,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::dstack1d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -876,6 +1063,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::dstack2d3d_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
 
@@ -939,7 +1131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        blaze::DynamicTensor<double> result(num_rows, num_cols, total_columns);
+        blaze::DynamicTensor<T> result(num_rows, num_cols, total_columns);
 
         std::size_t step = 0;
         for (auto && arg : args)
@@ -966,9 +1158,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::dstack2d3d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -1000,19 +1199,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type stack_operation::stack0d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
         switch (mode_)
         {
         case stacking_mode_column_wise:
-            return hstack0d1d(std::move(args));
+            return hstack0d1d(std::move(args), std::move(dtype));
 
         case stacking_mode_row_wise:
-            return vstack0d(std::move(args));
+            return vstack0d(std::move(args), std::move(dtype));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
-            return dstack0d(std::move(args));
+            return dstack0d(std::move(args), std::move(dtype));
 #endif
         default:
             break;
@@ -1025,10 +1224,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack0d(
-        primitive_arguments_type&& args, std::int64_t& axis) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype,
+        std::int64_t axis) const
     {
         if (axis == 0 || axis == -1)
-            return hstack0d1d(std::move(args));
+            return hstack0d1d(std::move(args), std::move(dtype));
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "stack_operation::stack0d",
@@ -1039,6 +1239,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack1d_axis1_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(2, name_, codename_);
+        }
+
         std::size_t args_size = args.size();
 
         std::size_t num_dims =
@@ -1097,9 +1302,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack1d_axis1(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -1131,19 +1343,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack1d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
         switch (mode_)
         {
         case stacking_mode_column_wise:
-            return hstack0d1d(std::move(args));
+            return hstack0d1d(std::move(args), std::move(dtype));
 
         case stacking_mode_row_wise:
-            return vstack1d2d(std::move(args));
+            return vstack1d2d(std::move(args), std::move(dtype));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
-            return dstack1d(std::move(args));
+            return dstack1d(std::move(args), std::move(dtype));
 #endif
         default:
             break;
@@ -1156,14 +1368,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack1d(
-        primitive_arguments_type&& args, std::int64_t& axis) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype,
+        std::int64_t axis) const
     {
         if (args.size() != 1)
         {
             if (axis == 0 || axis == -2)
-                return vstack1d2d(std::move(args));
+                return vstack1d2d(std::move(args), std::move(dtype));
             if (axis == 1 || axis == -1)
-                return stack1d_axis1(std::move(args));
+                return stack1d_axis1(std::move(args), std::move(dtype));
         }
         else if (axis == 0 || axis == -1)
             return primitive_argument_type{std::move(args[0])};
@@ -1177,6 +1390,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack2d_axis0_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 2)
@@ -1240,9 +1458,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack2d_axis0(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -1277,6 +1502,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack2d_axis1_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 2)
@@ -1353,9 +1583,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack2d_axis1(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -1386,19 +1623,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack2d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
         switch (mode_)
         {
         case stacking_mode_column_wise:
-            return hstack2d(std::move(args));
+            return hstack2d(std::move(args), std::move(dtype));
 
         case stacking_mode_row_wise:
-            return vstack1d2d(std::move(args));
+            return vstack1d2d(std::move(args), std::move(dtype));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
-            return dstack2d3d(std::move(args));
+            return dstack2d3d(std::move(args), std::move(dtype));
 #endif
         default:
             break;
@@ -1411,23 +1648,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack2d(
-        primitive_arguments_type&& args, std::int64_t& axis) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype,
+        std::int64_t axis) const
     {
         if (args.size() == 1)
         {
             if (axis == 0 || axis == -2)
                 return primitive_argument_type{std::move(args[0])};
             if (axis == 1 || axis == -1)
-                return stack2d_axis1(std::move(args));
+                return stack2d_axis1(std::move(args), std::move(dtype));
         }
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         else {
             if (axis == 0 || axis == -3)
-                return stack2d_axis0(std::move(args));
+                return stack2d_axis0(std::move(args), std::move(dtype));
             if (axis == 1 || axis == -2)
-                return stack2d_axis1(std::move(args));
+                return stack2d_axis1(std::move(args), std::move(dtype));
             if (axis == 2 || axis == -1)
-                return dstack2d3d(std::move(args));
+                return dstack2d3d(std::move(args), std::move(dtype));
         }
 #endif
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -1440,6 +1678,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack3d_axis1_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
         if (num_dims != 3)
@@ -1476,9 +1719,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack3d_axis1(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -1513,6 +1763,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type stack_operation::stack3d_axis2_helper(
         primitive_arguments_type&& args) const
     {
+        if (args.empty())
+        {
+            return detail::empty_helper<T>(3, name_, codename_);
+        }
+
         std::size_t num_dims =
             extract_numeric_value_dimension(args[0], name_, codename_);
 
@@ -1551,9 +1806,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack3d_axis2(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
-        node_data_type t = dtype_;
+        // last argument is a dtype
+        node_data_type t = node_data_type_unknown;
+        if (is_string_operand(dtype))
+        {
+            t = map_dtype(
+                extract_string_value(std::move(dtype), name_, codename_));
+        }
+
         if (t == node_data_type_unknown)
         {
             t = extract_common_type(args);
@@ -1585,18 +1847,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack3d(
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype) const
     {
         switch (mode_)
         {
         case stacking_mode_column_wise:
-            return hstack3d(std::move(args));
+            return hstack3d(std::move(args), std::move(dtype));
 
         case stacking_mode_row_wise:
-            return vstack3d(std::move(args));
+            return vstack3d(std::move(args), std::move(dtype));
 
         case stacking_mode_depth_wise:
-            return dstack2d3d(std::move(args));
+            return dstack2d3d(std::move(args), std::move(dtype));
 
         default:
             break;
@@ -1609,16 +1871,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type stack_operation::stack3d(
-        primitive_arguments_type&& args, std::int64_t& axis) const
+        primitive_arguments_type&& args, primitive_argument_type&& dtype,
+        std::int64_t axis) const
     {
         if (args.size() == 1)
         {
             if (axis == 0 || axis == -3)
                 return primitive_argument_type{std::move(args[0])};
             if (axis == 1 || axis == -2)
-                return stack3d_axis1(std::move(args));
+                return stack3d_axis1(std::move(args), std::move(dtype));
             if (axis == 2 || axis == -1)
-                return stack3d_axis2(std::move(args));
+                return stack3d_axis2(std::move(args), std::move(dtype));
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "stack_operation::stack3d",
                 generate_error_message("unsupported axis requested"));
@@ -1630,99 +1893,215 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 #endif
 
-    template <typename T>
-    hpx::future<primitive_argument_type> stack_operation::empty_helper() const
-    {
-        switch (mode_)
-        {
-        case stacking_mode_column_wise:
-            {
-                // hstack() without arguments returns an empty 1D vector
-                using storage1d_type = typename ir::node_data<T>::storage1d_type;
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<T>{storage1d_type(0)}});
-            }
-
-        case stacking_mode_row_wise:
-            {
-                // vstack() without arguments returns an empty 2D matrix
-                using storage2d_type = typename ir::node_data<T>::storage2d_type;
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<T>{storage2d_type(0, 0)}});
-            }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case stacking_mode_depth_wise:
-            {
-                // dstack() without arguments returns an empty 3D tensor
-                using storage3d_type = typename ir::node_data<T>::storage3d_type;
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<T>{storage3d_type(0, 0, 0)}});
-            }
-#endif
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "stack_operation::empty",
-            generate_error_message("unsupported stacking mode requested"));
-    }
-
-    hpx::future<primitive_argument_type> stack_operation::empty() const
-    {
-        switch (dtype_)
-        {
-        case node_data_type_bool:
-            return empty_helper<std::uint8_t>();
-
-        case node_data_type_int64:
-            return empty_helper<std::int64_t>();
-
-        case node_data_type_unknown:
-        case node_data_type_double:
-            return empty_helper<double>();
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::primitives::stack_operation::empty",
-            generate_error_message("invalid dtype detected"));
-    }
-
     ///////////////////////////////////////////////////////////////////////////
-
-    namespace detail {
-        bool has_list_operand_strict(primitive_arguments_type const& args,
+    namespace detail
+    {
+        bool has_list_operand_strict(primitive_argument_type const& arg,
             std::size_t& numargs, std::string const& name,
             std::string const& codename)
         {
             bool result = false;
             numargs = 0;
-            for (auto const& arg : args)
+            if (is_list_operand_strict(arg))
             {
-                if (is_list_operand_strict(arg))
-                {
-                    numargs += extract_list_value_size(arg, name, codename);
-                    result = true;
-                }
-                else
-                {
-                    ++numargs;
-                }
+                numargs += extract_list_value_size(arg, name, codename);
+                result = true;
+            }
+            else
+            {
+                ++numargs;
             }
             return result;
         }
     }
 
+    primitive_argument_type stack_operation::handle_hvdstack(
+        primitive_arguments_type&& operands, primitive_arguments_type && args,
+        eval_context ctx) const
+    {
+        primitive_arguments_type ops;
+
+        if (mode_ == stacking_mode_column_wise)
+        {
+            std::size_t numargs = 0;
+            if (detail::has_list_operand_strict(
+                    operands[0], numargs, name_, codename_))
+            {
+                ops.reserve(numargs);
+                if (is_list_operand_strict(operands[0]))
+                {
+                    auto&& list = extract_list_value_strict(
+                        std::move(operands[0]), name_, codename_);
+
+                    for (auto&& l : list)
+                    {
+                        ops.emplace_back(std::move(l));
+                    }
+                }
+                else
+                {
+                    ops.emplace_back(std::move(operands[0]));
+                }
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "stack_operation::handle_hvdstack",
+                    generate_error_message(
+                        "the first argument to the hstack "
+                        "primitive has to be a list of arrays to stack"));
+            }
+        }
+        else
+        {
+            if (is_list_operand_strict(operands[0]))
+            {
+                auto&& r = extract_list_value_strict(
+                    std::move(operands[0]), name_, codename_);
+
+                ops.reserve(r.size());
+                for (auto&& op : r)
+                {
+                    if (is_list_operand_strict(op))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "stack_operation::handle_stack",
+                            generate_error_message("lists cannot be stacked"));
+                    }
+                    ops.push_back(std::move(op));
+                }
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "stack_operation::hvdhandle_stack",
+                    generate_error_message(hpx::util::format(
+                        "the first argument to the {}stack "
+                        "primitive has to be a list of arrays to stack",
+                        mode_ == stacking_mode_row_wise ? 'v' : 'd')));
+            }
+        }
+
+        primitive_argument_type dtype;
+        if (operands.size() >= 2 && valid(operands[1]))
+        {
+            dtype = value_operand_sync(
+                std::move(operands[1]), args, name_, codename_, ctx);
+        }
+
+        ops = detail::map_operands(std::move(ops),
+            functional::value_operand_sync{}, std::move(args), name_, codename_,
+            std::move(ctx));
+
+        switch (extract_largest_dimension(ops, name_, codename_))
+        {
+        case 0:
+            return stack0d(std::move(ops), std::move(dtype));
+
+        case 1:
+            return stack1d(std::move(ops), std::move(dtype));
+
+        case 2:
+            return stack2d(std::move(ops), std::move(dtype));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return stack3d(std::move(ops), std::move(dtype));
+#endif
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "stack_operation::handle_hvdstack",
+                generate_error_message(
+                    "left hand side operand has unsupported "
+                    "number of dimensions"));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type stack_operation::handle_stack(
+        primitive_arguments_type&& operands, primitive_arguments_type&& args,
+        eval_context ctx) const
+    {
+        primitive_arguments_type ops;
+
+        if (is_list_operand_strict(operands[0]))
+        {
+            auto&& r = extract_list_value_strict(
+                std::move(operands[0]), name_, codename_);
+
+            ops.reserve(r.size());
+            for (auto&& op : r)
+            {
+                if (is_list_operand_strict(op))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "stack_operation::handle_stack",
+                        generate_error_message("lists cannot be stacked"));
+                }
+                ops.push_back(std::move(op));
+            }
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "stack_operation::handle_stack",
+                generate_error_message("the first argument to the stack "
+                    "primitive has to be a list of arrays to stack"));
+        }
+
+        std::int64_t axis = 0;
+        if (operands.size() >= 2)
+        {
+            axis = extract_scalar_integer_value_strict(
+                value_operand_sync(
+                    std::move(operands[1]), args, name_, codename_, ctx),
+                name_, codename_);
+        }
+
+        primitive_argument_type dtype;
+        if (operands.size() >= 3 && valid(operands[2]))
+        {
+            dtype = value_operand_sync(
+                std::move(operands[2]), args, name_, codename_, ctx);
+        }
+
+        ops = detail::map_operands(std::move(ops),
+            functional::value_operand_sync{}, std::move(args), name_, codename_,
+            std::move(ctx));
+
+        std::size_t matrix_dims = extract_largest_dimension(
+            ops, name_, codename_);
+
+        switch (matrix_dims)
+        {
+        case 0:
+            return stack0d(std::move(ops), std::move(dtype), axis);
+
+        case 1:
+            return stack1d(std::move(ops), std::move(dtype), axis);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 2:
+            return stack2d(std::move(ops), std::move(dtype), axis);
+
+        case 3:
+            return stack3d(std::move(ops), std::move(dtype), axis);
+#endif
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "stack_operation::handle_stack",
+                generate_error_message("unsupported number of dimensions"));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> stack_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (mode_ == stacking_mode_axis && (operands.empty() ||
-            operands.size() > 2))
+        if (operands.empty() ||
+            (mode_ == stacking_mode_axis && operands.size() > 3) ||
+            (mode_ != stacking_mode_axis && operands.size() > 2))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "stack_operation::eval",
@@ -1733,19 +2112,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (operands.empty())
         {
-            return empty();
+            return empty_helper<double>();
         }
 
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands.size(); ++i)
-        {
-            if (!valid(operands[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "stack_operation::eval",
@@ -1756,123 +2126,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_), args = args, ctx](
+                    primitive_arguments_type&& ops) mutable
+            -> primitive_argument_type
+            {
                 if (this_->mode_ != stacking_mode_axis)
                 {
-                    primitive_arguments_type ops;
-                    std::size_t numargs = 0;
-                    if (detail::has_list_operand_strict(
-                            args, numargs, this_->name_, this_->codename_))
-                    {
-                        ops.reserve(numargs);
-                        for (auto&& arg : std::move(args))
-                        {
-                            if (is_list_operand_strict(arg))
-                            {
-                                auto&& list =
-                                    extract_list_value_strict(std::move(arg),
-                                        this_->name_, this_->codename_);
-
-                                for (auto&& l : list)
-                                {
-                                    ops.emplace_back(std::move(l));
-                                }
-                            }
-                            else
-                            {
-                                ops.emplace_back(std::move(arg));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ops = std::move(args);
-                    }
-
-                    std::size_t matrix_dims = extract_largest_dimension(
-                        ops, this_->name_, this_->codename_);
-
-                    switch (matrix_dims)
-                    {
-                    case 0:
-                        return this_->stack0d(std::move(ops));
-
-                    case 1:
-                        return this_->stack1d(std::move(ops));
-
-                    case 2:
-                        return this_->stack2d(std::move(ops));
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                    case 3:
-                        return this_->stack3d(std::move(ops));
-#endif
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "stack_operation::eval",
-                            this_->generate_error_message(
-                                "left hand side operand has unsupported "
-                                "number of dimensions"));
-                    }
+                    return this_->handle_hvdstack(
+                        std::move(ops), std::move(args), std::move(ctx));
                 }
                 else
                 {
-                    primitive_arguments_type ops;
-
-                    if (is_list_operand_strict(args[0]))
-                    {
-                        auto&& r = extract_list_value_strict(
-                            args[0], this_->name_, this_->codename_);
-                        ops.reserve(r.size());
-                        for (auto&& op : r)
-                        {
-                            if (is_list_operand_strict(op))
-                            {
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "stack_operation::eval",
-                                    this_->generate_error_message(
-                                        "lists cannot be stacked"));
-                            }
-                            ops.push_back(std::move(op));
-                        }
-                    }
-                    else
-                    {
-                        ops = std::move(args);
-                    }
-
-                    std::int64_t axis = 0;
-                    if (args.size() == 2)
-                    {
-                        axis = extract_scalar_integer_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
-                    }
-
-                    std::size_t matrix_dims = extract_largest_dimension(
-                        ops, this_->name_, this_->codename_);
-
-                    switch (matrix_dims)
-                    {
-                    case 0:
-                        return this_->stack0d(std::move(ops), axis);
-
-                    case 1:
-                        return this_->stack1d(std::move(ops), axis);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                    case 2:
-                        return this_->stack2d(std::move(ops), axis);
-                    case 3:
-                        return this_->stack3d(std::move(ops), axis);
-#endif
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "stack_operation::eval",
-                            this_->generate_error_message(
-                                "unsupported number of dimensions"));
-                    }
+                    return this_->handle_stack(
+                        std::move(ops), std::move(args), std::move(ctx));
                 }
             }),
             detail::map_operands(operands, functional::value_operand{}, args,

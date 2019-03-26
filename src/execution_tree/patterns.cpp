@@ -18,9 +18,16 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<hpx::util::tuple<std::string, match_pattern_type, std::string>>
-        registered_patterns;
+    struct registered_pattern
+    {
+        std::string name_;
+        match_pattern_type pattern_data_;
+        std::string fullpath_;
+    };
 
+    std::vector<registered_pattern> registered_patterns;
+
+    ///////////////////////////////////////////////////////////////////////////
     void show_patterns()
     {
         show_patterns(std::cout);
@@ -39,15 +46,16 @@ namespace phylanx { namespace execution_tree
         }
     }
 
-    std::map<std::string,std::vector<std::string>> list_patterns()
+    ///////////////////////////////////////////////////////////////////////////
+    std::map<std::string, std::vector<std::string>> list_patterns()
     {
         std::map<std::string, std::vector<std::string>> result;
         std::map<std::string, std::set<std::string>> found;
 
         for (auto const& p : get_all_known_patterns())
         {
-            std::string const& pat = hpx::util::get<0>(p);
-            for(auto const& pat2 : hpx::util::get<1>(p).patterns_)
+            std::string const& pat = p.name_;
+            for(auto const& pat2 : p.data_.patterns_)
             {
                 found[pat].insert(pat2);
             }
@@ -64,18 +72,19 @@ namespace phylanx { namespace execution_tree
         return result;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     std::string find_help(std::string const& s)
     {
         for(auto const& p : get_all_known_patterns())
         {
-            std::string const& pat = hpx::util::get<0>(p);
-            std::string const& help = hpx::util::get<1>(p).help_string_;
+            std::string const& pat = p.name_;
+            std::string const& help = p.data_.help_string_;
             if (pat == s)
             {
                 return help;
             }
 
-            for (auto const& pat2 : hpx::util::get<1>(p).patterns_)
+            for (auto const& pat2 : p.data_.patterns_)
             {
                 std::string p = pat2;
                 for (std::size_t i = 0; i != p.size(); ++i)
@@ -96,10 +105,14 @@ namespace phylanx { namespace execution_tree
         return "No help available.";
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Main entry point used by plugins to register their primitives (during
+    // startup)
     void register_pattern(std::string const& name,
         match_pattern_type const& pattern, std::string const& fullpath)
     {
-        registered_patterns.emplace_back(name, pattern, fullpath);
+        registered_patterns.emplace_back(
+            registered_pattern{name, pattern, fullpath});
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -107,12 +120,11 @@ namespace phylanx { namespace execution_tree
     {
         ///////////////////////////////////////////////////////////////////////
 #define PHYLANX_MATCH_DATA(type)                                               \
-    hpx::util::make_tuple(primitives::type::match_data.primitive_type_,        \
-        primitives::type::match_data)                                          \
+    pattern{primitives::type::match_data.primitive_type_,                      \
+        primitives::type::match_data}                                          \
 /**/
 #define PHYLANX_MATCH_DATA_VERBATIM(type)                                      \
-    hpx::util::make_tuple(                                                     \
-        primitives::type.primitive_type_, primitives::type)                    \
+    pattern{primitives::type.primitive_type_, primitives::type}                \
 /**/
 
         pattern_list get_all_known_patterns()
@@ -148,14 +160,13 @@ namespace phylanx { namespace execution_tree
             };
 
             // patterns registered from external primitive plugins
-            for (auto const& pattern : registered_patterns)
+            for (auto const& p : registered_patterns)
             {
-                patterns.push_back(hpx::util::make_tuple(
-                    hpx::util::get<0>(pattern), hpx::util::get<1>(pattern)));
+                patterns.push_back(pattern{p.name_, p.pattern_data_});
             }
 
-            patterns.push_back(hpx::util::make_tuple(
-                "locality", primitives::locality_match_data));
+            patterns.push_back(
+                pattern{"locality", primitives::locality_match_data});
 
             return patterns;
         }
