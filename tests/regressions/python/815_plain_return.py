@@ -11,7 +11,6 @@ def test_plain():
     return
 
 
-print(test_plain())
 assert(test_plain() == None) # noqa
 
 
@@ -37,4 +36,4 @@ def test_container():
     return (1, 2, 3)
 
 
-assert(test_container() == (1, 2, 3))
+assert(test_container() == [1, 2, 3])
