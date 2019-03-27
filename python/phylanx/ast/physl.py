@@ -1020,7 +1020,11 @@ class PhySL:
         if type(node.value) == ast.Tuple:
             return [symbol, (["list", self.apply_rule(node.value)],)]
 
-        return [symbol, (self.apply_rule(node.value),)]
+        value = self.apply_rule(node.value)
+        if value is None:
+            value = get_symbol_info(node, "nil")
+
+        return [symbol, (value,)]
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""
