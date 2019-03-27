@@ -1650,6 +1650,23 @@ range (start, end, step)
             This function works like the Python range function. 
 
 
+relu
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+relu (x, alpha, max_value, threshold)
+            Args:
+
+                x (array_like) : array
+                alpha : Slope of negative region, scalar default is 0.0
+                max_value : Saturation threshold, scalar
+                threshold : Threshold for thresholded activations, scalar default is 0.0
+
+            Returns:
+
+            An array with the elements of a clipped between 0 and max_value where
+            values > threshold and alpha * ( a - threshold ) elsewhere."
+            
+
+
 repeat
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 repeat (a, repeats, axis)

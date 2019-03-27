@@ -212,6 +212,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#prod">prod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random">random</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#range">range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#relu">relu</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#repeat">repeat</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reshape">reshape</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#set-seed-action">set_seed_action</a></li>
@@ -2084,6 +2085,22 @@ step (optional, number) : a step size</div></blockquote>
 <p class="last">An iterator of values less than <cite>end</cite> where the values
 are equal to <cite>start+step*n</cite> where n is 0, 1, 2, …
 This function works like the Python range function.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="relu">
+<h2>relu<a class="headerlink" href="#relu" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>relu (x, alpha, max_value, threshold)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>x (array_like) : array
+alpha : Slope of negative region, scalar default is 0.0
+max_value : Saturation threshold, scalar
+threshold : Threshold for thresholded activations, scalar default is 0.0</div></blockquote>
+<p>Returns:</p>
+<p class="last">An array with the elements of a clipped between 0 and max_value where
+values &gt; threshold and alpha * ( a - threshold ) elsewhere.”</p>
 </dd>
 </dl>
 </div>
