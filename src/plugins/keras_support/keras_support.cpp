@@ -17,6 +17,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(elu_operation_plugin,
     phylanx::execution_tree::primitives::elu_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(hard_sigmoid_operation_plugin,
     phylanx::execution_tree::primitives::hard_sigmoid_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(l2_normalize_operation_plugin,
+    phylanx::execution_tree::primitives::l2_normalize_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(one_hot_operation_plugin,
     phylanx::execution_tree::primitives::one_hot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sigmoid_operation_plugin,

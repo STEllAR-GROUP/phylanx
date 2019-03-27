@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     compiler_component::compiler_component()
       : env_(compiler::default_environment())
-      , patterns_(compiler::generate_patterns(get_all_known_patterns()))
+      , patterns_(compiler::generate_patterns())
     {
     }
 

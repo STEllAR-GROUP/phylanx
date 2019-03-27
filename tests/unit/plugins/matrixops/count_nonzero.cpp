@@ -44,24 +44,24 @@ int main(int argc, char* argv[])
     test_count_nonzero_operation("count_nonzero(0.)", "0");
     test_count_nonzero_operation("count_nonzero(1.)", "1");
 
-    test_count_nonzero_operation("count_nonzero(hstack())", "0");
-    test_count_nonzero_operation("count_nonzero(hstack(1, 2, 3, 4))", "4");
-    test_count_nonzero_operation("count_nonzero(hstack(1, 0, 2, 0))", "2");
-    test_count_nonzero_operation("count_nonzero(hstack(0, 0, 0, 0))", "0");
+    test_count_nonzero_operation("count_nonzero([])", "0");
+    test_count_nonzero_operation("count_nonzero([1, 2, 3, 4])", "4");
+    test_count_nonzero_operation("count_nonzero([1, 0, 2, 0])", "2");
+    test_count_nonzero_operation("count_nonzero([0, 0, 0, 0])", "0");
 
     test_count_nonzero_operation(
-        "count_nonzero(vstack(hstack(1, 2, 3, 4)))", "4");
+        "count_nonzero([[1, 2, 3, 4]])", "4");
     test_count_nonzero_operation(
-        "count_nonzero(vstack(hstack(1, 0, 2, 0)))", "2");
+        "count_nonzero([[1, 0, 2, 0]])", "2");
     test_count_nonzero_operation(
-        "count_nonzero(vstack(hstack(0, 0, 0, 0)))", "0");
+        "count_nonzero([[0, 0, 0, 0]])", "0");
 
     test_count_nonzero_operation(
-        "count_nonzero(vstack(hstack(1, 2), hstack(3, 4)))", "4");
+        "count_nonzero([[1, 2], [3, 4]])", "4");
     test_count_nonzero_operation(
-        "count_nonzero(vstack(hstack(1, 0), hstack(2, 0)))", "2");
+        "count_nonzero([[1, 0], [2, 0]])", "2");
     test_count_nonzero_operation(
-        "count_nonzero(vstack(hstack(0, 0), hstack(0, 0)))", "0");
+        "count_nonzero([[0, 0], [0, 0]])", "0");
 
     return hpx::util::report_errors();
 }

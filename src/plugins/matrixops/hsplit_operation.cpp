@@ -22,7 +22,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const hsplit_operation::match_data = {match_pattern_type{
-        "hsplit", std::vector<std::string>{"hsplit(_1, _s_2)"},
+        "hsplit", std::vector<std::string>{"hsplit(_1, __2)"},
         &create_hsplit_operation, &create_primitive<hsplit_operation>, R"(
             args
             Args:

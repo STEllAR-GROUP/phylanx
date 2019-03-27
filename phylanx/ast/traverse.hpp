@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/util/variant.hpp>
 
 #include <hpx/traits/has_member_xxx.hpp>
 #include <hpx/util/invoke.hpp>

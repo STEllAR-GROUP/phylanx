@@ -548,34 +548,6 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Data, typename F>
-    ir::node_data<T> slice2d_integer_column(Data&& m,
-        ir::node_data<std::int64_t> && columns, F const& f,
-        std::string const& name, std::string const& codename)
-    {
-        std::size_t numcols = m.columns();
-        std::size_t index_size = columns.size();
-
-        if (index_size == 1)
-        {
-            // handle single column case
-            auto col = blaze::column(
-                m, detail::check_index(columns[0], numcols, name, codename));
-            return f.vector(m, std::move(col));
-        }
-
-        for (std::size_t i = 0; i != index_size; ++i)
-        {
-            columns[i] =
-                detail::check_index(columns[i], numcols, name, codename);
-        }
-
-        // general case, pick arbitrary columns from matrix
-        auto result = blaze::columns(m, columns.vector().data(), columns.size());
-        return f.matrix(m, std::move(result));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_boolean_basic(Data&& m,
         ir::node_data<std::uint8_t> && rows,
         ir::slicing_indices const& columns, F const& f,
@@ -612,16 +584,6 @@ namespace phylanx { namespace execution_tree
         return {};
     }
 
-    template <typename T, typename Data, typename F>
-    ir::node_data<T> slice2d_boolean_column(Data&& m,
-        ir::node_data<std::uint8_t> && columns, F const& f,
-        std::string const& name, std::string const& codename)
-    {
-        return slice2d_integer_column<T>(std::forward<Data>(m),
-            util::slicing_helpers::create_list_slice(columns),
-            f, name, codename);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_integer_integer(Data&& m,
@@ -633,8 +595,7 @@ namespace phylanx { namespace execution_tree
         std::size_t rows_index_size = rows.size();
         for (std::size_t i = 0; i != rows_index_size; ++i)
         {
-            rows[i] =
-                detail::check_index(rows[i], numrows, name, codename);
+            rows[i] = detail::check_index(rows[i], numrows, name, codename);
         }
 
         std::size_t numcols = m.columns();
@@ -645,39 +606,35 @@ namespace phylanx { namespace execution_tree
                 detail::check_index(columns[i], numcols, name, codename);
         }
 
-        // return a value and not a vector if you are not given a list
-        if (rows.size() == 1)
+        // broadcast both index arrays, use result to index elements in matrix
+        std::size_t largest_dimensionality =
+            extract_largest_dimension(name, codename, rows, columns);
+        if (largest_dimensionality > 1)
         {
-            auto row = blaze::row(m, rows[0]);
-
-            // handle single value slicing result
-            if (columns.size() == 1)
-            {
-                return f.scalar(m, row[columns[0]]);
-            }
-
-            // general case, pick arbitrary elements from selected row
-            auto sv =
-                blaze::elements(row, columns.vector().data(), columns.size());
-
-            return f.trans_vector(m, std::move(sv));
-        }
-        else if (columns.size() == 1)
-        {
-            auto col = blaze::column(m, columns[0]);
-
-            // general case, pick arbitrary elements from selected column
-            auto sv = blaze::elements(col, rows.vector().data(), rows.size());
-
-            return f.vector(m, std::move(sv));
+            HPX_THROW_EXCEPTION(hpx::not_implemented,
+                "phylanx::execution_tree::slice2d_integer_integer",
+                util::generate_error_message(
+                    "this operation is not supported (yet)", name, codename));
         }
 
-        // general case, pick arbitrary elements from matrix
-        auto sm = blaze::rows(m, rows.vector().data(), rows.size());
-        auto result =
-            blaze::columns(sm, columns.vector().data(), columns.size());
+        if (largest_dimensionality == 0)
+        {
+            return f.scalar(m, m(rows[0], columns[0]));
+        }
 
-        return f.matrix(m, std::move(result));
+        auto sizes = extract_largest_dimensions(name, codename, rows, columns);
+        auto row_indices =
+            extract_value_vector<T>(std::move(rows), sizes[0], name, codename);
+        auto column_indices = extract_value_vector<T>(
+            std::move(columns), sizes[0], name, codename);
+
+        typename ir::node_data<T>::storage1d_type result(row_indices.size());
+        for (std::size_t i = 0; i != row_indices.size(); ++i)
+        {
+            result[i] = m(row_indices[i], column_indices[i]);
+        }
+
+        return f.vector(m, std::move(result));
     }
 
     template <typename T, typename Data, typename F>
@@ -690,8 +647,7 @@ namespace phylanx { namespace execution_tree
         std::size_t rows_index_size = rows.size();
         for (std::size_t i = 0; i != rows_index_size; ++i)
         {
-            rows[i] =
-                detail::check_index(rows[i], numrows, name, codename);
+            rows[i] = detail::check_index(rows[i], numrows, name, codename);
         }
 
         HPX_THROW_EXCEPTION(hpx::not_implemented,
@@ -736,6 +692,199 @@ namespace phylanx { namespace execution_tree
                 "this operation is not supported (yet)", name, codename));
 
         return {};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_0d(Data&& m,
+        ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        HPX_ASSERT(rows.size() == 1);
+
+        auto row = blaze::row(
+            m, detail::check_index(rows[0], m.rows(), name, codename));
+        if (!explicit_nil)
+        {
+            return f.vector(m, std::move(row));
+        }
+
+        typename ir::node_data<T>::storage2d_type result(1, m.columns());
+        blaze::row(result, 0) = row;
+        return f.matrix(m, std::move(result));
+    }
+
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_1d(Data&& m,
+        ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        for (std::size_t i = 0; i != rows.size(); ++i)
+        {
+            rows[i] = detail::check_index(rows[i], m.rows(), name, codename);
+        }
+
+        // general case, pick arbitrary rows from matrix
+        auto rows_result = blaze::rows(m, rows.vector().data(), rows.size());
+        if (!explicit_nil)
+        {
+            return f.matrix(m, std::move(rows_result));
+        }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        typename ir::node_data<T>::storage3d_type result(
+            1, rows.size(), m.columns());
+        blaze::pageslice(result, 0) = rows_result;
+        return f.tensor(m, std::move(result));
+#else
+    HPX_THROW_EXCEPTION(hpx::not_implemented,
+        "phylanx::execution_tree::slice2d_integer_1d",
+        util::generate_error_message(
+            "this operation is not supported (yet)", name, codename));
+#endif
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_2d(Data&& m,
+        ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        if (!explicit_nil && rows.size() == 1)
+        {
+            typename ir::node_data<T>::storage3d_type result(1, 1, m.columns());
+            blaze::row(blaze::pageslice(result, 0), 0) = blaze::row(
+                m, detail::check_index(rows[0], m.rows(), name, codename));
+            return f.tensor(m, std::move(result));
+        }
+
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_integer_2d",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+    }
+#endif
+
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer(Data&& m,
+        ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        switch (rows.num_dimensions())
+        {
+        case 0:
+            return slice2d_integer_0d<T>(std::forward<Data>(m),
+                std::move(rows), explicit_nil, f, name, codename);
+
+        case 1:
+            return slice2d_integer_1d<T>(std::forward<Data>(m),
+                std::move(rows), explicit_nil, f, name, codename);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 2:
+            return slice2d_integer_2d<T>(std::forward<Data>(m),
+                std::move(rows), explicit_nil, f, name, codename);
+#endif
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_integer",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_column_0d(Data&& m,
+        ir::node_data<std::int64_t>&& columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        HPX_ASSERT(columns.size() == 1);
+
+        auto column = blaze::column(
+            m, detail::check_index(columns[0], m.columns(), name, codename));
+        return f.vector(m, std::move(column));
+    }
+
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_column_1d(Data&& m,
+        ir::node_data<std::int64_t>&& columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        for (std::size_t i = 0; i != columns.size(); ++i)
+        {
+            columns[i] =
+                detail::check_index(columns[i], m.columns(), name, codename);
+        }
+
+        // general case, pick arbitrary rows from matrix
+        auto columns_result =
+            blaze::columns(m, columns.vector().data(), columns.size());
+        return f.matrix(m, std::move(columns_result));
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_column_2d(Data&& m,
+        ir::node_data<std::int64_t>&& columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        if (columns.size() == 1)
+        {
+            typename ir::node_data<T>::storage3d_type result(1, m.rows(), 1);
+            blaze::column(blaze::pageslice(result, 0), 0) = blaze::column(
+                m, detail::check_index(columns[0], m.columns(), name, codename));
+            return f.tensor(m, std::move(result));
+        }
+
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_integer_column_2d",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+    }
+#endif
+
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_column(Data&& m,
+        ir::node_data<std::int64_t>&& columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        switch (columns.num_dimensions())
+        {
+        case 0:
+            return slice2d_integer_column_0d<T>(std::forward<Data>(m),
+                std::move(columns), f, name, codename);
+
+        case 1:
+            return slice2d_integer_column_1d<T>(std::forward<Data>(m),
+                std::move(columns), f, name, codename);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 2:
+            return slice2d_integer_column_2d<T>(std::forward<Data>(m),
+                std::move(columns), f, name, codename);
+#endif
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_integer_column",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_boolean(Data&& m,
+        ir::node_data<std::uint8_t> && columns, bool explicit_nil, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        return slice2d_integer<T>(std::forward<Data>(m),
+            util::slicing_helpers::create_list_slice(columns),
+            explicit_nil, f, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -991,25 +1140,30 @@ namespace phylanx { namespace execution_tree
             }
             if (!valid(columns))
             {
-                HPX_THROW_EXCEPTION(hpx::not_implemented,
-                    "phylanx::execution_tree::slice2d",
-                    util::generate_error_message(
-                        "this operation is not supported (yet)",
-                        name, codename));
-//                 return slice1d<T>(
-//                     input_matrix.matrix(), rows, f, name, codename);
+                return slice2d_integer<T>(std::forward<Data>(m),
+                    extract_integer_value(rows, name, codename),
+                    is_explicit_nil(columns), f, name, codename);
             }
         }
         else if (!valid(rows))
         {
             if (is_boolean_operand_strict(columns))
             {
-                return slice2d_boolean_column<T>(std::forward<Data>(m),
+                // an explicit 'nil' is equivalent to np.newaxis
+                return slice2d_boolean<T>(std::forward<Data>(m),
                     extract_boolean_value_strict(columns, name, codename),
-                    f, name, codename);
+                    is_explicit_nil(rows), f, name, codename);
             }
             if (is_integer_operand(columns))
             {
+                if (is_explicit_nil(rows))
+                {
+                    return slice2d_integer<T>(std::forward<Data>(m),
+                        extract_integer_value(columns, name, codename),
+                        true, f, name, codename);
+                }
+
+                // special handling for column_slice primtive
                 return slice2d_integer_column<T>(std::forward<Data>(m),
                     extract_integer_value(columns, name, codename),
                     f, name, codename);
@@ -1033,12 +1187,8 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename)
     {
-        auto m = data.matrix();
-        ir::slicing_indices columns{0ll, std::int64_t(m.columns()), 1ll};
-        return slice2d_basic_basic<T>(m,
-            util::slicing_helpers::extract_slicing(
-                indices, m.rows(), name, codename),
-            columns, detail::slice_identity<T>{}, name, codename);
+        return slice2d<T>(data.matrix(), indices, primitive_argument_type{},
+            detail::slice_identity<T>{}, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////

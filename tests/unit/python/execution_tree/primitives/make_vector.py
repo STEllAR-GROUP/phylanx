@@ -10,12 +10,12 @@ import numpy as np
 
 @Phylanx
 def test_make_vector_one():
-    return hstack(42)  # noqa: F821
+    return hstack((42))  # noqa: F821
 
 
 @Phylanx
 def test_make_vector_literals():
-    return hstack(1, 2, 3, 4)  # noqa: F821
+    return hstack((1, 2, 3, 4))  # noqa: F821
 
 
 @Phylanx
@@ -23,7 +23,7 @@ def test_make_vector():
     a = 1
     b = 2
     c = 3
-    return hstack(a, b, c)  # noqa: F821
+    return hstack((a, b, c))  # noqa: F821
 
 
 @Phylanx
@@ -31,7 +31,7 @@ def test_make_vector2():
     a = 1
     b = 2
     c = 3
-    return hstack(a, hstack(a, b, c), c)  # noqa: F821
+    return hstack((a, hstack((a, b, c)), c))  # noqa: F821
 
 
 a = test_make_vector_one()

@@ -11,6 +11,7 @@
 #include <phylanx/util/variant.hpp>
 
 #include <cctype>
+#include <string>
 
 namespace phylanx { namespace ast { namespace detail
 {
@@ -19,6 +20,12 @@ namespace phylanx { namespace ast { namespace detail
     bool is_placeholder_ellipses(Ast const&)
     {
         return false;
+    }
+
+    inline bool is_placeholder_ellipses(std::string const& name)
+    {
+        return name.size() > 2 && name[0] == '_' && name[1] == '_' &&
+            std::isdigit(name[2]);
     }
 
     inline bool is_placeholder_ellipses(identifier const& id);
@@ -35,8 +42,7 @@ namespace phylanx { namespace ast { namespace detail
 
     inline bool is_placeholder_ellipses(identifier const& id)
     {
-        return id.name.size() > 2 && id.name[0] == '_' && id.name[1] == '_' &&
-            std::isdigit(id.name[2]);
+        return is_placeholder_ellipses(id.name);
     }
 
     inline bool is_placeholder_ellipses(operation const& op)

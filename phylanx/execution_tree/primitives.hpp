@@ -20,6 +20,7 @@
 #include <phylanx/execution_tree/primitives/enable_tracing.hpp>
 #include <phylanx/execution_tree/primitives/format_string.hpp>
 #include <phylanx/execution_tree/primitives/function.hpp>
+#include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/execution_tree/primitives/lambda.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>

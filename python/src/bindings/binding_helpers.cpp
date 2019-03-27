@@ -99,16 +99,9 @@ namespace phylanx { namespace bindings
                     {
                         using phylanx::execution_tree::primitive_argument_type;
 
-                        primitive_argument_type value;
-                        if (item.is_none())
-                        {
-                            value = primitive_argument_type{
-                                phylanx::ast::nil{true}};
-                        }
-                        else
-                        {
-                            value = item.cast<primitive_argument_type>();
-                        }
+                        primitive_argument_type value =
+                            item.cast<primitive_argument_type>();
+
                         keep_alive.emplace_back(std::move(value));
                         fargs.emplace_back(extract_ref_value(keep_alive.back()));
                     }

@@ -16,6 +16,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/format.hpp>
+#include <hpx/util/optional.hpp>
 
 #include <array>
 #include <cstddef>
@@ -39,26 +40,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     cumulative<Op, Derived>::cumulative(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type cumulative<Op, Derived>::cumulative0d(
-        primitive_arguments_type&& ops) const
+        primitive_arguments_type&& ops,
+        hpx::util::optional<std::int64_t>&& axis) const
     {
-        if (ops.size() == 2)
+        if (axis)
         {
-            // make sure that axis, if given is equal to one
-            std::int64_t axis =
-                extract_scalar_integer_value(ops[1], name_, codename_);
-            if (axis != 0)
+            // make sure that axis, if given is equal to zero
+            if (*axis != 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "cumulative<Op, Derived>::cumulative_helper<T>",
+                    "cumulative<Op, Derived>::cumulative0d<T>",
                     generate_error_message(hpx::util::format(
-                        "axis {:d} is out of bounds for scalar", axis)));
+                        "axis {:d} is out of bounds for scalar", *axis)));
             }
         }
 
@@ -73,19 +72,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type cumulative<Op, Derived>::cumulative1d(
-        primitive_arguments_type&& ops) const
+        primitive_arguments_type&& ops,
+        hpx::util::optional<std::int64_t>&& axis) const
     {
-        if (ops.size() == 2)
+        if (axis)
         {
-            // make sure that axis, if given is equal to one
-            std::int64_t axis =
-                extract_scalar_integer_value(ops[1], name_, codename_);
-            if (axis != 0)
+            // make sure that axis, if given is equal to zero
+            if (*axis != 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "cumulative<Op, Derived>::cumulative_helper<T>",
+                    "cumulative<Op, Derived>::cumulative1d<T>",
                     generate_error_message(hpx::util::format(
-                        "axis {:d} is out of bounds for vector", axis)));
+                        "axis {:d} is out of bounds for vector", *axis)));
             }
         }
 
@@ -182,23 +180,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type cumulative<Op, Derived>::cumulative2d(
-        primitive_arguments_type&& ops) const
+        primitive_arguments_type&& ops,
+        hpx::util::optional<std::int64_t>&& axis) const
     {
-        std::int64_t axis = -1;
-        if (ops.size() == 2)
+        if (axis)
         {
             // make sure that axis, if given, is in valid range
-            std::int64_t axis =
-                extract_scalar_integer_value(ops[1], name_, codename_);
-            if (axis < -2 || axis > 1)
+            if (*axis < -2 || *axis > 1)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "cumulative<Op, Derived>::cumulative_helper<T>",
+                    "cumulative<Op, Derived>::cumulative2d<T>",
                     generate_error_message(hpx::util::format(
-                        "axis {:d} is out of bounds for matrix", axis)));
+                        "axis {:d} is out of bounds for matrix", *axis)));
             }
 
-            switch (axis)
+            switch (*axis)
             {
             case -2:
             case 0:         // cumulative sum over columns
@@ -342,22 +338,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type cumulative<Op, Derived>::cumulative3d(
-        primitive_arguments_type&& ops) const
+        primitive_arguments_type&& ops,
+        hpx::util::optional<std::int64_t>&& axis) const
     {
-        if (ops.size() == 2)
+        if (axis)
         {
             // make sure that axis, if given, is in valid range
-            std::int64_t axis =
-                extract_scalar_integer_value(ops[1], name_, codename_);
-            if (axis < -3 || axis > 2)
+            if (*axis < -3 || *axis > 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "cumulative<Op, Derived>::cumulative_helper<T>",
+                    "cumulative<Op, Derived>::cumulative3d<T>",
                     generate_error_message(hpx::util::format(
-                        "axis {:d} is out of bounds for tensor", axis)));
+                        "axis {:d} is out of bounds for tensor", *axis)));
             }
 
-            switch (axis)
+            switch (*axis)
             {
             case -3:
             case 0:         // cumulative sum over pages
@@ -382,24 +377,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type cumulative<Op, Derived>::cumulative_helper(
-        primitive_arguments_type&& ops) const
+        primitive_arguments_type&& ops,
+        hpx::util::optional<std::int64_t>&& axis) const
     {
         std::size_t dims =
             extract_numeric_value_dimension(ops[0], name_, codename_);
+
         switch (dims)
         {
         case 0:
-            return cumulative0d<T>(std::move(ops));
+            return cumulative0d<T>(std::move(ops), std::move(axis));
 
         case 1:
-            return cumulative1d<T>(std::move(ops));
+            return cumulative1d<T>(std::move(ops), std::move(axis));
 
         case 2:
-            return cumulative2d<T>(std::move(ops));
+            return cumulative2d<T>(std::move(ops), std::move(axis));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
-            return cumulative3d<T>(std::move(ops));
+            return cumulative3d<T>(std::move(ops), std::move(axis));
 #endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -414,16 +411,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1 && operands.size() != 2)
+        if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cumulative<Op, Derived>::eval",
                 generate_error_message(
-                    "the cumulative primitive requires one or two operands"));
+                    "the cumulative primitive requires one, two, or three "
+                    "operands"));
         }
 
-        if (!valid(operands[0]) ||
-            (operands.size() == 2 && !valid(operands[1])))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cumulative<Op, Derived>::eval",
@@ -437,7 +434,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
-                node_data_type t = this_->dtype_;
+                hpx::util::optional<std::int64_t> axis;
+                if (ops.size() >= 2 && valid(ops[1]))
+                {
+                    axis = extract_scalar_integer_value(
+                        std::move(ops[1]), this_->name_, this_->codename_);
+                }
+
+                node_data_type t = node_data_type_unknown;
+                if (ops.size() >= 3 && valid(ops[2]))
+                {
+                    t = map_dtype(extract_string_value(
+                        std::move(ops[2]), this_->name_, this_->codename_));
+                }
+
                 if (t == node_data_type_unknown)
                 {
                     t = extract_common_type(ops[0]);
@@ -447,16 +457,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case node_data_type_bool:
                     return this_->template cumulative_helper<std::uint8_t>(
-                        std::move(ops));
+                        std::move(ops), std::move(axis));
 
                 case node_data_type_int64:
                     return this_->template cumulative_helper<std::int64_t>(
-                        std::move(ops));
+                        std::move(ops), std::move(axis));
 
                 case node_data_type_unknown: HPX_FALLTHROUGH;
                 case node_data_type_double:
                     return this_->template cumulative_helper<double>(
-                        std::move(ops));
+                        std::move(ops), std::move(axis));
 
                 default:
                     break;

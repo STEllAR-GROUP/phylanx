@@ -283,6 +283,31 @@ namespace phylanx { namespace execution_tree { namespace detail
             }
             return ir::node_data<T>{std::move(data)};
         }
+
+        template <typename Data, typename View, typename F = always_true>
+        ir::node_data<T> tensor(Data& data, View&& view, F const& f = F{}) const
+        {
+            auto t = rhs_.tensor();
+
+            check_tensor_sizes(view, t);
+
+            for (std::size_t k = 0; k != t.pages(); ++k)
+            {
+                for (std::size_t i = 0; i != t.rows(); ++i)
+                {
+                    std::size_t page_idx = (k * t.pages() + i) * t.columns();
+                    for (std::size_t j = 0; j != t.columns(); ++j)
+                    {
+                        std::size_t idx = f(page_idx + j);
+                        if (idx != std::size_t(-1))
+                        {
+                            view(k, i, j) = t(k, i, j);
+                        }
+                    }
+                }
+            }
+            return ir::node_data<T>{std::move(data)};
+        }
     };
 }}}
 

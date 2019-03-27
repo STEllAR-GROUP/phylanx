@@ -180,6 +180,33 @@ void test_transpose_operation_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_transpose_operation_2d_nil()
+{
+    blaze::DynamicMatrix<std::int64_t> subject{{1, 2, 3},
+                                               {3, 4, 1}};
+    phylanx::execution_tree::primitive arg0 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(subject));
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ast::nil{});
+
+    phylanx::execution_tree::primitive l2_normalize =
+        phylanx::execution_tree::primitives::create_transpose_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(arg0), std::move(arg1)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        l2_normalize.eval();
+
+    blaze::DynamicMatrix<std::int64_t> expected{{1, 3},{2, 4},{3, 1}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(std::move(expected)),
+        phylanx::execution_tree::extract_integer_value(f.get()));
+}
+
 void test_transpose_operation_2d_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
@@ -297,6 +324,7 @@ int main(int argc, char* argv[])
     test_transpose_operation_1d_axes1d();
 
     test_transpose_operation_2d();
+    test_transpose_operation_2d_nil();
     test_transpose_operation_2d_lit();
     test_transpose_operation_2d_axes();
     test_transpose_operation_2d_axes_nochange();

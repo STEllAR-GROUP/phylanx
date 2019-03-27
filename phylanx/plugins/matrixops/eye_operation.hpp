@@ -31,13 +31,15 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     /// \param k Optional. Index of the diagonal: 0 (the default) refers to the
     ///          main diagonal, a positive value refers to an upper diagonal,
     ///          and a negative value to a lower diagonal.
+    /// \param dtype Optional. The data-type of the returned array (default:
+    ///         'float')
     class eye_operation
       : public primitive_component_base
       , public std::enable_shared_from_this<eye_operation>
     {
     protected:
-        using arg_type = ir::node_data<std::int64_t>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
+        using arg_type = primitive_argument_type;
+        using args_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
@@ -54,15 +56,17 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
     private:
         template <typename T>
-        primitive_argument_type eye_n_helper(arg_type&& arg) const;
+        primitive_argument_type eye_n_helper(std::int64_t n) const;
+
+        primitive_argument_type eye_n(
+            std::int64_t n, node_data_type dtype) const;
+
         template <typename T>
-        primitive_argument_type eye_nmk_helper(args_type&& arg) const;
+        primitive_argument_type eye_nmk_helper(
+            std::int64_t n, std::int64_t m, std::int64_t k) const;
 
-        primitive_argument_type eye_n(arg_type&& arg) const;
-        primitive_argument_type eye_nmk(args_type&& args) const;
-
-    private:
-        node_data_type dtype_;
+        primitive_argument_type eye_nmk(std::int64_t n, std::int64_t m,
+            std::int64_t k, node_data_type dtype) const;
     };
 
     inline primitive create_eye_operation(hpx::id_type const& locality,
