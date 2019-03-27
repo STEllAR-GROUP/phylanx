@@ -1226,6 +1226,21 @@ inverse (m)
             The multiplicative inverse of m.
 
 
+l2_normalize
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+l2_normalize (a, axis)
+        Args:
+
+            a (array_like) : input array
+            axis (optional, integer): axis along which to perform normalization
+                The default value is None.
+
+        Returns:
+
+        Normalizes an array with respect to the L2 norm alongside the specified
+        axis.
+
+
 lambda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 lambda (args, body)
