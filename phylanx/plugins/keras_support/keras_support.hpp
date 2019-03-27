@@ -9,6 +9,7 @@
 #include <phylanx/plugins/keras_support/batch_dot_operation.hpp>
 #include <phylanx/plugins/keras_support/elu_operation.hpp>
 #include <phylanx/plugins/keras_support/hard_sigmoid_operation.hpp>
+#include <phylanx/plugins/keras_support/l2_normalize_operation.hpp>
 #include <phylanx/plugins/keras_support/one_hot_operation.hpp>
 #include <phylanx/plugins/keras_support/relu_operation.hpp>
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>

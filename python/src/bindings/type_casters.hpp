@@ -959,6 +959,10 @@ namespace pybind11 { namespace detail
         inline bool load_alternative(
             handle src, bool convert, type_list<U, Us...>);
 
+        template <typename... Us>
+        bool load_alternative(
+            handle src, bool convert, type_list<phylanx::ast::nil, Us...>);
+
         template <typename U, typename... Us>
         inline bool load_alternative(handle src, bool convert,
             type_list<phylanx::util::recursive_wrapper<U>, Us...>);
@@ -1138,6 +1142,20 @@ namespace pybind11 { namespace detail
     }
 
     template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename... Us>
+    bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
+        bool convert, type_list<phylanx::ast::nil, Us...>)
+    {
+        if (src.is_none())
+        {
+            value = phylanx::execution_tree::primitive_argument_type(
+                phylanx::ast::nil{true});
+            return true;
+        }
+        return load_alternative(src, convert, type_list<Us...>{});
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename U, typename... Us>
     bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
         bool convert, type_list<phylanx::util::recursive_wrapper<U>, Us...>)
@@ -1151,13 +1169,30 @@ namespace pybind11 { namespace detail
         return load_alternative(src, convert, type_list<Us...>{});
     }
 
+    struct caster_variant_visitor
+    {
+        return_value_policy policy;
+        handle parent;
+
+        template <typename T>
+        handle operator()(T&& src) const
+        {
+            return make_caster<T>::cast(std::forward<T>(src), policy, parent);
+        }
+
+        handle operator()(phylanx::ast::nil&&) const
+        {
+            return pybind11::none();
+        }
+    };
+
     template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename Derived_>
     handle variant_caster_helper<Derived, V<Ts...>>::cast(
         Derived_&& src, return_value_policy policy, handle parent)
     {
-        return visit_helper<V>::call(variant_caster_visitor{policy, parent},
-                                        std::forward<Derived_>(src));
+        return visit_helper<V>::call(caster_variant_visitor{policy, parent},
+            std::forward<Derived_>(src));
     }
 
     template <typename Derived, template <typename...> class V, typename... Ts>
