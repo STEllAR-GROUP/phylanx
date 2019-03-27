@@ -37,3 +37,12 @@ flag = False
 v1 = cc(t, o, flag)
 v2 = cat_cross(t, o, flag)
 assert v1 == v2
+
+t = np.linspace(1, 12, 12)
+t = np.reshape(t, (3, 4))
+o = np.linspace(.01, .12, 12)
+o = np.reshape(o, (3, 4))
+v1 = cc(t, o, flag)
+v2 = cat_cross(t, o, flag)
+print(v1)
+print(v2)

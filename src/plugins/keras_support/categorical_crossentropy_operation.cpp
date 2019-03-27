@@ -8,6 +8,8 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
+#include <phylanx/util/blaze_traits.hpp>
+#include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -21,6 +23,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <type_traits>
 
 #include <blaze/Math.h>
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -33,6 +36,49 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        struct statistics_sum_op
+        {
+            using result_type = T;
+
+            statistics_sum_op(std::string const& name,
+                std::string const& codename)
+            {}
+
+            static constexpr T initial()
+            {
+                return T(0);
+            }
+
+            template <typename Scalar>
+            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
+            operator()(Scalar s, T initial) const
+            {
+                return s + initial;
+            }
+
+            template <typename Vector>
+            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
+            operator()(Vector& v, T initial) const
+            {
+                return blaze::sum(v) + initial;
+            }
+
+            static T finalize(T value, std::size_t size)
+            {
+                return value;
+            }
+        };
+    }
+    class sum_op : public statistics<detail::statistics_sum_op, sum_op>
+    {
+        using base_type =
+            statistics<detail::statistics_sum_op, sum_op>;
+
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const cat_cross_operation::match_data =
     {
         hpx::util::make_tuple("categorical_crossentropy",
@@ -41,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "categorical_crossentropy(_1,_2,_3)"
         },
         &create_cat_cross_operation, &create_primitive<cat_cross_operation>,
-        R"(a, axis
+        R"(target, output, from_logits
         Args:
 
             target (array_like) : input array
@@ -139,6 +185,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
+            sum_op s;
+            ir::node_data<double> out
+            hpx::util::optional<std::int64_t> axis{-1};
+            //hpx::util::optional<std::double> initial{0};
+            double initial = 0.0;
+            auto sres = s.statistics2d(out,axis,true,initial);
             output.matrix() /= blaze::sum(output.matrix());
         }
 
