@@ -16,7 +16,7 @@ assert(test_plain() == None) # noqa
 
 
 @Phylanx
-def test_none():
+def test_None():
     return None
 
 
