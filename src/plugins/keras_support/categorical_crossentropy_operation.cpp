@@ -10,11 +10,13 @@
 #include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 #include <phylanx/plugins/statistics/statistics_base.hpp>
+#include <phylanx/plugins/statistics/sum_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -30,54 +32,9 @@
 #include <blaze_tensor/Math.h>
 #endif
 
-#define HERE std::cout << "Here " << __LINE__ << std::endl
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        struct statistics_sum_op
-        {
-            using result_type = T;
-
-            statistics_sum_op(std::string const& name,
-                std::string const& codename)
-            {}
-
-            static constexpr T initial()
-            {
-                return T(0);
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial) const
-            {
-                return s + initial;
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, T initial) const
-            {
-                return blaze::sum(v) + initial;
-            }
-
-            static T finalize(T value, std::size_t size)
-            {
-                return value;
-            }
-        };
-    }
-    class sum_op : public statistics<detail::statistics_sum_op, sum_op>
-    {
-        using base_type =
-            statistics<detail::statistics_sum_op, sum_op>;
-
-    };
-
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const cat_cross_operation::match_data =
     {
@@ -108,6 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         )")
     };
     const double small = 1e-7;
+    const double big = 1 - small;
 
     ///////////////////////////////////////////////////////////////////////////
     cat_cross_operation::cat_cross_operation(primitive_arguments_type&& operands,
@@ -167,14 +125,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lo = extract_value_vector<double>(lo_, sz0, name_, codename_ );
         auto hi = extract_value_vector<double>(hi_, sz0, name_, codename_ );
 
-        output.vector() = blaze::max(
-            blaze::min(output.vector(), hi.vector()), lo.vector());
+        output.vector() = (blaze::max)(
+            (blaze::min)(output.vector(), hi.vector()), lo.vector());
 
         auto res = target.vector() * (-blaze::log(output.vector()));
         return primitive_argument_type{ blaze::sum(res) };
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    using matrix_type =
+         blaze::DynamicMatrix<double>;
+
+    using vector_type =
+         blaze::DynamicVector<double>;
+
+    using tensor_type =
+         blaze::DynamicTensor<double>;
+
+    vector_type sum2d_axis1(matrix_type& m) {
+       vector_type out(m.rows());
+       for(std::size_t i=0; i < m.rows(); ++i) {
+          out[i] = 0;
+       }
+       for(std::size_t i=0; i < m.rows(); ++i) {
+          for(std::size_t j=0; j < m.columns(); ++j) {
+             out[i] += m(i,j);
+          }
+       }
+       return out;
+    }
+
+    matrix_type sum3d_axis2(tensor_type& t) {
+       matrix_type out(t.pages(),t.rows());
+       for(std::size_t i=0; i < out.rows(); ++i) {
+          for(std::size_t j=0; j < out.columns(); ++j) {
+             out(i,j) = 0;
+          }
+       }
+       for(std::size_t k=0; k < t.pages(); ++k) {
+          for(std::size_t i=0; i < t.rows(); ++i) {
+            for(std::size_t j=0; j < t.columns(); ++j) {
+                out(k,i) += t(k,i,j);
+             }
+          }
+       }
+       return out;
+    }
 
     primitive_argument_type cat_cross_operation::cat_cross2d(
         arg_type&& target, arg_type&& output,bool from_logits) const
@@ -185,13 +181,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
-            sum_op s;
-            ir::node_data<double> out
-            hpx::util::optional<std::int64_t> axis{-1};
-            //hpx::util::optional<std::double> initial{0};
-            double initial = 0.0;
-            auto sres = s.statistics2d(out,axis,true,initial);
-            output.matrix() /= blaze::sum(output.matrix());
+            matrix_type m = output.matrix();
+            vector_type norm = sum2d_axis1(m);
+            for(std::size_t i = 0; i < m.rows(); ++i)
+                for(std::size_t j = 0; j < m.columns(); ++j)
+                    m(i,j) /= norm[i];
+            output.matrix() = m;
         }
 
         // Construct low and high clip regions
@@ -202,11 +197,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lo = extract_value_matrix<double>(lo_, sz0, sz1, name_, codename_ );
         auto hi = extract_value_matrix<double>(hi_, sz0, sz1, name_, codename_ );
 
-        output.matrix() = blaze::max(
-            blaze::min(output.matrix(), hi.matrix()), lo.matrix());
+        output.matrix() = (blaze::max)(
+            (blaze::min)(output.matrix(), hi.matrix()), lo.matrix());
 
-        auto res = target.matrix() % (-blaze::log(output.matrix()));
-        return primitive_argument_type{ blaze::sum(res) };
+        matrix_type res = target.matrix() % (-blaze::log(output.matrix()));
+        vector_type ans = sum2d_axis1(res);
+        return primitive_argument_type{ ans };
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -228,31 +224,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cat_cross_operation::cat_cross3d(
         arg_type&& target, arg_type&& output, bool from_logits) const
     {
+        tensor_type&& output_ = output.tensor();
+        tensor_type&& target_ = target.tensor();
         if(from_logits)
         {
-            output.tensor() = softmax3d_axis2(output);
+            output_ = softmax3d_axis2(output);
         }
         else
         {
-            output.tensor() /= blaze::sum(output.tensor());
+            auto norm = sum3d_axis2(output_);
+            for(std::size_t k = 0; k < output_.pages(); ++k)
+                for(std::size_t i = 0; i < output_.rows(); ++i)
+                    for(std::size_t j = 0; j < output_.columns(); ++j)
+                        output_(k,i,j) /= norm(k,i);
         }
 
-        // Construct low and high clip regions
-        auto sz0 = output.dimension(0);
-        auto sz1 = output.dimension(1);
-        auto sz2 = output.dimension(2);
-        primitive_argument_type lo_{small}, hi_{1-small};
-
-        auto lo = extract_value_tensor<double>(
-            lo_, sz0, sz1, sz2, name_, codename_ );
-        auto hi = extract_value_tensor<double>(
-            hi_, sz0, sz1, sz2, name_, codename_ );
-
-        output.tensor() = blaze::max(
-            blaze::min(output.tensor(), hi.tensor()), lo.tensor());
-
-        auto res = target.tensor() % (-blaze::log(output.tensor()));
-        return primitive_argument_type{ blaze::sum(res) };
+        for(std::size_t k = 0; k < output_.pages(); ++k) {
+            for(std::size_t i = 0; i < output_.rows(); ++i) {
+                for(std::size_t j = 0; j < output_.columns(); ++j) {
+                    auto v = output_(k,i,j);
+                    if(v < small)
+                        output_(k,i,j) = small;
+                    else if(v > big)
+                        output_(k,i,j) = big;
+                }
+            }
+        }
+        //tensor_type res_ = target_;
+        for(std::size_t k = 0; k < output_.pages(); ++k) {
+            for(std::size_t i = 0; i < output_.rows(); ++i) {
+                for(std::size_t j = 0; j < output_.columns(); ++j) {
+                    target_(k,i,j) = -target_(k,i,j) * std::log(output_(k,i,j));
+                }
+            }
+        }
+        matrix_type ans = sum3d_axis2(target_);
+        output.tensor() = output_;
+        return primitive_argument_type{ ans };
     }
 #endif
 
@@ -262,18 +270,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& args,
         eval_context ctx) const
     {
-        #if 0
-        if (operands.empty() || operands.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "cat_cross_operation::eval",
-                util::generate_error_message(
-                    "the cat_cross_operation primitive requires exactly one, or "
-                    "two operands",
-                    name_, codename_));
-        }
-        #endif
-
         for (auto const& i : operands)
         {
             if (!valid(i))

@@ -16,10 +16,17 @@ def cat_cross(target, output, from_logits=False):
     if from_logits:
         output = softmax(output)
     else:
-        output /= output.sum(axis=-1, keepdims=True)
+        v = output.sum(axis=-1, keepdims=True)
+        output /= v
     output = np.clip(output, 1e-7, 1 - 1e-7)
-    rep = target * -np.log(output)
-    return np.sum(rep, axis=-1, keepdims=False)
+    rep = -target * np.log(output)
+    ans = np.sum(rep, axis=-1, keepdims=False)
+    return ans
+
+
+# Quiet Flake8
+def categorical_crossentropy(t, o, f):
+    pass
 
 
 @Phylanx
@@ -36,13 +43,48 @@ o[4] = 2
 flag = False
 v1 = cc(t, o, flag)
 v2 = cat_cross(t, o, flag)
-assert v1 == v2
+assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
+t = np.linspace(1, 10, 10)
+t[2] = 10
+o = 3 * np.ones(10)
+o[4] = 2
+
+flag = True
+v1 = cc(t, o, flag)
+v2 = cat_cross(t, o, flag)
+assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+
+flag = True
 t = np.linspace(1, 12, 12)
 t = np.reshape(t, (3, 4))
 o = np.linspace(.01, .12, 12)
 o = np.reshape(o, (3, 4))
 v1 = cc(t, o, flag)
 v2 = cat_cross(t, o, flag)
-print(v1)
-print(v2)
+assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+
+flag = False
+t = np.linspace(1, 12, 12)
+t = np.reshape(t, (3, 4))
+o = np.linspace(.01, .12, 12)
+o = np.reshape(o, (3, 4))
+v1 = cc(t, o, flag)
+v2 = cat_cross(t, o, flag)
+assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+
+flag = False
+t = np.linspace(1, 24, 24)
+t = np.reshape(t, (3, 4, 2))
+o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+o = np.reshape(o, (3, 4, 2))
+v2 = cat_cross(t, o, flag)
+
+flag = False
+t = np.linspace(1, 24, 24)
+t = np.reshape(t, (3, 4, 2))
+o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+o = np.reshape(o, (3, 4, 2))
+v1 = cc(t, o, flag)
+
+assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
