@@ -19,6 +19,7 @@ set(tests
     805_lazy_variable
     805_two_variables
     808_print_twice
+    815_plain_return
     826_default_args
     827_random_0dim
     832_performance_data

@@ -10,6 +10,7 @@ set(tests
     hard_sigmoid_operation
     l2_normalize_operation
     one_hot_operation
+    relu_operation
     sigmoid_operation
     softmax_operation
     softplus_operation
