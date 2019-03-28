@@ -91,18 +91,6 @@ anchors:
             name: Justify building the ALL target
             command: ninja -n -d explain || true
             working_directory: /phylanx/build
-    - &add_github_to_known_hosts
-        - run:
-            name: Add Github's key(s) to known_hosts
-            command: |
-                mkdir -p ~/.ssh
-                ssh-keyscan -H github.com >>~/.ssh/known_hosts
-    - &configure_local_git
-        - run:
-            name: Configure local Git
-            command: |
-                git config --global user.name "StellarBot"
-                git config --global user.email "stellar@cct.lsu.edu"
 
 ################################################################################
 jobs:
@@ -196,8 +184,16 @@ jobs:
             - run:
                 name: Justify build
                 command: ninja -n -d explain git_docs
-            - <<: *add_github_to_known_hosts
-            - <<: *configure_local_git
+            - run:
+                name: Add Github's key(s) to known_hosts
+                command: |
+                    mkdir -p ~/.ssh
+                    ssh-keyscan -H github.com >>~/.ssh/known_hosts
+            - run:
+                name: Configure local Git
+                command: |
+                    git config --global user.name "StellarBot"
+                    git config --global user.email "stellar@cct.lsu.edu"
             - run:
                 name: Build and push Sphinx Documentation
                 command: cmake --build . -- -j1 git_docs
@@ -590,10 +586,18 @@ jobs:
                 name: Test installation
                 command: docker run --rm ${TARGET_IMAGE_NAME} physl --hpx:threads=1 --code=1+2 --print
             # Deployment
-            - <<: *add_github_to_known_hosts
-            - <<: *configure_local_git
+            - run:
+                name: Add Github's key(s) to known_hosts
+                command: |
+                    mkdir -p ~/.ssh
+                    ssh-keyscan -H github.com >>~/.ssh/known_hosts
+            - run:
+                name: Configure local Git
+                command: |
+                    git config --global user.name "StellarBot"
+                    git config --global user.email "stellar@cct.lsu.edu"
             - deploy:
-                name: Tag the commit and push the Phylanx build environment Docker image
+                name: Push the Phylanx build environment Docker image and tag the commit
                 command: |
                   if [[ -z "$CIRCLE_PR_NUMBER" ]] && [[ "${CIRCLE_BRANCH}" == "master" ]]; then
                     # Push the Docker image
@@ -609,7 +613,7 @@ jobs:
                     # Push the new stable commit tag
                     git push --tags
                   else
-                    echo "Not on the master branch. The commit will not be tagged and the image will not be pushed."
+                    echo "Not on the master branch. the image will not be pushed and the commit will not be tagged."
                   fi
 
 ################################################################################
