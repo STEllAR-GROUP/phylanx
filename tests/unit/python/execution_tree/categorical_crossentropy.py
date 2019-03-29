@@ -45,13 +45,13 @@ def cc(target, output, from_logits):
     return categorical_crossentropy(target, output, from_logits)
 
 
-for i in range(1,10):
-    for j in range(1,10):
+for i in range(1, 10):
+    for j in range(1, 10):
         for k in range(2):
             if k == 0:
-                assert cc(i,j,True) == cat_cross0(i,j,True)
+                assert cc(i, j, True) == cat_cross0(i, j, True)
             else:
-                assert cc(i,j,False) == cat_cross0(i,j,False)
+                assert cc(i, j, False) == cat_cross0(i, j, False)
 
 # Generate some random data
 t = np.linspace(1, 10, 10)
