@@ -601,6 +601,7 @@ jobs:
                     docker push ${TARGET_IMAGE_NAME}
                     # Tag the commmit
                     cd /phylanx/src
+                    git remote set-url origin git@github.com:STEllAR-GROUP/phylanx.git
                     git tag -f stable
                     ##########################################################
                     # NOTE: Dependency on the Docker push is so that users who
