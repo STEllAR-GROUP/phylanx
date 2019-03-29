@@ -23,7 +23,7 @@ def dtype_(x):
 
 def test_dtype():
     # 'float16' is not supported (yet)
-#    assert dtype_(variable(1, dtype='float16')) == 'float16'
+    # assert dtype_(variable(1, dtype='float16')) == 'float16'
     assert dtype_(variable(1, dtype='float64')) == 'float64'
     assert dtype_(variable(1, dtype='float32')) == 'float32'
     assert dtype_(variable(1, dtype='int32')) == 'int32'
@@ -31,4 +31,3 @@ def test_dtype():
 
 
 test_dtype()
-

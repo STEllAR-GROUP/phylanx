@@ -330,9 +330,7 @@ namespace phylanx { namespace bindings
     pybind11::dtype extract_dtype(
         phylanx::execution_tree::primitive_argument_type const& p)
     {
-        pybind11::gil_scoped_release release;       // release GIL
-
-        return hpx::threads::run_as_hpx_thread(
+        auto f =
             [&]() -> pybind11::dtype
             {
                 using namespace phylanx::execution_tree;
@@ -347,7 +345,7 @@ namespace phylanx { namespace bindings
                         hpx::find_here(), std::move(args), "dtype", "<unknown>");
 
                     primitive_argument_type id = type.eval(hpx::launch::sync);
-                    std::int64_t type_id = extract_scalar_integer_value_strict(
+                    type_id = extract_scalar_integer_value_strict(
                         id, "dtype", "<unknown>");
                 }
 
@@ -386,6 +384,13 @@ namespace phylanx { namespace bindings
                     break;
                 }
                 return pybind11::dtype("");
-            });
+            };
+
+        pybind11::gil_scoped_release release;       // release GIL
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::threads::run_as_hpx_thread(std::move(f));
+        }
+        return f();
     }
 }}

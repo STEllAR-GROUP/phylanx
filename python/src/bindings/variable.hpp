@@ -76,10 +76,7 @@ namespace phylanx { namespace execution_tree
 
         pybind11::handle eval(pybind11::args args) const;
 
-        pybind11::dtype dtype() const
-        {
-            return dtype_;
-        };
+        pybind11::dtype dtype() const;
 
         std::string name() const
         {

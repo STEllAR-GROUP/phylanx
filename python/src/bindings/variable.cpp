@@ -78,12 +78,23 @@ namespace phylanx { namespace execution_tree
     std::size_t variable::variable_count = 0;
 
     ///////////////////////////////////////////////////////////////////////////
+    pybind11::dtype variable::dtype() const
+    {
+        if (dtype_.is_none())
+        {
+            return bindings::extract_dtype(value_);
+        }
+        return dtype_;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         template <typename T>
         pybind11::handle convert_array(primitive_argument_type&& result)
         {
-            pybind11::array_t<T> arr = pybind11::cast(std::move(result));
+            pybind11::array_t<T> arr = pybind11::cast(std::move(result),
+                pybind11::return_value_policy::move);
             return arr.release();
         }
     }
@@ -135,13 +146,16 @@ namespace phylanx { namespace execution_tree
     pybind11::handle variable::handle_return_b(
         primitive_argument_type&& result) const
     {
-        return pybind11::cast(std::move(result));
+        pybind11::bool_ b = pybind11::cast(
+            std::move(result), pybind11::return_value_policy::move);
+        return b.release();
     }
 
     pybind11::handle variable::handle_return_S(
         primitive_argument_type&& result) const
     {
-        pybind11::str s = pybind11::cast(std::move(result));
+        pybind11::str s = pybind11::cast(
+            std::move(result), pybind11::return_value_policy::move);
         return s.release();
     }
 
@@ -170,72 +184,64 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type result =
             value_operand_sync(value_, std::move(fargs));
 
+        // re-acquire GIL
+        pybind11::gil_scoped_acquire acquire;
+
         // access dtype of result, if necessary
-        pybind11::ssize_t itemsize;
-        char kind;
-
-        if (dtype_.is_none())
+        if (!dtype_.is_none())
         {
-            pybind11::gil_scoped_acquire acquire;
-            pybind11::dtype dtype = bindings::extract_dtype(result);
-            kind = dtype.kind();
-            itemsize = dtype.itemsize();
-        }
-        else
-        {
-            kind = dtype_.kind();
-            itemsize = dtype_.itemsize();
-        }
-
-        switch (kind)
-        {
-        case 'b':   // boolean
-            if (!is_boolean_operand_strict(result))
+            switch (dtype_.kind())
             {
-                return handle_return_b(std::move(result));
+            case 'b':   // boolean
+                if (!is_boolean_operand_strict(result))
+                {
+                    return handle_return_b(std::move(result));
+                }
+                break;
+
+            case 'i':   // signed integer
+                if (!is_integer_operand_strict(result) || dtype_.itemsize() != 8)
+                {
+                    return handle_return_i(std::move(result), dtype_.itemsize());
+                }
+                break;
+
+            case 'u':   // unsigned integer
+                return handle_return_u(std::move(result), dtype_.itemsize());
+
+            case 'f':   // floating-point
+                if (!is_numeric_operand_strict(result) || dtype_.itemsize() != 8)
+                {
+                    return handle_return_f(std::move(result), dtype_.itemsize());
+                }
+                break;
+
+            case 'O':   // object
+                break;
+
+            case 'S':   // (byte-)string
+                if (!is_string_operand_strict(result))
+                {
+                    return handle_return_S(std::move(result));
+                }
+                break;
+
+            case 'c': HPX_FALLTHROUGH;  // complex floating-point
+            case 'm': HPX_FALLTHROUGH;  // timedelta
+            case 'M': HPX_FALLTHROUGH;  // datetime
+            case 'U': HPX_FALLTHROUGH;  // Unicode
+            case 'V':                   // void
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "variable::eval",
+                        hpx::util::format("unsupported dtype: {}", dtype_.kind()));
+                }
+                break;
             }
-            break;
-
-        case 'i':   // signed integer
-            if (!is_integer_operand_strict(result) || itemsize != 8)
-            {
-                return handle_return_i(std::move(result), itemsize);
-            }
-            break;
-
-        case 'u':   // unsigned integer
-            return handle_return_u(std::move(result), itemsize);
-
-        case 'f':   // floating-point
-            if (!is_numeric_operand_strict(result) || itemsize != 8)
-            {
-                return handle_return_f(std::move(result), itemsize);
-            }
-            break;
-
-        case 'O':   // object
-            break;
-
-        case 'S':   // (byte-)string
-            if (!is_string_operand_strict(result))
-            {
-                return handle_return_S(std::move(result));
-            }
-            break;
-
-        case 'c': HPX_FALLTHROUGH;  // complex floating-point
-        case 'm': HPX_FALLTHROUGH;  // timedelta
-        case 'M': HPX_FALLTHROUGH;  // datetime
-        case 'U': HPX_FALLTHROUGH;  // Unicode
-        case 'V':                   // void
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "variable::eval",
-                    hpx::util::format("unsupported dtype: {}", kind));
-            }
-            break;
         }
 
-        return pybind11::cast(std::move(result));
+        pybind11::object h = pybind11::cast(std::move(result),
+            pybind11::return_value_policy::move);
+        return h.release();
     }
 }}

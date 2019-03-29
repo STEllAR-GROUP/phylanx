@@ -11,7 +11,7 @@ PhylanxSession.init()
 
 
 def variable(value, dtype=None):
-    return execution_tree.var(np.array(value, dtype))
+    return execution_tree.variable(np.array(value, dtype), dtype)
 
 
 @Phylanx

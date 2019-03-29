@@ -13,7 +13,7 @@ PhylanxSession.init(1)
 
 
 def variable(value):
-    return execution_tree.var(np.float64(value))
+    return execution_tree.variable(np.float64(value))
 
 
 val = variable(42.0).eval()

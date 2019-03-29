@@ -94,6 +94,9 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
     auto var =
         pybind11::class_<phylanx::execution_tree::variable>(execution_tree,
             "variable", "type representing an arbitrary execution tree")
+            // copy-constructor must go before constructor that takes
+            // primitive_argument_type to avoid implicit conversion
+            .def(pybind11::init<phylanx::execution_tree::variable const&>())
             .def(pybind11::init<phylanx::execution_tree::primitive,
                      pybind11::object, pybind11::object, pybind11::object>(),
                 pybind11::arg("value"),
@@ -119,7 +122,6 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
                 pybind11::arg("constraint") = pybind11::none())
-            .def(pybind11::init<phylanx::execution_tree::variable const&>())
             .def(
                 "eval",
                 [](phylanx::execution_tree::variable const& var,

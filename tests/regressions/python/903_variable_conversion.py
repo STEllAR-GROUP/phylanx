@@ -14,7 +14,8 @@ def variable(value, dtype=None, name=None, constraint=None):
     if constraint is not None:
         raise TypeError("Constraint is the projection function to be "
                         "applied to the variable after an optimizer update")
-    return execution_tree.variable(np.array(value, dtype=dtype), dtype=dtype, name=name)
+    return execution_tree.variable(
+        np.array(value, dtype=dtype), dtype=dtype, name=name)
 
 
 def eval(func):
@@ -40,4 +41,4 @@ def test_hard_sigmoid_operation(x_shape_or_val):
     return eval(t)
 
 
-print(test_hard_sigmoid_operation((4,2)))
+print(test_hard_sigmoid_operation((4, 2)))
