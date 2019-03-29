@@ -576,6 +576,18 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_string_operand(primitive_argument_type const& val);
 
+    PHYLANX_EXPORT std::string extract_string_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::string extract_string_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_string_operand_strict(
+        primitive_argument_type const& val);
+
     // Extract an AST type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(

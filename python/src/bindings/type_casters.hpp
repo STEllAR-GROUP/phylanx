@@ -395,6 +395,9 @@ namespace pybind11 { namespace detail
             return isinstance<array_t<std::int64_t>>(src) ||
                    isinstance<array_t<std::int32_t>>(src) ||
                    isinstance<array_t<std::int16_t>>(src);
+                   isinstance<array_t<std::uint64_t>>(src) ||
+                   isinstance<array_t<std::uint32_t>>(src) ||
+                   isinstance<array_t<std::uint16_t>>(src);
         }
     };
 
