@@ -26,8 +26,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     variable::variable(primitive value, pybind11::object dtype,
             pybind11::object name, pybind11::object constraint)
-      : dtype_(dtype.is_none() ?
-                bindings::extract_dtype(value) : std::move(dtype))
+      : dtype_(std::move(dtype))
       , value_(std::move(value))
       , name_(name.is_none() ?
               hpx::util::format("variable_{}", ++variable_count) :
@@ -59,8 +58,7 @@ namespace phylanx { namespace execution_tree
 
     variable::variable(primitive_argument_type value, pybind11::object dtype,
             pybind11::object name, pybind11::object constraint)
-      : dtype_(dtype.is_none() ?
-          bindings::extract_dtype(value) : std::move(dtype))
+      : dtype_(std::move(dtype))
       , value_(is_primitive_operand(value) ?
               primitive_operand(std::move(value)) :
               create_variable(std::move(value)))
@@ -91,46 +89,46 @@ namespace phylanx { namespace execution_tree
     }
 
     pybind11::handle variable::handle_return_f(
-        primitive_argument_type&& result) const
+        primitive_argument_type&& result, pybind11::ssize_t itemsize) const
     {
-        if (dtype_.itemsize() == 4)
+        if (itemsize == 4)
         {
             return detail::convert_array<float>(std::move(result));
         }
 
-        HPX_ASSERT(dtype_.itemsize() == 8);
+        HPX_ASSERT(itemsize == 8);
         return detail::convert_array<double>(std::move(result));
     }
 
     pybind11::handle variable::handle_return_i(
-        primitive_argument_type&& result) const
+        primitive_argument_type&& result, pybind11::ssize_t itemsize) const
     {
-        if (dtype_.itemsize() == 2)
+        if (itemsize == 2)
         {
             return detail::convert_array<std::int16_t>(std::move(result));
         }
-        else if (dtype_.itemsize() == 4)
+        else if (itemsize == 4)
         {
             return detail::convert_array<std::int32_t>(std::move(result));
         }
 
-        HPX_ASSERT(dtype_.itemsize() == 8);
+        HPX_ASSERT(itemsize == 8);
         return detail::convert_array<std::int64_t>(std::move(result));
     }
 
     pybind11::handle variable::handle_return_u(
-        primitive_argument_type&& result) const
+        primitive_argument_type&& result, pybind11::ssize_t itemsize) const
     {
-        if (dtype_.itemsize() == 2)
+        if (itemsize == 2)
         {
             return detail::convert_array<std::uint16_t>(std::move(result));
         }
-        else if (dtype_.itemsize() == 4)
+        else if (itemsize == 4)
         {
             return detail::convert_array<std::uint32_t>(std::move(result));
         }
 
-        HPX_ASSERT(dtype_.itemsize() == 8);
+        HPX_ASSERT(itemsize == 8);
         return detail::convert_array<std::uint64_t>(std::move(result));
     }
 
@@ -172,7 +170,24 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type result =
             value_operand_sync(value_, std::move(fargs));
 
-        switch (dtype_.kind())
+        // access dtype of result, if necessary
+        pybind11::ssize_t itemsize;
+        char kind;
+
+        if (dtype_.is_none())
+        {
+            pybind11::gil_scoped_acquire acquire;
+            pybind11::dtype dtype = bindings::extract_dtype(result);
+            kind = dtype.kind();
+            itemsize = dtype.itemsize();
+        }
+        else
+        {
+            kind = dtype_.kind();
+            itemsize = dtype_.itemsize();
+        }
+
+        switch (kind)
         {
         case 'b':   // boolean
             if (!is_boolean_operand_strict(result))
@@ -182,19 +197,19 @@ namespace phylanx { namespace execution_tree
             break;
 
         case 'i':   // signed integer
-            if (!is_integer_operand_strict(result) || dtype_.itemsize() != 8)
+            if (!is_integer_operand_strict(result) || itemsize != 8)
             {
-                return handle_return_i(std::move(result));
+                return handle_return_i(std::move(result), itemsize);
             }
             break;
 
         case 'u':   // unsigned integer
-            return handle_return_u(std::move(result));
+            return handle_return_u(std::move(result), itemsize);
 
         case 'f':   // floating-point
-            if (!is_numeric_operand_strict(result) || dtype_.itemsize() != 8)
+            if (!is_numeric_operand_strict(result) || itemsize != 8)
             {
-                return handle_return_f(std::move(result));
+                return handle_return_f(std::move(result), itemsize);
             }
             break;
 
@@ -216,7 +231,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "variable::eval",
-                    hpx::util::format("unsupported dtype: {}", dtype_.kind()));
+                    hpx::util::format("unsupported dtype: {}", kind));
             }
             break;
         }

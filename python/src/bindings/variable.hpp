@@ -93,13 +93,13 @@ namespace phylanx { namespace execution_tree
 
     protected:
         pybind11::handle handle_return_f(
-            primitive_argument_type&& result) const;
+            primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
 
         pybind11::handle handle_return_i(
-            primitive_argument_type&& result) const;
+            primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
 
         pybind11::handle handle_return_u(
-            primitive_argument_type&& result) const;
+            primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
 
         pybind11::handle handle_return_b(
             primitive_argument_type&& result) const;
