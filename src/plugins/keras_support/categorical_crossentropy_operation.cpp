@@ -73,36 +73,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    primitive_argument_type cat_cross_operation::cat_cross0d() const
+    primitive_argument_type cat_cross_operation::cat_cross0d(
+        arg_type&& target,arg_type&& output,bool from_logits) const
     {
-        /*
-        if(from_logits)
-        {
-            // softmax0d is 1
-            output.scalar() = blaze::softmax(output.scalar());
-        }
-        else
-        {
-            // divide by itself is 1
-            output.scalar() /= blaze::sum(output.scalar());
-        }
-        // regardless of from_logits, output = 1
+        double v = 1;
 
-        // Construct low and high clip regions
-        primitive_argument_type lo_{small}, hi_{1-small};
+        if(!from_logits)
+            v = output.scalar()/output.scalar();
 
-        auto lo = extract_value_scalar<double>(lo_, name_, codename_ );
-        auto hi = extract_value_scalar<double>(hi_, name_, codename_ );
-
-        output.scalar() = blaze::max(blaze::min(
-            output.scalar(), hi.scalar()), lo.scalar());
-        // output is still 1 after clipping
-
-        // log of 1 is zero, so res is zero
-        auto res = target.scalar() * (-blaze::log(output.scalar()));
-        return primitive_argument_type{ blaze::sum(res) };
-        */
-        return primitive_argument_type{static_cast<double>(0.)};
+        return primitive_argument_type{
+            static_cast<double>(-target.scalar()*blaze::log(big))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -315,7 +295,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (target_dims)
                 {
                 case 0:
-                    return this_->cat_cross0d();
+                    return this_->cat_cross0d(
+                        std::move(target),std::move(output),from_logits);
                 case 1:
                     return this_->cat_cross1d(
                         std::move(target),std::move(output),from_logits);

@@ -24,6 +24,17 @@ def cat_cross(target, output, from_logits=False):
     return ans
 
 
+def cat_cross0(target, output, from_logits=False):
+    if from_logits:
+        output = softmax(output)
+    else:
+        v = output
+        output /= v
+    output = np.clip(output, 1e-7, 1 - 1e-7)
+    ans = -target * np.log(output)
+    return ans
+
+
 # Quiet Flake8
 def categorical_crossentropy(t, o, f):
     pass
@@ -33,6 +44,14 @@ def categorical_crossentropy(t, o, f):
 def cc(target, output, from_logits):
     return categorical_crossentropy(target, output, from_logits)
 
+
+for i in range(1,10):
+    for j in range(1,10):
+        for k in range(2):
+            if k == 0:
+                assert cc(i,j,True) == cat_cross0(i,j,True)
+            else:
+                assert cc(i,j,False) == cat_cross0(i,j,False)
 
 # Generate some random data
 t = np.linspace(1, 10, 10)

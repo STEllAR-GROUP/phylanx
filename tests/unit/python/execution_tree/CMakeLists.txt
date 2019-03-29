@@ -19,7 +19,7 @@ set(tests
     parallel
     set_operation
     slice
-    keras
+    categorical_crossentropy
    )
 
 foreach(test ${tests})

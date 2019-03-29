@@ -43,7 +43,8 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type cat_cross0d() const;
+        primitive_argument_type cat_cross0d(
+            arg_type&& target, arg_type&& output, bool from_logbits) const;
         primitive_argument_type cat_cross1d(
             arg_type&& target, arg_type&& output, bool from_logbits) const;
         primitive_argument_type cat_cross2d(
