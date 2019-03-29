@@ -600,6 +600,7 @@ jobs:
                     docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
                     docker push ${TARGET_IMAGE_NAME}
                     # Tag the commmit
+                    cd /phylanx/src
                     git tag -f stable
                     ##########################################################
                     # NOTE: Dependency on the Docker push is so that users who
