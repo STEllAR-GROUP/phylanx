@@ -11,7 +11,7 @@ from phylanx import Phylanx, PhylanxSession
 
 PhylanxSession.init(1)
 
-cs = phylanx.compiler_state()
+cs = et.compiler_state()
 
 src_mul2 = """
 define(mul2, n,

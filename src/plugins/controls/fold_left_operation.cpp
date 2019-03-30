@@ -123,13 +123,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto&& elem : list)
                 {
                     primitive_arguments_type args(2);
-                    args[0] = std::move(initial);
+                    if (is_primitive_operand(initial))
+                    {
+                        args[0] = value_operand_sync(std::move(initial),
+                            primitive_arguments_type{}, this_->name_,
+                            this_->codename_, ctx);
+                    }
+                    else
+                    {
+                        args[0] = std::move(initial);
+                    }
                     args[1] = std::move(elem);
 
                     initial = value_operand_sync(bound_func, std::move(args),
                         this_->name_, this_->codename_, ctx);
                 }
 
+                if (is_primitive_operand(initial))
+                {
+                    return primitive_argument_type{value_operand_sync(
+                        std::move(initial), primitive_arguments_type{},
+                        this_->name_, this_->codename_, ctx)};
+                }
                 return primitive_argument_type{std::move(initial)};
             }),
             value_operand(operands_[0], args, name_, codename_,

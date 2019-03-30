@@ -10,7 +10,7 @@ import ast
 import inspect
 import numpy as np
 import phylanx.execution_tree
-from phylanx import compiler_state, PhylanxSession
+from phylanx import PhylanxSession
 
 
 mapped_methods = {
@@ -379,7 +379,7 @@ class PhySL:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state()
 
             phylanx.execution_tree.compile(
                 self.file_name, self.__src__, PhySL.compiler_state)
@@ -432,6 +432,7 @@ class PhySL:
             """initialize evaluation wrapper"""
             self.outer = outer
             self.args = args
+            self.func_name = self.outer.wrapped_function.__name__
 
         def eval(self):
             """evaluate given compiled function using the bound arguments"""
@@ -444,14 +445,13 @@ class PhySL:
                     phylanx.execution_tree.enable_measurements(
                         PhySL.compiler_state, True)
 
-            func_name = self.outer.wrapped_function.__name__
             result = phylanx.execution_tree.eval(
-                self.outer.file_name, func_name, PhySL.compiler_state,
+                self.outer.file_name, self.func_name, PhySL.compiler_state,
                 *self.args)
 
             if self.outer.performance:
                 treedata = phylanx.execution_tree.retrieve_tree_topology(
-                    self.outer.file_name, func_name, PhySL.compiler_state)
+                    self.outer.file_name, self.func_name, PhySL.compiler_state)
                 self.outer.__perfdata__ = (
                     phylanx.execution_tree.retrieve_counter_data(
                         PhySL.compiler_state),
@@ -460,8 +460,8 @@ class PhySL:
 
             return result
 
-    def lazy(self, args):
-        """compile a given function, return wrapper binding function to
+    def lazy(self, args=()):
+        """Compile a given function, return wrapper binding the function to
            arguments"""
 
         if not PhylanxSession.is_initialized:
@@ -471,15 +471,27 @@ class PhySL:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state()
 
             phylanx.execution_tree.compile(
-                self.file_name, self.__src__, PhySL.compiler_state)
+                self.file_name, self.wrapped_function.__name__, self.__src__,
+                PhySL.compiler_state)
             self.is_compiled = True
 
-        return self.eval_wrapper(self, args)
+        def map_wrapped(val):
+            """If a eval_wrapper is passed as an argument to an
+                invocation of a Phylanx function we need to extract the
+                compiled execution tree and pass along that instead"""
 
-    def call(self, args):
+            if isinstance(val, self.eval_wrapper):
+                return PhySL.compiler_state.code_for(val.func_name)
+            return val
+
+        return self.eval_wrapper(self, tuple(map(map_wrapped, args)))
+
+    def call(self, args=()):
+        """Invoke this Phylanx function, pass along the given arguments"""
+
         return self.lazy(args).eval()
 
 # #############################################################################

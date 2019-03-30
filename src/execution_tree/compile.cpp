@@ -59,12 +59,12 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     compiler::entry_point const& compile(std::string const& name,
-        std::vector<ast::expression> const& exprs,
+        std::string const& func_name, std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, compiler::environment& env,
         compiler::expression_pattern_list const& patterns,
         hpx::id_type const& default_locality)
     {
-        compiler::entry_point entry_point(name);
+        compiler::entry_point entry_point(func_name, name);
 
         for (auto const& expr : exprs)
         {
@@ -78,11 +78,11 @@ namespace phylanx { namespace execution_tree
     }
 
     compiler::entry_point const& compile(std::string const& name,
-        std::vector<ast::expression> const& exprs,
+        std::string const& func_name, std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        compiler::entry_point entry_point(name);
+        compiler::entry_point entry_point(func_name, name);
 
         for (auto const& expr : exprs)
         {
@@ -99,18 +99,27 @@ namespace phylanx { namespace execution_tree
         std::string const& expr, compiler::function_list& snippets,
         compiler::environment& env, hpx::id_type const& default_locality)
     {
-        return compile(
-            name, ast::generate_ast(expr), snippets, env, default_locality);
+        return compile(name, "<unknown>", ast::generate_ast(expr), snippets,
+            env, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& name,
-        std::vector<ast::expression> const& exprs,
+        std::string const& func_name, std::string const& expr,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality)
+    {
+        return compile(name, func_name, ast::generate_ast(expr), snippets, env,
+            default_locality);
+    }
+
+    compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
         compiler::environment env =
             compiler::default_environment(default_locality);
 
-        compiler::entry_point entry_point(name);
+        compiler::entry_point entry_point(func_name, name);
 
         for (auto const& expr : exprs)
         {
@@ -127,8 +136,16 @@ namespace phylanx { namespace execution_tree
         std::string const& expr, compiler::function_list& snippets,
         hpx::id_type const& default_locality)
     {
-        return compile(
-            name, ast::generate_ast(expr), snippets, default_locality);
+        return compile(name, "<unknown>", ast::generate_ast(expr), snippets,
+            default_locality);
+    }
+
+    compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::string const& expr,
+        compiler::function_list& snippets, hpx::id_type const& default_locality)
+    {
+        return compile(name, func_name, ast::generate_ast(expr), snippets,
+            default_locality);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -137,29 +154,31 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        return compile("<unknown>", exprs, snippets, env, default_locality);
+        return compile(
+            "<unknown>", "<unknown>", exprs, snippets, env, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& expr,
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        return compile("<unknown>", ast::generate_ast(expr), snippets, env,
-            default_locality);
+        return compile("<unknown>", "<unknown>", ast::generate_ast(expr),
+            snippets, env, default_locality);
     }
 
     compiler::entry_point const& compile(
         std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
-        return compile("<unknown>", exprs, snippets, default_locality);
+        return compile(
+            "<unknown>", "<unknown>", exprs, snippets, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& expr,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
-        return compile(
-            "<unknown>", ast::generate_ast(expr), snippets, default_locality);
+        return compile("<unknown>", "<unknown>", ast::generate_ast(expr),
+            snippets, default_locality);
     }
 
     ///////////////////////////////////////////////////////////////////////////

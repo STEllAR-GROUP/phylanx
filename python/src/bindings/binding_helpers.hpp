@@ -180,7 +180,8 @@ namespace phylanx { namespace bindings
     ///////////////////////////////////////////////////////////////////////////
     // compile expression
     std::string expression_compiler(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c);
+        std::string const& func_name, std::string const& xexpr_str,
+        compiler_state& c);
 
     // evaluate compiled expression
     phylanx::execution_tree::primitive_argument_type expression_evaluator(

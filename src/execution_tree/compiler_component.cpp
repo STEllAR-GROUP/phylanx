@@ -48,7 +48,8 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point compiler_component::compile(
         std::string const& name, std::vector<ast::expression> exprs)
     {
-        return execution_tree::compile(name, exprs, snippets_, env_, patterns_);
+        return execution_tree::compile(
+            name, "<unknown>", exprs, snippets_, env_, patterns_);
     }
 
     compiler::function compiler_component::define_variable(

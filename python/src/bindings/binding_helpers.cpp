@@ -29,7 +29,8 @@ namespace phylanx { namespace bindings
 {
     ///////////////////////////////////////////////////////////////////////////
     std::string expression_compiler(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c)
+        std::string const& func_name, std::string const& xexpr_str,
+        compiler_state& c)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -37,7 +38,8 @@ namespace phylanx { namespace bindings
             [&]() -> std::string
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                    file_name, func_name, xexpr_str, c.eval_snippets,
+                    c.eval_env);
 
                 auto const& funcs = code.functions();
 
@@ -72,8 +74,8 @@ namespace phylanx { namespace bindings
                 phylanx::util::none_wrapper wrap_cout(hpx::cout);
                 phylanx::util::none_wrapper wrap_debug(hpx::consolestream);
 
-                auto const& code_x = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                auto const& code_x = phylanx::execution_tree::compile(file_name,
+                    xexpr_str, xexpr_str, c.eval_snippets, c.eval_env);
 
                 if (c.enable_measurements)
                 {
@@ -88,8 +90,6 @@ namespace phylanx { namespace bindings
 
                 auto x = code_x.run(c.eval_ctx);
 
-                phylanx::execution_tree::primitive_arguments_type keep_alive;
-                keep_alive.reserve(args.size());
                 phylanx::execution_tree::primitive_arguments_type fargs;
                 fargs.reserve(args.size());
 
@@ -98,12 +98,7 @@ namespace phylanx { namespace bindings
                     for (auto const& item : args)
                     {
                         using phylanx::execution_tree::primitive_argument_type;
-
-                        primitive_argument_type value =
-                            item.cast<primitive_argument_type>();
-
-                        keep_alive.emplace_back(std::move(value));
-                        fargs.emplace_back(extract_ref_value(keep_alive.back()));
+                        fargs.emplace_back(item.cast<primitive_argument_type>());
                     }
                 }
 
