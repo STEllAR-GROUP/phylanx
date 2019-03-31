@@ -40,7 +40,10 @@ numpy_constants = {
     "NZERO": 'NZERO',
     "e": 'euler',
     "euler_gamma": 'euler_gamma',
-    "pi": 'pi'
+    "pi": 'pi',
+    "float": 'float',
+    "int": 'int',
+    "bool": 'bool'
 }
 
 methods_supporting_dtype = [
@@ -640,8 +643,6 @@ class PhySL:
 
         def __apply(self, k):
             kw = self.apply_rule(k.value)
-            if k.arg == 'dtype' and '$' in kw:
-                kw = '"' + kw.split('$', 1)[0] + '"'
             return (k.arg, kw)
 
         symbol = self.apply_rule(node.func)
@@ -662,46 +663,56 @@ class PhySL:
         elif 'dstack' in symbol:
             if args and isinstance(args[0], tuple):
                 args = (['list', (tuple(args), )],)
+
         elif 'zeros_like' in symbol:
-            symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
-            return [symbol, ('0', args)]
+            symbol = symbol.replace('zeros_like', 'constant_like')
+            return [symbol, ('0', args + kwargs)]
         elif 'ones_like' in symbol:
-            symbol = symbol.replace('ones_like', 'constant_like' + dtype)
-            return [symbol, ('1', args)]
+            symbol = symbol.replace('ones_like', 'constant_like')
+            return [symbol, ('1', args + kwargs)]
         elif 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant_like' + dtype)
-            return [symbol, (args[1], (args[0], ))]
+            symbol = symbol.replace('full_like', 'constant_like')
+            return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty_like' in symbol:
+            symbol = symbol.replace('empty_like', 'constant_like')
+            return [symbol, (None, args + kwargs)]
+
         elif 'zeros' in symbol:
-            symbol = symbol.replace('zeros', 'constant' + dtype)
+            symbol = symbol.replace('zeros', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, ('0', [op, args])]
+                return [symbol, ('0', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('0', args)]
+                return [symbol, ('0', args + kwargs)]
         elif 'ones' in symbol:
-            symbol = symbol.replace('ones', 'constant' + dtype)
+            symbol = symbol.replace('ones', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, ('1', [op, args])]
+                return [symbol, ('1', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('1', args)]
+                return [symbol, ('1', args + kwargs)]
         elif 'full' in symbol:
-            symbol = symbol.replace('full', 'constant' + dtype)
+            symbol = symbol.replace('full', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, (args[1], [op, args[0]])]
+                return [symbol, (args[1], [op, args[0]]) + kwargs]
             else:
-                return [symbol, (args[1], args[0])]
+                return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty' in symbol:
+            symbol = symbol.replace('empty', 'constant')
+            if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, (None, [op, args[0]]) + kwargs]
+            else:
+                return [symbol, (None, args + kwargs)]
+
         else:
             method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
             if len(method) == 1:
                 symbol = symbol.replace(method[0], method[0] + dtype)
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        if kwargs:
-            args += kwargs
-        return [symbol, args]
+        return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):
     #     """class ClassDef(name, bases, keywords, starargs, kwargs, body,

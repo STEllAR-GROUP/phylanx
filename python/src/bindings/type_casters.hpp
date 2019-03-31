@@ -587,6 +587,8 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_automatic(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
@@ -600,12 +602,12 @@ namespace pybind11 { namespace detail
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -615,7 +617,7 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -628,38 +630,40 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_move(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
             case phylanx::ir::node_data<T>::storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     std::move(src->vector_non_ref())));
 
             // blaze::DynamicMatrix<T>
             case phylanx::ir::node_data<T>::storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     std::move(src->matrix_non_ref())));
 
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     std::move(src->tensor_non_ref())));
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -672,6 +676,8 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_copy(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
@@ -684,12 +690,12 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -699,7 +705,7 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -712,6 +718,8 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_automatic_reference(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
@@ -725,12 +733,12 @@ namespace pybind11 { namespace detail
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -740,7 +748,7 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
