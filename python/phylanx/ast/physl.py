@@ -382,7 +382,8 @@ class PhySL:
                 PhySL.compiler_state = phylanx.execution_tree.compiler_state()
 
             phylanx.execution_tree.compile(
-                self.file_name, self.__src__, PhySL.compiler_state)
+                self.file_name, self.wrapped_function.__name__, self.__src__,
+                PhySL.compiler_state)
             self.is_compiled = True
 
     def generate_physl(self, ir):
