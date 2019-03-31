@@ -79,21 +79,24 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             assert len(tree.body) == 1
             return tree
 
+        def map_decorated(self, val):
+            """If a PhylanxDecorator is passed as an argument to an
+               invocation of a Phylanx function we need to extract the
+               compiled execution tree and pass along that instead"""
+
+            if type(val).__name__ == "_PhylanxDecorator":
+                return val.backend.lazy()
+            return val
+
         def lazy(self, *args):
             """Compile this decorator, return wrapper binding the function to
-                arguments"""
+               arguments"""
 
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            # If a PhylanxDecorator is passed as an argument to an
-            # invocation of a Phylanx function we need to extract the
-            # compiled execution tree and pass along that instead
-            f = lambda val : val.backend.lazy() \
-                    if type(val).__name__ == _PhylanxDecorator.__name__ else val
-
-            return self.backend.lazy(tuple(map(f, args)))
+            return self.backend.lazy(map(self.map_decorated, args))
 
         def __call__(self, *args):
             """Invoke this decorator using the given arguments"""
@@ -102,13 +105,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            # If a PhylanxDecorator is passed as an argument to an
-            # invocation of a Phylanx function we need to extract the
-            # compiled execution tree and pass along that instead
-            f = lambda val : val.backend.lazy() \
-                    if type(val).__name__ == _PhylanxDecorator.__name__ else val
-
-            result = self.backend.call(tuple(map(f, args)))
+            result = self.backend.call(map(self.map_decorated, args))
 
             self.__perfdata__ = self.backend.__perfdata__
 

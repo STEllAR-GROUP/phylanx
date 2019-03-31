@@ -9,9 +9,14 @@ import numpy as np
 from phylanx import Phylanx, PhylanxSession, execution_tree
 
 
+# appease flake
+def fold_left(x, y, z):
+    pass
+
+
 @Phylanx
 def fn():
-    return lambda a, b : 2 * a - b
+    return lambda a, b: 2 * a - b
 
 
 @Phylanx
