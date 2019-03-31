@@ -96,6 +96,15 @@ namespace phylanx { namespace execution_tree
     }
 
     compiler::entry_point const& compile(std::string const& name,
+        std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality)
+    {
+        return compile(
+            name, "<unknown>", exprs, snippets, env, default_locality);
+    }
+
+    compiler::entry_point const& compile(std::string const& name,
         std::string const& expr, compiler::function_list& snippets,
         compiler::environment& env, hpx::id_type const& default_locality)
     {
@@ -138,6 +147,13 @@ namespace phylanx { namespace execution_tree
     {
         return compile(name, "<unknown>", ast::generate_ast(expr), snippets,
             default_locality);
+    }
+
+    compiler::entry_point const& compile(std::string const& name,
+        std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, hpx::id_type const& default_locality)
+    {
+        return compile(name, "<unknown>", exprs, snippets, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& name,
