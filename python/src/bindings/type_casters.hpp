@@ -18,6 +18,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <bindings/variable.hpp>
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -394,7 +396,10 @@ namespace pybind11 { namespace detail
         {
             return isinstance<array_t<std::int64_t>>(src) ||
                    isinstance<array_t<std::int32_t>>(src) ||
-                   isinstance<array_t<std::int16_t>>(src);
+                   isinstance<array_t<std::int16_t>>(src) ||
+                   isinstance<array_t<std::uint64_t>>(src) ||
+                   isinstance<array_t<std::uint32_t>>(src) ||
+                   isinstance<array_t<std::uint16_t>>(src);
         }
     };
 
@@ -1199,6 +1204,16 @@ namespace pybind11 { namespace detail
     bool variant_caster_helper<Derived, V<Ts...>>::load(
         handle src, bool convert)
     {
+        // Handle conversion from variable right away
+        if (pybind11::isinstance<phylanx::execution_tree::variable>(src))
+        {
+            phylanx::execution_tree::variable var =
+                src.cast<phylanx::execution_tree::variable>();
+            value =
+                phylanx::execution_tree::primitive_argument_type{var.value()};
+            return true;
+        }
+
         // Do a first pass without conversions to improve constructor resolution.
         // E.g. `py::int_(1).cast<variant<double, int>>()` needs to fill the `int`
         // slot of the variant. Without two-pass loading `double` would be filled
