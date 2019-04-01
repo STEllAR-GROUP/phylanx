@@ -14,6 +14,7 @@ set(tests
     sigmoid_operation
     softmax_operation
     softplus_operation
+    softsign_operation
    )
 
 foreach(test ${tests})

@@ -15,5 +15,6 @@
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
 #include <phylanx/plugins/keras_support/softplus_operation.hpp>
+#include <phylanx/plugins/keras_support/softsign_operation.hpp>
 
 #endif
