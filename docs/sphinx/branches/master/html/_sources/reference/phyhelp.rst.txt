@@ -558,29 +558,39 @@ concatenate (ar, axis)
 
 constant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-constant (arg1, arg2)
+constant (value, shape, dtype)
             Args:
 
-                arg1 (float): a constant value
-                arg2 (int or shape, optional): the number of values
+                value (float): a constant value, if 'None' this operation
+                  returns an uninitialized array-like, also in this case 'shape'
+                  should not be 'None'
+                shape (int or shape, optional): the number of values
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
-            An array of size arg2 with each element equal to arg1.
+            An array of size 'shape' with each element equal to 'value'. If
+            'value' is equal to None, the array elements are uninitialized.
 
 
 constant_like
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-constant_like (arg1, arg2)
+constant_like (value, a, dtype)
             Args:
 
-                arg1 (float): a constant value
-                arg2 (array-like): the shape of this array-like will be used as
-                                   to determine the shape of the result
+                value (float): a constant value, if 'None' this operation
+                  returns an uninitialized array-like
+                a (array-like): the shape of this array-like will be used as
+                                to determine the shape of the result
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
-            An array of the same size as arg2 with each element equal to arg1.
+            An array of the same size as 'a' with each element equal to
+            'value'. If 'value' is equal to None, the array elements are
+            uninitialized.
 
 
 count_nonzero

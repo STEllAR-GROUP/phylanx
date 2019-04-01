@@ -933,29 +933,44 @@ before use</div></blockquote>
 <div class="section" id="constant">
 <h2>constant<a class="headerlink" href="#constant" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>constant (arg1, arg2)</dt>
+<dt>constant (value, shape, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div>arg1 (float): a constant value
-arg2 (int or shape, optional): the number of values</div></blockquote>
+<div><dl class="docutils">
+<dt>value (float): a constant value, if ‘None’ this operation</dt>
+<dd>returns an uninitialized array-like, also in this case ‘shape’
+should not be ‘None’</dd>
+</dl>
+<p>shape (int or shape, optional): the number of values
+dtype (string, optional): the data-type of the returned array,</p>
+<blockquote>
+<div>defaults to ‘float’.</div></blockquote>
+</div></blockquote>
 <p>Returns:</p>
-<p class="last">An array of size arg2 with each element equal to arg1.</p>
+<p class="last">An array of size ‘shape’ with each element equal to ‘value’. If
+‘value’ is equal to None, the array elements are uninitialized.</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="constant-like">
 <h2>constant_like<a class="headerlink" href="#constant-like" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>constant_like (arg1, arg2)</dt>
+<dt>constant_like (value, a, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p>arg1 (float): a constant value
-arg2 (array-like): the shape of this array-like will be used as</p>
-<blockquote>
-<div>to determine the shape of the result</div></blockquote>
+<div><dl class="docutils">
+<dt>value (float): a constant value, if ‘None’ this operation</dt>
+<dd>returns an uninitialized array-like</dd>
+<dt>a (array-like): the shape of this array-like will be used as</dt>
+<dd>to determine the shape of the result</dd>
+<dt>dtype (string, optional): the data-type of the returned array,</dt>
+<dd>defaults to ‘float’.</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
-<p class="last">An array of the same size as arg2 with each element equal to arg1.</p>
+<p class="last">An array of the same size as ‘a’ with each element equal to
+‘value’. If ‘value’ is equal to None, the array elements are
+uninitialized.</p>
 </dd>
 </dl>
 </div>
