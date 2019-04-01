@@ -45,6 +45,7 @@ def cc(target, output, from_logits):
     return categorical_crossentropy(target, output, from_logits)
 
 
+# Test 0d
 for i in range(1, 10):
     for j in range(1, 10):
         for k in range(2):
@@ -53,8 +54,8 @@ for i in range(1, 10):
             else:
                 assert cc(i, j, False) == cat_cross0(i, j, False)
 
-# Generate some random data
-t = np.linspace(1, 10, 10)
+# Test 1d
+t = np.linspace(1.0e-9, 10e-9, 10)
 t[2] = 10
 o = 3 * np.ones(10)
 o[4] = 2
@@ -64,7 +65,7 @@ v1 = cc(t, o, flag)
 v2 = cat_cross(t, o, flag)
 assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
-t = np.linspace(1, 10, 10)
+t = np.linspace(1.0e-9, 10e-9, 10)
 t[2] = 10
 o = 3 * np.ones(10)
 o[4] = 2
@@ -74,6 +75,7 @@ v1 = cc(t, o, flag)
 v2 = cat_cross(t, o, flag)
 assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
+# Test 2d
 flag = True
 t = np.linspace(1, 12, 12)
 t = np.reshape(t, (3, 4))
@@ -100,6 +102,22 @@ o = np.reshape(o, (3, 4, 2))
 v2 = cat_cross(t, o, flag)
 
 flag = False
+t = np.linspace(1, 24, 24)
+t = np.reshape(t, (3, 4, 2))
+o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+o = np.reshape(o, (3, 4, 2))
+v1 = cc(t, o, flag)
+
+assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+
+flag = True
+t = np.linspace(1, 24, 24)
+t = np.reshape(t, (3, 4, 2))
+o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+o = np.reshape(o, (3, 4, 2))
+v2 = cat_cross(t, o, flag)
+
+flag = True
 t = np.linspace(1, 24, 24)
 t = np.reshape(t, (3, 4, 2))
 o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)

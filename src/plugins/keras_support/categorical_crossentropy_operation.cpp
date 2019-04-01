@@ -64,8 +64,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return np.sum(target * -np.log(output), axis=-1, keepdims=False)
         )")
     };
-    const double small = 1e-7;
-    const double big = 1 - small;
+    const double clip_low = 1e-7;
+    const double clip_high = 1 - clip_low;
 
     ///////////////////////////////////////////////////////////////////////////
     cat_cross_operation::cat_cross_operation(primitive_arguments_type&& operands,
@@ -82,34 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             v = output.scalar()/output.scalar();
 
         return primitive_argument_type{
-            static_cast<double>(-target.scalar()*blaze::log(big))};
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type cat_cross_operation::cat_cross1d(
-        arg_type&& target,arg_type&& output,bool from_logits) const
-    {
-        if(from_logits)
-        {
-            output.vector() = blaze::softmax(output.vector());
-        }
-        else
-        {
-            output.vector() /= blaze::sum(output.vector());
-        }
-
-        // Construct low and high clip regions
-        auto sz0 = output.dimension(0);
-        primitive_argument_type lo_{small}, hi_{1-small};
-
-        auto lo = extract_value_vector<double>(lo_, sz0, name_, codename_ );
-        auto hi = extract_value_vector<double>(hi_, sz0, name_, codename_ );
-
-        output.vector() = (blaze::max)(
-            (blaze::min)(output.vector(), hi.vector()), lo.vector());
-
-        auto res = target.vector() * (-blaze::log(output.vector()));
-        return primitive_argument_type{ blaze::sum(res) };
+            static_cast<double>(-target.scalar()*blaze::log(clip_high))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -122,66 +95,74 @@ namespace phylanx { namespace execution_tree { namespace primitives
     using tensor_type =
          blaze::DynamicTensor<double>;
 
-    vector_type sum2d_axis1(matrix_type& m) {
-       vector_type out(m.rows());
-       for(std::size_t i=0; i < m.rows(); ++i) {
-          out[i] = 0;
-       }
-       for(std::size_t i=0; i < m.rows(); ++i) {
-          for(std::size_t j=0; j < m.columns(); ++j) {
-             out[i] += m(i,j);
-          }
-       }
-       return out;
-    }
-
-    matrix_type sum3d_axis2(tensor_type& t) {
-       matrix_type out(t.pages(),t.rows());
-       for(std::size_t i=0; i < out.rows(); ++i) {
-          for(std::size_t j=0; j < out.columns(); ++j) {
-             out(i,j) = 0;
-          }
-       }
-       for(std::size_t k=0; k < t.pages(); ++k) {
-          for(std::size_t i=0; i < t.rows(); ++i) {
-            for(std::size_t j=0; j < t.columns(); ++j) {
-                out(k,i) += t(k,i,j);
-             }
-          }
-       }
-       return out;
-    }
-
-    primitive_argument_type cat_cross_operation::cat_cross2d(
-        arg_type&& target, arg_type&& output,bool from_logits) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type cat_cross_operation::cat_cross1d(
+        arg_type&& target,arg_type&& output,bool from_logits) const
     {
+        vector_type&& output_ = output.vector();
+        vector_type&& target_ = target.vector();
         if(from_logits)
         {
-            output.matrix() = blaze::softmax<blaze::rowwise>(output.matrix());
+            output_ = blaze::softmax(output_);
         }
         else
         {
-            matrix_type m = output.matrix();
-            vector_type norm = sum2d_axis1(m);
-            for(std::size_t i = 0; i < m.rows(); ++i)
-                for(std::size_t j = 0; j < m.columns(); ++j)
-                    m(i,j) /= norm[i];
-            output.matrix() = m;
+            output_ /= blaze::sum(output_);
         }
 
-        // Construct low and high clip regions
-        auto sz0 = output.dimension(0);
-        auto sz1 = output.dimension(1);
-        primitive_argument_type lo_{small}, hi_{1-small};
+        target_ = blaze::map(target_, output_,[](double t_, double o_){
+            return -t_*std::log((std::min)(clip_high,(std::max)(clip_low,o_)));
+        });
+        double ans = blaze::sum(target_);
+        output.vector() = std::move(output_);
+        return primitive_argument_type{ ans };
+    }
 
-        auto lo = extract_value_matrix<double>(lo_, sz0, sz1, name_, codename_ );
-        auto hi = extract_value_matrix<double>(hi_, sz0, sz1, name_, codename_ );
+    ///////////////////////////////////////////////////////////////////////////
+    vector_type sum2d_axis1(matrix_type& m) {
+       vector_type out(m.rows());
+       out = 0;
+       for(std::size_t j=0; j < m.columns(); ++j) {
+          out += blaze::column(m, j);
+       }
+       return out;
+    }
 
-        output.matrix() = (blaze::max)(
-            (blaze::min)(output.matrix(), hi.matrix()), lo.matrix());
+    ///////////////////////////////////////////////////////////////////////////
+    matrix_type sum3d_axis2(tensor_type& t) {
+       matrix_type out(t.pages(),t.rows());
+       out = 0;
+       for(std::size_t j = 0; j < t.columns(); ++j)
+          out += blaze::columnslice(t, j);
+       return out;
+    }
 
-        matrix_type res = target.matrix() % (-blaze::log(output.matrix()));
-        vector_type ans = sum2d_axis1(res);
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type cat_cross_operation::cat_cross2d(
+        arg_type&& target, arg_type&& output,bool from_logits) const
+    {
+        matrix_type&& output_ = output.matrix();
+        matrix_type&& target_ = target.matrix();
+        if(from_logits)
+        {
+            output_ = blaze::softmax<blaze::rowwise>(output_);
+        }
+        else
+        {
+            auto norm = sum2d_axis1(output_);
+            for(std::size_t j = 0; j < output_.columns(); ++j) {
+                auto slice = blaze::column(output_,j);
+                slice = blaze::map(slice, norm,[](double s_,double n_){
+                    return s_/n_;
+                });
+            }
+        }
+
+        target_ = blaze::map(target_, output_,[](double t_, double o_){
+            return -t_*std::log((std::min)(clip_high,(std::max)(clip_low,o_)));
+        });
+        vector_type ans = sum2d_axis1(target_);
+        output.matrix() = std::move(output_);
         return primitive_argument_type{ ans };
     }
 
@@ -213,33 +194,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else
         {
             auto norm = sum3d_axis2(output_);
-            for(std::size_t k = 0; k < output_.pages(); ++k)
-                for(std::size_t i = 0; i < output_.rows(); ++i)
-                    for(std::size_t j = 0; j < output_.columns(); ++j)
-                        output_(k,i,j) /= norm(k,i);
+            for(std::size_t j = 0; j < output_.columns(); ++j) {
+                auto slice = blaze::columnslice(output_,j);
+                slice = blaze::map(slice, norm,[](double s_,double n_){
+                    return s_/n_;
+                });
+            }
         }
 
-        for(std::size_t k = 0; k < output_.pages(); ++k) {
-            for(std::size_t i = 0; i < output_.rows(); ++i) {
-                for(std::size_t j = 0; j < output_.columns(); ++j) {
-                    auto v = output_(k,i,j);
-                    if(v < small)
-                        output_(k,i,j) = small;
-                    else if(v > big)
-                        output_(k,i,j) = big;
-                }
-            }
-        }
-        //tensor_type res_ = target_;
-        for(std::size_t k = 0; k < output_.pages(); ++k) {
-            for(std::size_t i = 0; i < output_.rows(); ++i) {
-                for(std::size_t j = 0; j < output_.columns(); ++j) {
-                    target_(k,i,j) = -target_(k,i,j) * std::log(output_(k,i,j));
-                }
-            }
-        }
+        target_ = blaze::map(target_, output_,[](double t_, double o_){
+            return -t_*std::log((std::min)(clip_high,(std::max)(clip_low,o_)));
+        });
         matrix_type ans = sum3d_axis2(target_);
-        output.tensor() = output_;
+        output.tensor() = std::move(output_);
         return primitive_argument_type{ ans };
     }
 #endif
