@@ -31,11 +31,11 @@ namespace phylanx { namespace execution_tree
         {
             result = node_data_type_bool;
         }
-        else if (spec == "int")
+        else if (spec.find("int") == 0)
         {
             result = node_data_type_int64;
         }
-        else if (spec == "float")
+        else if (spec.find("float") == 0)
         {
             result = node_data_type_double;
         }
