@@ -33,6 +33,7 @@ set(tests
     896_return_none
     903_variable_conversion
     903_variable_dtype
+    904_pass_decorator
     array_len_494
     array_shape_486
     array_subscript_403
