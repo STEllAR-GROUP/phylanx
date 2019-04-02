@@ -765,6 +765,39 @@ class PhySL:
 
             return comparison
 
+    def _comprehension(self, node):
+        """class comprehension(target, iter, ifs, is_async)
+
+        1 for clause in a comprehension.
+        `target` is the reference to use in each element- a `name` or `Tuple`.
+        `iter` is the object to iterate over.
+        `ifs` is a list of test expressions (a for clause may have multiple ifs).
+        `is_async` indicates a comprehension is asynchronous.
+        """
+
+        mapping_function = {
+            'list': 'for_each',
+            'slice': 'for_each',
+            'range': 'for_each',
+            'prange': 'parallel_map'
+        }
+
+        target = self.apply_rule(node.target)
+        iteration_space = self.apply_rule(node.iter)
+        if isinstance(iteration_space, list):
+            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            iteration_space[0] = iteration_space[0].replace('prange', 'range')
+        else:
+            symbol_name = None
+
+        comprehension = {
+            'symbol': symbol_name,
+            'target': target,
+            'iter': iteration_space
+        }
+
+        return comprehension
+
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
 
@@ -821,11 +854,14 @@ class PhySL:
 
         # extract the type of the iteration space- used as the lookup key in
         # `mapping_function` dictionary above.
-        symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
-        symbol = get_symbol_info(node, symbol_name)
+        if isinstance(iteration_space, list):
+            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            symbol = get_symbol_info(node, symbol_name)
+            # replace keyword `prange` to `range` for compatibility with Phylanx.
+            iteration_space[0] = iteration_space[0].replace('prange', 'range')
+        else:
+            symbol = get_symbol_info(node, 'for_each')
 
-        # replace keyword `prange` to `range` for compatibility with Phylanx.
-        iteration_space[0] = iteration_space[0].replace('prange', 'range')
         body = self.block(node.body)
         # orelse = self.block(node.orelse)
         op = get_symbol_info(node, 'lambda')
@@ -936,6 +972,28 @@ class PhySL:
         op = get_symbol_info(node, 'list')
         elements = tuple(map(self.apply_rule, node.elts))
         return [op, (*elements, )]
+
+    def _ListComp(self, node):
+        """class ListComp(elt, generators)
+
+        `elt` (or key and value) is a single node representing the part that
+              will be evaluated for each item.
+        `generators` is a list of comprehension nodes.
+        """
+
+        if len(node.generators) > 1:
+            raise NotImplementedError("Nested comprehensions is not yet supported!")
+
+        elt = self.apply_rule(node.elt)
+        loop = self.apply_rule(node.generators[0])
+
+        target = loop['target']
+        iter_space = loop['iter']
+
+        lambda_ = ['lambda', (target, elt)]
+        fmap = ['fmap', (lambda_, iter_space)]
+
+        return fmap
 
     def _Lt(self, node):
         """Leaf node, returning raw string of the 'less than' operation."""
