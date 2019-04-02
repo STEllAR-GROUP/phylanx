@@ -48,12 +48,14 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
         primitive_argument_type cat_cross1d(
             arg_type&& target, arg_type&& output, bool from_logbits) const;
         primitive_argument_type cat_cross2d(
-            arg_type&& target, arg_type&& output, bool from_logbits) const;
+            arg_type&& target, arg_type&& output,
+            bool from_logbits,int axis) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
          blaze::DynamicTensor<val_type> softmax3d_axis2(arg_type& arg) const;
         primitive_argument_type cat_cross3d(
-            arg_type&& target, arg_type&& output, bool from_logbits) const;
+            arg_type&& target, arg_type&& output,
+            bool from_logbits,int axis) const;
 #endif
     };
     inline primitive create_cat_cross_operation(hpx::id_type const& locality,

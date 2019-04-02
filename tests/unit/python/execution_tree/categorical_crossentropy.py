@@ -6,21 +6,30 @@
 from phylanx import Phylanx
 import numpy as np
 
+have_keras = False
+try:
+    import keras.backend as K
+    import tensorflow as tf
+    have_keras = True
+except Exception:
+    pass
+
 
 def softmax(x, axis=-1):
-    y = np.exp(x - np.max(x, axis, keepdims=True))
-    return y / np.sum(y, axis, keepdims=True)
+    y = np.exp(x - np.max(x, axis=axis, keepdims=True))
+    return y / np.sum(y, axis=axis, keepdims=True)
 
 
-def cat_cross(target, output, from_logits=False):
+def cat_cross(target, output, from_logits=False, axis=-1):
     if from_logits:
-        output = softmax(output)
+        axis = -1
+        output = softmax(output, axis=axis)
     else:
-        v = output.sum(axis=-1, keepdims=True)
+        v = np.sum(output, axis=axis, keepdims=True)
         output /= v
     output = np.clip(output, 1e-7, 1 - 1e-7)
     rep = -target * np.log(output)
-    ans = np.sum(rep, axis=-1, keepdims=False)
+    ans = np.sum(rep, axis=axis, keepdims=False)
     return ans
 
 
@@ -41,8 +50,8 @@ def categorical_crossentropy(t, o, f):
 
 
 @Phylanx
-def cc(target, output, from_logits):
-    return categorical_crossentropy(target, output, from_logits)
+def cc(target, output, from_logits, axis):
+    return categorical_crossentropy(target, output, from_logits, axis)
 
 
 # Test 0d
@@ -50,78 +59,86 @@ for i in range(1, 10):
     for j in range(1, 10):
         for k in range(2):
             if k == 0:
-                assert cc(i, j, True) == cat_cross0(i, j, True)
+                assert cc(i, j, True, -1) == cat_cross0(i, j, True)
             else:
-                assert cc(i, j, False) == cat_cross0(i, j, False)
+                assert cc(i, j, False, -1) == cat_cross0(i, j, False)
 
 # Test 1d
-t = np.linspace(1.0e-9, 10e-9, 10)
-t[2] = 10
-o = 3 * np.ones(10)
-o[4] = 2
+for flag in [True, False]:
+    t = np.linspace(1.0e-9, 10e-9, 10)
+    t[2] = 10
+    o = 3 * np.ones(10)
+    o[4] = 2
 
-flag = False
-v1 = cc(t, o, flag)
-v2 = cat_cross(t, o, flag)
-assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+    v1 = cc(t, o, flag, -1)
+    v2 = cat_cross(t, o, flag)
+    assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
-t = np.linspace(1.0e-9, 10e-9, 10)
-t[2] = 10
-o = 3 * np.ones(10)
-o[4] = 2
+    t = np.linspace(1.0e-9, 10e-9, 10)
+    t[2] = 10
+    o = 3 * np.ones(10)
+    o[4] = 2
 
-flag = True
-v1 = cc(t, o, flag)
-v2 = cat_cross(t, o, flag)
-assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+    v1 = cc(t, o, flag, -1)
+    v2 = cat_cross(t, o, flag)
+    assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
 # Test 2d
-flag = True
-t = np.linspace(1, 12, 12)
-t = np.reshape(t, (3, 4))
-o = np.linspace(.01, .12, 12)
-o = np.reshape(o, (3, 4))
-v1 = cc(t, o, flag)
-v2 = cat_cross(t, o, flag)
-assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+for axis in [-1, 0, 1]:
+    for flag in [True, False]:
+        t = np.linspace(1, 12, 12)
+        t = np.reshape(t, (3, 4))
+        o = np.linspace(.01, .12, 12)
+        o = np.reshape(o, (3, 4))
+        v1 = cc(t, o, flag, axis)
+        v2 = cat_cross(t, o, flag, axis)
+        assert v1.shape == v2.shape
+        assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
-flag = False
-t = np.linspace(1, 12, 12)
-t = np.reshape(t, (3, 4))
-o = np.linspace(.01, .12, 12)
-o = np.reshape(o, (3, 4))
-v1 = cc(t, o, flag)
-v2 = cat_cross(t, o, flag)
-assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+        t = np.linspace(1, 12, 12)
+        t = np.reshape(t, (3, 4))
+        o = np.linspace(.01, .12, 12)
+        o = np.reshape(o, (3, 4))
+        v1 = cc(t, o, flag, axis)
+        v2 = cat_cross(t, o, flag, axis)
+        assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
-flag = False
-t = np.linspace(1, 24, 24)
-t = np.reshape(t, (3, 4, 2))
-o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
-o = np.reshape(o, (3, 4, 2))
-v2 = cat_cross(t, o, flag)
+# Test 3d
+for axis in [-1, 0, 1, 2]:
+    for flag in [True, False]:
+        t = np.linspace(1, 24, 24)
+        t = np.reshape(t, (3, 4, 2))
+        o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+        o = np.reshape(o, (3, 4, 2))
+        v2 = cat_cross(t, o, flag, axis)
 
-flag = False
-t = np.linspace(1, 24, 24)
-t = np.reshape(t, (3, 4, 2))
-o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
-o = np.reshape(o, (3, 4, 2))
-v1 = cc(t, o, flag)
+        t = np.linspace(1, 24, 24)
+        t = np.reshape(t, (3, 4, 2))
+        o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+        o = np.reshape(o, (3, 4, 2))
+        v1 = cc(t, o, flag, axis)
 
-assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+        assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
 
-flag = True
-t = np.linspace(1, 24, 24)
-t = np.reshape(t, (3, 4, 2))
-o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
-o = np.reshape(o, (3, 4, 2))
-v2 = cat_cross(t, o, flag)
+if have_keras:
+    server = tf.train.Server.create_local_server()
+    sess = tf.Session(server.target)
 
-flag = True
-t = np.linspace(1, 24, 24)
-t = np.reshape(t, (3, 4, 2))
-o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
-o = np.reshape(o, (3, 4, 2))
-v1 = cc(t, o, flag)
+    for axis in [-1, 0, 1, 2]:
+        for flag in [True, False]:
+            t = np.linspace(1, 24, 24)
+            t = np.reshape(t, (3, 4, 2))
+            o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+            o = np.reshape(o, (3, 4, 2))
+            v2 = cat_cross(t, o, flag, axis=axis)
 
-assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
+            t = np.linspace(1, 24, 24)
+            t = np.reshape(t, (3, 4, 2))
+            o = np.linspace(.1 * 1 + .3, .1 * 24 + .3, 24)
+            o = np.reshape(o, (3, 4, 2))
+            kt = K.constant(t, dtype=np.float64)
+            ko = K.constant(o, dtype=np.float64)
+            v1 = K.categorical_crossentropy(kt, ko, from_logits=flag, axis=axis)
+            v1 = v1.eval(session=sess)
+
+            assert np.all(np.abs(v1 - v2) < 1.0e-13)
