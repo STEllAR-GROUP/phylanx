@@ -2026,6 +2026,25 @@ transpose (arg, axes)
             its axes permuted.
 
 
+tuple_slice
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tuple_slice (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
 unique
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 unique (a, axis)

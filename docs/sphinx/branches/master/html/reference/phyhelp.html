@@ -235,6 +235,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#tensordot">tensordot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tile">tile</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transpose">transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tuple-slice">tuple_slice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#unique">unique</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#var">var</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#vsplit">vsplit</a></li>
@@ -2482,6 +2483,24 @@ its axes permuted.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="tuple-slice">
+<h2>tuple_slice<a class="headerlink" href="#tuple-slice" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>tuple_slice (v, ind)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>v (list) : a list to take a slice from
+ind (int or list) : index or slice range</div></blockquote>
+<p>Returns:</p>
+<p class="last">If <cite>ind</cite> is an integer, this operation returns an element of the
+list. If it is negative, indexing is done from the back of the list.
+Alternatively, <cite>ind</cite> may consist of a list of values which serve as
+the <cite>start</cite>, <cite>stop</cite>, and (optionally) <cite>step</cite> of a Python range. In this
+case, the return value is a new list with the values of <cite>v</cite> described
+by the range.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="unique">
 <h2>unique<a class="headerlink" href="#unique" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2605,7 +2624,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Apr 01, 2019.
+      Last updated on Apr 02, 2019.
 
     </p>
   </div>
