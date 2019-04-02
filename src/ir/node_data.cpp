@@ -14,7 +14,6 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/threads/run_as_os_thread.hpp>
-#include <hpx/runtime/threads/run_as_os_thread.hpp>
 #include <hpx/util/register_locks.hpp>
 
 #include <atomic>

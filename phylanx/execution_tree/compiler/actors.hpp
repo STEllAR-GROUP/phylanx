@@ -356,8 +356,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
     {
         entry_point() = default;        // needed for serialization
 
-        entry_point(std::string const& name)
-          : name_(name)
+        entry_point(std::string const& func_name, std::string const& name)
+          : func_name_(func_name)
+          , name_(name)
         {
         }
 
@@ -410,7 +411,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         void serialize(hpx::serialization::input_archive& ar, unsigned);
         void serialize(hpx::serialization::output_archive& ar, unsigned);
 
-        std::string name_;      // the name of this entry point
+        std::string name_;          // the name of this entry point
+        std::string func_name_;     // the function name this was compiled from
         std::list<function> code_;  // the functions representing this
     };
 
@@ -434,7 +436,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 if (it == last)
                 {
                     return it->run(ctx);
-        }
+                }
                 it->run(ctx);
             }
             return primitive_argument_type{};

@@ -53,22 +53,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<T> constant2d_helper(primitive_argument_type&& op,
             operand_type::dimensions_type const& dim) const;
 
-        primitive_argument_type constant0d(primitive_argument_type&& op) const;
-        primitive_argument_type constant1d(
-            primitive_argument_type&& op, std::size_t dim) const;
+        primitive_argument_type constant0d(
+            primitive_argument_type&& op, node_data_type dtype) const;
+        primitive_argument_type constant1d(primitive_argument_type&& op,
+            std::size_t dim, node_data_type dtype) const;
         primitive_argument_type constant2d(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim) const;
+            operand_type::dimensions_type const& dim,
+            node_data_type dtype) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         ir::node_data<T> constant3d_helper(primitive_argument_type&& op,
             operand_type::dimensions_type const& dim) const;
         primitive_argument_type constant3d(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim) const;
+            operand_type::dimensions_type const& dim,
+            node_data_type dtype) const;
 #endif
 
     private:
-        node_data_type dtype_;
         bool implements_like_operations_;
     };
 

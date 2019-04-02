@@ -31,6 +31,9 @@ set(tests
     874_0d_shape
     886_notnone
     896_return_none
+    903_variable_conversion
+    903_variable_dtype
+    904_pass_decorator
     911_list_comprehension
     array_len_494
     array_shape_486

@@ -14,7 +14,7 @@ def variable(value, dtype=None, name=None, constraint=None):
     if constraint is not None:
         raise TypeError("Constraint is the projection function to be "
                         "applied to the variable after an optimizer update")
-    return execution_tree.var(np.array(value, dtype))
+    return execution_tree.variable(np.array(value, dtype), dtype)
 
 
 def eval(func):
