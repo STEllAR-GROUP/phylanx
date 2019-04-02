@@ -34,6 +34,7 @@ set(tests
     903_variable_conversion
     903_variable_dtype
     904_pass_decorator
+    911_list_comprehension
     array_len_494
     array_shape_486
     array_subscript_403
