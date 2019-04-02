@@ -75,6 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         bool slice_pages_;
 #endif
+        bool is_tuple_slice_;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,
