@@ -1716,6 +1716,22 @@ reshape (a, newshape)
             
 
 
+resize_images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+resize_images (a)
+            Args:
+
+                a (array_like) : input array
+                height_factor (integer) : enlargement factor for height
+                width_factor (integer) : enlargement factor for width
+                interpolation (string) : interpolation type, "bilinear" or "nearest"
+
+            Returns:
+
+            Returns a resized version of the array with height_factor and width_factor
+            using the specified interpolation .
+
+
 set_seed_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 set_seed_action (seed)

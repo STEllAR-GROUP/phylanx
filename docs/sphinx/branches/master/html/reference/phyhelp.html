@@ -215,6 +215,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#relu">relu</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#repeat">repeat</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reshape">reshape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resize-images">resize_images</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#set-seed-action">set_seed_action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shape">shape</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shuffle">shuffle</a></li>
@@ -2161,6 +2162,22 @@ from the length of the array and remaining dimensions.</div></blockquote>
 </div></blockquote>
 <p>Returns:</p>
 <p class="last">Returns a new shape to an array without changing its data.”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="resize-images">
+<h2>resize_images<a class="headerlink" href="#resize-images" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>resize_images (a)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array_like) : input array
+height_factor (integer) : enlargement factor for height
+width_factor (integer) : enlargement factor for width
+interpolation (string) : interpolation type, “bilinear” or “nearest”</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns a resized version of the array with height_factor and width_factor
+using the specified interpolation .</p>
 </dd>
 </dl>
 </div>
