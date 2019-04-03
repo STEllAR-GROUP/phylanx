@@ -10,6 +10,8 @@ have_keras = False
 try:
     import keras.backend as K
     import tensorflow as tf
+    # Silence annoying tensorflow messages
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     have_keras = True
 except Exception:
     pass
