@@ -1889,6 +1889,19 @@ softplus (a)
             the Softplus is enticingly smooth and differentiable.
 
 
+softsign
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+softsign (a)
+            Args:
+
+                a (array_like) : input array
+
+            Returns:
+
+            Returns an array of the same shape which is defined as
+            f(x) = 1/(1+abs(x).
+
+
 squeeze
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 squeeze (a, axis)
