@@ -458,6 +458,9 @@ namespace phylanx { namespace execution_tree
         {
         }
 
+        primitive_argument_type(char const* val)
+          : argument_value_type{std::string(val)}
+        {}
         primitive_argument_type(std::string const& val)
           : argument_value_type{val}
         {}

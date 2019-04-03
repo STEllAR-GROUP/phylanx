@@ -14,13 +14,13 @@ def variable(value, dtype=None):
     return execution_tree.variable(np.array(value, dtype), dtype)
 
 
-@Phylanx
-def ones_like_eager(x):
-    return np.ones_like(x)
+@Phylanx(debug=True)
+def ones_like_eager(x, dtype=None):
+    return np.ones_like(x, dtype=dtype)
 
 
-def ones_like(x):
-    return ones_like_eager.lazy(x)
+def ones_like(x, dtype=None):
+    return ones_like_eager.lazy(x, dtype)
 
 
 def eval(func):
@@ -28,4 +28,4 @@ def eval(func):
 
 
 x = variable(np.array([1, 2, 3]))
-print(eval(ones_like(x)))
+assert (eval(ones_like(x, 'float64')) == [1.0, 1.0, 1.0]).all()

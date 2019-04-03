@@ -40,7 +40,10 @@ numpy_constants = {
     "NZERO": 'NZERO',
     "e": 'euler',
     "euler_gamma": 'euler_gamma',
-    "pi": 'pi'
+    "pi": 'pi',
+    "float": 'float',
+    "int": 'int',
+    "bool": 'bool'
 }
 
 methods_supporting_dtype = [
@@ -653,8 +656,6 @@ class PhySL:
 
         def __apply(self, k):
             kw = self.apply_rule(k.value)
-            if k.arg == 'dtype' and '$' in kw:
-                kw = '"' + kw.split('$', 1)[0] + '"'
             return (k.arg, kw)
 
         symbol = self.apply_rule(node.func)
@@ -675,46 +676,56 @@ class PhySL:
         elif 'dstack' in symbol:
             if args and isinstance(args[0], tuple):
                 args = (['list', (tuple(args), )],)
+
         elif 'zeros_like' in symbol:
-            symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
-            return [symbol, ('0', args)]
+            symbol = symbol.replace('zeros_like', 'constant_like')
+            return [symbol, ('0', args + kwargs)]
         elif 'ones_like' in symbol:
-            symbol = symbol.replace('ones_like', 'constant_like' + dtype)
-            return [symbol, ('1', args)]
+            symbol = symbol.replace('ones_like', 'constant_like')
+            return [symbol, ('1', args + kwargs)]
         elif 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant_like' + dtype)
-            return [symbol, (args[1], (args[0], ))]
+            symbol = symbol.replace('full_like', 'constant_like')
+            return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty_like' in symbol:
+            symbol = symbol.replace('empty_like', 'constant_like')
+            return [symbol, (None, args + kwargs)]
+
         elif 'zeros' in symbol:
-            symbol = symbol.replace('zeros', 'constant' + dtype)
+            symbol = symbol.replace('zeros', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, ('0', [op, args])]
+                return [symbol, ('0', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('0', args)]
+                return [symbol, ('0', args + kwargs)]
         elif 'ones' in symbol:
-            symbol = symbol.replace('ones', 'constant' + dtype)
+            symbol = symbol.replace('ones', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, ('1', [op, args])]
+                return [symbol, ('1', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('1', args)]
+                return [symbol, ('1', args + kwargs)]
         elif 'full' in symbol:
-            symbol = symbol.replace('full', 'constant' + dtype)
+            symbol = symbol.replace('full', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, (args[1], [op, args[0]])]
+                return [symbol, (args[1], [op, args[0]]) + kwargs]
             else:
-                return [symbol, (args[1], args[0])]
+                return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty' in symbol:
+            symbol = symbol.replace('empty', 'constant')
+            if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, (None, [op, args[0]]) + kwargs]
+            else:
+                return [symbol, (None, args + kwargs)]
+
         else:
             method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
             if len(method) == 1:
                 symbol = symbol.replace(method[0], method[0] + dtype)
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        if kwargs:
-            args += kwargs
-        return [symbol, args]
+        return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):
     #     """class ClassDef(name, bases, keywords, starargs, kwargs, body,
@@ -778,6 +789,39 @@ class PhySL:
 
             return comparison
 
+    def _comprehension(self, node):
+        """class comprehension(target, iter, ifs, is_async)
+
+        1 for clause in a comprehension.
+        `target` is the reference to use in each element- a `name` or `Tuple`.
+        `iter` is the object to iterate over.
+        `ifs` is a list of test expressions (a for clause may have multiple ifs).
+        `is_async` indicates a comprehension is asynchronous.
+        """
+
+        mapping_function = {
+            'list': 'for_each',
+            'slice': 'for_each',
+            'range': 'for_each',
+            'prange': 'parallel_map'
+        }
+
+        target = self.apply_rule(node.target)
+        iteration_space = self.apply_rule(node.iter)
+        if isinstance(iteration_space, list):
+            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            iteration_space[0] = iteration_space[0].replace('prange', 'range')
+        else:
+            symbol_name = None
+
+        comprehension = {
+            'symbol': symbol_name,
+            'target': target,
+            'iter': iteration_space
+        }
+
+        return comprehension
+
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
 
@@ -834,11 +878,14 @@ class PhySL:
 
         # extract the type of the iteration space- used as the lookup key in
         # `mapping_function` dictionary above.
-        symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
-        symbol = get_symbol_info(node, symbol_name)
+        if isinstance(iteration_space, list):
+            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            symbol = get_symbol_info(node, symbol_name)
+            # replace keyword `prange` to `range` for compatibility with Phylanx.
+            iteration_space[0] = iteration_space[0].replace('prange', 'range')
+        else:
+            symbol = get_symbol_info(node, 'for_each')
 
-        # replace keyword `prange` to `range` for compatibility with Phylanx.
-        iteration_space[0] = iteration_space[0].replace('prange', 'range')
         body = self.block(node.body)
         # orelse = self.block(node.orelse)
         op = get_symbol_info(node, 'lambda')
@@ -949,6 +996,28 @@ class PhySL:
         op = get_symbol_info(node, 'list')
         elements = tuple(map(self.apply_rule, node.elts))
         return [op, (*elements, )]
+
+    def _ListComp(self, node):
+        """class ListComp(elt, generators)
+
+        `elt` (or key and value) is a single node representing the part that
+              will be evaluated for each item.
+        `generators` is a list of comprehension nodes.
+        """
+
+        if len(node.generators) > 1:
+            raise NotImplementedError("Nested comprehensions is not yet supported!")
+
+        elt = self.apply_rule(node.elt)
+        loop = self.apply_rule(node.generators[0])
+
+        target = loop['target']
+        iter_space = loop['iter']
+
+        lambda_ = ['lambda', (target, elt)]
+        fmap = ['fmap', (lambda_, iter_space)]
+
+        return fmap
 
     def _Lt(self, node):
         """Leaf node, returning raw string of the 'less than' operation."""

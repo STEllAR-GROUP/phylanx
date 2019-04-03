@@ -11,9 +11,11 @@ set(tests
     l2_normalize_operation
     one_hot_operation
     relu_operation
+    resize_operation
     sigmoid_operation
     softmax_operation
     softplus_operation
+    softsign_operation
    )
 
 foreach(test ${tests})
