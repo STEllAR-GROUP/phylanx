@@ -29,3 +29,5 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(softmax_operation_plugin,
     phylanx::execution_tree::primitives::softmax_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softplus_operation_plugin,
     phylanx::execution_tree::primitives::softplus_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(softsign_operation_plugin,
+    phylanx::execution_tree::primitives::softsign_operation::match_data);
