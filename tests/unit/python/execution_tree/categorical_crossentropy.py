@@ -51,7 +51,8 @@ def categorical_crossentropy(t, o, f):
 
 @Phylanx
 def cc(target, output, from_logits, axis):
-    return categorical_crossentropy(target, output, from_logits, axis)
+    li = categorical_crossentropy(target, output, from_logits, axis)
+    return li[0]
 
 
 # Test 0d
