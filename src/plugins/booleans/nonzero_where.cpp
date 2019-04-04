@@ -229,7 +229,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "nonzero_where::where_elements",
+            "nonzero_where::where_elements0d",
             util::generate_error_message(
                 "operands have unsupported number of dimensions",
                 name_, codename_));
@@ -260,6 +260,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 1:
             {
+                std::size_t op_size = op.size();
+                if (op_size != sizes[0] && op_size != 1)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "nonzero_where::where_elements1d",
+                        util::generate_error_message(
+                            "operands could not be broadcast together with the "
+                            "given shapes",
+                            name_, codename_));
+
                 auto rhs_val = extract_value_vector<R>(
                     std::move(rhs), sizes[0], name_, codename_);
                 auto rhs_vector = rhs_val.vector();
@@ -275,15 +284,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 2:
             {
+                std::size_t op_size = op.size();
+                if (op_size != sizes[1] && op_size != 1)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "nonzero_where::where_elements1d",
+                        util::generate_error_message(
+                            "operands could not be broadcast together with the "
+                            "given shapes",
+                            name_, codename_));
+
                 auto rhs_val = extract_value_matrix<R>(
                     std::move(rhs), sizes[0], sizes[1], name_, codename_);
                 auto rhs_matrix = rhs_val.matrix();
+
+                auto op_val = extract_value_vector<R>(
+                    std::move(op), sizes[1], name_, codename_);
 
                 return primitive_argument_type{
                     extract_value_matrix<R>(std::move(lhs),
                         [&](T val, std::size_t row, std::size_t column)
                         {
-                            return op[column] ?
+                            return op_val[column] ?
                                 val : rhs_matrix(row, column);
                         },
                         sizes[0], sizes[1], name_, codename_)};
@@ -294,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "nonzero_where::where_elements",
+            "nonzero_where::where_elements1d",
             util::generate_error_message(
                 "operands have unsupported number of dimensions",
                 name_, codename_));
@@ -325,30 +346,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 1:
             {
+                std::size_t op_column_size = op.matrix().columns();
+                if (op_column_size != sizes[1] && op_column_size != 1)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "nonzero_where::where_elements2d",
+                        util::generate_error_message(
+                            "operands could not be broadcast together with the "
+                            "given shapes",
+                            name_, codename_));
+
                 auto rhs_val = extract_value_vector<R>(
-                    std::move(rhs), sizes[0], name_, codename_);
+                    std::move(rhs), sizes[1], name_, codename_);
                 auto rhs_vector = rhs_val.vector();
+
+                auto op_val = extract_value_matrix<R>(
+                    std::move(op), sizes[0], sizes[1], name_, codename_);
 
                 return primitive_argument_type{
                     extract_value_matrix<R>(std::move(lhs),
                         [&](T val, std::size_t row, std::size_t column)
                         {
-                            return op.at(row, column) ? val : rhs_vector[column];
+                            return op_val.at(row, column) ?
+                                val : rhs_vector[column];
                         },
                         sizes[0], sizes[1], name_, codename_)};
             }
 
         case 2:
             {
+                std::size_t op_row_size = op.matrix().rows();
+                std::size_t op_column_size = op.matrix().columns();
+                if ((op_column_size != sizes[1] && sizes[1] != 1 &&
+                        op_column_size != 1) ||
+                    (op_row_size != sizes[0] && sizes[0] != 1 &&
+                        op_row_size != 1))
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "nonzero_where::where_elements2d",
+                        util::generate_error_message(
+                            "operands could not be broadcast "
+                            "together with the given shapes",
+                            name_, codename_));
+
                 auto rhs_val = extract_value_matrix<R>(
                     std::move(rhs), sizes[0], sizes[1], name_, codename_);
                 auto rhs_matrix = rhs_val.matrix();
+
+                auto op_val = extract_value_matrix<R>(
+                    std::move(op), sizes[0], sizes[1], name_, codename_);
 
                 return primitive_argument_type{
                     extract_value_matrix<R>(std::move(lhs),
                         [&](T val, std::size_t row, std::size_t column)
                         {
-                            return op.at(row, column) ?
+                            return op_val.at(row, column) ?
                                 val : rhs_matrix(row, column);
                         },
                         sizes[0], sizes[1], name_, codename_)};
@@ -359,7 +409,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "nonzero_where::where_elements",
+            "nonzero_where::where_elements2d",
             util::generate_error_message(
                 "operands have unsupported number of dimensions",
                 name_, codename_));
