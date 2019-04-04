@@ -224,7 +224,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return this_->eye_nmk(n, m, k, dtype);
             }),
-            detail::map_operands(ops, functional::value_operand{},
+            detail::map_operands(std::move(ops), functional::value_operand{},
                 args, name_, codename_, std::move(ctx)));
     }
 }}}

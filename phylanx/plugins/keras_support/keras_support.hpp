@@ -13,8 +13,10 @@
 #include <phylanx/plugins/keras_support/one_hot_operation.hpp>
 #include <phylanx/plugins/keras_support/pool_operation.hpp>
 #include <phylanx/plugins/keras_support/relu_operation.hpp>
+#include <phylanx/plugins/keras_support/resize_operation.hpp>
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
 #include <phylanx/plugins/keras_support/softplus_operation.hpp>
+#include <phylanx/plugins/keras_support/softsign_operation.hpp>
 
 #endif

@@ -41,6 +41,19 @@ void test_slicing_operation_0d()
     HPX_TEST_EQ(result[0], 42.0);
 }
 
+void test_tuple_slicing_operation_0d()
+{
+    std::string const code = R"(
+        tuple_slice(42.0, list())
+    )";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 42.0);
+}
+
 void test_slicing_operation_1d()
 {
     std::string const code = R"(block(
@@ -54,6 +67,20 @@ void test_slicing_operation_1d()
     HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 4);
+}
+
+void test_tuple_slicing_operation_1d()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        tuple_slice(a, list(2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 3);
 }
 
 void test_slicing_operation_1d_start()
@@ -312,6 +339,47 @@ void test_slicing_operation_2d()
     HPX_TEST_EQ(result, expected);
 }
 
+void test_tuple_slicing_operation_2d_value()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
+        tuple_slice(input, list(2, 2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 30);
+}
+
+void test_tuple_slicing_operation_2d()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
+        tuple_slice(input, list(list(2,4), list(2,4)))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+    auto expected = phylanx::ir::node_data<double>(
+        blaze::DynamicMatrix<double>{{30, 40}, {103, 104}});
+
+    HPX_TEST_EQ(result, expected);
+}
+
 void test_slicing_operation_2d_step()
 {
     std::string const code = R"(block(
@@ -513,6 +581,28 @@ void test_slicing_operation_3d_value()
     HPX_TEST_EQ(result[0], 2);
 }
 
+void test_tuple_slicing_operation_3d_value()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(x1, vstack(list(a,b,c,d))),
+        define(x2, vstack(list(b,c,d,a))),
+        define(x3, vstack(list(c,d,a,b))),
+        define(input, dstack(list(x1, x2, x3))),
+        tuple_slice(input, list(0, 1, 2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result[0], 2);
+}
+
 void test_slicing_operation_3d_value_negative_index()
 {
     std::string const code = R"(block(
@@ -598,6 +688,15 @@ int main(int argc, char* argv[])
     test_slicing_operation_3d_value_negative_index();
 
     test_slicing_operation_3d_single_slice();
+#endif
+
+    test_tuple_slicing_operation_0d();
+    test_tuple_slicing_operation_1d();
+    test_tuple_slicing_operation_2d_value();
+    test_tuple_slicing_operation_2d();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_tuple_slicing_operation_3d_value();
 #endif
 
     return hpx::util::report_errors();

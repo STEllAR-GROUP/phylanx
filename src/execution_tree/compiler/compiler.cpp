@@ -1489,9 +1489,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             std::map<std::string, primitive_argument_type> constants =
             {
+                // generally useful constants
                 {"nil", primitive_argument_type{ast::nil{true}}},
                 {"false", primitive_argument_type{false}},
                 {"true", primitive_argument_type{true}},
+                // number extrema
                 {"inf",
                     primitive_argument_type{
                         std::numeric_limits<double>::infinity()}},
@@ -1503,6 +1505,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         std::numeric_limits<double>::quiet_NaN()}},
                 {"NZERO", primitive_argument_type{-0.0}},
                 {"PZERO", primitive_argument_type{+0.0}},
+                // useful math constants
                 {"euler",
                     primitive_argument_type{
                         2.7182818284590452353602874713526624977572}},
@@ -1511,7 +1514,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         0.5772156649015328606065120900824024310421}},
                 {"pi",
                     primitive_argument_type{
-                        3.1415926535897932384626433832795028841971}}
+                        3.1415926535897932384626433832795028841971}},
+                // numpy dtype type constants
+                {"int", primitive_argument_type{"int64"}},
+                {"float", primitive_argument_type{"float64"}},
+                {"bool", primitive_argument_type{"bool"}}
             };
             return constants;
         }

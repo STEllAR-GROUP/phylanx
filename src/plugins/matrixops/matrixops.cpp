@@ -79,7 +79,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(pad_plugin,
     phylanx::execution_tree::primitives::pad::match_data);
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 PHYLANX_REGISTER_PLUGIN_FACTORY(page_slicing_operation_plugin,
-    phylanx::execution_tree::primitives::slicing_operation::match_data[3]);
+    phylanx::execution_tree::primitives::slicing_operation::match_data[4]);
 #endif
 PHYLANX_REGISTER_PLUGIN_FACTORY(power_operation_plugin,
     phylanx::execution_tree::primitives::power_operation::match_data);
@@ -107,6 +107,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(tile_operation_plugin,
     phylanx::execution_tree::primitives::tile_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(transpose_operation_plugin,
     phylanx::execution_tree::primitives::transpose_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(tuple_slicing_operation_plugin,
+    phylanx::execution_tree::primitives::slicing_operation::match_data[3]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(unique_operation_plugin,
     phylanx::execution_tree::primitives::unique::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(vsplit_operation_plugin,

@@ -17,7 +17,7 @@ from phylanx.exceptions import InvalidDecoratorArgumentError
 
 
 def Phylanx(__phylanx_arg=None, **kwargs):
-    class __PhylanxDecorator(object):
+    class _PhylanxDecorator(object):
         def __init__(self, f):
             """
             :function:f the decorated funtion.
@@ -79,19 +79,33 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             assert len(tree.body) == 1
             return tree
 
+        def map_decorated(self, val):
+            """If a PhylanxDecorator is passed as an argument to an
+               invocation of a Phylanx function we need to extract the
+               compiled execution tree and pass along that instead"""
+
+            if type(val).__name__ == "_PhylanxDecorator":
+                return val.backend.lazy()
+            return val
+
         def lazy(self, *args):
+            """Compile this decorator, return wrapper binding the function to
+               arguments"""
+
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            return self.backend.lazy(args)
+            return self.backend.lazy(map(self.map_decorated, args))
 
         def __call__(self, *args):
+            """Invoke this decorator using the given arguments"""
+
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            result = self.backend.call(args)
+            result = self.backend.call(map(self.map_decorated, args))
 
             self.__perfdata__ = self.backend.__perfdata__
 
@@ -101,8 +115,8 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             return generate_phylanx_ast(self.__src__)
 
     if callable(__phylanx_arg):
-        return __PhylanxDecorator(__phylanx_arg)
+        return _PhylanxDecorator(__phylanx_arg)
     elif __phylanx_arg is not None:
         raise InvalidDecoratorArgumentError
     else:
-        return __PhylanxDecorator
+        return _PhylanxDecorator

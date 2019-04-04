@@ -419,6 +419,9 @@ void test_three_argument_where_1d()
     test_where_operation(
         "where([1, 1], [[1]], [2])",
         "[[1, 1]]");
+    test_where_operation(
+        "where([0], [[-1,-2,-5],[-1,-3,-4]], [1, 2, 3])",
+        "[[1, 2, 3],[1, 2, 3]]");
 
     test_where_operation(
         "where([0, 0], [2], [[1]])",
@@ -511,6 +514,9 @@ void test_three_argument_where_2d()
     test_where_operation(
         "where([[1, 1], [1, 1]], [1], 2)",
         "[[1, 1], [1, 1]]");
+    test_where_operation(
+        "where([[0]], [1, 2, 3, 4], -4)",
+        "[[-4, -4, -4, -4]]");
 
     test_where_operation(
         "where([[0, 0], [0, 0]], 1, [2])",
@@ -524,6 +530,9 @@ void test_three_argument_where_2d()
     test_where_operation(
         "where([[1, 1], [1, 1]], 1, [2])",
         "[[1, 1], [1, 1]]");
+    test_where_operation(
+        "where([[0, 0, 0], [1, 1, 1]], [1, 2, 3], -4)",
+        "[[-4, -4, -4],[ 1,  2,  3]]");
 
     test_where_operation(
         "where([[0, 0], [0, 0]], [[1]], 2)",
@@ -550,6 +559,9 @@ void test_three_argument_where_2d()
     test_where_operation(
         "where([[1, 1], [1, 1]], 1, [[2]])",
         "[[1, 1], [1, 1]]");
+    test_where_operation(
+        "where([[0, 0, 0]], 1, [[-1,-2,-3],[-4,-5,-6],[-7,-8,-9]])",
+        "[[-1, -2, -3],[-4, -5, -6],[-7, -8, -9]]");
 
     ///////////////////////////////////////////////////////////////////////////
     // test vector right hand sides

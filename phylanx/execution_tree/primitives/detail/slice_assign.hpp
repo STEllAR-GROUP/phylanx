@@ -284,6 +284,7 @@ namespace phylanx { namespace execution_tree { namespace detail
             return ir::node_data<T>{std::move(data)};
         }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename Data, typename View, typename F = always_true>
         ir::node_data<T> tensor(Data& data, View&& view, F const& f = F{}) const
         {
@@ -308,6 +309,7 @@ namespace phylanx { namespace execution_tree { namespace detail
             }
             return ir::node_data<T>{std::move(data)};
         }
+#endif
     };
 }}}
 

@@ -25,8 +25,9 @@ phylanx::execution_tree::compiler::function compile_and_run(
         phylanx::execution_tree::compiler::default_environment(
             patterns, hpx::find_here());
 
-    auto const& code = phylanx::execution_tree::compile("<unknown>",
-        phylanx::ast::generate_ast(codestr), snippets, env, patterns);
+    auto const& code =
+        phylanx::execution_tree::compile("<unknown>", "<unknown>",
+            phylanx::ast::generate_ast(codestr), snippets, env, patterns);
     return code.run();
 }
 

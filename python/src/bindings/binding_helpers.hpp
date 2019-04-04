@@ -180,7 +180,8 @@ namespace phylanx { namespace bindings
     ///////////////////////////////////////////////////////////////////////////
     // compile expression
     std::string expression_compiler(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c);
+        std::string const& func_name, std::string const& xexpr_str,
+        compiler_state& c);
 
     // evaluate compiled expression
     phylanx::execution_tree::primitive_argument_type expression_evaluator(
@@ -209,7 +210,8 @@ namespace phylanx { namespace bindings
         std::string const& xexpr_str, compiler_state& c);
 
     // extract the dtype of the given variable/expression
-    pybind11::dtype extract_dtype(phylanx::execution_tree::primitive const& p);
+    pybind11::dtype extract_dtype(
+        phylanx::execution_tree::primitive_argument_type const& p);
 }}
 
 #endif
