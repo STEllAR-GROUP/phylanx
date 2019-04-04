@@ -231,8 +231,130 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_FALLTHROUGH;
 
                 case 1:
-                    std::get<0>(result) = extract_string_value(args[0]);
+                {
+                    std::string dist = extract_string_value(args[0]);
+                    std::get<0>(result) = dist;
+
+                    if (dist == "bernoulli" || dist == "geometric" ||
+                        dist == "chi_squared" || dist == "poisson" ||
+                        dist == "exponential" || dist == "student_t")
+                    {
+                        double arg_1 = std::get<2>(result);
+
+                        if (arg_1 < 0)
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "phylanx::execution_tree::primitives::"
+                                "extract_distribution_parameters",
+                                util::generate_error_message(
+                                    "the second argument for this distribution "
+                                    "cannot be negative",
+                                    name, codename));
+
+                        if (dist != "bernoulli" && arg_1 == 0)
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "phylanx::execution_tree::primitives::"
+                                "extract_distribution_parameters",
+                                util::generate_error_message(
+                                    "the second argument for this distribution "
+                                    "cannot be zero",
+                                    name, codename));
+
+                        if (dist == "geometric" && arg_1 >= 1)
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "phylanx::execution_tree::primitives::"
+                                "extract_distribution_parameters",
+                                util::generate_error_message(
+                                    "the geometric distribution requires "
+                                    "the given probability argument to be "
+                                    "in (0,1)",
+                                    name, codename));
+
+                        if (dist == "bernoulli" && arg_1 > 1)
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "phylanx::execution_tree::primitives::"
+                                "extract_distribution_parameters",
+                                util::generate_error_message(
+                                    "the bernoulli distribution requires "
+                                    "the given probability argument to be "
+                                    "in [0,1]",
+                                    name, codename));
+                    }
+                    else
+                    {
+                        double arg_1 = std::get<2>(result);
+                        double arg_2 = std::get<3>(result);
+
+                        if (dist == "uniform_int" || dist == "uniform")
+                        {
+                            if (arg_1 > arg_2)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "extract_distribution_parameters",
+                                    util::generate_error_message(
+                                        "the uniform and uniform_int "
+                                        "distributions require the given min "
+                                        "value to be less than the given max "
+                                        "value",
+                                        name, codename));
+                        }
+
+                        else if (dist == "binomial")
+                        {
+                            if (arg_1 < 0 || arg_2 < 0 || arg_2 > 1)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "extract_distribution_parameters",
+                                    util::generate_error_message(
+                                        "the binomial distribution"
+                                        "requires the number of trials to be "
+                                        "non-negative and the probability to "
+                                        "be in [0,1]",
+                                        name, codename));
+                        }
+
+                        else if (dist == "negative_binomial")
+                        {
+                            if (arg_1 <= 0 || arg_2 <= 0 || arg_2 >= 1)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "extract_distribution_parameters",
+                                    util::generate_error_message(
+                                        "the negative_binomial distribution"
+                                        "requires the number of trials to be "
+                                        "positive and the probability to "
+                                        "be in (0,1)",
+                                        name, codename));
+                        }
+
+                        else if (dist == "gamma" || dist == "weibull" ||
+                            dist == "fisher_f")
+                        {
+                            if (arg_1 <= 0 || arg_2 <= 0)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "extract_distribution_parameters",
+                                    util::generate_error_message(
+                                        "both distribution parameters are "
+                                        "required to be positive",
+                                        name, codename));
+                        }
+
+                        else if (dist == "extreme_value" || dist == "normal" ||
+                            dist == "truncated_normal" || dist == "lognormal" ||
+                            dist == "cauchy")
+                        {
+                            if (arg_2 <= 0)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "extract_distribution_parameters",
+                                    util::generate_error_message(
+                                        "the third given argument is required "
+                                        "to be positive for this distribution",
+                                        name, codename));
+                        }
+                    }
                     return result;
+                }
 
                 default:
                     break;
