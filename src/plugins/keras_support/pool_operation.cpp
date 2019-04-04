@@ -159,14 +159,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto it = pool_size.begin();
         for (std::size_t i = 0; i != pool_size.size(); ++i, ++it)
         {
-            if (dims[i] < extract_scalar_integer_value_strict(*it))
-
+            if (static_cast<std::int64_t>(dims[i]) <
+                    extract_scalar_integer_value_strict(*it))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "pool_operation::validate_pool_sizes_no_padding",
                     generate_error_message(
                         "in the valid padding mode, each element of "
                         "pool_size should be not greater than the size of "
                         "array in the corresponding dimension"));
+            }
         }
         return true;
     }
@@ -2147,7 +2149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "or same"));
                 }
 
-                if (strides.size() == 0) // strides contain only 1s
+                if (strides.empty()) // strides contain only 1s
                 {
                     if (this_->mode_ == max_pool)
                     {
