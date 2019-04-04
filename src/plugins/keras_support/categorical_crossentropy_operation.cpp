@@ -49,7 +49,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
    Args:
 
        target (array_like) : input array
-       output (array_like) : output array
+       output (array_like) : this array is not output back to the caller
+                             but is passed back with the return values.
        from_logits (optional, boolean): boolean value, default = False
        axis (optional, integer: integer axis, default = -1
 
@@ -60,11 +61,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
       def categorical_crossentropy(target, output, from_logits=False, axis=True):
            if from_logits:
                axis = -1
-               output = softmax(output, axis=axis)
+               outval = softmax(output, axis=axis)
            else:
-               output /= output.sum(axis=axis, keepdims=True)
-           output = np.clip(output, 1e-7, 1 - 1e-7)
-           return np.sum(target * -np.log(output), axis=axis, keepdims=False)
+               outval /= output.sum(axis=axis, keepdims=True)
+           outval = np.clip(output, 1e-7, 1 - 1e-7)
+           res = np.sum(target * -np.log(outval), axis=axis, keepdims=False)
+           return res, outval
    )")
     };
     constexpr double clip_low = 1e-7;
