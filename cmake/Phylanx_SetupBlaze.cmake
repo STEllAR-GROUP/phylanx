@@ -37,6 +37,8 @@ macro(phylanx_setup_blaze)
     if(NOT BlazeTensor_FOUND)
       phylanx_error("BlazeTensor could not be found. Please specify BlazeTensor_DIR to assist locating it.")
     endif()
+    include("${BlazeTensor_DIR}/BlazeTensorConfigVersion.cmake")
+    phylanx_info("BlazeTensor version: " "${PACKAGE_VERSION}")
     phylanx_add_config_define(PHYLANX_HAVE_BLAZE_TENSOR)
   endif()
 
