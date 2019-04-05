@@ -969,7 +969,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename, eval_context ctx)
     {
-        if (operands.empty() || operands.size() > 2)
+        if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::set_seed",
@@ -978,7 +978,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
 
-        if (!valid(operands[0]) || (operands.size() == 2 && !valid(operands[1])))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::set_seed",
