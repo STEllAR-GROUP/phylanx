@@ -349,12 +349,14 @@ class PhySL:
         self.numpy_aliases = {'numpy'}
         self.wrapped_function = func
         self.kwargs = kwargs
-        self.fglobals = self.kwargs['fglobals']
         self.is_compiled = False
-        for key, val in self.fglobals.items():
-            if type(val).__name__ == 'module' and val.__name__ == 'numpy':
-                self.numpy_aliases.add(key)
-        self.file_name = self.fglobals.get('__file__')
+        self.file_name = None
+        if self.kwargs.get('fglobals'):
+            self.fglobals = self.kwargs['fglobals']
+            for key, val in self.fglobals.items():
+                if type(val).__name__ == 'module' and val.__name__ == 'numpy':
+                    self.numpy_aliases.add(key)
+            self.file_name = self.fglobals.get('__file__')
         if not self.file_name:
             self.file_name = "<none>"
 
