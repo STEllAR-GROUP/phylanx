@@ -215,8 +215,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(args[2]), this_->name_, this_->codename_) :
                     0;
 
-                node_data_type dtype = map_dtype(extract_string_value(
-                    std::move(args[3]), this_->name_, this_->codename_));
+                node_data_type dtype = valid(args[3]) ?
+                    map_dtype(extract_string_value(
+                        std::move(args[3]), this_->name_, this_->codename_)) :
+                    node_data_type_double;
 
                 if (n == m && k == 0)
                 {
