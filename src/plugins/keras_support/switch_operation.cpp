@@ -72,14 +72,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (dims_cond == dims_then)
                 return true;
+
             if (ndims_cond < ndims_then)
-                switch(ndims_then)
-                {
-                //case 1:
-                //case 2:
-                //case 3:
+            {
+                if (ndims_cond == 0)
                     return true;
+
+                switch (ndims_then)
+                {
+                case 1:
+                {
+                    if (dims_cond[0] == 1)
+                        return true;
+                    break;
                 }
+
+                case 2:
+                {
+                    if (ndims_cond == 1)
+                        if (dims_cond[0] == dims_then[0] || dims_cond[0] == 1)
+                            return true;
+                    break;
+                }
+
+                case 3:
+                    if (ndims_cond == 1)
+                    {
+                        if (dims_cond[0] == dims_then[0] || dims_cond[0] == 1)
+                            return true;
+                    }
+                    else if (ndims_cond == 2)
+                    {
+                        if ((dims_cond[0] == dims_then[0] ||
+                                dims_cond[0] == 1) &&
+                            (dims_cond[1] == dims_then[1] || dims_cond[1] == 1))
+                            return true;
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "switch_operation::validate_shapes",
+                    util::generate_error_message(
+                        "the condition shape is not compatible with the "
+                        "`then_expression` shape",
+                        name_, codename_));
+            }
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "switch_operation::validate_shapes",
                 util::generate_error_message(
