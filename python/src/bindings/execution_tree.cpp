@@ -56,43 +56,10 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
 
     // Compiler State
     pybind11::class_<phylanx::bindings::compiler_state>(
-            execution_tree, "compiler_state")
+        execution_tree, "compiler_state")
         .def(pybind11::init<>())
-        .def("code_for",
-            [](phylanx::bindings::compiler_state const& state,
-                    std::string const& func_name)
-            -> phylanx::execution_tree::primitive
-            {
-                pybind11::gil_scoped_release release;       // release GIL
-                return hpx::threads::run_as_hpx_thread([&]()
-                {
-                    // locate requested function entry point
-                    for (auto const& entry_point :
-                        state.eval_snippets.program_.entry_points())
-                    {
-                        if (func_name == entry_point.func_name_)
-                        {
-                            auto && funcs = entry_point.functions();
-                            if (funcs.empty())
-                            {
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "phylanx::bindings::bind_execution_tree",
-                                    hpx::util::format("cannot locate requested "
-                                        "function entry point '{}'", func_name));
-                            }
-
-                            return phylanx::execution_tree::primitive_operand(
-                                funcs.back().arg_);
-                        }
-                    }
-
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::bindings::bind_execution_tree",
-                        hpx::util::format("cannot locate requested "
-                            "function entry point '{}'", func_name));
-                    return phylanx::execution_tree::primitive();
-                });
-            });
+        .def("code_for", &phylanx::bindings::code_for)
+        .def("bound_code_for", &phylanx::bindings::bound_code_for);
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,

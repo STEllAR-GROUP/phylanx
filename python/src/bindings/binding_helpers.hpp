@@ -188,6 +188,18 @@ namespace phylanx { namespace bindings
         std::string const& file_name, std::string const& xexpr_str,
         compiler_state& c, pybind11::args args);
 
+    // extract pre-compiled code for given function name
+    phylanx::execution_tree::primitive code_for(
+        phylanx::bindings::compiler_state const& state,
+        std::string const& file_name, std::string const& func_name);
+
+    // extract pre-compiled code for given function name with bound given
+    // arguments
+    phylanx::execution_tree::primitive bound_code_for(
+        phylanx::bindings::compiler_state const& state,
+        std::string const& file_name, std::string const& func_name,
+        pybind11::args args);
+
     ///////////////////////////////////////////////////////////////////////////
     // initialize measurements for tree evaluations
     std::vector<std::string> enable_measurements(

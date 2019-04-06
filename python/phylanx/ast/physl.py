@@ -464,6 +464,28 @@ class PhySL:
 
             return result
 
+        def code(self):
+            """Expose the wrapped Phylanx primitive, either directly or
+               with its arguments bound"""
+
+            return self.outer.map_wrapped(self)
+
+    def map_wrapped(self, val):
+        """If a eval_wrapper is passed as an argument to an
+            invocation of a Phylanx function we need to extract the
+            compiled execution tree and pass along that instead"""
+
+        if isinstance(val, self.eval_wrapper):
+            if len(val.args) == 0:
+                return PhySL.compiler_state.code_for(
+                    self.file_name, val.func_name)
+
+            args = tuple(map(self.map_wrapped, val.args))
+            return PhySL.compiler_state.bound_code_for(
+                self.file_name, val.func_name, *args)
+
+        return val
+
     def lazy(self, args=()):
         """Compile a given function, return wrapper binding the function to
            arguments"""
@@ -482,16 +504,7 @@ class PhySL:
                 PhySL.compiler_state)
             self.is_compiled = True
 
-        def map_wrapped(val):
-            """If a eval_wrapper is passed as an argument to an
-                invocation of a Phylanx function we need to extract the
-                compiled execution tree and pass along that instead"""
-
-            if isinstance(val, self.eval_wrapper):
-                return PhySL.compiler_state.code_for(val.func_name)
-            return val
-
-        return self.eval_wrapper(self, tuple(map(map_wrapped, args)))
+        return self.eval_wrapper(self, tuple(map(self.map_wrapped, args)))
 
     def call(self, args=()):
         """Invoke this Phylanx function, pass along the given arguments"""

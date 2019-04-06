@@ -36,6 +36,7 @@ set(tests
     904_pass_decorator
     911_list_comprehension
     925_none_dtype
+    933_eval_wrapper
     array_len_494
     array_shape_486
     array_subscript_403

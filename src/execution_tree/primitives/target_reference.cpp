@@ -155,6 +155,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             add_frame(std::move(next_ctx)));
     }
 
+    bool target_reference::bind(
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        return true;
+    }
+
     void target_reference::store(primitive_arguments_type&& data,
         primitive_arguments_type&& params, eval_context ctx)
     {

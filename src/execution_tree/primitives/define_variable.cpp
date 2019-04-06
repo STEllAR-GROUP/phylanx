@@ -96,6 +96,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> define_variable::eval(
         primitive_arguments_type const& args, eval_context ctx) const
     {
+        ctx.remove_mode(eval_dont_wrap_functions);
+
         if (target_)
         {
             // create a new instance of this variable
