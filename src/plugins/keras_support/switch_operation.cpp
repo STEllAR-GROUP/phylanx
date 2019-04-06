@@ -14,7 +14,6 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -72,6 +71,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (dims_cond == dims_then)
                 return true;
+
+            if (ndims_cond == ndims_then)
+            {
+                for (std::size_t i = 0; i != ndims_cond; ++i)
+                    if (dims_cond[i] != dims_then[i])
+                        if (dims_cond[i] != 1)
+                            return false;
+                return true;
+            }
 
             if (ndims_cond < ndims_then)
             {
@@ -155,12 +163,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto e = else_expr.vector();
         std::size_t size = t.size();
 
-        ir::node_data<double> condition =
-            extract_value_vector<double>(
+        ir::node_data<std::uint8_t> condition =
+            extract_value_vector<std::uint8_t>(
                 std::move(cond), size, name_, codename_);
 
-        blaze::UniformVector<std::uint8_t> ones(size, true);
-        auto c = condition.vector();
+        blaze::UniformVector<bool> ones(size, true);
+        blaze::DynamicVector<bool> c = condition.vector();
 
         if (!then_expr.is_ref())
         {
@@ -190,11 +198,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t rows = t.rows();
         std::size_t columns = t.columns();
 
-        ir::node_data<double> condition = extract_value_matrix<double>(
-            std::move(cond), columns, rows, name_, codename_);
+        blaze::DynamicMatrix<bool> c(rows, columns);
 
-        blaze::UniformMatrix<std::uint8_t> ones(rows, columns, true);
-        auto c = blaze::trans(condition.matrix());
+        ir::node_data<std::uint8_t> condition;
+        if (cond.num_dimensions() == 2)
+        {
+            condition = extract_value_matrix<std::uint8_t>(
+                std::move(cond), rows, columns, name_, codename_);
+            c = condition.matrix();
+        }
+        else
+        {
+            condition = extract_value_matrix<std::uint8_t>(
+                std::move(cond), columns, rows, name_, codename_);
+            c = blaze::trans(condition.matrix());
+        }
+
+        blaze::UniformMatrix<bool> ones(rows, columns, true);
 
         if (!then_expr.is_ref())
         {
@@ -227,11 +247,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t rows = t.rows();
         std::size_t columns = t.columns();
 
-        ir::node_data<double> condition = extract_value_tensor<double>(
-            std::move(cond), columns, rows, pages, name_, codename_);
+        blaze::DynamicTensor<bool> c(pages, rows, columns);
 
-        blaze::UniformTensor<std::uint8_t> ones(pages, rows, columns, true);
-        auto c = blaze::trans(condition.tensor());
+        ir::node_data<std::uint8_t> condition;
+        if (cond.num_dimensions() == 3)
+        {
+            condition = extract_value_tensor<std::uint8_t>(
+                std::move(cond), pages, rows, columns, name_, codename_);
+            c = condition.tensor();
+        }
+        else if (cond.num_dimensions() == 2)
+        {
+            condition = extract_value_tensor<std::uint8_t>(
+                std::move(cond), columns, pages, rows, name_, codename_);
+            c = blaze::trans(condition.tensor(), {1, 2, 0});
+        }
+        else
+        {
+            condition = extract_value_tensor<std::uint8_t>(
+                std::move(cond), columns, rows, pages, name_, codename_);
+            c = blaze::trans(condition.tensor());
+        }
+
+        blaze::UniformTensor<bool> ones(pages, rows, columns, true);
+
 
         if (!then_expr.is_ref())
         {
