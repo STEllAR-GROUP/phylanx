@@ -138,6 +138,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#batch-dot">batch_dot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#car-cdr">car_cdr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#categorical-crossentropy">categorical_crossentropy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#clip">clip</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#concatenate">concatenate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#constant">constant</a></li>
@@ -920,6 +921,43 @@ cdr returns the tail of a list, e.g. cdr([1, 2, 3]) returns [2, 3]
 caar() is the same as car(car())
 cadr() is the same as car(cdr())
 etc.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="categorical-crossentropy">
+<h2>categorical_crossentropy<a class="headerlink" href="#categorical-crossentropy" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>categorical_crossentropy (target, output, from_logits)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>target (array_like) : input array
+output (array_like) : this array is not output back to the caller</p>
+<blockquote>
+<div>but is passed back with the return values.</div></blockquote>
+<p>from_logits (optional, boolean): boolean value, default = False
+axis (optional, integer: integer axis, default = -1</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt>Returns:</dt>
+<dd><blockquote class="first">
+<div>The value should be the same as would be returned by the following
+Python function:</div></blockquote>
+<dl class="last docutils">
+<dt>def categorical_crossentropy(target, output, from_logits=False, axis=True):</dt>
+<dd><dl class="first docutils">
+<dt>if from_logits:</dt>
+<dd>axis = -1
+outval = softmax(output, axis=axis)</dd>
+<dt>else:</dt>
+<dd>outval /= output.sum(axis=axis, keepdims=True)</dd>
+</dl>
+<p class="last">outval = np.clip(output, 1e-7, 1 - 1e-7)
+res = np.sum(target * -np.log(outval), axis=axis, keepdims=False)
+return res, outval</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>

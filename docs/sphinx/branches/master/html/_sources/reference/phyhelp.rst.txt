@@ -540,6 +540,33 @@ car_cdr (li)
     
 
 
+categorical_crossentropy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+categorical_crossentropy (target, output, from_logits)
+   Args:
+
+       target (array_like) : input array
+       output (array_like) : this array is not output back to the caller
+                             but is passed back with the return values.
+       from_logits (optional, boolean): boolean value, default = False
+       axis (optional, integer: integer axis, default = -1
+
+   Returns:
+       The value should be the same as would be returned by the following
+       Python function:
+
+      def categorical_crossentropy(target, output, from_logits=False, axis=True):
+           if from_logits:
+               axis = -1
+               outval = softmax(output, axis=axis)
+           else:
+               outval /= output.sum(axis=axis, keepdims=True)
+           outval = np.clip(output, 1e-7, 1 - 1e-7)
+           res = np.sum(target * -np.log(outval), axis=axis, keepdims=False)
+           return res, outval
+   
+
+
 clip
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 clip (a, axis)
