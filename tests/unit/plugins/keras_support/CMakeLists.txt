@@ -17,6 +17,7 @@ set(tests
     softmax_operation
     softplus_operation
     softsign_operation
+    switch_operation
    )
 
 foreach(test ${tests})
