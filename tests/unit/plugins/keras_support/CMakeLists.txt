@@ -10,6 +10,7 @@ set(tests
     hard_sigmoid_operation
     l2_normalize_operation
     one_hot_operation
+    pool_operation
     relu_operation
     resize_operation
     sigmoid_operation
@@ -39,4 +40,3 @@ foreach(test ${tests})
     ${test}_test_exe)
 
 endforeach()
-
