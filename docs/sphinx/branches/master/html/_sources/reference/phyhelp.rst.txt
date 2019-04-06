@@ -481,6 +481,23 @@ assert (cond)
             Returns:
 
 
+avg_pool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+avg_pool (x, pool_size, padding, strides)
+        Args:
+
+            x (array) : a matrix or a tensor
+            pool_size (a tuple of integers) : the size of pooling oevr each
+                dimension
+            padding (string) : padding mode, it can be either `same` or `valid`
+            strides (a tuple of integers) : the step to apply pooling oevr each
+                dimension
+
+        Returns:
+
+        The result of average pooling with `pool_size` filters
+
+
 batch_dot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 batch_dot (x, y, axes)
@@ -1433,6 +1450,23 @@ make_list (args)
 
         A Phylanx list populated by the values supplied.
     
+
+
+max_pool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+max_pool (x, pool_size, padding, strides)
+        Args:
+
+            x (array) : a matrix or a tensor
+            pool_size (a tuple of integers) : the size of pooling over each
+                dimension
+            padding (string) : padding mode, it can be either `same` or `valid`
+            strides (a tuple of integers) : the step to apply pooling over each
+                dimension
+
+        Returns:
+
+        The result of max pooling with `pool_size` filters
 
 
 maximum

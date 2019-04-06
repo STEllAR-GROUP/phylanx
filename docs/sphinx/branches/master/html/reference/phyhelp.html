@@ -134,6 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#argmax">argmax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argmin">argmin</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#avg-pool">avg_pool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#batch-dot">batch_dot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#car-cdr">car_cdr</a></li>
@@ -197,6 +198,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#logsumexp">logsumexp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#lra">lra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#make-list">make_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#max-pool">max_pool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#maximum">maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean">mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimum">minimum</a></li>
@@ -851,6 +853,26 @@ specified, a vector of minima along the axis is returned.</p>
 <blockquote>
 <div>cond (boolean expression) : if not true, raise an AssertionError</div></blockquote>
 <p class="last">Returns:</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="avg-pool">
+<h2>avg_pool<a class="headerlink" href="#avg-pool" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>avg_pool (x, pool_size, padding, strides)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>x (array) : a matrix or a tensor
+pool_size (a tuple of integers) : the size of pooling oevr each</p>
+<blockquote>
+<div>dimension</div></blockquote>
+<p>padding (string) : padding mode, it can be either <cite>same</cite> or <cite>valid</cite>
+strides (a tuple of integers) : the step to apply pooling oevr each</p>
+<blockquote>
+<div>dimension</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The result of average pooling with <cite>pool_size</cite> filters</p>
 </dd>
 </dl>
 </div>
@@ -1865,6 +1887,26 @@ enable_output (optional, boolean): If enabled, prints out the step</dd>
 </dd>
 </dl>
 </div>
+<div class="section" id="max-pool">
+<h2>max_pool<a class="headerlink" href="#max-pool" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>max_pool (x, pool_size, padding, strides)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>x (array) : a matrix or a tensor
+pool_size (a tuple of integers) : the size of pooling over each</p>
+<blockquote>
+<div>dimension</div></blockquote>
+<p>padding (string) : padding mode, it can be either <cite>same</cite> or <cite>valid</cite>
+strides (a tuple of integers) : the step to apply pooling over each</p>
+<blockquote>
+<div>dimension</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The result of max pooling with <cite>pool_size</cite> filters</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="maximum">
 <h2>maximum<a class="headerlink" href="#maximum" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2655,7 +2697,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Apr 05, 2019.
+      Last updated on Apr 06, 2019.
 
     </p>
   </div>
