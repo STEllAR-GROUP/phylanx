@@ -27,10 +27,10 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     enum node_data_type
     {
-        node_data_type_unknown = -1,
         node_data_type_double = 0,
         node_data_type_int64 = 1,
         node_data_type_bool = 2,
+        node_data_type_unknown = 3,     // must be largest value
     };
 
     /// Extract node_data_type from a primitive name
@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree
     {
         int const __dummy[] = {
             extract_common_type(args)...,
-            node_data_type_bool
+            node_data_type_unknown
         };
         return node_data_type(
             *std::min_element(&__dummy[0], &__dummy[sizeof...(args)]));
