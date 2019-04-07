@@ -362,7 +362,7 @@ void test_bernoulli_distribution_params(std::mt19937& gen)
 void test_binomial_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "binomial")),
+            define(call, size, random(size, list("binomial", 1.0, 0.5))),
             call
         ))";
 
@@ -421,7 +421,7 @@ void test_binomial_distribution_params(std::mt19937& gen)
 void test_negative_binomial_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "negative_binomial")),
+            define(call, size, random(size, list("negative_binomial", 1.0, 0.5))),
             call
         ))";
 
@@ -480,7 +480,7 @@ void test_negative_binomial_distribution_params(std::mt19937& gen)
 void test_geometric_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "geometric")),
+            define(call, size, random(size, list("geometric", 0.5))),
             call
         ))";
 
@@ -539,7 +539,7 @@ void test_geometric_distribution_params(std::mt19937& gen)
 void test_poisson_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "poisson")),
+            define(call, size, random(size, list("poisson", 1.0))),
             call
         ))";
 
@@ -598,7 +598,7 @@ void test_poisson_distribution_params(std::mt19937& gen)
 void test_exponential_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "exponential")),
+            define(call, size, random(size, list("exponential", 1.0))),
             call
         ))";
 
@@ -657,7 +657,7 @@ void test_exponential_distribution_params(std::mt19937& gen)
 void test_gamma_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "gamma")),
+            define(call, size, random(size, list("gamma", 1.0))),
             call
         ))";
 
@@ -716,7 +716,7 @@ void test_gamma_distribution_params(std::mt19937& gen)
 void test_weibull_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "weibull")),
+            define(call, size, random(size, list("weibull", 1.0))),
             call
         ))";
 
@@ -1015,7 +1015,7 @@ void test_lognormal_distribution_params(std::mt19937& gen)
 void test_chi_squared_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "chi_squared")),
+            define(call, size, random(size, list("chi_squared", 1.0))),
             call
         ))";
 
@@ -1133,7 +1133,7 @@ void test_cauchy_distribution_params(std::mt19937& gen)
 void test_fisher_f_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "fisher_f")),
+            define(call, size, random(size, list("fisher_f", 1.0))),
             call
         ))";
 
@@ -1192,7 +1192,7 @@ void test_fisher_f_distribution_params(std::mt19937& gen)
 void test_student_t_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "student_t")),
+            define(call, size, random(size, list("student_t", 1.0))),
             call
         ))";
 
