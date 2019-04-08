@@ -36,21 +36,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("switch",
             std::vector<std::string>{"switch(_1, _2, _3)"},
             &create_switch_operation, &create_primitive<switch_operation>,
-            R"(cond, thenf, elsef
-            This primitive implements the if statement in Python.
-            The statement `thenf` is evaluated if `cond` is True and
-            the statement `elsef` is evaluated otherwise.
-
+            R"(condition, then_expression, else_expression
             Args:
 
-                cond (boolean expression) : a boolean expression
-                thenf (statement) : a statement
-                elsef (statement, optional) : a statement
+                condition (an array) : a tensor
+                then_expression (an array) : either a tensor, or a callable
+                    that returns a tensor.
+                else_expression (an array) : either a tensor, or a callable
+                    that returns a tensor.
 
             Returns:
 
-              The value returned by the statement that was executed, `nil`
-              otherwise)"
+            The selected tensor based on each element of condition. Note that
+            both `then_expression` and `else_expression` should be symbolic
+            tensors of the same shape. Condition cannot have a bigger rank than
+            `then_expression`)"
             )
     };
 
@@ -128,12 +128,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "`then_expression` shape",
                         name_, codename_));
             }
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "switch_operation::validate_shapes",
-                util::generate_error_message(
-                    "the condition shape is not compatible with the "
-                    "`then_expression` shape",
-                    name_, codename_));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "switch_operation::validate_shapes",
@@ -181,9 +175,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(else_expr)};
         }
 
-        blaze::DynamicVector<double> result(size);
+        blaze::DynamicVector<double> result = c * t + (ones - c) * e;
 
-        result = c * t + (ones - c) * e;
         return primitive_argument_type{std::move(result)};
     }
 
@@ -227,9 +220,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(else_expr)};
         }
 
-        blaze::DynamicMatrix<double> result(rows, columns);
+        blaze::DynamicMatrix<double> result = c % t + (ones - c) % e;
 
-        result = c % t + (ones - c) % e;
         return primitive_argument_type{std::move(result)};
     }
 
@@ -283,9 +275,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(else_expr)};
         }
 
-        blaze::DynamicTensor<double> result(pages, rows, columns);
+        blaze::DynamicTensor<double> result = c % t + (ones - c) % e;
 
-        result = c % t + (ones - c) % e;
         return primitive_argument_type{std::move(result)};
     }
 #endif
