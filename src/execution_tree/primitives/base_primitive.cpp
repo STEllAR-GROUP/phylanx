@@ -3821,6 +3821,34 @@ namespace phylanx { namespace execution_tree
         return extract_scalar_boolean_value(val, name, codename);
     }
 
+    hpx::future<std::uint8_t> scalar_boolean_operand(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_scalar_boolean_value(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type>&& f) {
+                    return extract_scalar_boolean_value(
+                        f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_scalar_boolean_value(val, name, codename));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::string> string_operand(primitive_argument_type const& val,
         primitive_arguments_type const& args, std::string const& name,
