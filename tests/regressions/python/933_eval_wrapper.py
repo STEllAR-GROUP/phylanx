@@ -3,7 +3,7 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-# #904: Cannot pass function as an argument
+# #933: Can't pass eval_wrapper directly to a variable()
 
 import numpy as np
 from phylanx import Phylanx, PhylanxSession, execution_tree

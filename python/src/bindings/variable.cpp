@@ -27,52 +27,54 @@ namespace phylanx { namespace execution_tree
     variable::variable(primitive value, pybind11::object dtype,
             pybind11::object name, pybind11::object constraint)
       : dtype_(std::move(dtype))
-      , value_(std::move(value))
       , name_(name.is_none() ?
               hpx::util::format("variable_{}", ++variable_count) :
               name.cast<std::string>())
+      , value_(std::move(value))
       , constraint_(std::move(constraint))
     {
     }
 
     variable::variable(pybind11::array value, pybind11::object dtype,
-            pybind11::object name, pybind11::object constraint)
+        pybind11::object name, pybind11::object constraint)
       : dtype_(dtype.is_none() ? value.dtype() : std::move(dtype))
-      , value_(create_variable(
-          pybind11::cast<primitive_argument_type>(std::move(value))))
       , name_(name.is_none() ?
-              hpx::util::format("variable_{}", ++variable_count) :
-              name.cast<std::string>())
+                hpx::util::format("variable_{}", ++variable_count) :
+                name.cast<std::string>())
+      , value_(create_variable(
+            pybind11::cast<primitive_argument_type>(std::move(value)), name_))
       , constraint_(std::move(constraint))
-  {}
+    {}
 
     variable::variable(std::string value, pybind11::object dtype,
-            pybind11::object name, pybind11::object constraint)
+        pybind11::object name, pybind11::object constraint)
       : dtype_(dtype.is_none() ? pybind11::dtype("S") : std::move(dtype))
-      , value_(create_variable(primitive_argument_type(std::move(value))))
       , name_(name.is_none() ?
-              hpx::util::format("variable_{}", ++variable_count) :
-              name.cast<std::string>())
+                hpx::util::format("variable_{}", ++variable_count) :
+                name.cast<std::string>())
+      , value_(
+            create_variable(primitive_argument_type(std::move(value)), name_))
       , constraint_(std::move(constraint))
     {}
 
     variable::variable(primitive_argument_type value, pybind11::object dtype,
             pybind11::object name, pybind11::object constraint)
       : dtype_(std::move(dtype))
-      , value_(is_primitive_operand(value) ?
-              primitive_operand(std::move(value)) :
-              create_variable(std::move(value)))
       , name_(name.is_none() ?
               hpx::util::format("variable_{}", ++variable_count) :
               name.cast<std::string>())
+      , value_(is_primitive_operand(value) ?
+              primitive_operand(std::move(value)) :
+              create_variable(std::move(value), name_))
       , constraint_(std::move(constraint))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive variable::create_variable(primitive_argument_type&& value)
+    primitive variable::create_variable(
+        primitive_argument_type&& value, std::string const& name)
     {
         return create_primitive_component(
-            hpx::find_here(), "variable", std::move(value));
+            hpx::find_here(), "variable", std::move(value), name, "", false);
     }
 
     std::size_t variable::variable_count = 0;

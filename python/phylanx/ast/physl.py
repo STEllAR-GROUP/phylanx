@@ -382,11 +382,13 @@ class PhySL:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = phylanx.execution_tree.compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                    self.file_name)
 
             phylanx.execution_tree.compile(
-                self.file_name, self.wrapped_function.__name__, self.__src__,
-                PhySL.compiler_state)
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
             self.is_compiled = True
 
     def generate_physl(self, ir):
@@ -450,12 +452,12 @@ class PhySL:
                         PhySL.compiler_state, True)
 
             result = phylanx.execution_tree.eval(
-                self.outer.file_name, self.func_name, PhySL.compiler_state,
+                PhySL.compiler_state, self.outer.file_name, self.func_name,
                 *self.args)
 
             if self.outer.performance:
                 treedata = phylanx.execution_tree.retrieve_tree_topology(
-                    self.outer.file_name, self.func_name, PhySL.compiler_state)
+                    PhySL.compiler_state, self.outer.file_name, self.func_name)
                 self.outer.__perfdata__ = (
                     phylanx.execution_tree.retrieve_counter_data(
                         PhySL.compiler_state),
@@ -477,12 +479,12 @@ class PhySL:
 
         if isinstance(val, self.eval_wrapper):
             if len(val.args) == 0:
-                return PhySL.compiler_state.code_for(
-                    self.file_name, val.func_name)
+                return phylanx.execution_tree.code_for(
+                    PhySL.compiler_state, self.file_name, val.func_name)
 
             args = tuple(map(self.map_wrapped, val.args))
-            return PhySL.compiler_state.bound_code_for(
-                self.file_name, val.func_name, *args)
+            return phylanx.execution_tree.bound_code_for(
+                PhySL.compiler_state, self.file_name, val.func_name, *args)
 
         return val
 
@@ -497,11 +499,13 @@ class PhySL:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = phylanx.execution_tree.compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                    self.file_name)
 
             phylanx.execution_tree.compile(
-                self.file_name, self.wrapped_function.__name__, self.__src__,
-                PhySL.compiler_state)
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
             self.is_compiled = True
 
         return self.eval_wrapper(self, tuple(map(self.map_wrapped, args)))

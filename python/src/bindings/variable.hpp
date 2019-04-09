@@ -22,12 +22,14 @@ namespace phylanx { namespace execution_tree
     struct variable
     {
     private:
-        static primitive create_variable(primitive_argument_type&& value);
+        static primitive create_variable(
+            primitive_argument_type&& value, std::string const& name);
         static std::size_t variable_count;
 
     public:
-        variable(primitive value, pybind11::object dtype, pybind11::object name,
-            pybind11::object constraint);
+        variable(primitive value, pybind11::object dtype,
+            pybind11::object name = pybind11::none(),
+            pybind11::object constraint = pybind11::none());
 
         variable(pybind11::array value, pybind11::object dtype,
             pybind11::object name, pybind11::object constraint);
@@ -37,35 +39,6 @@ namespace phylanx { namespace execution_tree
 
         variable(primitive_argument_type value, pybind11::object dtype,
             pybind11::object name, pybind11::object constraint);
-
-//         template <typename T>
-//         variable(std::vector<T> value, pybind11::dtype dtype,
-//                 pybind11::object name, pybind11::object constraint)
-//           : value_(ir::node_data<T>{std::move(value)})
-//           , dtype_(pybind11::dtype(std::move(dtype)))
-//           , name_(name.is_none() ? "" : name.cast<std::string>())
-//           , constraint_(std::move(constraint))
-//         {}
-//         template <typename T>
-//         variable(std::vector<std::vector<T>> value,
-//                 pybind11::object dtype, pybind11::object name,
-//                 pybind11::object constraint)
-//           : value_(ir::node_data<T>{std::move(value)})
-//           , dtype_(pybind11::dtype(std::move(dtype)))
-//           , name_(name.is_none() ? "" : name.cast<std::string>())
-//           , constraint_(std::move(constraint))
-//         {}
-// #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-//         template <typename T>
-//         variable(std::vector<std::vector<std::vector<T>>> value,
-//                 pybind11::object dtype, pybind11::object name,
-//                 pybind11::object constraint)
-//           : value_(ir::node_data<T>{std::move(value)})
-//           , dtype_(pybind11::dtype(std::move(dtype)))
-//           , name_(name.is_none() ? "" : name.cast<std::string>())
-//           , constraint_(std::move(constraint))
-//         {}
-// #endif
 
         ~variable()
         {
@@ -106,8 +79,8 @@ namespace phylanx { namespace execution_tree
 
     private:
         pybind11::dtype dtype_;
-        primitive value_;
         std::string name_;
+        primitive value_;
         pybind11::object constraint_;
     };
 }}

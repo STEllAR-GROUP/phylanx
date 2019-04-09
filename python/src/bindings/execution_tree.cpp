@@ -24,42 +24,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose execution tree
-template <typename T>
-void bind_variable(pybind11::class_<phylanx::execution_tree::variable>& var)
-{
-    var.def(pybind11::init<std::vector<T>, pybind11::object,
-                pybind11::object, pybind11::object>(),
-           pybind11::arg("value"),
-           pybind11::arg("dtype") = pybind11::none(),
-           pybind11::arg("name") = pybind11::none(),
-           pybind11::arg("constraint") = pybind11::none())
-        .def(pybind11::init<std::vector<std::vector<T>>, pybind11::object,
-                 pybind11::object, pybind11::object>(),
-            pybind11::arg("value"),
-            pybind11::arg("dtype") = pybind11::none(),
-            pybind11::arg("name") = pybind11::none(),
-            pybind11::arg("constraint") = pybind11::none())
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        .def(pybind11::init<std::vector<std::vector<std::vector<T>>>,
-                 pybind11::object, pybind11::object, pybind11::object>(),
-            pybind11::arg("value"),
-            pybind11::arg("dtype") = pybind11::none(),
-            pybind11::arg("name") = pybind11::none(),
-            pybind11::arg("constraint") = pybind11::none())
-#endif
-        ;
-}
-
 void phylanx::bindings::bind_execution_tree(pybind11::module m)
 {
     auto execution_tree = m.def_submodule("execution_tree");
 
     // Compiler State
     pybind11::class_<phylanx::bindings::compiler_state>(
-        execution_tree, "compiler_state")
-        .def(pybind11::init<>())
-        .def("code_for", &phylanx::bindings::code_for)
-        .def("bound_code_for", &phylanx::bindings::bound_code_for);
+            execution_tree, "compiler_state")
+        .def(pybind11::init<std::string>());
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
@@ -69,11 +41,11 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         "compile and evaluate a numerical expression in PhySL");
 
     execution_tree.def("eval",
-        [](std::string const& xexpr, compiler_state& c, pybind11::args args)
+        [](compiler_state& state, std::string const& xexpr, pybind11::args args)
         ->  phylanx::execution_tree::primitive_argument_type
         {
             return phylanx::bindings::expression_evaluator(
-                "<unknown>", xexpr, c, args);
+                state, state.codename_, xexpr, args);
         },
         "compile and evaluate a numerical expression in PhySL");
 
@@ -98,6 +70,13 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         phylanx::bindings::retrieve_tree_topology,
         "retrieve the Newick and DOT tree topologies for the given "
         "execution tree");
+
+    execution_tree.def("code_for", phylanx::bindings::code_for,
+        "extract compiled code for given function");
+
+    execution_tree.def("bound_code_for", phylanx::bindings::bound_code_for,
+        "extract compiled code for given function and bind it to given "
+        "arguments");
 
     // phylanx.execution_tree.variable
     auto var =
@@ -141,24 +120,21 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                             [&]() { return var.eval(std::move(args)); });
                 },
                 "evaluate execution tree")
-            .def(
-                "__call__",
+            .def("__call__",
                 [](phylanx::execution_tree::variable const& var,
                     pybind11::args args)
                 {
                     pybind11::gil_scoped_release release;       // release GIL
-                        return hpx::threads::run_as_hpx_thread(
-                            [&]() { return var.eval(std::move(args)); });
+                    return hpx::threads::run_as_hpx_thread(
+                        [&]() { return var.eval(std::move(args)); });
                 },
                 "evaluate execution tree")
-            .def_property_readonly(
-                "dtype",
+            .def_property_readonly("dtype",
                 [](phylanx::execution_tree::variable const& var) {
                     return var.dtype();
                 },
                 "return the dtype of the value stored by the variable")
-            .def_property_readonly(
-                "name",
+            .def_property_readonly("name",
                 [](phylanx::execution_tree::variable const& var) {
                     return var.name();
                 },
@@ -172,10 +148,6 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                     return bindings::repr<phylanx::execution_tree::primitive>(
                         var.value());
                 });
-
-    //     bind_variable<double>(var);
-    //     bind_variable<std::int64_t>(var);
-    //     bind_variable<std::uint8_t>(var);
 
     // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
