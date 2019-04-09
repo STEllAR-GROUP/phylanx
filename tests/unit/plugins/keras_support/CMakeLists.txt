@@ -6,6 +6,7 @@
 set(tests
 
     batch_dot_operation
+    ctc_decode_operation
     elu_operation
     hard_sigmoid_operation
     l2_normalize_operation
