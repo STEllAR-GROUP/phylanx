@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -147,7 +147,24 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 [](phylanx::execution_tree::variable const& var) {
                     return bindings::repr<phylanx::execution_tree::primitive>(
                         var.value());
-                });
+                })
+            .def("__add__", &phylanx::execution_tree::add_variables)
+            .def("__add__", &phylanx::execution_tree::add_variables_gen)
+            .def("__radd__", &phylanx::execution_tree::radd_variables_gen)
+            .def("__sub__", &phylanx::execution_tree::sub_variables)
+            .def("__sub__", &phylanx::execution_tree::sub_variables_gen)
+            .def("__rsub__", &phylanx::execution_tree::rsub_variables_gen)
+            .def("__mul__", &phylanx::execution_tree::mul_variables)
+            .def("__mul__", &phylanx::execution_tree::mul_variables_gen)
+            .def("__rmul__", &phylanx::execution_tree::rmul_variables_gen)
+            .def("__div__", &phylanx::execution_tree::div_variables)
+            .def("__div__", &phylanx::execution_tree::div_variables_gen)
+            .def("__rdiv__", &phylanx::execution_tree::rdiv_variables_gen)
+            .def("__neg__", &phylanx::execution_tree::unary_minus_variables)
+            .def("__iadd__", &phylanx::execution_tree::iadd_variables)
+            .def("__iadd__", &phylanx::execution_tree::iadd_variables_gen)
+            .def("__isub__", &phylanx::execution_tree::isub_variables)
+            .def("__isub__", &phylanx::execution_tree::isub_variables_gen);
 
     // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,

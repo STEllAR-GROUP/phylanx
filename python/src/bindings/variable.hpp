@@ -31,14 +31,25 @@ namespace phylanx { namespace execution_tree
             pybind11::object name = pybind11::none(),
             pybind11::object constraint = pybind11::none());
 
+        variable(primitive value, pybind11::object dtype,
+            char const* name = "Variable",
+            pybind11::object constraint = pybind11::none());
+
         variable(pybind11::array value, pybind11::object dtype,
-            pybind11::object name, pybind11::object constraint);
+            pybind11::object name,
+            pybind11::object constraint = pybind11::none());
 
         variable(std::string value, pybind11::object dtype,
-            pybind11::object name, pybind11::object constraint);
+            pybind11::object name,
+            pybind11::object constraint = pybind11::none());
 
         variable(primitive_argument_type value, pybind11::object dtype,
-            pybind11::object name, pybind11::object constraint);
+            pybind11::object name,
+            pybind11::object constraint = pybind11::none());
+
+        variable(primitive_argument_type value, pybind11::object dtype,
+            char const* name = "Variable",
+            pybind11::object constraint = pybind11::none());
 
         ~variable()
         {
@@ -59,6 +70,10 @@ namespace phylanx { namespace execution_tree
         primitive value() const
         {
             return value_;
+        }
+        void value(primitive&& new_value)
+        {
+            value_ = std::move(new_value);
         }
 
     protected:
@@ -83,6 +98,49 @@ namespace phylanx { namespace execution_tree
         primitive value_;
         pybind11::object constraint_;
     };
+
+#define PHYLANX_VARIABLE_OPERATION_DECLARATION(op)                             \
+    /* forward operation */                                                    \
+    phylanx::execution_tree::variable op##_variables(                          \
+        phylanx::execution_tree::variable const& lhs,                          \
+        phylanx::execution_tree::variable const& rhs);                         \
+                                                                               \
+    phylanx::execution_tree::variable op##_variables_gen(                      \
+        phylanx::execution_tree::variable const& lhs,                          \
+        phylanx::execution_tree::primitive_argument_type const& rhs);          \
+                                                                               \
+    /* reverse operation */                                                    \
+    phylanx::execution_tree::variable r##op##_variables_gen(                   \
+        phylanx::execution_tree::variable const& rhs,                          \
+        phylanx::execution_tree::primitive_argument_type const& lhs);          \
+    /**/
+
+#define PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION(op)                     \
+    /* in-place operation */                                                   \
+    phylanx::execution_tree::variable i##op##_variables(                       \
+        phylanx::execution_tree::variable& lhs,                                \
+        phylanx::execution_tree::variable const& rhs);                         \
+                                                                               \
+    phylanx::execution_tree::variable i##op##_variables_gen(                   \
+        phylanx::execution_tree::variable& lhs,                                \
+        phylanx::execution_tree::primitive_argument_type const& rhs);          \
+        /**/
+
+    ///////////////////////////////////////////////////////////////////////////
+    // declare arithmetic operations
+    PHYLANX_VARIABLE_OPERATION_DECLARATION(add)                 // __add__
+    PHYLANX_VARIABLE_OPERATION_DECLARATION(sub)                 // __sub__
+    PHYLANX_VARIABLE_OPERATION_DECLARATION(mul)                 // __mul__
+    PHYLANX_VARIABLE_OPERATION_DECLARATION(div)                 // __div__
+
+    phylanx::execution_tree::variable unary_minus_variables(    // __neg__
+        phylanx::execution_tree::variable const& lhs);
+
+    PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION(add)         // __iadd__
+    PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION(sub)         // __isub__
+
+#undef PHYLANX_VARIABLE_OPERATION_DECLARATION
+#undef PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION
 }}
 
 #endif
