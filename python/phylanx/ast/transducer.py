@@ -8,12 +8,20 @@
 import re
 import ast
 import inspect
+import types
 import phylanx
 from .physl import PhySL
 from .openscop import OpenSCoP
 from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
+
+
+class LambdaExtractor(ast.NodeVisitor):
+    _ast = None
+
+    def visit_Lambda(self, node):
+        LambdaExtractor._ast = node
 
 
 def Phylanx(__phylanx_arg=None, **kwargs):
@@ -86,6 +94,22 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             if type(val).__name__ == "_PhylanxDecorator":
                 return val.backend.lazy()
+            elif isinstance(val, types.FunctionType):
+                fn_src = inspect.getsource(val)
+                fn_src = fn_src.strip()
+                fn_ast = ast.parse(fn_src)
+                if val.__name__ == '<lambda>':
+                    LambdaExtractor().visit(fn_ast)
+                    lambda_ast = LambdaExtractor._ast
+                    fn_body = ast.FunctionDef(
+                        name="__Physl_lambda",
+                        args=lambda_ast.args,
+                        body=lambda_ast.body,
+                        lineno=lambda_ast.lineno,
+                        col_offset=lambda_ast.col_offset)
+                    fn_ast = ast.Module(body=[fn_body])
+                fn_physl = PhySL(val, fn_ast, {})
+                return fn_physl.lazy()
             return val
 
         def lazy(self, *args):
