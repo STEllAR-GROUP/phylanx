@@ -814,6 +814,12 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<std::uint8_t> scalar_boolean_operand(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract a std::string from a primitive_argument_type (that
     // could be a primitive or a string value).
