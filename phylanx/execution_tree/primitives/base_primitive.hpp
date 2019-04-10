@@ -256,15 +256,6 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Extract a ir::node_data<std::uint8_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_data(
-        primitive_argument_type const& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT ir::node_data<std::uint8_t>&& extract_boolean_data(
-        primitive_argument_type&& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
     PHYLANX_EXPORT bool is_boolean_data_operand(
         primitive_argument_type const& val);
 

@@ -30,7 +30,7 @@ void test_unary_not_operation_0d_false()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_0d_true()
@@ -49,7 +49,7 @@ void test_unary_not_operation_0d_true()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_0d_false_lit()
@@ -64,7 +64,7 @@ void test_unary_not_operation_0d_false_lit()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_0d_true_lit()
@@ -79,7 +79,7 @@ void test_unary_not_operation_0d_true_lit()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d()
@@ -104,7 +104,7 @@ void test_unary_not_operation_1d()
         blaze::map(v, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d_lit()
@@ -127,7 +127,7 @@ void test_unary_not_operation_1d_lit()
         blaze::map(v, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d_double()
@@ -152,7 +152,7 @@ void test_unary_not_operation_1d_double()
         blaze::map(v, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d_double_lit()
@@ -175,7 +175,7 @@ void test_unary_not_operation_1d_double_lit()
         blaze::map(v, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d()
@@ -200,7 +200,7 @@ void test_unary_not_operation_2d()
         blaze::map(m, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d_lit()
@@ -223,7 +223,7 @@ void test_unary_not_operation_2d_lit()
         blaze::map(m, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d_double()
@@ -248,7 +248,7 @@ void test_unary_not_operation_2d_double()
         blaze::map(m, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d_double_lit()
@@ -271,7 +271,7 @@ void test_unary_not_operation_2d_double_lit()
         blaze::map(m, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 int main(int argc, char* argv[])
