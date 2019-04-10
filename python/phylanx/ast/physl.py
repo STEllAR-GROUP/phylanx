@@ -14,16 +14,20 @@ from phylanx import PhylanxSession
 
 
 def physl_zip(loop):
-    targets = [it.id for it in loop.target.elts]
-    args = [arg.id for arg in loop.iter.args]
-    lambda_ = ['lambda', (*targets, ['list', (*targets, )])]
-    fmap = ['fmap', (lambda_, *args)]
-
     def define(i, idx):
         return ['define', (i, ['slice', ('__physl_iterator', str(idx))])]
 
-    indices = tuple(define(i, idx) for idx, i in enumerate(targets))
-    return (fmap, indices)
+    if isinstance(loop, ast.For):
+        targets = [it.id for it in loop.target.elts]
+        args = [arg.id for arg in loop.iter.args]
+    elif isinstance(loop, list):
+        targets = loop[0]
+        args = loop[1][1]
+
+    lambda_ = ['lambda', (*targets, ['list', (*targets, )])]
+    fmap = ['fmap', (lambda_, *args)]
+    iterators = tuple(define(i, idx) for idx, i in enumerate(targets))
+    return (fmap, iterators)
 
 
 mapped_methods = {
@@ -831,23 +835,10 @@ class PhySL:
         `is_async` indicates a comprehension is asynchronous.
         """
 
-        mapping_function = {
-            'list': 'for_each',
-            'slice': 'for_each',
-            'range': 'for_each',
-            'prange': 'parallel_map'
-        }
-
         target = self.apply_rule(node.target)
         iteration_space = self.apply_rule(node.iter)
-        if isinstance(iteration_space, list):
-            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
-            iteration_space[0] = iteration_space[0].replace('prange', 'range')
-        else:
-            symbol_name = None
 
         comprehension = {
-            'symbol': symbol_name,
             'target': target,
             'iter': iteration_space
         }
@@ -1052,6 +1043,12 @@ class PhySL:
 
         target = loop['target']
         iter_space = loop['iter']
+        if isinstance(iter_space, list) and iter_space[0].startswith('zip'):
+            iter_space, iterators = physl_zip([target, iter_space])
+            symbol = get_symbol_info(node, 'fmap')
+            body = ['block', (*iterators, elt)]
+            op = get_symbol_info(node, 'lambda')
+            return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
 
         lambda_ = ['lambda', (target, elt)]
         fmap = ['fmap', (lambda_, iter_space)]
