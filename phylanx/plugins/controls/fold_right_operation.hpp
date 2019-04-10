@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -36,6 +36,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+
+        primitive_argument_type fold_right_list(
+            primitive_argument_type&& bound_func,
+            primitive_argument_type&& initial, primitive_argument_type&& data,
+            eval_context ctx) const;
+
+        template <typename T>
+        primitive_argument_type fold_right_array_helper_1d(
+            primitive_argument_type&& bound_func,
+            primitive_argument_type&& initial, ir::node_data<T>&& data,
+            eval_context ctx) const;
+
+        template <typename T>
+        primitive_argument_type fold_right_array_helper_2d(
+            primitive_argument_type&& bound_func,
+            primitive_argument_type&& initial, ir::node_data<T>&& data,
+            eval_context ctx) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type fold_right_array_helper_3d(
+            primitive_argument_type&& bound_func,
+            primitive_argument_type&& initial, ir::node_data<T>&& data,
+            eval_context ctx) const;
+#endif
+        template <typename T>
+        primitive_argument_type fold_right_array_helper(
+            primitive_argument_type&& bound_func,
+            primitive_argument_type&& initial, ir::node_data<T>&& data,
+            eval_context ctx) const;
+
+        primitive_argument_type fold_right_array(
+            primitive_argument_type&& bound_func,
+            primitive_argument_type&& initial, primitive_argument_type&& data,
+            eval_context ctx) const;
     };
 
     inline primitive create_fold_right_operation(hpx::id_type const& locality,

@@ -70,8 +70,7 @@ namespace phylanx { namespace execution_tree
         {
             result = node_data_type_int64;
         }
-        else if (is_boolean_operand_strict(arg) &&
-            result == node_data_type_unknown)
+        else if (is_boolean_operand_strict(arg))
         {
             result = node_data_type_bool;
         }
@@ -90,7 +89,9 @@ namespace phylanx { namespace execution_tree
                 result = node_data_type_double;
                 break;
             }
-            else if (is_integer_operand_strict(arg))
+            else if (is_integer_operand_strict(arg) &&
+                (result == node_data_type_unknown ||
+                    result == node_data_type_bool))
             {
                 result = node_data_type_int64;
             }
