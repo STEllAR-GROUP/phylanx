@@ -37,6 +37,8 @@ set(tests
     905_call_python_snippet
     911_list_comprehension
     925_none_dtype
+    933_arange
+    933_eval_wrapper
     array_len_494
     array_shape_486
     array_subscript_403

@@ -12,18 +12,18 @@ import numpy as np
 PhylanxSession.init(1)
 
 et = phylanx.execution_tree
-cs = et.compiler_state()
+cs = et.compiler_state(__name__)
 
-fib10 = et.eval("""
+fib10 = et.eval(cs, """
 block(
     define(fib,n,
     if(n<2,n,
         fib(n-1)+fib(n-2))),
-    fib)""", cs, 10)
+    fib)""", 10)
 
 assert fib10 == 55.0
 
-sum10 = et.eval("""
+sum10 = et.eval(cs, """
 block(
     define(sum10,
         block(
@@ -35,7 +35,7 @@ block(
                   store(i,i+n)
                 )),
             i)),
-    sum10)""", cs)
+    sum10)""")
 
 assert sum10 == 55.0
 
