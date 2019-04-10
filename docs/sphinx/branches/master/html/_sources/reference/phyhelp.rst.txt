@@ -1037,16 +1037,19 @@ fmap (func, listv)
 
 fold_left
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fold_left (fun, ini, range)
+fold_left (func, initial, data)
 
             Args:
 
-                fun (function) : a function that takes a two float arguments
-                                 and returns a float argument
-                ini (float) : an initial value
-                range (iterator) : a list or iterator
+                func : a function that takes two arbitrary arguments
+                       and returns the result of folding the two arguments
+                initial : an initial value
+                data : a list or an array-like object
 
             Returns:
+
+                The result of left-folding the elements of the data object
+                using the given function.
 
                 This function is equivalent to the Python code:
 
@@ -1070,16 +1073,19 @@ fold_left (fun, ini, range)
 
 fold_right
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fold_right (fun, ini, range)
+fold_right (func, initial, data)
 
             Args:
 
-                fun (function) : a function that takes a two float arguments
-                                 and returns a float argument
-                ini (float) : an initial value
-                range (iterator) : a list or iterator
+                func : a function that takes two arbitrary arguments
+                       and returns the result of folding the two arguments
+                initial : an initial value
+                data : a list or an array-like object
 
             Returns:
+
+                The result of right-folding the elements of the data object
+                using the given function.
 
                 This function is equivalent to the Python code:
 

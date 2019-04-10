@@ -1463,21 +1463,24 @@ item in list <cite>listv</cite>.</p>
 </div>
 <div class="section" id="fold-left">
 <h2>fold_left<a class="headerlink" href="#fold-left" title="Permalink to this headline">¶</a></h2>
-<p>fold_left (fun, ini, range)</p>
+<p>fold_left (func, initial, data)</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>fun (function) <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes a two float arguments</span></dt>
-<dd>and returns a float argument</dd>
+<dt>func <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes two arbitrary arguments</span></dt>
+<dd>and returns the result of folding the two arguments</dd>
 </dl>
-<p>ini (float) : an initial value
-range (iterator) : a list or iterator</p>
+<p>initial : an initial value
+data : a list or an array-like object</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
 <div><blockquote>
-<div>This function is equivalent to the Python code:</div></blockquote>
+<div><p>The result of left-folding the elements of the data object
+using the given function.</p>
+<p>This function is equivalent to the Python code:</p>
+</div></blockquote>
 <dl class="docutils">
 <dt>def fl(f, i, r):</dt>
 <dd><p class="first">c = i
@@ -1505,21 +1508,24 @@ print(v)</div></blockquote>
 </div>
 <div class="section" id="fold-right">
 <h2>fold_right<a class="headerlink" href="#fold-right" title="Permalink to this headline">¶</a></h2>
-<p>fold_right (fun, ini, range)</p>
+<p>fold_right (func, initial, data)</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>fun (function) <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes a two float arguments</span></dt>
-<dd>and returns a float argument</dd>
+<dt>func <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes two arbitrary arguments</span></dt>
+<dd>and returns the result of folding the two arguments</dd>
 </dl>
-<p>ini (float) : an initial value
-range (iterator) : a list or iterator</p>
+<p>initial : an initial value
+data : a list or an array-like object</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
 <div><blockquote>
-<div>This function is equivalent to the Python code:</div></blockquote>
+<div><p>The result of right-folding the elements of the data object
+using the given function.</p>
+<p>This function is equivalent to the Python code:</p>
+</div></blockquote>
 <dl class="docutils">
 <dt>def fr(f, i, r):</dt>
 <dd><p class="first">c = i
@@ -2735,7 +2741,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
   <div role="contentinfo">
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group..
-      Last updated on Apr 09, 2019.
+      Last updated on Apr 10, 2019.
 
     </p>
   </div>
