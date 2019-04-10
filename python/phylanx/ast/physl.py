@@ -13,6 +13,19 @@ import phylanx.execution_tree
 from phylanx import PhylanxSession
 
 
+def physl_zip(loop):
+    targets = [it.id for it in loop.target.elts]
+    args = [arg.id for arg in loop.iter.args]
+    lambda_ = ['lambda', (*targets, ['list', (*targets, )])]
+    fmap = ['fmap', (lambda_, *args)]
+
+    def define(i, idx):
+        return ['define', (i, ['slice', ('__physl_iterator', str(idx))])]
+
+    indices = tuple(define(i, idx) for idx, i in enumerate(targets))
+    return (fmap, indices)
+
+
 mapped_methods = {
     "add": "__add",
     "array": "hstack",
@@ -894,6 +907,13 @@ class PhySL:
         # target_name = target.split('$', 1)[0]
         # self.defined.add(target_name)
         iteration_space = self.apply_rule(node.iter)
+        if isinstance(iteration_space, list) and iteration_space[0].startswith('zip'):
+            iter_space, indices = physl_zip(node)
+            symbol = get_symbol_info(node, 'for_each')
+            body = self.block(node.body)
+            body = ['block', (*indices, *body)]
+            op = get_symbol_info(node, 'lambda')
+            return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
 
         # extract the type of the iteration space- used as the lookup key in
         # `mapping_function` dictionary above.

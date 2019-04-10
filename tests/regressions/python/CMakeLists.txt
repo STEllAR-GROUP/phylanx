@@ -36,6 +36,7 @@ set(tests
     904_pass_decorator
     905_call_python_snippet
     911_list_comprehension
+    912_zip
     925_none_dtype
     933_arange
     933_eval_wrapper
