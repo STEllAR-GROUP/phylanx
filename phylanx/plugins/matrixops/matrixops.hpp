@@ -37,6 +37,7 @@
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/size.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
+#include <phylanx/plugins/matrixops/sort.hpp>
 #include <phylanx/plugins/matrixops/squeeze_operation.hpp>
 #include <phylanx/plugins/matrixops/stack_operation.hpp>
 #include <phylanx/plugins/matrixops/tile_operation.hpp>

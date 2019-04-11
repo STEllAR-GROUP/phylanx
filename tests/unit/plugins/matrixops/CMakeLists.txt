@@ -40,6 +40,7 @@ set(tests
     shuffle_operation
     size
     slicing_operation
+    sort
     squeeze_operation
     stack_operation
     tile_operation
