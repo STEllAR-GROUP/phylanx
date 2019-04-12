@@ -1,6 +1,6 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2019 Hartmut Kaiser
 # Copyright (c) 2018 Steven R. Brandt
-# Copyright (c) 2018 R. Tohid
+# Copyright (c) 2018-2019 R. Tohid
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,6 +22,11 @@ class LambdaExtractor(ast.NodeVisitor):
 
     def visit_Lambda(self, node):
         LambdaExtractor._ast = node
+
+
+def lambda_counter(init=[0]):
+    init[0] += 1
+    return init[0]
 
 
 def Phylanx(__phylanx_arg=None, **kwargs):
@@ -53,6 +58,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             python_src = self.get_python_src(f)
             python_ast = self.get_python_ast(python_src, f)
 
+            self.kwargs = kwargs
             self.backend = self.backends_map[self.backend](f, python_ast, kwargs)
             self.__src__ = self.backend.__src__
 
@@ -90,26 +96,33 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         def map_decorated(self, val):
             """If a PhylanxDecorator is passed as an argument to an
                invocation of a Phylanx function we need to extract the
-               compiled execution tree and pass along that instead"""
+               compiled execution tree and pass along that instead.
+               If a Python lambda function is passed as an argument to an
+               an invocation of Phylanx function we need to compile the
+               lambda into Physl and pass along the compiled tree.
+            """
 
             if type(val).__name__ == "_PhylanxDecorator":
                 return val.backend.lazy()
+
             elif isinstance(val, types.FunctionType):
                 fn_src = inspect.getsource(val)
                 fn_src = fn_src.strip()
                 fn_ast = ast.parse(fn_src)
                 if val.__name__ == '<lambda>':
+                    val.__name__ = "__Physl_lambda_%d" % lambda_counter()
                     LambdaExtractor().visit(fn_ast)
                     lambda_ast = LambdaExtractor._ast
                     fn_body = ast.FunctionDef(
-                        name="__Physl_lambda",
+                        name=val.__name__,
                         args=lambda_ast.args,
                         body=lambda_ast.body,
                         lineno=lambda_ast.lineno,
                         col_offset=lambda_ast.col_offset)
                     fn_ast = ast.Module(body=[fn_body])
-                fn_physl = PhySL(val, fn_ast, {})
+                fn_physl = PhySL(val, fn_ast, self.kwargs)
                 return fn_physl.lazy()
+
             return val
 
         def lazy(self, *args):
