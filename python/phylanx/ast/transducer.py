@@ -114,11 +114,11 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                     LambdaExtractor().visit(fn_ast)
                     lambda_ast = LambdaExtractor._ast
                     fn_body = ast.FunctionDef(
-                        name = val.__name__,
-                        args = lambda_ast.args,
-                        body = lambda_ast.body,
-                        lineno = lambda_ast.lineno,
-                        col_offset = lambda_ast.col_offset)
+                        name=val.__name__,
+                        args=lambda_ast.args,
+                        body=lambda_ast.body,
+                        lineno=lambda_ast.lineno,
+                        col_offset=lambda_ast.col_offset)
                     fn_ast = ast.Module(body=[fn_body])
                 fn_physl = PhySL(val, fn_ast, self.kwargs)
                 return fn_physl.lazy()
