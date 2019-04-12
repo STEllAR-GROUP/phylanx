@@ -96,10 +96,15 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         def map_decorated(self, val):
             """If a PhylanxDecorator is passed as an argument to an
                invocation of a Phylanx function we need to extract the
-               compiled execution tree and pass along that instead"""
+               compiled execution tree and pass along that instead.
+               If a Python lambda function is passed as an argument to an
+               an invocation of Phylanx function we need to compile the
+               lambda into Physl and pass along the compiled tree.
+            """
 
             if type(val).__name__ == "_PhylanxDecorator":
                 return val.backend.lazy()
+
             elif isinstance(val, types.FunctionType):
                 fn_src = inspect.getsource(val)
                 fn_src = fn_src.strip()
@@ -117,6 +122,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                     fn_ast = ast.Module(body=[fn_body])
                 fn_physl = PhySL(val, fn_ast, self.kwargs)
                 return fn_physl.lazy()
+
             return val
 
         def lazy(self, *args):
