@@ -2071,6 +2071,25 @@ sum (v, axis, keepdims, initial)
             The sum of all values along the specified axis.
 
 
+switch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+switch (condition, then_expression, else_expression)
+            Args:
+
+                condition (an array) : a tensor
+                then_expression (an array) : either a tensor, or a callable
+                    that returns a tensor.
+                else_expression (an array) : either a tensor, or a callable
+                    that returns a tensor.
+
+            Returns:
+
+            The selected tensor based on each element of condition. Note that
+            both `then_expression` and `else_expression` should be symbolic
+            tensors of the same shape. Condition cannot have a bigger rank than
+            `then_expression`
+
+
 tensordot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tensordot (a, b, axes)

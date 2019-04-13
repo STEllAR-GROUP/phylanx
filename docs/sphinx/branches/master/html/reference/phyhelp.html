@@ -229,6 +229,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#store">store</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#string">string</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sum">sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#switch">switch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tensordot">tensordot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tile">tile</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transpose">transpose</a></li>
@@ -2538,6 +2539,29 @@ initial (optional, scalar): The starting value for the sum</div></blockquote>
 </dd>
 </dl>
 </div>
+<div class="section" id="switch">
+<h2>switch<a class="headerlink" href="#switch" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>switch (condition, then_expression, else_expression)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>condition (an array) : a tensor
+then_expression (an array) : either a tensor, or a callable</p>
+<blockquote>
+<div>that returns a tensor.</div></blockquote>
+<dl class="docutils">
+<dt>else_expression (an array) <span class="classifier-delimiter">:</span> <span class="classifier">either a tensor, or a callable</span></dt>
+<dd>that returns a tensor.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The selected tensor based on each element of condition. Note that
+both <cite>then_expression</cite> and <cite>else_expression</cite> should be symbolic
+tensors of the same shape. Condition cannot have a bigger rank than
+<cite>then_expression</cite></p>
+</dd>
+</dl>
+</div>
 <div class="section" id="tensordot">
 <h2>tensordot<a class="headerlink" href="#tensordot" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -2733,7 +2757,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 12, 2019.
+        Last updated on Apr 13, 2019.
       </span>
 
     </p>
