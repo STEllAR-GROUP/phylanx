@@ -6,10 +6,12 @@
 
 import ast
 import numpy as np
-from itertools import chain
+# from itertools import chain
 from string import Template
 from .utils import dump_to_file
+from .utils import save_to_file
 from .utils import print_python_ast_node
+from .utils import dump_ast as python_ast_format
 
 
 class Oscop:
@@ -17,12 +19,15 @@ class Oscop:
         """
         openscope elements
             global
-                param                        p          If, For, Index
+                param                        p
                 number of statements
             statements                                  Assign, AugAssign
                 domain                       d          For, If
                 scatter                      s          Assign, AugAssign
                 access                       a          Assign, AugAssign
+
+        relation
+            UNDEFINED, CONTEXT, DOMAIN, SCATTERING, READ, WRITE
 
         example
 
@@ -56,7 +61,7 @@ class Oscop:
         stmt -> Assign              self.scatter.append(0), or ++
         stmt -> AugAssign
         """
-        self.scatter = []  # eg: [0, "i", 1, "j", 0]
+        self.scatter = [0]  # eg: [0, "i", 1, "j", 0]
         """
         expr -> BinOp
         """
@@ -64,91 +69,53 @@ class Oscop:
     def empty_global(self):
         d = dict(
             num_rows=0,
-            num_cols=0,  # num_output_dim + num_input_dim + \
-            # num_local_dim + num_params + 2
-            num_output_dim=0,  # always 0 in CONTEXT relation
-            num_input_dim=0,  # always 0 in CONTEXT relation
-            num_local_dim=0,  # always 0 in CONTEXT relation
+            num_cols=0,
+            num_output_dim=0,
+            num_input_dim=0,
+            num_local_dim=0,
             num_params=0,
-            context="",
-            context_raw=[],  # internal record format for "context"
-            params_exist=0,
-            params_names="",
+
+            num_statements=0,
             params=[],
-            num_statements="")
+            relation=[],)
         return d
-
-    def template_global(self):
-        s = """
-<OpenScop>
-
-# =============================================== Global
-# Backend Language
-C
-
-# Context
-$context
-
-# Parameter names are provided
-$params_exist
-
-# Parameter names
-$params_names
-
-# Number of statements
-$num_statements
-
-"""
-        return s
 
     def empty_statment(self):
         d = dict(
             statement_id=None,
             num_relations=0,
-            # UNDEFINED, CONTEXT, DOMAIN, SCATTERING, READ, WRITE
-            domain="",
-            scatter="",
-            access="",
-            domain_raw=[],  # internal record format for "domain"
-            scatter_raw=[],  # internal record format for "scatter"
-            access_raw=[]  # internal record format for "access"
-        )
+            domain=[],
+            scatter=[],
+            access=[],)
         return d
 
-    def template_statment(self):
-        s = """
-# =============================================== Statement $statement_id
-# Number of relations describing the statement
-$num_relations
-
-# ----------------------------------------------  $statement_id.1 Domain
-$domain
-
-# ----------------------------------------------  $statement_id.2 Scattering
-$scatter
-
-# ----------------------------------------------  $statement_id.3 Access
-$access
-
-"""
-        return s
+    def check_iterator_in_domain(self, iterator):
+        if iterator not in self.domain_iter:
+            raise Exception( \
+                "Index %s is not define in this scope." % iterator)
 
     def fill_params_to_globalinfo(self, expr):
         """
         Filling parameter data into "self.globalinfo".
+        New parameter may exist in any expressions.
+        New parameter constraint may exist in "If" expressions.
         """
-
-        print("debug fill_param", expr)
 
         expr_set = set(expr.keys()) - set(["literals"])
         domain_set = set(self.domain_iter)
+
+        # import inspect
+        # print(inspect.stack())
+        print("debug fill_param_to_globalinfo", expr)
+        print("debug fill_param_to_globalinfo", expr_set)
+        print("debug fill_param_to_globalinfo", domain_set)
 
         # Finding a new parameter constraint \
         # when the expr does not have domain constraints \
         # A.K.A the intersection is empty
         if (len(expr_set & domain_set) == 0):
             # data collected, to format in "generate_global" method
-            self.globalinfo["context_raw"].append(expr)
+            self.globalinfo["relation"].append(expr)
             self.globalinfo["num_rows"] += 1
 
         # Finding a new parameter.
@@ -170,6 +137,8 @@ $access
         statement["statement_id"] = len(self.statements)
 
     def update_domain(self, op, domaininfo=None, iterator=None):
+        print("debug update_domain", op, domaininfo, iterator)
+
         if (op == "enter"):
             self.domain.append(domaininfo)
             self.domain_iter.append(iterator)
@@ -180,92 +149,180 @@ $access
             raise Exception("Not supported")
 
     def update_scatter(self, op, iterator=None):
-        if ((op == "enter") and (iterator is not None)):  # enter loop
-            self.scatter.append(iterator)
 
-        elif ((op == "enter") and (iterator is None)):  # a statement
-            if ((len(self.scatter) > 0) \
-                    and isinstance(self.scatter[-1], int)):
-                self.scatter[-1] += 1
-            else:
-                self.scatter.append(0)
+        # finding the last index of some value in a list
+        def rindex(lst, value):
+            for i, v in enumerate(reversed(lst)):
+                if v == value:
+                    return len(lst) - i - 1
+            raise Exception("iterator not found.")
+
+        if (len(self.scatter) <= 0):
+            raise Exception("the scatter stack shall always have data")
+
+        if (op == "enter"):
+            if (iterator is None):  # entering a statement
+                if (not isinstance(self.scatter[-1], int)):
+                    self.scatter.append(0)
+                else:
+                    self.scatter[-1] = self.scatter[-1] + 1
+            else:  # entering a loop
+                # if (not isinstance(self.scatter[-1], int)):
+                #   self.scatter.append(0)
+                self.scatter.append(iterator)
+                # BUG: need to handel multiple loops
+
         elif (op == "exit"):
-            # TBD, find the last iterator, delete till the end
-            pass
+            current_iter = self.domain_iter[-1]
+            idx = rindex(self.scatter, current_iter)
+            # print("xxxxxxxxxxxxxxx idx", idx)
+            # print("xxxxxxxxxxxxxxx before", self.scatter)
+            del self.scatter[idx:]
+            # print("xxxxxxxxxxxxxxx after", self.scatter)
+            # self.scatter[-1] = self.scatter[-1] + 1
+
         else:
             raise Exception("Not supported")
 
     def fill_domain_to_statement(self):
         statement = self.statements[-1]
-        statement["domain_raw"].append(self.domain)
+        statement["domain"].append(self.domain)
 
     def fill_scatter_to_statement(self):
         statement = self.statements[-1]
-        statement["scatter_raw"] = self.scatter
+        statement["scatter"] = self.scatter
 
     def fill_access_to_statement(self, rw, name, expr):
         statement = self.statements[-1]
         expr["rw"] = rw  # "read", "write"
         expr["name"] = name
-        statement["access_raw"].append(expr)
-
-    def generate_domain(self, statement):
-        pass
-
-    def generate_scatter(self, statement):
-        pass
-
-    def generate_access(self, statement):
-        pass
+        statement["access"].append(expr)
 
     def generate_oscop_global(self):
-        self.globalinfo["num_cols"] = self.globalinfo["num_params"] + 2
+        self.globalinfo["num_output_dim"] = 0  # always 0 in CONTEXT relation
+        self.globalinfo["num_input_dim"] = 0  # always 0 in CONTEXT relation
+        self.globalinfo["num_local_dim"] = 0  # always 0 in CONTEXT relation
         self.globalinfo["num_params"] = len(self.globalinfo["params"])
+        self.globalinfo["num_cols"] = \
+            self.globalinfo["num_output_dim"] + \
+            self.globalinfo["num_input_dim"] + \
+            self.globalinfo["num_local_dim"] + \
+            self.globalinfo["num_params"] + \
+            2
         self.globalinfo["num_statements"] = len(self.statements)
+
+        mydata = dict(
+            relation="",
+            params_exist="",
+            params_names="",
+            num_statements="",)
 
         s = "CONTEXT" + "\n"
         s += str(self.globalinfo["num_rows"]) + " "
         s += str(self.globalinfo["num_cols"]) + " "
-        s += str(self.globalinfo["num_output_dim"]) + " "  # always 0
-        s += str(self.globalinfo["num_input_dim"]) + " "  # always 0
-        s += str(self.globalinfo["num_local_dim"]) + " "  # always 0
+        s += str(self.globalinfo["num_output_dim"]) + " "
+        s += str(self.globalinfo["num_input_dim"]) + " "
+        s += str(self.globalinfo["num_local_dim"]) + " "
         s += str(self.globalinfo["num_params"]) + "\n"
-
-        for expr in self.globalinfo["context_raw"]:
+        for expr in self.globalinfo["relation"]:
             s += "#TOFORMAT" + str(expr) + "\n"  # TBD
+        mydata["relation"] = s
 
-        self.globalinfo["context"] = s
+        if self.globalinfo["num_params"] > 0:
+            mydata["params_exist"] = "1"
+        else:
+            mydata["params_exist"] = "0"
 
-        if self.globalinfo["num_params"] >= 0:
-            self.globalinfo["params_exist"] = 1  # default 0
         for a in self.globalinfo["params"]:
-            self.globalinfo["params_names"] += a + " "
+            mydata["params_names"] += a + " "
 
-    def generate_oscop_statements(self):
-        for i in range(0, self.globalinfo["num_statements"]):
-            statement = self.statements[i]
-            # print("debug generate_statements A", statement)   # DEBUG
-            self.generate_domain(statement)
-            self.generate_scatter(statement)
-            self.generate_access(statement)
-            # print("debug generate_statements B", statement)   # DEBUG
-            print("")  # DEBUG
+        mydata["num_statements"] = \
+            str(self.globalinfo["num_statements"])
+
+        template = """
+<OpenScop>
+
+# =============================================== Global
+# Backend Language
+C
+
+# Context
+$relation
+
+# Parameter names are provided
+$params_exist
+
+# Parameter names
+$params_names
+
+# Number of statements
+$num_statements
+
+"""
+        rv = Template(template).substitute(mydata)
+        return rv
+
+    def generate_domain(self, statement):
+        # s = ""
+        # for key in raw.keys():
+        #     s += key + ": "
+        #     s += raw[key] + "\n"
+
+        print("gen domain", statement)
+        print("gen domain", statement["domain"])
+
+        rv = str(statement["domain"])
+        return rv
+
+    def generate_scatter(self, statement):
+        print("gen scatter", statement)
+        print("gen scatter", statement["scatter"])
+        rv = str(statement["scatter"])
+        return rv
+
+    def generate_access(self, statement):
+        print("gen access ", statement)
+        print("gen access ", statement["access"])
+        rv = str(statement["access"])
+        return rv
+
+    def generate_oscop_statement(self, statement):
+        print(statement)
+
+        mydata = dict(
+            statement_id=str(statement["statement_id"]),
+            num_relations=str(statement["num_relations"]),
+            domain=self.generate_domain(statement),
+            scatter=self.generate_scatter(statement),
+            access=self.generate_access(statement),)
+
+        print("debug generate_statements", statement)   # DEBUG
+        print("debug generate_statements", mydata)   # DEBUG
+        print("")  # DEBUG
+
+        template = """
+# =============================================== Statement $statement_id
+# Number of relations describing the statement
+$num_relations
+
+# ----------------------------------------------  $statement_id.1 Domain
+$domain
+
+# ----------------------------------------------  $statement_id.2 Scattering
+$scatter
+
+# ----------------------------------------------  $statement_id.3 Access
+$access
+
+        """
+        rv = Template(template).substitute(mydata)
+        return rv
 
     def generate(self):
-        self.generate_oscop_global()
-        self.generate_oscop_statements()
-
         code = ""
-
-        # generating global
-        t = Template(self.template_global())
-        code += t.substitute(self.globalinfo)
-
-        # generating statements
+        code = code + self.generate_oscop_global()
         for statement in self.statements:
-            t = Template(self.template_statment())
-            code += t.substitute(statement)
-
+            code = code + self.generate_oscop_statement(statement)
         return code
 
     def print1(self):
@@ -300,8 +357,13 @@ class OpenSCoP:
         # for node in kernel:
         #    self.visit(node, {}, 1, 1)
 
+        print("############################")
         self.__src__ = self.oscop.generate()
+        save_to_file(self.__src__, "ooo_openscop.txt", True)
+
         # dump_to_file(self.__src__, "dump_openscop", kwargs)
+        aststr = python_ast_format(python_ast)
+        save_to_file(aststr, "ooo_pythonast.txt", True)
 
     # help function
     def debug_dev(self, node, expr, coef, mode):
@@ -350,7 +412,6 @@ class OpenSCoP:
             raise Exception("Does not support multi-target assignments.")
 
         self.oscop.new_statement()
-
         self.oscop.update_scatter("enter")
         self.oscop.fill_domain_to_statement()
         self.oscop.fill_scatter_to_statement()
@@ -362,15 +423,14 @@ class OpenSCoP:
         if isinstance(lhs, ast.Subscript):
             expr = {}
             self.visit(lhs, expr, coef, mode)  # generating expr
-            self.oscop.fill_params_to_globalinfo(expr)
             self.oscop.fill_access_to_statement("write", lhs.value.id, expr)
 
         rhs = node.value
         if isinstance(rhs, ast.Subscript):
             expr = {}
             self.visit(rhs, expr, coef, mode)  # generating expr
-            self.oscop.fill_params_to_globalinfo(expr)
             self.oscop.fill_access_to_statement("read", rhs.value.id, expr)
+            # The expr is buggy
 
         if isinstance(rhs, ast.UnaryOp):
             # TBD
@@ -464,38 +524,34 @@ class OpenSCoP:
             self._For_exception()
 
         # lower bound
-        # Colleting domain data into "expr"
-        expr = {}
-        expr[iterator] = 1
-        expr["literals"] = 0
+        expr_l = {}
+        expr_l[iterator] = 1
+        expr_l["literals"] = 0
         if (len(bounds) == 1):
             lb = 0  # debug, not used
         if (len(bounds) == 2):
             lb = node.iter.args[0]
-            self.visit(lb, expr, 1, mode)
-
-        mydomain.append(expr)  # collecting domain data
-        self.oscop.fill_params_to_globalinfo(expr)
+            self.visit(lb, expr_l, 1, mode)
+        mydomain.append(expr_l)  # collecting domain data
 
         # uppwer bound
-        # Colleting domain data into "expr"
-        expr = {}
-        expr[iterator] = -1
-        expr['literals'] = -1
+        expr_u = {}
+        expr_u[iterator] = -1
+        expr_u['literals'] = -1
         ub = node.iter.args[-1]  # the last argment passed to range()
-        self.visit(ub, expr, 1, mode)
+        self.visit(ub, expr_u, 1, mode)
+        mydomain.append(expr_u)  # collecting domain data
 
-        mydomain.append(expr)  # collecting domain data
-        self.oscop.fill_params_to_globalinfo(expr)
-
-        self.oscop.update_domain("enter", mydomain, iterator)
+        self.oscop.update_domain("enter", mydomain, iterator)  # entering fist
         self.oscop.update_scatter("enter", iterator)
+        self.oscop.fill_params_to_globalinfo(expr_l)
+        self.oscop.fill_params_to_globalinfo(expr_u)
 
         for n in node.body:
             self.visit(n, {}, coef, mode)
 
-        self.oscop.update_domain("exit")
         self.oscop.update_scatter("exit")
+        self.oscop.update_domain("exit")  # existing last
         return
 
     def _If(self, node, expr, coef, mode):
@@ -652,10 +708,7 @@ class OpenSCoP:
 
         if isinstance(node.slice.value, ast.Name):  # B[i]
             iterator = node.slice.value.id
-
-            if iterator not in self.oscop.domain_iter:
-                raise Exception(
-                    "Index %s is not define in this scope." % iterator)
+            self.oscop.check_iterator_in_domain(iterator)
 
         if isinstance(node.slice.value, ast.BinOp):  # B[i + 2]
             raise Exception("TBD TBD")
