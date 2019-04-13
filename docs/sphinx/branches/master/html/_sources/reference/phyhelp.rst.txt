@@ -2008,6 +2008,23 @@ softsign (a)
             f(x) = 1/(1+abs(x).
 
 
+sort
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sort (a, axis, kind, order)
+            Args:
+
+                a (array_like) : input array
+                axis (optional, int) : axis along which to sort. If None, array is
+                                       flattened before sorting. Default is -1.
+                kind (optional, string) : sorting algorithm, default is "quicksort"
+                oredr (optional, string or list of string) :  specifies which fields to
+                                                              compare first, second, etc.
+            Returns:
+
+            The sorted array."
+            
+
+
 squeeze
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 squeeze (a, axis)

@@ -224,6 +224,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#softmax">softmax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#softplus">softplus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#softsign">softsign</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sort">sort</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#squeeze">squeeze</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stack">stack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#std">std</a></li>
@@ -2477,6 +2478,26 @@ the Softplus is enticingly smooth and differentiable.</p>
 <p>Returns:</p>
 <p class="last">Returns an array of the same shape which is defined as
 f(x) = 1/(1+abs(x).</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="sort">
+<h2>sort<a class="headerlink" href="#sort" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>sort (a, axis, kind, order)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>a (array_like) : input array
+axis (optional, int) : axis along which to sort. If None, array is</p>
+<blockquote>
+<div>flattened before sorting. Default is -1.</div></blockquote>
+<p>kind (optional, string) : sorting algorithm, default is “quicksort”
+oredr (optional, string or list of string) :  specifies which fields to</p>
+<blockquote>
+<div>compare first, second, etc.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The sorted array.”</p>
 </dd>
 </dl>
 </div>
