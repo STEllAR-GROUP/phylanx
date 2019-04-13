@@ -128,6 +128,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#avg-pool">avg_pool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#batch-dot">batch_dot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#binary-crossentropy">binary_crossentropy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#car-cdr">car_cdr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#categorical-crossentropy">categorical_crossentropy</a></li>
@@ -887,6 +888,39 @@ axes (optional, integer or tuple of integers): None by default.</p>
 <p class="last">Returns:
 The batch dot along specified axes. For more deyail refer to
 <a class="reference external" href="https://keras.io/backend/#batch_dot">https://keras.io/backend/#batch_dot</a></p>
+</dd>
+</dl>
+</div>
+<div class="section" id="binary-crossentropy">
+<h2>binary_crossentropy<a class="headerlink" href="#binary-crossentropy" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>binary_crossentropy (target, output, from_logits)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>target (array_like) : input array
+output (array_like) : this array is not output back to the caller</p>
+<blockquote>
+<div>but is passed back with the return values.</div></blockquote>
+<p>from_logits (optional, boolean): boolean value, default = False</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt>Returns:</dt>
+<dd><blockquote class="first">
+<div>The value should be the same as would be returned by the following
+Python function:</div></blockquote>
+<dl class="last docutils">
+<dt>def bin_cross(target, output, from_logits=False):</dt>
+<dd><dl class="first last docutils">
+<dt>if not from_logits:</dt>
+<dd>output = np.clip(output, 1e-7, 1 - 1e-7)
+output = np.log(output / (1 - output))</dd>
+<dt>return (target * -np.log(sigmoid(output)) +</dt>
+<dd>(1 - target) * -np.log(1 - sigmoid(output)))</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>

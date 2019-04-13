@@ -511,6 +511,29 @@ batch_dot (x, y, axes)
             https://keras.io/backend/#batch_dot
 
 
+binary_crossentropy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+binary_crossentropy (target, output, from_logits)
+   Args:
+
+       target (array_like) : input array
+       output (array_like) : this array is not output back to the caller
+                             but is passed back with the return values.
+       from_logits (optional, boolean): boolean value, default = False
+
+   Returns:
+       The value should be the same as would be returned by the following
+       Python function:
+
+    def bin_cross(target, output, from_logits=False):
+        if not from_logits:
+            output = np.clip(output, 1e-7, 1 - 1e-7)
+            output = np.log(output / (1 - output))
+        return (target * -np.log(sigmoid(output)) +
+                (1 - target) * -np.log(1 - sigmoid(output)))
+   
+
+
 block
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 block (stmt)
