@@ -20,7 +20,8 @@ def test_arange():
         for k in WITH_NP:
             t = k.arange(test_value)
             a = k.eval(t)
-            assert np.array_equal(a, np.arange(test_value))
+            r = (a, np.arange(test_value))
+            assert np.array_equal(a, np.arange(test_value)), r
             dtype_list.append(k.dtype(t))
             a_list.append(a)
 
@@ -31,7 +32,8 @@ def test_arange():
         a_list = []
         for k in WITH_NP:
             a = k.eval(k.arange(start, stop, step))
-            assert np.array_equal(a, np.arange(start, stop, step))
+            r = (a, np.arange(start, stop, step))
+            assert np.array_equal(a, np.arange(start, stop, step)), r
             a_list.append(a)
         for i in range(len(a_list) - 1):
             assert np.array_equal(a_list[i], a_list[i + 1])

@@ -24,3 +24,18 @@ def np_fx(start, size):
 
 
 assert phy_fx([0, 1, 1], [1, 1, 3]) == np_fx([0, 1, 1], [1, 1, 3])
+
+
+@Phylanx
+def phy_list_comp(start, size):
+    indices = [[i, i + j] for i, j in zip(start, size)]
+    return indices
+
+
+def np_list_comp(start, size):
+    indices = [[i, i + j] for i, j in zip(start, size)]
+    return indices
+
+
+assert phy_list_comp([0, 1, 1], [1, 1, 3]) == np_list_comp([0, 1, 1],
+                                                           [1, 1, 3])
