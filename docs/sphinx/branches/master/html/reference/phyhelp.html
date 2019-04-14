@@ -139,6 +139,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#count-nonzero">count_nonzero</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cout">cout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cross">cross</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctc-decode">ctc_decode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cumprod">cumprod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cumsum">cumsum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#debug">debug</a></li>
@@ -1103,6 +1104,26 @@ uninitialized.</p>
 v2 (vector) : a vector</div></blockquote>
 <p>Returns:</p>
 <p class="last">The cross product of <cite>v1</cite> and <cite>v2</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="ctc-decode">
+<h2>ctc_decode<a class="headerlink" href="#ctc-decode" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>ctc_decode (y_pred, input_length, greedy, beam_width, top_paths)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>y_pred : The scalar, vector, matrix, or tensor to perform ctc_decode over
+input_length
+greedy : boolean, if True performs best-path search otherwise beam-search
+beam_width : Integer, if greedy is False specifies the width of the beam.
+top_paths : Integer, if greedy is False specifies the number of top paths</p>
+<blockquote>
+<div>desired.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">Returns the result of Connectionist temporal classification applied to a
+squence.</p>
 </dd>
 </dl>
 </div>
