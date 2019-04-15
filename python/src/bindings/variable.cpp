@@ -309,7 +309,6 @@ namespace phylanx { namespace execution_tree
     }                                                                          \
     /**/
 
-    // this generates the equivalent for 'block(store(lhs, op(lhs, rhs)), lhs)'
 #define PHYLANX_VARIABLE_INPLACE_OPERATION(op, __name)                         \
     /* in-place operation */                                                   \
     phylanx::execution_tree::variable i##op##_variables_gen(                   \
@@ -326,23 +325,12 @@ namespace phylanx { namespace execution_tree
         primitive op = primitives::create_##op##_operation(                    \
             hpx::find_here(), std::move(args));                                \
                                                                                \
-        /* store the result back in the lhs argument */                        \
-        args.reserve(2);                                                       \
-        args.emplace_back(lhs.value());                                        \
-        args.emplace_back(primitive_argument_type{std::move(op)});             \
-        primitive storeop = primitives::create_store_operation(                \
-            hpx::find_here(), std::move(args));                                \
-                                                                               \
-        /* create block that executes operation and returns result lhs */      \
-        args.reserve(2);                                                       \
-        args.emplace_back(primitive_argument_type{std::move(storeop)});        \
-        args.emplace_back(lhs.value());                                        \
-        primitive block = primitives::create_block_operation(                  \
-            hpx::find_here(), std::move(args));                                \
+        /* set the new expression tree to the lhs variable */                  \
+        lhs.value(std::move(op));                                              \
                                                                                \
         /* return */                                                           \
         return phylanx::execution_tree::variable{                              \
-            std::move(block), lhs.dtype(), __name};                            \
+            lhs.value(), lhs.dtype(), __name};                                 \
     }                                                                          \
                                                                                \
     phylanx::execution_tree::variable i##op##_variables(                       \
@@ -360,6 +348,13 @@ namespace phylanx { namespace execution_tree
     PHYLANX_VARIABLE_OPERATION(mul, "Mul")                      // __mul__
     PHYLANX_VARIABLE_OPERATION(div, "Mul")                      // __div__
 
+    PHYLANX_VARIABLE_INPLACE_OPERATION(add, "AssignAdd")        // __iadd__
+    PHYLANX_VARIABLE_INPLACE_OPERATION(sub, "AssignSub")        // __isub__
+
+#undef PHYLANX_VARIABLE_OPERATION
+#undef PHYLANX_VARIABLE_INPLACE_OPERATION
+
+    ///////////////////////////////////////////////////////////////////////////
     phylanx::execution_tree::variable unary_minus_variables(    // __neg__
         phylanx::execution_tree::variable const& target)
     {
@@ -373,9 +368,58 @@ namespace phylanx { namespace execution_tree
             target.dtype(), "Neg"};
     }
 
-    PHYLANX_VARIABLE_INPLACE_OPERATION(add, "AssignAdd")        // __iadd__
-    PHYLANX_VARIABLE_INPLACE_OPERATION(sub, "AssignSub")        // __isub__
+    // The moving average of 'variable' updated with 'value' is:
+    //
+    //      variable * momentum + value * (1 - momentum)
+    //
+    // The returned Operation sets 'variable' to the newly computed moving
+    // average, by performing this subtraction:
+    //
+    //      variable -= (1 - momentum) * (variable - value)
+    //
+    phylanx::execution_tree::variable moving_average_variables_gen(
+        phylanx::execution_tree::variable& var,
+        phylanx::execution_tree::primitive_argument_type const& value,
+        phylanx::execution_tree::primitive_argument_type const& momentum)
+    {
+        // create operations
+        primitive_arguments_type args;
+        args.reserve(2);
+        args.emplace_back(primitive_argument_type{1.0});
+        args.emplace_back(momentum);
+        primitive op1 = primitives::create_sub_operation(
+            hpx::find_here(), std::move(args));
 
-#undef PHYLANX_VARIABLE_OPERATION
-#undef PHYLANX_VARIABLE_INPLACE_OPERATION
+        args.reserve(2);
+        args.emplace_back(var.value());
+        args.emplace_back(value);
+        primitive op2 = primitives::create_sub_operation(
+            hpx::find_here(), std::move(args));
+
+        args.reserve(2);
+        args.emplace_back(std::move(op1));
+        args.emplace_back(std::move(op2));
+        primitive op3 = primitives::create_mul_operation(
+            hpx::find_here(), std::move(args));
+
+        args.reserve(2);
+        args.emplace_back(var.value());
+        args.emplace_back(std::move(op3));
+        primitive result = primitives::create_sub_operation(
+            hpx::find_here(), std::move(args));
+
+        // set the new expression tree to the target variable
+        var.value(std::move(result));
+
+        return phylanx::execution_tree::variable{
+            var.value(), var.dtype(), "AssignMovingAvg"};
+    }
+
+    phylanx::execution_tree::variable moving_average_variables(
+        phylanx::execution_tree::variable& var,
+        phylanx::execution_tree::variable const& value,
+        phylanx::execution_tree::primitive_argument_type const& momentum)
+    {
+        return moving_average_variables_gen(var, value.value(), momentum);
+    }
 }}

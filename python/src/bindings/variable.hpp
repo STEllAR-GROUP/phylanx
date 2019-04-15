@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree
         {
             return value_;
         }
-        void value(primitive&& new_value)
+        void value(primitive new_value)
         {
             value_ = std::move(new_value);
         }
@@ -133,14 +133,25 @@ namespace phylanx { namespace execution_tree
     PHYLANX_VARIABLE_OPERATION_DECLARATION(mul)                 // __mul__
     PHYLANX_VARIABLE_OPERATION_DECLARATION(div)                 // __div__
 
-    phylanx::execution_tree::variable unary_minus_variables(    // __neg__
-        phylanx::execution_tree::variable const& lhs);
-
     PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION(add)         // __iadd__
     PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION(sub)         // __isub__
 
 #undef PHYLANX_VARIABLE_OPERATION_DECLARATION
 #undef PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION
+
+    ///////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::variable unary_minus_variables(    // __neg__
+        phylanx::execution_tree::variable const& lhs);
+
+    phylanx::execution_tree::variable moving_average_variables(
+        phylanx::execution_tree::variable& var,
+        phylanx::execution_tree::variable const& value,
+        phylanx::execution_tree::primitive_argument_type const& momentum);
+
+    phylanx::execution_tree::variable moving_average_variables_gen(
+        phylanx::execution_tree::variable& var,
+        phylanx::execution_tree::primitive_argument_type const& value,
+        phylanx::execution_tree::primitive_argument_type const& momentum);
 }}
 
 #endif

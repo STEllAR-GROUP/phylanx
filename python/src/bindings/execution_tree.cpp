@@ -113,28 +113,29 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             .def(
                 "eval",
                 [](phylanx::execution_tree::variable const& var,
-                    pybind11::args args)
-                {
+                    pybind11::args args) {
                     pybind11::gil_scoped_release release;       // release GIL
                     return hpx::threads::run_as_hpx_thread(
                             [&]() { return var.eval(std::move(args)); });
                 },
                 "evaluate execution tree")
-            .def("__call__",
+            .def(
+                "__call__",
                 [](phylanx::execution_tree::variable const& var,
-                    pybind11::args args)
-                {
+                    pybind11::args args) {
                     pybind11::gil_scoped_release release;       // release GIL
                     return hpx::threads::run_as_hpx_thread(
                         [&]() { return var.eval(std::move(args)); });
                 },
                 "evaluate execution tree")
-            .def_property_readonly("dtype",
+            .def_property_readonly(
+                "dtype",
                 [](phylanx::execution_tree::variable const& var) {
                     return var.dtype();
                 },
                 "return the dtype of the value stored by the variable")
-            .def_property_readonly("name",
+            .def_property_readonly(
+                "name",
                 [](phylanx::execution_tree::variable const& var) {
                     return var.name();
                 },
@@ -163,8 +164,16 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             .def("__neg__", &phylanx::execution_tree::unary_minus_variables)
             .def("__iadd__", &phylanx::execution_tree::iadd_variables)
             .def("__iadd__", &phylanx::execution_tree::iadd_variables_gen)
+            .def("update_add", &phylanx::execution_tree::iadd_variables)
+            .def("update_add", &phylanx::execution_tree::iadd_variables_gen)
             .def("__isub__", &phylanx::execution_tree::isub_variables)
-            .def("__isub__", &phylanx::execution_tree::isub_variables_gen);
+            .def("__isub__", &phylanx::execution_tree::isub_variables_gen)
+            .def("update_sub", &phylanx::execution_tree::isub_variables)
+            .def("update_sub", &phylanx::execution_tree::isub_variables_gen)
+            .def("update_moving_average",
+                &phylanx::execution_tree::moving_average_variables)
+            .def("update_moving_average",
+                &phylanx::execution_tree::moving_average_variables_gen);
 
     // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
