@@ -1381,66 +1381,6 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<std::uint8_t>
-    extract_boolean_data(primitive_argument_type const& val,
-        std::string const& name, std::string const& codename)
-    {
-        switch (val.index())
-        {
-        case 1:                     // phylanx::ir::node_data<std::uint8_t>
-            return util::get<1>(val).ref();
-
-        case 0: HPX_FALLTHROUGH;    // nil
-        case 2: HPX_FALLTHROUGH;    // ir::node_data<std::int64_t>
-        case 3: HPX_FALLTHROUGH;    // string
-        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-        case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
-        default:
-            break;
-        }
-
-        std::string type(detail::get_primitive_argument_type_name(val.index()));
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_boolean_data",
-            util::generate_error_message(
-                "primitive_argument_type does not hold a boolean "
-                    "value type (type held: '" + type + "')",
-                name, codename));
-    }
-
-    ir::node_data<std::uint8_t>&& extract_boolean_data(
-        primitive_argument_type&& val, std::string const& name,
-        std::string const& codename)
-    {
-        switch (val.index())
-        {
-        case 1:                     // phylanx::ir::node_data<std::uint8_t>
-            return util::get<1>(std::move(val));
-
-        case 0: HPX_FALLTHROUGH;    // nil
-        case 2: HPX_FALLTHROUGH;    // ir::node_data<std::int64_t>
-        case 3: HPX_FALLTHROUGH;    // string
-        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-        case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
-        default:
-            break;
-        }
-
-        std::string type(detail::get_primitive_argument_type_name(val.index()));
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_boolean_data",
-            util::generate_error_message(
-                "primitive_argument_type does not hold a boolean "
-                    "value type (type held: '" + type + "')",
-                name, codename));
-    }
-
     bool is_boolean_data_operand(primitive_argument_type const& val)
     {
         switch (val.index())

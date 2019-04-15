@@ -36,7 +36,7 @@ void test_or_operation_0d_false()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_double_false()
@@ -59,7 +59,7 @@ void test_or_operation_0d_double_false()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_true()
@@ -82,7 +82,7 @@ void test_or_operation_0d_true()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_double_true()
@@ -105,7 +105,7 @@ void test_or_operation_0d_double_true()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_lit_false()
@@ -126,7 +126,7 @@ void test_or_operation_0d_lit_false()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_double_lit_false()
@@ -147,7 +147,7 @@ void test_or_operation_0d_double_lit_false()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_lit_true()
@@ -168,7 +168,7 @@ void test_or_operation_0d_lit_true()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d_double_lit_true()
@@ -189,7 +189,7 @@ void test_or_operation_0d_double_lit_true()
         or_operation.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_false()
@@ -218,7 +218,7 @@ void test_or_operation_0d1d_false()
         blaze::map(v, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_lit_false()
@@ -245,7 +245,7 @@ void test_or_operation_0d1d_lit_false()
         blaze::map(v, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_double_false()
@@ -274,7 +274,7 @@ void test_or_operation_0d1d_double_false()
         blaze::map(v, [](double x) { return (x || 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_double_lit_false()
@@ -301,7 +301,7 @@ void test_or_operation_0d1d_double_lit_false()
         blaze::map(v, [](double x) { return (x || 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_true()
@@ -330,7 +330,7 @@ void test_or_operation_0d1d_true()
         blaze::map(v, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_lit_true()
@@ -357,7 +357,7 @@ void test_or_operation_0d1d_lit_true()
         blaze::map(v, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_double_true()
@@ -385,7 +385,7 @@ void test_or_operation_0d1d_double_true()
     blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d1d_double_lit_true()
@@ -411,7 +411,7 @@ void test_or_operation_0d1d_double_lit_true()
     blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_false()
@@ -440,7 +440,7 @@ void test_or_operation_0d2d_false()
         blaze::map(m, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_lit_false()
@@ -467,7 +467,7 @@ void test_or_operation_0d2d_lit_false()
         blaze::map(m, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_double_false()
@@ -496,7 +496,7 @@ void test_or_operation_0d2d_double_false()
         blaze::map(m, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_double_lit_false()
@@ -523,7 +523,7 @@ void test_or_operation_0d2d_double_lit_false()
         blaze::map(m, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_true()
@@ -552,7 +552,7 @@ void test_or_operation_0d2d_true()
         blaze::map(m, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_lit_true()
@@ -579,7 +579,7 @@ void test_or_operation_0d2d_lit_true()
         blaze::map(m, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_double_true()
@@ -607,7 +607,7 @@ void test_or_operation_0d2d_double_true()
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_0d2d_double_lit_true()
@@ -633,7 +633,7 @@ void test_or_operation_0d2d_double_lit_true()
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d()
@@ -663,7 +663,7 @@ void test_or_operation_1d()
         blaze::map(v1, v2, [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d_lit()
@@ -691,7 +691,7 @@ void test_or_operation_1d_lit()
         blaze::map(v1, v2, [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d_double()
@@ -721,7 +721,7 @@ void test_or_operation_1d_double()
         blaze::map(v1, v2, [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d_double_lit()
@@ -749,7 +749,7 @@ void test_or_operation_1d_double_lit()
         blaze::map(v1, v2, [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_false()
@@ -778,7 +778,7 @@ void test_or_operation_1d0d_false()
         blaze::map(v, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_lit_false()
@@ -805,7 +805,7 @@ void test_or_operation_1d0d_lit_false()
         blaze::map(v, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_double_false()
@@ -834,7 +834,7 @@ void test_or_operation_1d0d_double_false()
         blaze::map(v, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_double_lit_false()
@@ -861,7 +861,7 @@ void test_or_operation_1d0d_double_lit_false()
         blaze::map(v, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_true()
@@ -890,7 +890,7 @@ void test_or_operation_1d0d_true()
         blaze::map(v, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_lit_true()
@@ -917,7 +917,7 @@ void test_or_operation_1d0d_lit_true()
         blaze::map(v, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_double_true()
@@ -945,7 +945,7 @@ void test_or_operation_1d0d_double_true()
     blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d0d_double_lit_true()
@@ -971,7 +971,7 @@ void test_or_operation_1d0d_double_lit_true()
     blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d2d()
@@ -1007,7 +1007,7 @@ void test_or_operation_1d2d()
             [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d2d_lit()
@@ -1041,7 +1041,7 @@ void test_or_operation_1d2d_lit()
             [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d2d_double()
@@ -1077,7 +1077,7 @@ void test_or_operation_1d2d_double()
             [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_1d2d_double_lit()
@@ -1111,7 +1111,7 @@ void test_or_operation_1d2d_double_lit()
             [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d()
@@ -1141,7 +1141,7 @@ void test_or_operation_2d()
         blaze::map(m1, m2, [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d_lit()
@@ -1169,7 +1169,7 @@ void test_or_operation_2d_lit()
         blaze::map(m1, m2, [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d_double()
@@ -1199,7 +1199,7 @@ void test_or_operation_2d_double()
         blaze::map(m1, m2, [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d_double_lit()
@@ -1227,7 +1227,7 @@ void test_or_operation_2d_double_lit()
         blaze::map(m1, m2, [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_true()
@@ -1256,7 +1256,7 @@ void test_or_operation_2d0d_true()
         blaze::map(m, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_lit_true()
@@ -1283,7 +1283,7 @@ void test_or_operation_2d0d_lit_true()
         blaze::map(m, [](bool x) { return (x || true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_false()
@@ -1312,7 +1312,7 @@ void test_or_operation_2d0d_false()
         blaze::map(m, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_lit_false()
@@ -1339,7 +1339,7 @@ void test_or_operation_2d0d_lit_false()
         blaze::map(m, [](bool x) { return (x || false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_double_true()
@@ -1367,7 +1367,7 @@ void test_or_operation_2d0d_double_true()
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_double_lit_true()
@@ -1393,7 +1393,7 @@ void test_or_operation_2d0d_double_lit_true()
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_double_false()
@@ -1422,7 +1422,7 @@ void test_or_operation_2d0d_double_false()
         blaze::map(m, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d0d_double_lit_false()
@@ -1449,7 +1449,7 @@ void test_or_operation_2d0d_double_lit_false()
         blaze::map(m, [](bool x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d1d()
@@ -1484,7 +1484,7 @@ void test_or_operation_2d1d()
             [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d1d_lit()
@@ -1517,7 +1517,7 @@ void test_or_operation_2d1d_lit()
             [](bool x, bool y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d1d_double()
@@ -1552,7 +1552,7 @@ void test_or_operation_2d1d_double()
             [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 void test_or_operation_2d1d_double_lit()
@@ -1585,7 +1585,7 @@ void test_or_operation_2d1d_double_lit()
             [](double x, double y) { return x || y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f));
+        phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
