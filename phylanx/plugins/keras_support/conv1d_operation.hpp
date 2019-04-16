@@ -1,0 +1,83 @@
+// Copyright (c) 2019 Bita Hasheminezhad
+// Copyright (c) 2019 Hartmut Kaiser
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#if !defined(PHYLANX_KERAS_SUPPORT_CONV1D_OPERATION)
+#define PHYLANX_KERAS_SUPPORT_CONV1D_OPERATION
+
+#include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+
+#include <hpx/lcos/future.hpp>
+#include <hpx/util/optional.hpp>
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace phylanx { namespace execution_tree { namespace primitives {
+/// \brief
+/// \param x         The matrix or tensor to conv1d information out of it
+/// \param conv1d_size The size of conv1ding oevr each dimension
+/// \param padding   Padding mode, either `same` or `valid`
+/// \param stride    The step to apply conv1ding on each dimension
+
+    class conv1d_operation
+      : public primitive_component_base
+      , public std::enable_shared_from_this<conv1d_operation>
+    {
+    protected:
+        using val_type = std::int64_t;
+        hpx::future<primitive_argument_type> eval(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
+
+    public:
+        static match_pattern_type const match_data;
+
+        conv1d_operation() = default;
+
+        conv1d_operation(primitive_arguments_type&& operands,
+            std::string const& name, std::string const& codename);
+
+    private:
+        //bool validate_strides(
+        //    std::size_t const& ndim, ir::range& strides) const;
+
+        template <typename Vector1, typename Vector2>
+        double convolve_step(const Vector1& v1, const Vector2& v2) const;
+
+        primitive_argument_type conv1d_valid(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel) const;
+        primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel) const;
+        primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel) const;
+
+        //template <typename T>
+        //primitive_argument_type max_conv1d2d_with_pad(ir::node_data<T>&& arg,
+        //    ir::range&& conv1d_size, ir::range&& strides) const;
+        //primitive_argument_type avg_conv1d2d_with_pad(ir::node_data<double>&& arg,
+        //    ir::range&& conv1d_size, ir::range&& strides) const;
+        primitive_argument_type conv1d_any_pad(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, std::string&& padding) const;
+    };
+
+    inline primitive create_conv1d_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "conv1d", std::move(operands), name, codename);
+    }
+}}}
+
+#endif
