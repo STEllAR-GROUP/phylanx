@@ -17,6 +17,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(argmax_plugin,
     phylanx::execution_tree::primitives::argmax::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(argmin_plugin,
     phylanx::execution_tree::primitives::argmin::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(argsort_plugin,
+    phylanx::execution_tree::primitives::argsort::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(astype_plugin,
     phylanx::execution_tree::primitives::astype::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(clip_plugin,

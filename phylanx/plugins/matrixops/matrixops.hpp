@@ -9,6 +9,7 @@
 #include <phylanx/plugins/matrixops/arange.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
+#include <phylanx/plugins/matrixops/argsort.hpp>
 #include <phylanx/plugins/matrixops/astype.hpp>
 #include <phylanx/plugins/matrixops/clip.hpp>
 #include <phylanx/plugins/matrixops/concatenate.hpp>
