@@ -49,26 +49,27 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
-        //bool validate_strides(
-        //    std::size_t const& ndim, ir::range& strides) const;
-
         template <typename Vector1, typename Vector2>
         double convolve_step(const Vector1& v1, const Vector2& v2) const;
 
         primitive_argument_type conv1d_valid(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
+        primitive_argument_type conv1d_valid(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, std::int64_t strides) const;
         primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
+        primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, std::int64_t strides) const;
         primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
+        primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, std::int64_t strides) const;
 
-        //template <typename T>
-        //primitive_argument_type max_conv1d2d_with_pad(ir::node_data<T>&& arg,
-        //    ir::range&& conv1d_size, ir::range&& strides) const;
-        //primitive_argument_type avg_conv1d2d_with_pad(ir::node_data<double>&& arg,
-        //    ir::range&& conv1d_size, ir::range&& strides) const;
         primitive_argument_type conv1d_any_pad(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel, std::string&& padding) const;
+        primitive_argument_type conv1d_any_pad(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, std::string&& padding,
+            std::int64_t strides) const;
     };
 
     inline primitive create_conv1d_operation(hpx::id_type const& locality,
