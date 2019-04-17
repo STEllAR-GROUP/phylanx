@@ -209,14 +209,13 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         matrix_column_iterator<decltype(mat)> mat_cols_begin(mat);
         matrix_column_iterator<decltype(mat)> mat_cols_end(mat, mat.columns());
 
-        matrix_column_iterator<decltype(idx)> idx_cols_begin(idx);
-        matrix_column_iterator<decltype(idx)> idx_cols_end(idx, idx.columns());
+        matrix_column_iterator<decltype(idx)> idx_cols_it(idx);
 
-        for (auto mat_col = mat_cols_begin, idx_col = idx_cols_begin;
-             mat_col != mat_cols_end; ++mat_col, ++idx_col)
+        for (auto mat_col = mat_cols_begin; mat_col != mat_cols_end;
+             ++mat_col, ++idx_cols_it)
         {
-            std::iota(idx_col->begin(), idx_col->end(), 0);
-            std::sort(idx_col->begin(), idx_col->end(),
+            std::iota(idx_cols_it->begin(), idx_cols_it->end(), 0);
+            std::sort(idx_cols_it->begin(), idx_cols_it->end(),
                 [mat_col](size_t a, size_t b) {
                     return *(mat_col->begin() + a) < *(mat_col->begin() + b);
                 });
@@ -236,14 +235,13 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         matrix_row_iterator<decltype(mat)> mat_rows_begin(mat);
         matrix_row_iterator<decltype(mat)> mat_rows_end(mat, mat.rows());
 
-        matrix_row_iterator<decltype(idx)> idx_rows_begin(idx);
-        matrix_row_iterator<decltype(idx)> idx_rows_end(idx, idx.rows());
+        matrix_row_iterator<decltype(idx)> idx_rows_it(idx);
 
-        for (auto mat_row = mat_rows_begin, idx_row = idx_rows_begin;
-             mat_row != mat_rows_end; ++mat_row, ++idx_row)
+        for (auto mat_row = mat_rows_begin; mat_row != mat_rows_end;
+             ++mat_row, ++idx_rows_it)
         {
-            std::iota(idx_row->begin(), idx_row->end(), 0);
-            std::sort(idx_row->begin(), idx_row->end(),
+            std::iota(idx_rows_it->begin(), idx_rows_it->end(), 0);
+            std::sort(idx_rows_it->begin(), idx_rows_it->end(),
                 [mat_row](size_t a, size_t b) {
                     return *(mat_row->begin() + a) < *(mat_row->begin() + b);
                 });
