@@ -1,3 +1,10 @@
+#  Copyright (c) 2019 Bita Hasheminezhad
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# #936: Add support for aggregation function to execution_tree.variable
+
 
 import numpy as np
 from phylanx import Phylanx, PhylanxSession, execution_tree
@@ -46,12 +53,13 @@ def where(condition, then_expression, else_expression):
     return where_eager.lazy(condition, then_expression, else_expression)
 
 
-def test_switch():
-    val = np.random.random()
+def test_switch(val):
     x = variable(val)
     x = variable(where(greater_equal(x, 0.5), x * 0.1, x * 0.2))
-#    x += 42.0
     return eval(-x)
 
 
-print(test_switch())
+v = np.random.random()
+expected = v * 0.1 if v >= 0.5 else v * 0.2
+r = test_switch(v)
+assert r == -expected, (r, -expected)
