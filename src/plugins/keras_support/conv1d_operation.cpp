@@ -67,6 +67,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return blaze::sum(v1 * v2);
     }
 
+    template <typename Vector1, typename Vector2>
+    double conv1d_operation::convolve_step(const Vector1& v1, const Vector2& v2,
+        std::int64_t dilation_rate, std::size_t kernel_size) const
+    {
+        return blaze::sum(blaze::elements(
+                              v1,
+                              [dilation_rate, kernel_size](
+                                  std::size_t i) { return i * dilation_rate; },
+                              kernel_size) *
+            v2);
+    }
+
+    template <typename Vector1, typename Vector2>
+    double conv1d_operation::convolve_step(const Vector1& v1, const Vector2& v2,
+        std::int64_t dilation_rate, std::size_t kernel_size,
+        std::size_t r) const
+    {
+        return blaze::sum(blaze::elements(
+                              v1,
+                              [dilation_rate, kernel_size, r](std::size_t i) {
+                                  return i * dilation_rate + r;
+                              },
+                              kernel_size) *
+            v2);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type conv1d_operation::conv1d_valid(
         ir::node_data<double>&& arg,
@@ -101,6 +127,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for (std::size_t i = 0; i != result_size; ++i)
             result[i] =
                 convolve_step(blaze::subvector(v, i * strides, k_size), k);
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type conv1d_operation::conv1d_valid_dilation(
+        ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        std::int64_t dilation_rate) const
+    {
+        auto v = arg.vector();
+        auto k = kernel.vector();
+        std::size_t k_size = kernel.size();
+        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;;
+        std::size_t result_size = arg.size() - dilated_k_size + 1;
+
+        blaze::DynamicVector<double> result(result_size);
+
+        for (std::size_t i = 0; i != result_size; ++i)
+            result[i] = convolve_step(blaze::subvector(v, i, dilated_k_size), k,
+                dilation_rate, k_size);
 
         return primitive_argument_type{std::move(result)};
     }
@@ -196,6 +241,68 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
+    primitive_argument_type conv1d_operation::conv1d_same_dilation(
+        ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        std::int64_t dilation_rate) const
+    {
+        auto v = arg.vector();
+        auto k = kernel.vector();
+        std::size_t k_size = kernel.size();
+        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;;
+        std::size_t v_size = arg.size();
+        std::size_t pad_left = (dilated_k_size - 1) / 2;
+        std::int64_t i_rel;
+
+        blaze::DynamicVector<double> result(v_size);
+
+        for (std::size_t i = 0; i != v_size; ++i)
+        {
+            i_rel = i - pad_left;
+            if (i_rel < 0)
+            {
+                std::size_t kernel_size =
+                    blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
+                        static_cast<float>(dilation_rate));
+                auto temp = blaze::ceil(static_cast<float>(-i_rel) /
+                    static_cast<float>(dilation_rate));
+                if (-i_rel % dilation_rate == 0)
+                    result[i] = convolve_step(
+                        blaze::subvector(v, 0, dilated_k_size + i_rel),
+                        blaze::subvector(k,
+                            blaze::ceil(static_cast<float>(-i_rel) /
+                                static_cast<float>(dilation_rate)),
+                            kernel_size),
+                        dilation_rate, kernel_size);
+                else
+                    result[i] = convolve_step(
+                        blaze::subvector(v, 0, dilated_k_size + i_rel),
+                        blaze::subvector(k,
+                            blaze::ceil(static_cast<float>(-i_rel) /
+                                static_cast<float>(dilation_rate)),
+                            kernel_size),
+                        dilation_rate, kernel_size, -i_rel % dilation_rate);
+            }
+            else if (i_rel > static_cast<std::int64_t>(v_size) -
+                    static_cast<std::int64_t>(dilated_k_size))
+            {
+                std::size_t kernel_size =
+                    blaze::ceil(static_cast<float>(v_size - i_rel) /
+                        static_cast<float>(dilation_rate));
+                result[i] = convolve_step(
+                    blaze::subvector(v, i_rel, v_size - i_rel),
+                    blaze::subvector(k, 0, kernel_size),
+                    dilation_rate, kernel_size);
+            }
+            else
+            {
+                result[i] =
+                    convolve_step(blaze::subvector(v, i_rel, dilated_k_size), k,
+                        dilation_rate, k_size);
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type conv1d_operation::conv1d_causal(
         ir::node_data<double>&& arg,
@@ -264,6 +371,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(result)};
     }
+
+    primitive_argument_type conv1d_operation::conv1d_causal_dilation(
+        ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        std::int64_t dilation_rate) const
+    {
+        auto v = arg.vector();
+        auto k = kernel.vector();
+        std::size_t k_size = kernel.size();
+        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;;
+        std::size_t v_size = arg.size();
+        std::size_t pad_left = dilated_k_size - 1; //no pad_right
+        std::int64_t i_rel;
+
+        blaze::DynamicVector<double> result(v_size);
+
+        for (std::size_t i = 0; i != v_size; ++i)
+        {
+            i_rel = i - pad_left;
+            if (i_rel < 0)
+            {
+                std::size_t kernel_size =
+                    blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
+                        static_cast<float>(dilation_rate));
+                auto temp = blaze::ceil(static_cast<float>(-i_rel) /
+                    static_cast<float>(dilation_rate));
+                if (-i_rel % dilation_rate == 0)
+                    result[i] = convolve_step(
+                        blaze::subvector(v, 0, dilated_k_size + i_rel),
+                        blaze::subvector(k,
+                            blaze::ceil(static_cast<float>(-i_rel) /
+                                static_cast<float>(dilation_rate)),
+                            kernel_size),
+                        dilation_rate, kernel_size);
+                else
+                    result[i] = convolve_step(
+                        blaze::subvector(v, 0, dilated_k_size + i_rel),
+                        blaze::subvector(k,
+                            blaze::ceil(static_cast<float>(-i_rel) /
+                                static_cast<float>(dilation_rate)),
+                            kernel_size),
+                        dilation_rate, kernel_size, -i_rel % dilation_rate);
+            }
+            else
+            {
+                result[i] = convolve_step(blaze::subvector(v, i_rel, k_size), k,
+                    dilation_rate, k_size);
+            }
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type conv1d_operation::conv1d_any_pad(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
@@ -292,6 +451,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // padding == causal
         return conv1d_causal(std::move(arg), std::move(kernel), strides);
     }
+
+    primitive_argument_type conv1d_operation::conv1d_any_pad_dilation(
+        ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        std::string&& padding, std::int64_t dilation_rate) const
+    {
+        if (padding == "valid")
+            return conv1d_valid_dilation(
+                std::move(arg), std::move(kernel), dilation_rate);
+
+        else if (padding == "same")
+            return conv1d_same_dilation(
+                std::move(arg), std::move(kernel), dilation_rate);
+
+        // padding == causal
+        return conv1d_causal_dilation(
+            std::move(arg), std::move(kernel), dilation_rate);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> conv1d_operation::eval(
         primitive_arguments_type const& operands,
@@ -390,7 +567,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "invalid strides. Strides must be positive"));
                 }
 
-                if (strides == 1)
+                std::int64_t dilation_rate = 1;
+                if (args.size() > 4)
+                {
+                    if (is_list_operand_strict(args[4]))
+                    {
+                        ir::range d = extract_list_value(
+                            args[4], this_->name_, this_->codename_);
+                        if (d.size() == 1)
+                            dilation_rate =
+                                extract_scalar_integer_value_strict(*d.begin());
+                        else
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "conv1d_operation::eval",
+                                this_->generate_error_message(
+                                    "conv1d_operation requires the "
+                                    "dilation_rate to be of rank 1"));
+                    }
+                    else
+                        dilation_rate = extract_scalar_integer_value(
+                            args[4], this_->name_, this_->codename_);
+
+                    if (dilation_rate <= 0)
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "conv1d_operation::eval",
+                            this_->generate_error_message(
+                                "dilation_rate must be positive"));
+
+                    if (strides != 1 && dilation_rate != 1)
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "conv1d_operation::eval",
+                            this_->generate_error_message(
+                                "strides > 1 not supported in conjunction with "
+                                "dilation_rate > 1"));
+                }
+
+                if (strides == 1 && dilation_rate == 1)
                 {
                     return this_->conv1d_any_pad(
                         extract_numeric_value(
@@ -399,13 +611,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[1]), this_->name_, this_->codename_),
                         std::move(padding));
                 }
-                // non-default strides and dilation_rates
-                return this_->conv1d_any_pad(
+                else if (dilation_rate == 1)
+                {
+                    return this_->conv1d_any_pad(
+                        extract_numeric_value(
+                            std::move(args[0]), this_->name_, this_->codename_),
+                        extract_numeric_value(
+                            std::move(args[1]), this_->name_, this_->codename_),
+                        std::move(padding), strides);
+                }
+                // strides == 1 and dilation_rate > 1
+                return this_->conv1d_any_pad_dilation(
                     extract_numeric_value(
                         std::move(args[0]), this_->name_, this_->codename_),
                     extract_numeric_value(
                         std::move(args[1]), this_->name_, this_->codename_),
-                    std::move(padding), strides);
+                    std::move(padding), dilation_rate);
 
 
             }),
