@@ -168,9 +168,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     primitive_arguments_type result;
                     result.reserve(2);
-
-                    result.push_back(primitive_argument_type{
+                    primitive_arguments_type first;
+                    first.reserve(1);
+                    first.push_back(primitive_argument_type{
                         std::move(decoded_dense_final)});
+                    result.push_back(primitive_argument_type{std::move(first)});
                     result.push_back(
                         primitive_argument_type{std::move(log_prob)});
 

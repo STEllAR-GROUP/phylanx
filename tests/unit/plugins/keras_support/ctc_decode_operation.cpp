@@ -47,15 +47,15 @@ void test_ctc_decode_operation_1()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         ctc_decode.eval();
     auto result = phylanx::execution_tree::extract_list_value(f.get());
-
     auto it = result.begin();
+    auto first = phylanx::execution_tree::extract_list_value(*it);
 
     blaze::DynamicMatrix<double> expected_decoded_dense{{0.}, {0.}};
     blaze::DynamicMatrix<double> expected_log_prob{{1.42711636}, {0.35667494}};
 
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected_decoded_dense)),
-        phylanx::execution_tree::extract_numeric_value(*it));
+        phylanx::execution_tree::extract_numeric_value(*first.begin()));
     HPX_TEST(
         allclose(phylanx::ir::node_data<double>(std::move(expected_log_prob)),
             phylanx::execution_tree::extract_numeric_value(*++it)));
@@ -96,8 +96,8 @@ void test_ctc_decode_operation_2()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         ctc_decode.eval();
     auto result = phylanx::execution_tree::extract_list_value(f.get());
-
     auto it = result.begin();
+    auto first = phylanx::execution_tree::extract_list_value(*it);
 
     blaze::DynamicMatrix<double> expected_decoded_dense{
         {0., 1., -1.}, {1., 1., 0.}};
@@ -105,7 +105,7 @@ void test_ctc_decode_operation_2()
 
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected_decoded_dense)),
-        phylanx::execution_tree::extract_numeric_value(*it));
+        phylanx::execution_tree::extract_numeric_value(*first.begin()));
     HPX_TEST(
         allclose(phylanx::ir::node_data<double>(std::move(expected_log_prob)),
             phylanx::execution_tree::extract_numeric_value(*++it)));
