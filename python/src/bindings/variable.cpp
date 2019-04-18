@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree
             pybind11::object name, pybind11::object constraint)
       : dtype_(std::move(dtype))
       , name_(name.is_none() ?
-              hpx::util::format("variable_{}", ++variable_count) :
+              hpx::util::format("Variable_{}", ++variable_count) :
               name.cast<std::string>())
       , value_(std::move(value))
       , constraint_(std::move(constraint))
@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree
         pybind11::object name, pybind11::object constraint)
       : dtype_(dtype.is_none() ? value.dtype() : std::move(dtype))
       , name_(name.is_none() ?
-                hpx::util::format("variable_{}", ++variable_count) :
+                hpx::util::format("Variable_{}", ++variable_count) :
                 name.cast<std::string>())
       , value_(create_variable(
             pybind11::cast<primitive_argument_type>(std::move(value)), name_))
@@ -50,7 +50,7 @@ namespace phylanx { namespace execution_tree
         pybind11::object name, pybind11::object constraint)
       : dtype_(dtype.is_none() ? pybind11::dtype("S") : std::move(dtype))
       , name_(name.is_none() ?
-                hpx::util::format("variable_{}", ++variable_count) :
+                hpx::util::format("Variable_{}", ++variable_count) :
                 name.cast<std::string>())
       , value_(
             create_variable(primitive_argument_type(std::move(value)), name_))
@@ -61,8 +61,28 @@ namespace phylanx { namespace execution_tree
             pybind11::object name, pybind11::object constraint)
       : dtype_(std::move(dtype))
       , name_(name.is_none() ?
-              hpx::util::format("variable_{}", ++variable_count) :
+              hpx::util::format("Variable_{}", ++variable_count) :
               name.cast<std::string>())
+      , value_(is_primitive_operand(value) ?
+              primitive_operand(std::move(value)) :
+              create_variable(std::move(value), name_))
+      , constraint_(std::move(constraint))
+    {}
+
+    variable::variable(primitive value, pybind11::object dtype,
+            char const* name, pybind11::object constraint)
+      : dtype_(std::move(dtype))
+      , name_(hpx::util::format("{}_{}", name, ++variable_count))
+      , value_(is_primitive_operand(value) ?
+              primitive_operand(std::move(value)) :
+              create_variable(std::move(value), name_))
+      , constraint_(std::move(constraint))
+    {}
+
+    variable::variable(primitive_argument_type value, pybind11::object dtype,
+            char const* name, pybind11::object constraint)
+      : dtype_(std::move(dtype))
+      , name_(hpx::util::format("{}_{}", name, ++variable_count))
       , value_(is_primitive_operand(value) ?
               primitive_operand(std::move(value)) :
               create_variable(std::move(value), name_))
@@ -245,5 +265,161 @@ namespace phylanx { namespace execution_tree
         pybind11::object h = pybind11::cast(std::move(result),
             pybind11::return_value_policy::move);
         return h.release();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+#define PHYLANX_VARIABLE_OPERATION(op, name)                                   \
+    /* forward operation */                                                    \
+    phylanx::execution_tree::variable op##_variables_gen(                      \
+        phylanx::execution_tree::variable const& lhs,                          \
+        phylanx::execution_tree::primitive_argument_type const& rhs)           \
+    {                                                                          \
+        using namespace phylanx::execution_tree;                               \
+        primitive_arguments_type args;                                         \
+        args.reserve(2);                                                       \
+        args.emplace_back(lhs.value());                                        \
+        args.emplace_back(rhs);                                                \
+        return phylanx::execution_tree::variable{                              \
+            primitives::create_##op##_operation(                               \
+                hpx::find_here(), std::move(args)),                            \
+            lhs.dtype(), name};                                                \
+    }                                                                          \
+                                                                               \
+    phylanx::execution_tree::variable op##_variables(                          \
+        phylanx::execution_tree::variable const& lhs,                          \
+        phylanx::execution_tree::variable const& rhs)                          \
+    {                                                                          \
+        return op##_variables_gen(lhs, rhs.value());                           \
+    }                                                                          \
+                                                                               \
+    /* reverse operation */                                                    \
+    phylanx::execution_tree::variable r##op##_variables_gen(                   \
+        phylanx::execution_tree::variable const& rhs,                          \
+        phylanx::execution_tree::primitive_argument_type const& lhs)           \
+    {                                                                          \
+        using namespace phylanx::execution_tree;                               \
+        primitive_arguments_type args;                                         \
+        args.reserve(2);                                                       \
+        args.emplace_back(lhs);                                                \
+        args.emplace_back(rhs.value());                                        \
+        return phylanx::execution_tree::variable{                              \
+            primitives::create_##op##_operation(                               \
+                hpx::find_here(), std::move(args)),                            \
+            rhs.dtype(), name};                                                \
+    }                                                                          \
+    /**/
+
+#define PHYLANX_VARIABLE_INPLACE_OPERATION(op, __name)                         \
+    /* in-place operation */                                                   \
+    phylanx::execution_tree::variable i##op##_variables_gen(                   \
+        phylanx::execution_tree::variable& lhs,                                \
+        phylanx::execution_tree::primitive_argument_type const& rhs)           \
+    {                                                                          \
+        using namespace phylanx::execution_tree;                               \
+                                                                               \
+        /* create operation */                                                 \
+        primitive_arguments_type args;                                         \
+        args.reserve(2);                                                       \
+        args.emplace_back(lhs.value());                                        \
+        args.emplace_back(rhs);                                                \
+        primitive op = primitives::create_##op##_operation(                    \
+            hpx::find_here(), std::move(args));                                \
+                                                                               \
+        /* set the new expression tree to the lhs variable */                  \
+        lhs.value(std::move(op));                                              \
+                                                                               \
+        /* return */                                                           \
+        return phylanx::execution_tree::variable{                              \
+            lhs.value(), lhs.dtype(), __name};                                 \
+    }                                                                          \
+                                                                               \
+    phylanx::execution_tree::variable i##op##_variables(                       \
+        phylanx::execution_tree::variable& lhs,                                \
+        phylanx::execution_tree::variable const& rhs)                          \
+    {                                                                          \
+        return i##op##_variables_gen(lhs, rhs.value());                        \
+    }                                                                          \
+    /**/
+
+    ///////////////////////////////////////////////////////////////////////////
+    // implement arithmetic operations
+    PHYLANX_VARIABLE_OPERATION(add, "Add")                      // __add__
+    PHYLANX_VARIABLE_OPERATION(sub, "Sub")                      // __sub__
+    PHYLANX_VARIABLE_OPERATION(mul, "Mul")                      // __mul__
+    PHYLANX_VARIABLE_OPERATION(div, "Mul")                      // __div__
+
+    PHYLANX_VARIABLE_INPLACE_OPERATION(add, "AssignAdd")        // __iadd__
+    PHYLANX_VARIABLE_INPLACE_OPERATION(sub, "AssignSub")        // __isub__
+
+#undef PHYLANX_VARIABLE_OPERATION
+#undef PHYLANX_VARIABLE_INPLACE_OPERATION
+
+    ///////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::variable unary_minus_variables(    // __neg__
+        phylanx::execution_tree::variable const& target)
+    {
+        using namespace phylanx::execution_tree;
+        primitive_arguments_type args;
+        args.reserve(1);
+        args.emplace_back(target.value());
+        return phylanx::execution_tree::variable{
+            primitives::create_unary_minus_operation(
+                hpx::find_here(), std::move(args)),
+            target.dtype(), "Neg"};
+    }
+
+    // The moving average of 'variable' updated with 'value' is:
+    //
+    //      variable * momentum + value * (1 - momentum)
+    //
+    // The returned Operation sets 'variable' to the newly computed moving
+    // average, by performing this subtraction:
+    //
+    //      variable -= (1 - momentum) * (variable - value)
+    //
+    phylanx::execution_tree::variable moving_average_variables_gen(
+        phylanx::execution_tree::variable& var,
+        phylanx::execution_tree::primitive_argument_type const& value,
+        phylanx::execution_tree::primitive_argument_type const& momentum)
+    {
+        // create operations
+        primitive_arguments_type args;
+        args.reserve(2);
+        args.emplace_back(primitive_argument_type{1.0});
+        args.emplace_back(momentum);
+        primitive op1 = primitives::create_sub_operation(
+            hpx::find_here(), std::move(args));
+
+        args.reserve(2);
+        args.emplace_back(var.value());
+        args.emplace_back(value);
+        primitive op2 = primitives::create_sub_operation(
+            hpx::find_here(), std::move(args));
+
+        args.reserve(2);
+        args.emplace_back(std::move(op1));
+        args.emplace_back(std::move(op2));
+        primitive op3 = primitives::create_mul_operation(
+            hpx::find_here(), std::move(args));
+
+        args.reserve(2);
+        args.emplace_back(var.value());
+        args.emplace_back(std::move(op3));
+        primitive result = primitives::create_sub_operation(
+            hpx::find_here(), std::move(args));
+
+        // set the new expression tree to the target variable
+        var.value(std::move(result));
+
+        return phylanx::execution_tree::variable{
+            var.value(), var.dtype(), "AssignMovingAvg"};
+    }
+
+    phylanx::execution_tree::variable moving_average_variables(
+        phylanx::execution_tree::variable& var,
+        phylanx::execution_tree::variable const& value,
+        phylanx::execution_tree::primitive_argument_type const& momentum)
+    {
+        return moving_average_variables_gen(var, value.value(), momentum);
     }
 }}

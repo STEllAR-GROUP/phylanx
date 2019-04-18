@@ -40,6 +40,7 @@ set(tests
     925_none_dtype
     933_arange
     933_eval_wrapper
+    936_arithmetic_operations
     array_len_494
     array_shape_486
     array_subscript_403
