@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -134,7 +134,7 @@ void test_greater_equal_operation_0d1d()
         greater_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
-        blaze::map(v, [](double x) { return (x >= 1.0); });
+        blaze::map(v, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -163,7 +163,7 @@ void test_greater_equal_operation_0d1d_lit()
         greater_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
-        blaze::map(v, [](double x) { return (x >= 1.0); });
+        blaze::map(v, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -194,7 +194,7 @@ void test_greater_equal_operation_0d2d()
         greater_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
-        blaze::map(m, [](double x) { return (x >= 1.0); });
+        blaze::map(m, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -223,7 +223,7 @@ void test_greater_equal_operation_0d2d_lit()
         greater_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
-        blaze::map(m, [](double x) { return (x >= 1.0); });
+        blaze::map(m, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -381,8 +381,7 @@ void test_greater_equal_operation_1d2d()
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
 
     for (size_t i = 0UL; i < m.rows(); i++)
-        blaze::row(expected, i) = blaze::map(blaze::row(m, i),
-            blaze::trans(v),
+        blaze::row(expected, i) = blaze::map(blaze::trans(v), blaze::row(m, i),
             [](double x, double y) { return x >= y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
@@ -417,8 +416,7 @@ void test_greater_equal_operation_1d2d_lit()
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
 
     for (size_t i = 0UL; i < m.rows(); i++)
-        blaze::row(expected, i) = blaze::map(blaze::row(m, i),
-            blaze::trans(v),
+        blaze::row(expected, i) = blaze::map(blaze::trans(v), blaze::row(m, i),
             [](double x, double y) { return x >= y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
@@ -667,7 +665,7 @@ void test_greater_equal_operation_0d1d_return_double()
     phylanx::execution_tree::primitive_argument_type f = greater_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
-        blaze::map(v, [](double x) { return (x >= 1.0); });
+        blaze::map(v, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -696,7 +694,7 @@ void test_greater_equal_operation_0d1d_return_bool()
     phylanx::execution_tree::primitive_argument_type f = greater_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
-        blaze::map(v, [](double x) { return (x >= 1.0); });
+        blaze::map(v, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(expected),
         phylanx::execution_tree::extract_boolean_value_strict(f));
@@ -725,7 +723,7 @@ void test_greater_equal_operation_0d2d_return_double()
     phylanx::execution_tree::primitive_argument_type f = greater_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
-        blaze::map(m, [](double x) { return (x >= 1.0); });
+        blaze::map(m, [](double x) { return (1.0 >= x); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -819,8 +817,7 @@ void test_greater_equal_operation_1d2d_return_double()
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
 
     for (size_t i = 0UL; i < m.rows(); i++)
-        blaze::row(expected, i) = blaze::map(blaze::row(m, i),
-            blaze::trans(v),
+        blaze::row(expected, i) = blaze::map(blaze::trans(v), blaze::row(m, i),
             [](double x, double y) { return x >= y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
@@ -922,6 +919,63 @@ void test_greater_equal_operation_2d1d_return_double()
     HPX_TEST_EQ(f.index(), 4);
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_greater_equal_operation(std::string const& code,
+    std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+void test_greater_equal_operation_3d()
+{
+    // 0d
+    test_greater_equal_operation(
+        R"(4 >= [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[1, 1], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
+    test_greater_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] >= 4)",
+        R"(astype([[[0, 0], [0, 1]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 1d
+    test_greater_equal_operation(
+        R"([3, 4] >= [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[1, 1], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
+    test_greater_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] >= [3, 4])",
+        R"(astype([[[0, 0], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 2d
+    test_greater_equal_operation(
+        R"([[1, 2], [3, 4]] >= [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[1, 1], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
+    test_greater_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] >= [[1, 2], [3, 4]])",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 3d
+    test_greater_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] >=
+           [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+    test_greater_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] >=
+           [[[8, 7], [6, 5]], [[4, 3], [2, 1]]])",
+        R"(astype([[[0, 0], [0, 0]], [[1, 1], [1, 1]]], "bool"))");
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     test_greater_equal_operation_0d_false();
@@ -957,5 +1011,10 @@ int main(int argc, char* argv[])
     test_greater_equal_operation_2d_return_double();
     test_greater_equal_operation_2d0d_return_double();
     test_greater_equal_operation_2d1d_return_double();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_greater_equal_operation_3d();
+#endif
+
     return hpx::util::report_errors();
 }
