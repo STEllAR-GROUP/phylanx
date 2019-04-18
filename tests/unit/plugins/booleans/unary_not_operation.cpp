@@ -1,4 +1,4 @@
-//   Copyright (c) 2017-2018 Hartmut Kaiser
+//   Copyright (c) 2017-2019 Hartmut Kaiser
 //   Copyright (c) 2018 Shahrzad Shirzad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -11,6 +11,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
