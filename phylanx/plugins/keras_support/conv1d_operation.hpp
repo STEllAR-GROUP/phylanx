@@ -14,7 +14,6 @@
 #include <hpx/lcos/future.hpp>
 #include <hpx/util/optional.hpp>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>

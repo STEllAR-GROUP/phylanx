@@ -15,7 +15,6 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/optional.hpp>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -24,9 +23,6 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-#include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -50,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             padding (optional, string) : padding mode, `valid` by default. It
                 can be either `valid`, `same` or `causal`. `vaild` means no
                 padding. `same` results the output with the same shape as
-                original array if the strides is 1. `causal` zero pads the
+                original array in case of unit strides. `causal` zero pads the
                 array in a way that no output element depend on the input
                 elements of its future
             strides (optional, integer) : the step to apply convolution over
@@ -259,7 +255,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto v = arg.vector();
         auto k = kernel.vector();
         std::size_t k_size = kernel.size();
-        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;;
+        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;
         std::size_t v_size = arg.size();
         std::size_t pad_left = (dilated_k_size - 1) / 2;
         std::int64_t i_rel;
@@ -274,9 +270,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t kernel_size =
                     blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
                         static_cast<float>(dilation_rate));
-                auto temp = blaze::ceil(static_cast<float>(-i_rel) /
-                    static_cast<float>(dilation_rate));
-                if (-i_rel % dilation_rate == 0)
+                std::size_t remainder = -i_rel % dilation_rate;
+                if (remainder == 0)
                     result[i] = convolve_step(
                         blaze::subvector(v, 0, dilated_k_size + i_rel),
                         blaze::subvector(k,
@@ -291,7 +286,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::ceil(static_cast<float>(-i_rel) /
                                 static_cast<float>(dilation_rate)),
                             kernel_size),
-                        dilation_rate, kernel_size, -i_rel % dilation_rate);
+                        dilation_rate, kernel_size, dilation_rate - remainder);
             }
             else if (i_rel > static_cast<std::int64_t>(v_size) -
                     static_cast<std::int64_t>(dilated_k_size))
@@ -390,7 +385,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto v = arg.vector();
         auto k = kernel.vector();
         std::size_t k_size = kernel.size();
-        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;;
+        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;
         std::size_t v_size = arg.size();
         std::size_t pad_left = dilated_k_size - 1; //no pad_right
         std::int64_t i_rel;
@@ -405,9 +400,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t kernel_size =
                     blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
                         static_cast<float>(dilation_rate));
-                auto temp = blaze::ceil(static_cast<float>(-i_rel) /
-                    static_cast<float>(dilation_rate));
-                if (-i_rel % dilation_rate == 0)
+                std::size_t remainder = -i_rel % dilation_rate;
+                if (remainder == 0)
                     result[i] = convolve_step(
                         blaze::subvector(v, 0, dilated_k_size + i_rel),
                         blaze::subvector(k,
@@ -422,7 +416,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::ceil(static_cast<float>(-i_rel) /
                                 static_cast<float>(dilation_rate)),
                             kernel_size),
-                        dilation_rate, kernel_size, -i_rel % dilation_rate);
+                        dilation_rate, kernel_size, dilation_rate - remainder);
             }
             else
             {
@@ -568,7 +562,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "be of rank 1"));
                     }
                     else
-                        strides = extract_scalar_integer_value(
+                        strides = extract_scalar_integer_value_strict(
                             args[3], this_->name_, this_->codename_);
 
                     if (strides <= 0)
@@ -596,7 +590,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "dilation_rate to be of rank 1"));
                     }
                     else
-                        dilation_rate = extract_scalar_integer_value(
+                        dilation_rate = extract_scalar_integer_value_strict(
                             args[4], this_->name_, this_->codename_);
 
                     if (dilation_rate <= 0)
