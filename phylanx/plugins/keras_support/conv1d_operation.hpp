@@ -23,11 +23,12 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives {
-/// \brief
-/// \param x         The matrix or tensor to conv1d information out of it
-/// \param conv1d_size The size of conv1ding oevr each dimension
-/// \param padding   Padding mode, either `same` or `valid`
-/// \param stride    The step to apply conv1ding on each dimension
+/// \brief returns 1D convoltion
+/// \param x              a vector
+/// \param kernel         a vector, the filter
+/// \param padding        Padding mode, either `valid`, `same` or `causal`
+/// \param strides        The step to apply convolution
+/// \param dilation_rate  The rate to sample x in each step
 
     class conv1d_operation
       : public primitive_component_base

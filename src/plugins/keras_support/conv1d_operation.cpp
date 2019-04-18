@@ -35,22 +35,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const conv1d_operation::match_data =
     {
         hpx::util::make_tuple("conv1d",
-        std::vector<std::string>{"conv1d(_1, _2)", "conv1d(_1, _2, _3)",
-        "conv1d(_1, _2, _3, _4)", "conv1d(_1, _2, _3, _4, _5)"},
+        std::vector<std::string>{R"(
+            conv1d(_1, _2_kernel,
+            __arg(_3_padding, "valid"),
+            __arg(_4_strides, 1),
+            __arg(_5_dilation_rate, 1))
+        )"},
         &create_conv1d_operation, &create_primitive<conv1d_operation>,
         R"(x, kernel, padding, strides, dilation_rate
         Args:
 
             x (array) : a vector
             kernel (array) : a vector
-            padding (string) : padding mode, `valid` by default. It can be
-                either `valid`, `same` or `causal`
-            strides (integer) : the step to apply convolution over x
-            dilation_rate (integer) : indicates the dilation rate
+            padding (optional, string) : padding mode, `valid` by default. It
+                can be either `valid`, `same` or `causal`. `vaild` means no
+                padding. `same` results the output with the same shape as
+                original array if the strides is 1. `causal` zero pads the
+                array in a way that no output element depend on the input
+                elements of its future
+            strides (optional, integer) : the step to apply convolution over
+                array. It sets to 1 by default.
+            dilation_rate (optional, integer) : indicates the dilation rate,
+                the rate to sample the array in each step of convolution, 1
+                by default.
 
         Returns:
 
-        1D convolution)")
+        1D convolution (or 1D mathematical cross-correlation))")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -415,11 +426,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             else
             {
-                result[i] = convolve_step(blaze::subvector(v, i_rel, k_size), k,
-                    dilation_rate, k_size);
+                result[i] =
+                    convolve_step(blaze::subvector(v, i_rel, dilated_k_size), k,
+                        dilation_rate, k_size);
             }
         }
-
         return primitive_argument_type{std::move(result)};
     }
 
