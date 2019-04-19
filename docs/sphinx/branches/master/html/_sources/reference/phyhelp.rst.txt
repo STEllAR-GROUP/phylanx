@@ -481,6 +481,19 @@ assert (cond)
             Returns:
 
 
+astype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+astype (x, dtype)
+            Args:
+
+                x (array) : the array to be cast to the specified type
+                dtype : the data-type to which the array is cast
+
+            Returns:
+
+            Copy of the array, cast to a specified type.
+
+
 avg_pool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 avg_pool (x, pool_size, padding, strides)
