@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+// Copyright (c) 2017-2019 Hartmut Kaiser
 // Copyright (c) 2018 Shahrzad Shirzad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -1331,6 +1332,63 @@ void test_not_equal_operation_2d1d_bool_lit()
         phylanx::execution_tree::extract_boolean_value_strict(f));
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_not_equal_operation(std::string const& code,
+    std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+void test_not_equal_operation_3d()
+{
+    // 0d
+    test_not_equal_operation(
+        R"(4 != [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))");
+    test_not_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] != 4)",
+        R"(astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 1d
+    test_not_equal_operation(
+        R"([3, 4] != [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[1, 1], [0, 0]], [[1, 1], [1, 1]]], "bool"))");
+    test_not_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] != [3, 4])",
+        R"(astype([[[1, 1], [0, 0]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 2d
+    test_not_equal_operation(
+        R"([[1, 2], [3, 4]] != [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[0, 0], [0, 0]], [[1, 1], [1, 1]]], "bool"))");
+    test_not_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] != [[1, 2], [3, 4]])",
+        R"(astype([[[0, 0], [0, 0]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 3d
+    test_not_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] !=
+           [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])",
+        R"(astype([[[0, 0], [0, 0]], [[0, 0], [0, 0]]], "bool"))");
+    test_not_equal_operation(
+        R"([[[1, 2], [3, 4]], [[5, 6], [7, 8]]] !=
+           [[[8, 7], [6, 5]], [[4, 3], [2, 1]]])",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     test_not_equal_operation_0d_false();
@@ -1380,6 +1438,10 @@ int main(int argc, char* argv[])
     test_not_equal_operation_2d1d_lit();
     test_not_equal_operation_2d1d_bool();
     test_not_equal_operation_2d1d_bool_lit();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_not_equal_operation_3d();
+#endif
 
     return hpx::util::report_errors();
 }

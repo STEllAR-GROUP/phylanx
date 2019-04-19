@@ -1605,6 +1605,56 @@ void test_operation(std::string const& code, std::string const& expected_str)
     HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+///////////////////////////////////////////////////////////////////////////////
+void test_operation_3d()
+{
+    // 0d
+    test_operation(
+        R"(true || astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool"))",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+    test_operation(
+        R"(false || astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool"))",
+        R"(astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool"))");
+    test_operation(
+        R"(astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool") || true)",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+    test_operation(
+        R"(astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool") || false)",
+        R"(astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool"))");
+
+    // 1d
+    test_operation(
+        R"(astype([1, 1], "bool") ||
+           astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+    test_operation(
+        R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool") ||
+           astype([1, 1], "bool") )",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 2d
+    test_operation(
+        R"(astype([[1, 1], [1, 1]], "bool") ||
+           astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+    test_operation(
+        R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool") ||
+           astype([[1, 1], [1, 1]], "bool"))",
+        R"(astype([[[1, 1], [1, 1]], [[1, 1], [1, 1]]], "bool"))");
+
+    // 3d
+    test_operation(
+        R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool") ||
+           astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))",
+        R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
+    test_operation(
+        R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool") ||
+           astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))",
+        R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -1673,6 +1723,10 @@ int main(int argc, char* argv[])
     test_operation("true || false", "true");
     test_operation("__or(true, false)", "true");
     test_operation("logical_or(true, false)", "true");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_operation_3d();
+#endif
 
     return hpx::util::report_errors();
 }
