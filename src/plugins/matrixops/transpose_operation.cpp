@@ -362,8 +362,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "exactly one or two operands"));
         }
 
-        if (!valid(operands[0]) ||
-            (operands.size() == 2 && !valid(operands[1])))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "transpose_operation::transpose_operation",
@@ -374,25 +373,83 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        if (operands.size() == 1)
-        {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& arg)
-            -> primitive_argument_type
-            {
-                switch (extract_numeric_value_dimension(
-                    arg, this_->name_, this_->codename_))
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping([this_ = std::move(this_)](
+                                      primitive_arguments_type&& args)
+                                      -> primitive_argument_type {
+
+                auto a_dims = extract_numeric_value_dimension(
+                    args[0], this_->name_, this_->codename_);
+
+                if (args.size() == 2 && valid(args[1]))
+                {
+                    // converting a range axes to a vector
+                    if (is_list_operand_strict(args[1]))
+                    {
+                        ir::range axes =
+                            extract_list_value_strict(std::move(args[1]));
+                        blaze::DynamicVector<std::int64_t> ops(axes.size());
+
+                        auto&& list = axes.args();
+                        for (std::size_t i = 0; i != axes.size(); ++i)
+                            ops[i] =
+                                extract_scalar_integer_value_strict(list[i]);
+
+                        args[1] = primitive_argument_type{std::move(ops)};
+                    }
+
+                    if (this_->validate_axes(
+                            a_dims, extract_integer_value_strict(args[1])))
+                    {
+                        switch (a_dims)
+                        {
+                        case 0: HPX_FALLTHROUGH;
+                        case 1:
+                            return this_->transpose0d1d(std::move(args[0]));
+
+                        case 2:
+                            return this_->transpose2d(std::move(args[0]),
+                                extract_integer_value_strict(
+                                    std::move(args[1])));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                        case 3:
+                            return this_->transpose3d(std::move(args[0]),
+                                extract_integer_value_strict(
+                                    std::move(args[1])));
+#endif
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "transpose_operation::eval",
+                                this_->generate_error_message(
+                                    "left hand side operand has unsupported "
+                                    "number of dimensions"));
+                        }
+                    }
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "transpose_operation::eval",
+                        util::generate_error_message(
+                            "At least one of the given axes is out of "
+                            "bounds for the given array. Axes size should"
+                            "be the same as array's number of dimensions."
+                            "Having an n-d array each axis should be in "
+                            "[-n, n-1]",
+                            this_->name_, this_->codename_));
+                }
+
+                // no axes is given or axes=None
+                switch (a_dims)
                 {
                 case 0: HPX_FALLTHROUGH;
                 case 1:
-                    return this_->transpose0d1d(std::move(arg));
+                    return this_->transpose0d1d(std::move(args[0]));
 
                 case 2:
-                    return this_->transpose2d(std::move(arg));
+                    return this_->transpose2d(std::move(args[0]));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
-                    return this_->transpose3d(std::move(arg));
+                    return this_->transpose3d(std::move(args[0]));
 #endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -401,65 +458,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "left hand side operand has unsupported "
                                 "number of dimensions"));
                 }
-            }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
-        }
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-                auto a_dims = extract_numeric_value_dimension(
-                    args[0], this_->name_, this_->codename_);
 
-                // converting a range axes to a vector
-                if (is_list_operand_strict(args[1]))
-                {
-                    ir::range axes =
-                        extract_list_value_strict(std::move(args[1]));
-                    blaze::DynamicVector<std::int64_t> ops(axes.size());
-
-                    auto&& list = axes.args();
-                    for (std::size_t i = 0; i != axes.size(); ++i)
-                        ops[i] = extract_scalar_integer_value_strict(list[i]);
-
-                    args[1] = primitive_argument_type{std::move(ops)};
-                }
-
-                if (this_->validate_axes(
-                        a_dims, extract_integer_value_strict(args[1])))
-                {
-                    switch (a_dims)
-                    {
-                    case 0: HPX_FALLTHROUGH;
-                    case 1:
-                        return this_->transpose0d1d(std::move(args[0]));
-
-                    case 2:
-                        return this_->transpose2d(std::move(args[0]),
-                            extract_integer_value_strict(std::move(args[1])));
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                    case 3:
-                        return this_->transpose3d(std::move(args[0]),
-                            extract_integer_value_strict(std::move(args[1])));
-#endif
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "transpose_operation::eval",
-                            this_->generate_error_message(
-                                "left hand side operand has unsupported "
-                                "number of dimensions"));
-                    }
-                }
-                else
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "transpose_operation::eval",
-                        util::generate_error_message(
-                            "At least one of the given axes is out of bounds "
-                            "for the given array. Axes size should be the same "
-                            "as array's number of dimensions. Having an n-d "
-                            "array each axis should be in [-n, n-1]",
-                            this_->name_, this_->codename_));
             }),
             detail::map_operands(operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));

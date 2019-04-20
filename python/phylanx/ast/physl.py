@@ -10,7 +10,24 @@ import ast
 import inspect
 import numpy as np
 import phylanx.execution_tree
-from phylanx import compiler_state, PhylanxSession
+from phylanx import PhylanxSession
+
+
+def physl_zip(loop):
+    def define(i, idx):
+        return ['define', (i, ['slice', ('__physl_iterator', str(idx))])]
+
+    if isinstance(loop, ast.For):
+        targets = [it.id for it in loop.target.elts]
+        args = [arg.id for arg in loop.iter.args]
+    elif isinstance(loop, list):
+        targets = loop[0]
+        args = loop[1][1]
+
+    lambda_ = ['lambda', (*targets, ['list', (*targets, )])]
+    fmap = ['fmap', (lambda_, *args)]
+    iterators = tuple(define(i, idx) for idx, i in enumerate(targets))
+    return (fmap, iterators)
 
 mapped_methods = {
     "add": "__add",
@@ -39,7 +56,10 @@ numpy_constants = {
     "NZERO": 'NZERO',
     "e": 'euler',
     "euler_gamma": 'euler_gamma',
-    "pi": 'pi'
+    "pi": 'pi',
+    "float": 'float',
+    "int": 'int',
+    "bool": 'bool'
 }
 
 methods_supporting_dtype = [
@@ -345,12 +365,14 @@ class PhySL:
         self.numpy_aliases = {'numpy'}
         self.wrapped_function = func
         self.kwargs = kwargs
-        self.fglobals = self.kwargs['fglobals']
         self.is_compiled = False
-        for key, val in self.fglobals.items():
-            if type(val).__name__ == 'module' and val.__name__ == 'numpy':
-                self.numpy_aliases.add(key)
-        self.file_name = self.fglobals.get('__file__')
+        self.file_name = None
+        if self.kwargs.get('fglobals'):
+            self.fglobals = self.kwargs['fglobals']
+            for key, val in self.fglobals.items():
+                if type(val).__name__ == 'module' and val.__name__ == 'numpy':
+                    self.numpy_aliases.add(key)
+            self.file_name = self.fglobals.get('__file__')
         if not self.file_name:
             self.file_name = "<none>"
 
@@ -378,10 +400,13 @@ class PhySL:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                    self.file_name)
 
             phylanx.execution_tree.compile(
-                self.file_name, self.__src__, PhySL.compiler_state)
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
             self.is_compiled = True
 
     def generate_physl(self, ir):
@@ -431,6 +456,7 @@ class PhySL:
             """initialize evaluation wrapper"""
             self.outer = outer
             self.args = args
+            self.func_name = self.outer.wrapped_function.__name__
 
         def eval(self):
             """evaluate given compiled function using the bound arguments"""
@@ -443,14 +469,13 @@ class PhySL:
                     phylanx.execution_tree.enable_measurements(
                         PhySL.compiler_state, True)
 
-            func_name = self.outer.wrapped_function.__name__
             result = phylanx.execution_tree.eval(
-                self.outer.file_name, func_name, PhySL.compiler_state,
+                PhySL.compiler_state, self.outer.file_name, self.func_name,
                 *self.args)
 
             if self.outer.performance:
                 treedata = phylanx.execution_tree.retrieve_tree_topology(
-                    self.outer.file_name, func_name, PhySL.compiler_state)
+                    PhySL.compiler_state, self.outer.file_name, self.func_name)
                 self.outer.__perfdata__ = (
                     phylanx.execution_tree.retrieve_counter_data(
                         PhySL.compiler_state),
@@ -459,8 +484,30 @@ class PhySL:
 
             return result
 
-    def lazy(self, args):
-        """compile a given function, return wrapper binding function to
+        def code(self):
+            """Expose the wrapped Phylanx primitive, either directly or
+               with its arguments bound"""
+
+            return self.outer.map_wrapped(self)
+
+    def map_wrapped(self, val):
+        """If a eval_wrapper is passed as an argument to an
+            invocation of a Phylanx function we need to extract the
+            compiled execution tree and pass along that instead"""
+
+        if isinstance(val, self.eval_wrapper):
+            if len(val.args) == 0:
+                return phylanx.execution_tree.code_for(
+                    PhySL.compiler_state, self.file_name, val.func_name)
+
+            args = tuple(map(self.map_wrapped, val.args))
+            return phylanx.execution_tree.bound_code_for(
+                PhySL.compiler_state, self.file_name, val.func_name, *args)
+
+        return val
+
+    def lazy(self, args=()):
+        """Compile a given function, return wrapper binding the function to
            arguments"""
 
         if not PhylanxSession.is_initialized:
@@ -470,15 +517,20 @@ class PhySL:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                    self.file_name)
 
             phylanx.execution_tree.compile(
-                self.file_name, self.__src__, PhySL.compiler_state)
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
             self.is_compiled = True
 
-        return self.eval_wrapper(self, args)
+        return self.eval_wrapper(self, tuple(map(self.map_wrapped, args)))
 
-    def call(self, args):
+    def call(self, args=()):
+        """Invoke this Phylanx function, pass along the given arguments"""
+
         return self.lazy(args).eval()
 
 # #############################################################################
@@ -639,8 +691,6 @@ class PhySL:
 
         def __apply(self, k):
             kw = self.apply_rule(k.value)
-            if k.arg == 'dtype' and '$' in kw:
-                kw = '"' + kw.split('$', 1)[0] + '"'
             return (k.arg, kw)
 
         symbol = self.apply_rule(node.func)
@@ -661,46 +711,56 @@ class PhySL:
         elif 'dstack' in symbol:
             if args and isinstance(args[0], tuple):
                 args = (['list', (tuple(args), )],)
+
         elif 'zeros_like' in symbol:
-            symbol = symbol.replace('zeros_like', 'constant_like' + dtype)
-            return [symbol, ('0', args)]
+            symbol = symbol.replace('zeros_like', 'constant_like')
+            return [symbol, ('0', args + kwargs)]
         elif 'ones_like' in symbol:
-            symbol = symbol.replace('ones_like', 'constant_like' + dtype)
-            return [symbol, ('1', args)]
+            symbol = symbol.replace('ones_like', 'constant_like')
+            return [symbol, ('1', args + kwargs)]
         elif 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant_like' + dtype)
-            return [symbol, (args[1], (args[0], ))]
+            symbol = symbol.replace('full_like', 'constant_like')
+            return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty_like' in symbol:
+            symbol = symbol.replace('empty_like', 'constant_like')
+            return [symbol, (None, args + kwargs)]
+
         elif 'zeros' in symbol:
-            symbol = symbol.replace('zeros', 'constant' + dtype)
+            symbol = symbol.replace('zeros', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, ('0', [op, args])]
+                return [symbol, ('0', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('0', args)]
+                return [symbol, ('0', args + kwargs)]
         elif 'ones' in symbol:
-            symbol = symbol.replace('ones', 'constant' + dtype)
+            symbol = symbol.replace('ones', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, ('1', [op, args])]
+                return [symbol, ('1', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('1', args)]
+                return [symbol, ('1', args + kwargs)]
         elif 'full' in symbol:
-            symbol = symbol.replace('full', 'constant' + dtype)
+            symbol = symbol.replace('full', 'constant')
             if isinstance(args[0], tuple):
                 op = get_symbol_info(node.func, 'list')
-                return [symbol, (args[1], [op, args[0]])]
+                return [symbol, (args[1], [op, args[0]]) + kwargs]
             else:
-                return [symbol, (args[1], args[0])]
+                return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty' in symbol:
+            symbol = symbol.replace('empty', 'constant')
+            if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, (None, [op, args[0]]) + kwargs]
+            else:
+                return [symbol, (None, args + kwargs)]
+
         else:
             method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
             if len(method) == 1:
                 symbol = symbol.replace(method[0], method[0] + dtype)
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        if kwargs:
-            args += kwargs
-        return [symbol, args]
+        return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):
     #     """class ClassDef(name, bases, keywords, starargs, kwargs, body,
@@ -764,6 +824,26 @@ class PhySL:
 
             return comparison
 
+    def _comprehension(self, node):
+        """class comprehension(target, iter, ifs, is_async)
+
+        1 for clause in a comprehension.
+        `target` is the reference to use in each element- a `name` or `Tuple`.
+        `iter` is the object to iterate over.
+        `ifs` is a list of test expressions (a for clause may have multiple ifs).
+        `is_async` indicates a comprehension is asynchronous.
+        """
+
+        target = self.apply_rule(node.target)
+        iteration_space = self.apply_rule(node.iter)
+
+        comprehension = {
+            'target': target,
+            'iter': iteration_space
+        }
+
+        return comprehension
+
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
 
@@ -817,14 +897,24 @@ class PhySL:
         # target_name = target.split('$', 1)[0]
         # self.defined.add(target_name)
         iteration_space = self.apply_rule(node.iter)
+        if isinstance(iteration_space, list) and iteration_space[0].startswith('zip'):
+            iter_space, indices = physl_zip(node)
+            symbol = get_symbol_info(node, 'for_each')
+            body = self.block(node.body)
+            body = ['block', (*indices, *body)]
+            op = get_symbol_info(node, 'lambda')
+            return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
 
         # extract the type of the iteration space- used as the lookup key in
         # `mapping_function` dictionary above.
-        symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
-        symbol = get_symbol_info(node, symbol_name)
+        if isinstance(iteration_space, list):
+            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            symbol = get_symbol_info(node, symbol_name)
+            # replace keyword `prange` to `range` for compatibility with Phylanx.
+            iteration_space[0] = iteration_space[0].replace('prange', 'range')
+        else:
+            symbol = get_symbol_info(node, 'for_each')
 
-        # replace keyword `prange` to `range` for compatibility with Phylanx.
-        iteration_space[0] = iteration_space[0].replace('prange', 'range')
         body = self.block(node.body)
         # orelse = self.block(node.orelse)
         op = get_symbol_info(node, 'lambda')
@@ -936,6 +1026,34 @@ class PhySL:
         elements = tuple(map(self.apply_rule, node.elts))
         return [op, (*elements, )]
 
+    def _ListComp(self, node):
+        """class ListComp(elt, generators)
+
+        `elt` (or key and value) is a single node representing the part that
+              will be evaluated for each item.
+        `generators` is a list of comprehension nodes.
+        """
+
+        if len(node.generators) > 1:
+            raise NotImplementedError("Nested comprehensions is not yet supported!")
+
+        elt = self.apply_rule(node.elt)
+        loop = self.apply_rule(node.generators[0])
+
+        target = loop['target']
+        iter_space = loop['iter']
+        if isinstance(iter_space, list) and iter_space[0].startswith('zip'):
+            iter_space, iterators = physl_zip([target, iter_space])
+            symbol = get_symbol_info(node, 'fmap')
+            body = ['block', (*iterators, elt)]
+            op = get_symbol_info(node, 'lambda')
+            return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
+
+        lambda_ = ['lambda', (target, elt)]
+        fmap = ['fmap', (lambda_, iter_space)]
+
+        return fmap
+
     def _Lt(self, node):
         """Leaf node, returning raw string of the 'less than' operation."""
 
@@ -1019,7 +1137,11 @@ class PhySL:
         if type(node.value) == ast.Tuple:
             return [symbol, (["list", self.apply_rule(node.value)],)]
 
-        return [symbol, (self.apply_rule(node.value),)]
+        value = self.apply_rule(node.value)
+        if value is None:
+            value = get_symbol_info(node, "nil")
+
+        return [symbol, (value,)]
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""

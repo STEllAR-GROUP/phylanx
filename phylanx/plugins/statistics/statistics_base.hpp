@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         statistics(primitive_arguments_type&& operands, std::string const& name,
             std::string const& codename);
 
-    private:
+    //private:
         template <typename T, typename Init>
         primitive_argument_type statistics0d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,

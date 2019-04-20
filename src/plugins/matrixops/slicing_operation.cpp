@@ -72,6 +72,13 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
             docstr
+        },
+
+        match_pattern_type{"tuple_slice",
+            std::vector<std::string>{"tuple_slice(_1, _2)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>,
+            docstr
         }
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , match_pattern_type{"slice_page",
@@ -93,6 +100,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , slice_pages_(false)
 #endif
+      , is_tuple_slice_(false)
     {
         auto func_name = compiler::extract_primitive_name(name_);
         if (func_name == "slice_row")
@@ -109,6 +117,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             slice_pages_ = true;
         }
 #endif
+        else if (func_name == "tuple_slice")
+        {
+            is_tuple_slice_ = true;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -158,8 +170,16 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                         "either one or two arguments"));
         }
 #endif
+        if (is_tuple_slice_ && operands_.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                "slicing_operation::eval",
+                generate_error_message(
+                    "the tuple_slice primitive requires exactly two arguments"));
+        }
 
-        if (!valid(operands[0]))
+        if (!valid(operands[0]) || (is_tuple_slice_ && !valid(operands[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "slicing_operation::eval",
@@ -170,10 +190,33 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](
-                    util::small_vector<primitive_argument_type>&& args)
+            [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
+                primitive_arguments_type args;
+                if (this_->is_tuple_slice_)
+                {
+                    // in case of tuple_slice the first (and only) argument has
+                    // to be a list of indices
+                    auto&& r = extract_list_value_strict(
+                        std::move(ops[1]), this_->name_, this_->codename_);
+                    args.reserve(r.size() + 1);
+
+                    // target has to be taken verbatim
+                    args.push_back(std::move(ops[0]));
+
+                    // evaluate all list elements
+                    for (auto && op : r)
+                    {
+                        args.push_back(value_operand_sync(
+                            std::move(op), this_->name_, this_->codename_));
+                    }
+                }
+                else
+                {
+                    args = std::move(ops);
+                }
+
                 switch (args.size())
                 {
                 case 1:
@@ -225,7 +268,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                         "the slicing_operation primitive requires "
                             "either one, two, or three arguments"));
             }),
-            detail::map_operands_sv(
+            detail::map_operands(
                 operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }

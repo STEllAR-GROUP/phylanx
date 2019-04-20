@@ -20,6 +20,11 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -71,16 +76,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // TODO: SIMD functionality should be added, blaze implementation
             // is not currently available
             return primitive_argument_type{
-                ir::node_data<std::uint8_t>{blaze::map(
-                    ops.vector(), [](T x) { return x == T(0); })}};
+                ir::node_data<std::uint8_t>{blaze::map(ops.vector(),
+                    [](T x) -> std::uint8_t { return x == T(0); })}};
 
         case 2:
             // TODO: SIMD functionality should be added, blaze implementation
             // is not currently available
             return primitive_argument_type{
-                ir::node_data<std::uint8_t>{blaze::map(
-                    ops.matrix(), [](T x) { return x == T(0); })}};
+                ir::node_data<std::uint8_t>{blaze::map(ops.matrix(),
+                    [](T x) -> std::uint8_t { return x == T(0); })}};
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            // TODO: SIMD functionality should be added, blaze implementation
+            // is not currently available
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{blaze::map(ops.tensor(),
+                    [](T x) -> std::uint8_t { return x == T(0); })}};
+#endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not_operation::eval",
@@ -100,26 +113,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "operand has unsupported type"));
         }
 
-        primitive_argument_type operator()(
-            ast::nil&&) const
+        primitive_argument_type operator()(ast::nil&&) const
         {
             return primitive_argument_type{true};    // not None
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<double>&& ops) const
-        {
-            return that_.unary_not_all(std::move(ops));
-        }
-
-        primitive_argument_type operator()(
-            ir::node_data<std::int64_t>&& ops) const
-        {
-            return that_.unary_not_all(std::move(ops));
-        }
-
-        primitive_argument_type operator()(
-            ir::node_data<std::uint8_t>&& ops) const
+        template <typename T>
+        primitive_argument_type operator()(ir::node_data<T>&& ops) const
         {
             return that_.unary_not_all(std::move(ops));
         }
@@ -161,7 +161,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             }),
             detail::map_operands(
-                operands, functional::literal_operand{}, args,
+                operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }
 }}}

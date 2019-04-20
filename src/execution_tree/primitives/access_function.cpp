@@ -70,28 +70,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!(ctx.mode_ & eval_dont_wrap_functions) && !params.empty())
         {
-            if (!params.empty())
+            primitive_arguments_type fargs;
+            fargs.reserve(params.size() + 1);
+
+            fargs.push_back(extract_ref_value(*target, name_, codename_));
+            for (auto const& param : params)
             {
-                primitive_arguments_type fargs;
-                fargs.reserve(params.size() + 1);
-
-                fargs.push_back(extract_ref_value(*target, name_, codename_));
-                for (auto const& param : params)
-                {
-                    fargs.push_back(extract_value(param, name_, codename_));
-                }
-
-                compiler::primitive_name_parts name_parts =
-                    compiler::parse_primitive_name(name_);
-                name_parts.primitive = "target-reference";
-
-                return hpx::make_ready_future(primitive_argument_type{
-                    create_primitive_component(hpx::find_here(),
-                        name_parts.primitive, std::move(fargs), std::move(ctx),
-                        compiler::compose_primitive_name(name_parts),
-                        codename_)
-                    });
+                fargs.push_back(extract_value(param, name_, codename_));
             }
+
+            compiler::primitive_name_parts name_parts =
+                compiler::parse_primitive_name(name_);
+            name_parts.primitive = "target-reference";
+
+            return hpx::make_ready_future(primitive_argument_type{
+                create_primitive_component(hpx::find_here(),
+                    name_parts.primitive, std::move(fargs), std::move(ctx),
+                    compiler::compose_primitive_name(name_parts),
+                    codename_)
+                });
         }
 
         return hpx::make_ready_future(

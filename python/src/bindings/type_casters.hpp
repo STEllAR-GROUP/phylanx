@@ -18,6 +18,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <bindings/variable.hpp>
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -394,7 +396,10 @@ namespace pybind11 { namespace detail
         {
             return isinstance<array_t<std::int64_t>>(src) ||
                    isinstance<array_t<std::int32_t>>(src) ||
-                   isinstance<array_t<std::int16_t>>(src);
+                   isinstance<array_t<std::int16_t>>(src) ||
+                   isinstance<array_t<std::uint64_t>>(src) ||
+                   isinstance<array_t<std::uint32_t>>(src) ||
+                   isinstance<array_t<std::uint16_t>>(src);
         }
     };
 
@@ -408,11 +413,11 @@ namespace pybind11 { namespace detail
             // np.array([0]) is convertible to a scalar value
             if (!is_scalar_instance<result_type>::call(src))
             {
-                if (is_array_instance<result_type>::call(src))
-                {
-                    auto buf = array::ensure(src);
-                    if (!buf) return false;
+                auto buf = array::ensure(src);
+                if (!buf) return false;
 
+                if (is_array_instance<result_type>::call(buf))
+                {
                     auto dims = buf.ndim();
                     if (dims != 0) return false;
 
@@ -457,6 +462,11 @@ namespace pybind11 { namespace detail
             auto buf = array::ensure(src);
             if (!buf) return false;
 
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
+
             auto dims = buf.ndim();
             if (dims != 1) return false;
 
@@ -495,6 +505,11 @@ namespace pybind11 { namespace detail
             // below handles it.
             auto buf = array::ensure(src);
             if (!buf) return false;
+
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
 
             auto dims = buf.ndim();
             if (dims != 2) return false;
@@ -536,6 +551,11 @@ namespace pybind11 { namespace detail
             auto buf = array::ensure(src);
             if (!buf) return false;
 
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
+
             auto dims = buf.ndim();
             if (dims != 3) return false;
 
@@ -567,6 +587,8 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_automatic(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
@@ -580,12 +602,12 @@ namespace pybind11 { namespace detail
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -595,7 +617,7 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -608,38 +630,40 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_move(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
             case phylanx::ir::node_data<T>::storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     std::move(src->vector_non_ref())));
 
             // blaze::DynamicMatrix<T>
             case phylanx::ir::node_data<T>::storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     std::move(src->matrix_non_ref())));
 
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     std::move(src->tensor_non_ref())));
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -652,6 +676,8 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_copy(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
@@ -664,12 +690,12 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -679,7 +705,7 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -692,6 +718,8 @@ namespace pybind11 { namespace detail
         template <typename Type>
         static handle cast_impl_automatic_reference(Type* src)
         {
+            using T_ = typename casted_type<T>::type;
+
             switch (src->index())
             {
             // blaze::DynamicVector<T>
@@ -705,12 +733,12 @@ namespace pybind11 { namespace detail
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
-                return blaze_encapsulate(new blaze::DynamicVector<T>(
+                return blaze_encapsulate(new blaze::DynamicVector<T_>(
                     src->vector_copy()));
 
             // blaze::CustomMatrix<T>
             case phylanx::ir::node_data<T>::custom_storage2d:
-                return blaze_encapsulate(new blaze::DynamicMatrix<T>(
+                return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -720,7 +748,7 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
 #endif
             default:
@@ -769,8 +797,12 @@ namespace pybind11 { namespace detail
         {
             if (0 == src->index())      // T
             {
-                return make_caster<result_type>::cast(
-                    src->scalar(), policy, parent);
+                // convert scalars to the corresponding numpy scalar type
+                pybind11::object dtype =
+                    pybind11::dtype::of<typename casted_type<T>::type>().attr(
+                        "type");
+                pybind11::object result = dtype(src->scalar());
+                return result.release();
             }
 
             switch (policy)
@@ -939,6 +971,10 @@ namespace pybind11 { namespace detail
         template <typename U, typename... Us>
         inline bool load_alternative(
             handle src, bool convert, type_list<U, Us...>);
+
+        template <typename... Us>
+        bool load_alternative(
+            handle src, bool convert, type_list<phylanx::ast::nil, Us...>);
 
         template <typename U, typename... Us>
         inline bool load_alternative(handle src, bool convert,
@@ -1119,6 +1155,20 @@ namespace pybind11 { namespace detail
     }
 
     template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename... Us>
+    bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
+        bool convert, type_list<phylanx::ast::nil, Us...>)
+    {
+        if (src.is_none())
+        {
+            value = phylanx::execution_tree::primitive_argument_type(
+                phylanx::ast::nil{true});
+            return true;
+        }
+        return load_alternative(src, convert, type_list<Us...>{});
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename U, typename... Us>
     bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
         bool convert, type_list<phylanx::util::recursive_wrapper<U>, Us...>)
@@ -1132,19 +1182,46 @@ namespace pybind11 { namespace detail
         return load_alternative(src, convert, type_list<Us...>{});
     }
 
+    struct caster_variant_visitor
+    {
+        return_value_policy policy;
+        handle parent;
+
+        template <typename T>
+        handle operator()(T&& src) const
+        {
+            return make_caster<T>::cast(std::forward<T>(src), policy, parent);
+        }
+
+        handle operator()(phylanx::ast::nil&&) const
+        {
+            return pybind11::none();
+        }
+    };
+
     template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename Derived_>
     handle variant_caster_helper<Derived, V<Ts...>>::cast(
         Derived_&& src, return_value_policy policy, handle parent)
     {
-        return visit_helper<V>::call(variant_caster_visitor{policy, parent},
-                                        std::forward<Derived_>(src));
+        return visit_helper<V>::call(caster_variant_visitor{policy, parent},
+            std::forward<Derived_>(src));
     }
 
     template <typename Derived, template <typename...> class V, typename... Ts>
     bool variant_caster_helper<Derived, V<Ts...>>::load(
         handle src, bool convert)
     {
+        // Handle conversion from variable right away
+        if (pybind11::isinstance<phylanx::execution_tree::variable>(src))
+        {
+            phylanx::execution_tree::variable var =
+                src.cast<phylanx::execution_tree::variable>();
+            value =
+                phylanx::execution_tree::primitive_argument_type{var.value()};
+            return true;
+        }
+
         // Do a first pass without conversions to improve constructor resolution.
         // E.g. `py::int_(1).cast<variant<double, int>>()` needs to fill the `int`
         // slot of the variant. Without two-pass loading `double` would be filled

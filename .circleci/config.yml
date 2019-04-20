@@ -86,10 +86,23 @@ anchors:
                     echo "$old_targets"| xargs -I % touch %
                 fi
             working_directory: /phylanx/build
+    - &justify_building_all
         run:
             name: Justify building the ALL target
             command: ninja -n -d explain || true
             working_directory: /phylanx/build
+    - &add_github_to_known_hosts
+        run:
+            name: Add Github's key(s) to known_hosts
+            command: |
+                mkdir -p ~/.ssh
+                ssh-keyscan -H github.com >>~/.ssh/known_hosts
+    - &configure_local_git
+        run:
+            name: Configure local Git
+            command: |
+                git config --global user.name "StellarBot"
+                git config --global user.email "stellar@cct.lsu.edu"
 
 ################################################################################
 jobs:
@@ -136,7 +149,8 @@ jobs:
                         -DPHYLANX_WITH_BLAZE_TENSOR=ON              \
                         -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
                         -DPHYLANX_WITH_DOCUMENTATION=On             \
-                        -DPHYLANX_WITH_HIGHFIVE=On
+                        -DPHYLANX_WITH_HIGHFIVE=On                  \
+                        -DPHYLANX_WITH_CXX14=On
             - persist_to_workspace:
                 root: /
                 paths:
@@ -178,19 +192,12 @@ jobs:
             - <<: *attach_phylanx_tree
             # Build Documentation and Push to gh-pages branch
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain git_docs
-            - run:
-                name: Add Github's key(s) to known_hosts
-                command: |
-                    mkdir -p ~/.ssh
-                    ssh-keyscan -H github.com >>~/.ssh/known_hosts
-            - run:
-                name: Configure local Git
-                command: |
-                    git config --global user.name "StellarBot"
-                    git config --global user.email "stellar@cct.lsu.edu"
+            - <<: *add_github_to_known_hosts
+            - <<: *configure_local_git
             - run:
                 name: Build and push Sphinx Documentation
                 command: cmake --build . -- -j1 git_docs
@@ -299,6 +306,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.regressions
@@ -319,6 +327,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.distributed
@@ -339,6 +348,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.arithmetics
@@ -359,6 +369,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.booleans
@@ -379,6 +390,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.controls
@@ -399,6 +411,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.{fileio,solvers}
@@ -419,6 +432,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.keras_support
@@ -439,6 +453,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.listops
@@ -459,6 +474,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.matrixops
@@ -479,6 +495,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.plugins.statistics
@@ -499,6 +516,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
@@ -519,6 +537,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 working_directory: /phylanx/build
@@ -541,6 +560,7 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
             - run:
                 name: Justify build
                 command: ninja -n -d explain install
@@ -570,14 +590,30 @@ jobs:
                 name: Test installation
                 command: docker run --rm ${TARGET_IMAGE_NAME} physl --hpx:threads=1 --code=1+2 --print
             # Deployment
+            - <<: *add_github_to_known_hosts
+            - <<: *configure_local_git
             - deploy:
-                name: Push the Phylanx build environment Docker image
+                name: Push the Phylanx build environment Docker image and tag the commit
                 command: |
                   if [[ -z "$CIRCLE_PR_NUMBER" ]] && [[ "${CIRCLE_BRANCH}" == "master" ]]; then
+                    # Push the Docker image
                     docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
                     docker push ${TARGET_IMAGE_NAME}
+                    # Tag the commmit
+                    cd /phylanx/src
+                    git remote set-url origin git@github.com:STEllAR-GROUP/phylanx.git
+                    git tag -f stable
+                    ##########################################################
+                    # NOTE: Dependency on the Docker push is so that users who
+                    # use the Docker image would not be confused. Do not change
+                    # the order before considering every use case.
+                    ##########################################################
+                    # Remove the old tag
+                    git push origin :refs/tags/stable
+                    # Push the new stable commit tag
+                    git push origin stable
                   else
-                    echo "Not on the master branch. The image will not be pushed."
+                    echo "Not on the master branch. the image will not be pushed and the commit will not be tagged."
                   fi
 
 ################################################################################

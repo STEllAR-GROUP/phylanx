@@ -19,6 +19,8 @@ set(tests
     parallel
     set_operation
     slice
+    categorical_crossentropy
+    binary_crossentropy
    )
 
 foreach(test ${tests})

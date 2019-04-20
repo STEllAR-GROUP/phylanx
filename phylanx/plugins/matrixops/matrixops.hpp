@@ -9,6 +9,7 @@
 #include <phylanx/plugins/matrixops/arange.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
+#include <phylanx/plugins/matrixops/astype.hpp>
 #include <phylanx/plugins/matrixops/clip.hpp>
 #include <phylanx/plugins/matrixops/concatenate.hpp>
 #include <phylanx/plugins/matrixops/constant.hpp>
@@ -37,6 +38,7 @@
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/size.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
+#include <phylanx/plugins/matrixops/sort.hpp>
 #include <phylanx/plugins/matrixops/squeeze_operation.hpp>
 #include <phylanx/plugins/matrixops/stack_operation.hpp>
 #include <phylanx/plugins/matrixops/tile_operation.hpp>

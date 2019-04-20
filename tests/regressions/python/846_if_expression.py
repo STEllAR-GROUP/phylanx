@@ -12,5 +12,5 @@ def if_expr(n):
     return True if n else False
 
 
-assert if_expr(True) is True
-assert if_expr(False) is False
+assert if_expr(True) is np.bool_(True)
+assert if_expr(False) is np.bool_(False)

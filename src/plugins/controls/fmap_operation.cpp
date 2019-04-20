@@ -109,16 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type fmap_operation::fmap_1_vector(primitive const* p,
         primitive_argument_type&& arg, eval_context ctx) const
     {
-        if (is_numeric_operand(arg))
-        {
-            auto v = extract_numeric_value(std::move(arg), name_, codename_);
-            HPX_ASSERT(v.num_dimensions() == 1);
-            return primitive_argument_type{
-                ir::node_data<double>{detail::fmap_1_vector<double>::call(
-                    p, v.vector(), name_, codename_, std::move(ctx))}};
-        }
-
-        if (is_integer_operand(arg))
+        if (is_integer_operand_strict(arg))
         {
             auto v = extract_integer_value(std::move(arg), name_, codename_);
             HPX_ASSERT(v.num_dimensions() == 1);
@@ -127,12 +118,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     p, v.vector(), name_, codename_, std::move(ctx))}};
         }
 
-        if (is_boolean_operand(arg))
+        if (is_boolean_operand_strict(arg))
         {
             auto v = extract_boolean_value(std::move(arg), name_, codename_);
             HPX_ASSERT(v.num_dimensions() == 1);
             return primitive_argument_type{ir::node_data<std::uint8_t>{
                 detail::fmap_1_vector<std::uint8_t>::call(
+                    p, v.vector(), name_, codename_, std::move(ctx))}};
+        }
+
+        if (is_numeric_operand(arg))
+        {
+            auto v = extract_numeric_value(std::move(arg), name_, codename_);
+            HPX_ASSERT(v.num_dimensions() == 1);
+            return primitive_argument_type{
+                ir::node_data<double>{detail::fmap_1_vector<double>::call(
                     p, v.vector(), name_, codename_, std::move(ctx))}};
         }
 
@@ -193,16 +193,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type fmap_operation::fmap_1_matrix(primitive const* p,
         primitive_argument_type&& arg, eval_context ctx) const
     {
-        if (is_numeric_operand(arg))
-        {
-            auto m = extract_numeric_value(std::move(arg), name_, codename_);
-            HPX_ASSERT(m.num_dimensions() == 2);
-            return primitive_argument_type{
-                ir::node_data<double>{detail::fmap_1_matrix<double>::call(
-                    p, m.matrix(), name_, codename_, std::move(ctx))}};
-        }
-
-        if (is_integer_operand(arg))
+        if (is_integer_operand_strict(arg))
         {
             auto m = extract_integer_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
@@ -211,12 +202,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     p, m.matrix(), name_, codename_, std::move(ctx))}};
         }
 
-        if (is_boolean_operand(arg))
+        if (is_boolean_operand_strict(arg))
         {
             auto m = extract_boolean_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
             return primitive_argument_type{ir::node_data<std::uint8_t>{
                 detail::fmap_1_matrix<std::uint8_t>::call(
+                    p, m.matrix(), name_, codename_, std::move(ctx))}};
+        }
+
+        if (is_numeric_operand(arg))
+        {
+            auto m = extract_numeric_value(std::move(arg), name_, codename_);
+            HPX_ASSERT(m.num_dimensions() == 2);
+            return primitive_argument_type{
+                ir::node_data<double>{detail::fmap_1_matrix<double>::call(
                     p, m.matrix(), name_, codename_, std::move(ctx))}};
         }
 

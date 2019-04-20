@@ -28,8 +28,9 @@
 namespace phylanx { namespace bindings
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::string expression_compiler(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c)
+    std::string expression_compiler(compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        std::string const& xexpr_str)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -37,31 +38,31 @@ namespace phylanx { namespace bindings
             [&]() -> std::string
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                    file_name, func_name, xexpr_str, state.eval_snippets,
+                    state.eval_env);
 
                 auto const& funcs = code.functions();
 
-                if (c.enable_measurements)
+                if (state.enable_measurements)
                 {
                     if (!funcs.empty())
                     {
-                        c.primitive_instances.push_back(
+                        state.primitive_instances.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
                 // add all definitions to the global execution environment
-                code.run(c.eval_ctx);
+                code.run(state.eval_ctx);
 
                 return !funcs.empty() ? funcs.front().name_ : "";
             });
     }
 
-    phylanx::execution_tree::primitive_argument_type
-    expression_evaluator(
-        std::string const& file_name, std::string const& xexpr_str,
-        compiler_state& c, pybind11::args args)
+    phylanx::execution_tree::primitive_argument_type expression_evaluator(
+        compiler_state& state, std::string const& file_name,
+        std::string const& xexpr_str, pybind11::args args)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -72,24 +73,23 @@ namespace phylanx { namespace bindings
                 phylanx::util::none_wrapper wrap_cout(hpx::cout);
                 phylanx::util::none_wrapper wrap_debug(hpx::consolestream);
 
-                auto const& code_x = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                auto const& code_x =
+                    phylanx::execution_tree::compile(file_name, xexpr_str,
+                        xexpr_str, state.eval_snippets, state.eval_env);
 
-                if (c.enable_measurements)
+                if (state.enable_measurements)
                 {
                     auto const& funcs = code_x.functions();
                     if (!funcs.empty())
                     {
-                        c.primitive_instances.push_back(
+                        state.primitive_instances.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto x = code_x.run(c.eval_ctx);
+                auto x = code_x.run(state.eval_ctx);
 
-                phylanx::execution_tree::primitive_arguments_type keep_alive;
-                keep_alive.reserve(args.size());
                 phylanx::execution_tree::primitive_arguments_type fargs;
                 fargs.reserve(args.size());
 
@@ -98,24 +98,160 @@ namespace phylanx { namespace bindings
                     for (auto const& item : args)
                     {
                         using phylanx::execution_tree::primitive_argument_type;
-
-                        primitive_argument_type value;
-                        if (item.is_none())
-                        {
-                            value = primitive_argument_type{
-                                phylanx::ast::nil{true}};
-                        }
-                        else
-                        {
-                            value = item.cast<primitive_argument_type>();
-                        }
-                        keep_alive.emplace_back(std::move(value));
-                        fargs.emplace_back(extract_ref_value(keep_alive.back()));
+                        fargs.emplace_back(item.cast<primitive_argument_type>());
                     }
                 }
 
-                return x(std::move(fargs), c.eval_ctx);
+                return x(std::move(fargs), state.eval_ctx);
             });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::primitive code_for(
+        phylanx::bindings::compiler_state& state, std::string const& file_name,
+        std::string const& func_name)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread([&]()
+        {
+            using namespace phylanx::execution_tree;
+
+            // if the requested name is defined in the environment, use it
+            primitive_argument_type* var = state.eval_ctx.get_var(func_name);
+            if (var != nullptr)
+            {
+                if (is_primitive_operand(*var))
+                {
+                    return primitive_operand(*var, func_name, file_name);
+                }
+
+                return create_primitive_component(hpx::find_here(), "variable",
+                    extract_ref_value(*var, func_name, file_name),
+                    func_name, file_name, false);
+            }
+
+            // alternatively, locate requested function entry point
+            for (auto const& entry_point :
+                state.eval_snippets.program_.entry_points())
+            {
+                if (func_name == entry_point.func_name_)
+                {
+                    auto && funcs = entry_point.functions();
+                    if (funcs.empty())
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::bindings::code_for",
+                            hpx::util::format("cannot locate requested "
+                                "function entry point '{}'", func_name));
+                    }
+
+                    if (is_primitive_operand(*var))
+                    {
+                        return primitive_operand(
+                            funcs.back().arg_, func_name, file_name);
+                    }
+
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", extract_ref_value(
+                            funcs.back().arg_, func_name, file_name),
+                        func_name, file_name, false);
+                }
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::bindings::code_for",
+                hpx::util::format("cannot locate requested "
+                    "function entry point '{}'", func_name));
+            return primitive();
+        });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::primitive create_bound_primitive(
+        phylanx::bindings::compiler_state& state, std::string const& file_name,
+        std::string const& func_name, std::string const& func_full_name,
+        pybind11::args args,
+        phylanx::execution_tree::primitive_argument_type&& value)
+    {
+        using namespace phylanx::execution_tree;
+
+        // transfer arguments
+        primitive_arguments_type fargs;
+        fargs.reserve(args.size() + 1);
+
+        // first 'argument' is the function itself
+        fargs.push_back(std::move(value));
+
+        // now bind the transferred arguments
+        {
+            pybind11::gil_scoped_acquire acquire;
+            for (auto const& item : args)
+            {
+                fargs.emplace_back(
+                    item.cast<primitive_argument_type>());
+            }
+        }
+
+        // create a target-reference object that binds arguments
+        // to function
+        compiler::primitive_name_parts name_parts;
+        if (!compiler::parse_primitive_name(func_full_name, name_parts))
+        {
+            name_parts.instance = func_name;
+        }
+
+        name_parts.primitive = "target-reference";
+        return create_primitive_component(hpx::find_here(),
+            name_parts.primitive, std::move(fargs),
+            compiler::compose_primitive_name(name_parts),
+            file_name, false);
+    }
+
+    phylanx::execution_tree::primitive bound_code_for(
+        phylanx::bindings::compiler_state& state, std::string const& file_name,
+        std::string const& func_name, pybind11::args args)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread([&]()
+        {
+            using namespace phylanx::execution_tree;
+
+            // if the requested name is defined in the environment, use it
+            primitive_argument_type* var = state.eval_ctx.get_var(func_name);
+            if (var != nullptr)
+            {
+                return create_bound_primitive(state, file_name, func_name,
+                    func_name, args,
+                    extract_ref_value(*var, func_name, file_name));
+            }
+
+            // locate requested function entry point
+            for (auto const& entry_point :
+                state.eval_snippets.program_.entry_points())
+            {
+                if (func_name == entry_point.func_name_)
+                {
+                    auto && funcs = entry_point.functions();
+                    if (funcs.empty())
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::bindings::bound_code_for",
+                            hpx::util::format("cannot locate requested "
+                                "function entry point '{}'", func_name));
+                    }
+                    return create_bound_primitive(state, file_name, func_name,
+                        funcs.back().name_, args,
+                        extract_ref_value(
+                            funcs.back().arg_, func_name, file_name));
+                }
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::bindings::bound_code_for",
+                hpx::util::format("cannot locate requested "
+                    "function entry point '{}'", func_name));
+            return phylanx::execution_tree::primitive();
+        });
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -185,8 +321,8 @@ namespace phylanx { namespace bindings
     }
 
     // retrieve tree topology in DOT format for given expression
-    std::string retrieve_dot_tree_topology(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c)
+    std::string retrieve_dot_tree_topology(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -194,20 +330,20 @@ namespace phylanx { namespace bindings
             [&]() -> std::string
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                    file_name, xexpr_str, state.eval_snippets, state.eval_env);
 
-                if (c.enable_measurements)
+                if (state.enable_measurements)
                 {
                     auto const& funcs = code.functions();
                     if (!funcs.empty())
                     {
-                        c.primitive_instances.push_back(
+                        state.primitive_instances.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto const& program = c.eval_snippets.program_;
+                auto const& program = state.eval_snippets.program_;
 
                 std::set<std::string> resolve_children;
                 for (auto const& ep : program.entry_points())
@@ -232,8 +368,8 @@ namespace phylanx { namespace bindings
             });
     }
 
-    std::string retrieve_newick_tree_topology(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c)
+    std::string retrieve_newick_tree_topology(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -241,20 +377,20 @@ namespace phylanx { namespace bindings
             [&]() -> std::string
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                    file_name, xexpr_str, state.eval_snippets, state.eval_env);
 
-                if (c.enable_measurements)
+                if (state.enable_measurements)
                 {
                     auto const& funcs = code.functions();
                     if (!funcs.empty())
                     {
-                        c.primitive_instances.push_back(
+                        state.primitive_instances.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto const& program = c.eval_snippets.program_;
+                auto const& program = state.eval_snippets.program_;
 
                 std::set<std::string> resolve_children;
                 for (auto const& ep : program.entry_points())
@@ -279,9 +415,8 @@ namespace phylanx { namespace bindings
             });
     }
 
-    std::list<std::string> retrieve_tree_topology(
-        std::string const& file_name, std::string const& xexpr_str,
-        compiler_state& c)
+    std::list<std::string> retrieve_tree_topology(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -289,20 +424,20 @@ namespace phylanx { namespace bindings
             [&]() -> std::list<std::string>
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+                    file_name, xexpr_str, state.eval_snippets, state.eval_env);
 
-                if (c.enable_measurements)
+                if (state.enable_measurements)
                 {
                     auto const& funcs = code.functions();
                     if (!funcs.empty())
                     {
-                        c.primitive_instances.push_back(
+                        state.primitive_instances.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto const& program = c.eval_snippets.program_;
+                auto const& program = state.eval_snippets.program_;
 
                 std::set<std::string> resolve_children;
                 for (auto const& ep : program.entry_points())
@@ -334,24 +469,28 @@ namespace phylanx { namespace bindings
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    pybind11::dtype extract_dtype(phylanx::execution_tree::primitive const& p)
+    pybind11::dtype extract_dtype(
+        phylanx::execution_tree::primitive_argument_type const& p)
     {
-        pybind11::gil_scoped_release release;       // release GIL
-
-        return hpx::threads::run_as_hpx_thread(
+        auto f =
             [&]() -> pybind11::dtype
             {
                 using namespace phylanx::execution_tree;
 
-                primitive_arguments_type args;
-                args.push_back(p);
+                std::int64_t type_id = p.index();
+                if (type_id == primitive_argument_type::primitive_index)
+                {
+                    primitive_arguments_type args;
+                    args.emplace_back(value_operand_sync(
+                        p, primitive_arguments_type{}, "dtype", "<unknown>"));
 
-                primitive type = primitives::create_phytype(
-                    hpx::find_here(), std::move(args), "dtype", "<unknown>");
+                    primitive type = primitives::create_phytype(
+                        hpx::find_here(), std::move(args), "dtype", "<unknown>");
 
-                primitive_argument_type id = type.eval(hpx::launch::sync);
-                std::int64_t type_id = extract_scalar_integer_value_strict(
-                    id, "dtype", "<unknown>");
+                    primitive_argument_type id = type.eval(hpx::launch::sync);
+                    type_id = extract_scalar_integer_value_strict(
+                        id, "dtype", "<unknown>");
+                }
 
                 pybind11::gil_scoped_acquire acquire;
 
@@ -388,6 +527,13 @@ namespace phylanx { namespace bindings
                     break;
                 }
                 return pybind11::dtype("");
-            });
+            };
+
+        pybind11::gil_scoped_release release;       // release GIL
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::threads::run_as_hpx_thread(std::move(f));
+        }
+        return f();
     }
 }}

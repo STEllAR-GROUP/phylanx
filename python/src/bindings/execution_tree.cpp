@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -9,122 +9,31 @@
 
 #include <bindings/binding_helpers.hpp>
 #include <bindings/type_casters.hpp>
+#include <bindings/variable.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <hpx/exception.hpp>
+#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose execution tree
-template <typename T>
-void bind_variable(pybind11::module &execution_tree)
-{
-    execution_tree.def("var",
-        [](T d) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{d});
-                });
-        },
-        "create a new variable from a floating point value");
-    execution_tree.def("var",
-        [](std::vector<T> const& d) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{
-                            phylanx::ir::node_data<T>{d}});
-                });
-        },
-        "create a new variable from a vector floating point values");
-    execution_tree.def("var",
-        [](std::vector<std::vector<T>> const& d) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{
-                            phylanx::ir::node_data<T>{d}});
-                });
-        },
-        "create a new variable from a matrix floating point values");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    execution_tree.def("var",
-        [](std::vector<std::vector<std::vector<T>>> const& d) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{
-                            phylanx::ir::node_data<T>{d}});
-                });
-        },
-        "create a new variable from a tensor floating point values");
-#endif
-}
-
 void phylanx::bindings::bind_execution_tree(pybind11::module m)
 {
     auto execution_tree = m.def_submodule("execution_tree");
 
-    execution_tree.def("var",
-        [](phylanx::execution_tree::primitive_argument_type const& arg) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", arg);
-                });
-        },
-        "create a new variable from a primitive_argument_type");
+    // Compiler State
+    pybind11::class_<phylanx::bindings::compiler_state>(
+            execution_tree, "compiler_state")
+        .def(pybind11::init<std::string>());
 
-    execution_tree.def("var",
-        [](std::string const& d) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", primitive_argument_type{d});
-                });
-        },
-        "create a new variable from a string");
-
-    bind_variable<double>(execution_tree);
-    bind_variable<std::int64_t>(execution_tree);
-    bind_variable<std::uint8_t>(execution_tree);
-
-    execution_tree.def("var",
-        [](pybind11::none) {
-            pybind11::gil_scoped_release release;       // release GIL
-            return hpx::threads::run_as_hpx_thread(
-                [&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    return create_primitive_component(
-                        hpx::find_here(), "variable",
-                        primitive_argument_type{phylanx::ast::nil{true}});
-                });
-        },
-        "create a new variable from 'None'");
-
+    ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
         "compile a numerical expression in PhySL");
 
@@ -132,11 +41,11 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         "compile and evaluate a numerical expression in PhySL");
 
     execution_tree.def("eval",
-        [](std::string const& xexpr, compiler_state& c, pybind11::args args)
+        [](compiler_state& state, std::string const& xexpr, pybind11::args args)
         ->  phylanx::execution_tree::primitive_argument_type
         {
             return phylanx::bindings::expression_evaluator(
-                "<unknown>", xexpr, c, args);
+                state, state.codename_, xexpr, args);
         },
         "compile and evaluate a numerical expression in PhySL");
 
@@ -161,6 +70,110 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         phylanx::bindings::retrieve_tree_topology,
         "retrieve the Newick and DOT tree topologies for the given "
         "execution tree");
+
+    execution_tree.def("code_for", phylanx::bindings::code_for,
+        "extract compiled code for given function");
+
+    execution_tree.def("bound_code_for", phylanx::bindings::bound_code_for,
+        "extract compiled code for given function and bind it to given "
+        "arguments");
+
+    // phylanx.execution_tree.variable
+    auto var =
+        pybind11::class_<phylanx::execution_tree::variable>(execution_tree,
+            "variable", "type representing an arbitrary execution tree")
+            // copy-constructor must go before constructor that takes
+            // primitive_argument_type to avoid implicit conversion
+            .def(pybind11::init<phylanx::execution_tree::variable const&>())
+            .def(pybind11::init<phylanx::execution_tree::primitive,
+                     pybind11::object, pybind11::object, pybind11::object>(),
+                pybind11::arg("value"),
+                pybind11::arg("dtype") = pybind11::none(),
+                pybind11::arg("name") = pybind11::none(),
+                pybind11::arg("constraint") = pybind11::none())
+            .def(pybind11::init<pybind11::array, pybind11::object,
+                     pybind11::object, pybind11::object>(),
+                pybind11::arg("value"),
+                pybind11::arg("dtype") = pybind11::none(),
+                pybind11::arg("name") = pybind11::none(),
+                pybind11::arg("constraint") = pybind11::none())
+            .def(pybind11::init<std::string, pybind11::object, pybind11::object,
+                     pybind11::object>(),
+                pybind11::arg("value"),
+                pybind11::arg("dtype") = pybind11::none(),
+                pybind11::arg("name") = pybind11::none(),
+                pybind11::arg("constraint") = pybind11::none())
+            .def(
+                pybind11::init<phylanx::execution_tree::primitive_argument_type,
+                    pybind11::object, pybind11::object, pybind11::object>(),
+                pybind11::arg("value"),
+                pybind11::arg("dtype") = pybind11::none(),
+                pybind11::arg("name") = pybind11::none(),
+                pybind11::arg("constraint") = pybind11::none())
+            .def(
+                "eval",
+                [](phylanx::execution_tree::variable const& var,
+                    pybind11::args args) {
+                    pybind11::gil_scoped_release release;       // release GIL
+                    return hpx::threads::run_as_hpx_thread(
+                            [&]() { return var.eval(std::move(args)); });
+                },
+                "evaluate execution tree")
+            .def(
+                "__call__",
+                [](phylanx::execution_tree::variable const& var,
+                    pybind11::args args) {
+                    pybind11::gil_scoped_release release;       // release GIL
+                    return hpx::threads::run_as_hpx_thread(
+                        [&]() { return var.eval(std::move(args)); });
+                },
+                "evaluate execution tree")
+            .def_property_readonly(
+                "dtype",
+                [](phylanx::execution_tree::variable const& var) {
+                    return var.dtype();
+                },
+                "return the dtype of the value stored by the variable")
+            .def_property_readonly(
+                "name",
+                [](phylanx::execution_tree::variable const& var) {
+                    return var.name();
+                },
+                "return the name of the variable")
+            .def("__str__",
+                [](phylanx::execution_tree::variable const& var) {
+                    return var.name();
+                })
+            .def("__repr__",
+                [](phylanx::execution_tree::variable const& var) {
+                    return bindings::repr<phylanx::execution_tree::primitive>(
+                        var.value());
+                })
+            .def("__add__", &phylanx::execution_tree::add_variables)
+            .def("__add__", &phylanx::execution_tree::add_variables_gen)
+            .def("__radd__", &phylanx::execution_tree::radd_variables_gen)
+            .def("__sub__", &phylanx::execution_tree::sub_variables)
+            .def("__sub__", &phylanx::execution_tree::sub_variables_gen)
+            .def("__rsub__", &phylanx::execution_tree::rsub_variables_gen)
+            .def("__mul__", &phylanx::execution_tree::mul_variables)
+            .def("__mul__", &phylanx::execution_tree::mul_variables_gen)
+            .def("__rmul__", &phylanx::execution_tree::rmul_variables_gen)
+            .def("__div__", &phylanx::execution_tree::div_variables)
+            .def("__div__", &phylanx::execution_tree::div_variables_gen)
+            .def("__rdiv__", &phylanx::execution_tree::rdiv_variables_gen)
+            .def("__neg__", &phylanx::execution_tree::unary_minus_variables)
+            .def("__iadd__", &phylanx::execution_tree::iadd_variables)
+            .def("__iadd__", &phylanx::execution_tree::iadd_variables_gen)
+            .def("update_add", &phylanx::execution_tree::iadd_variables)
+            .def("update_add", &phylanx::execution_tree::iadd_variables_gen)
+            .def("__isub__", &phylanx::execution_tree::isub_variables)
+            .def("__isub__", &phylanx::execution_tree::isub_variables_gen)
+            .def("update_sub", &phylanx::execution_tree::isub_variables)
+            .def("update_sub", &phylanx::execution_tree::isub_variables_gen)
+            .def("update_moving_average",
+                &phylanx::execution_tree::moving_average_variables)
+            .def("update_moving_average",
+                &phylanx::execution_tree::moving_average_variables_gen);
 
     // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
@@ -193,6 +206,5 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         .def("__str__",
             &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
         .def("__repr__",
-            &phylanx::bindings::repr<phylanx::execution_tree::primitive>)
-    ;
+            &phylanx::bindings::repr<phylanx::execution_tree::primitive>);
 }

@@ -107,15 +107,15 @@ namespace phylanx { namespace execution_tree
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     ir::node_data<T> slice_extract(ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         std::string const& name, std::string const& codename)
     {
         switch (data.num_dimensions())
         {
         case 3:
-            return slice3d_extract3d(data, rows, columns, pages, name, codename);
+            return slice3d_extract3d(data, pages, rows, columns, name, codename);
 
         case 0:
         case 1:
@@ -171,23 +171,23 @@ namespace phylanx { namespace execution_tree
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template PHYLANX_EXPORT ir::node_data<std::uint8_t>
     slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         std::string const& name, std::string const& codename);
 
     template PHYLANX_EXPORT ir::node_data<double>
     slice_extract<double>(ir::node_data<double> const& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         std::string const& name, std::string const& codename);
 
     template PHYLANX_EXPORT ir::node_data<std::int64_t>
     slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         std::string const& name, std::string const& codename);
 #endif
 
@@ -267,9 +267,9 @@ namespace phylanx { namespace execution_tree
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     ir::node_data<T> slice_assign(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         ir::node_data<T>&& value, std::string const& name,
         std::string const& codename)
     {

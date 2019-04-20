@@ -19,6 +19,7 @@ set(tests
     805_lazy_variable
     805_two_variables
     808_print_twice
+    815_plain_return
     826_default_args
     827_random_0dim
     832_performance_data
@@ -27,7 +28,19 @@ set(tests
     852_concatenate_list
     862_var_std_two_axis
     866_dynamic_dtype
+    874_0d_shape
     886_notnone
+    896_return_none
+    903_variable_conversion
+    903_variable_dtype
+    904_pass_decorator
+    905_call_python_snippet
+    911_list_comprehension
+    912_zip
+    925_none_dtype
+    933_arange
+    933_eval_wrapper
+    936_arithmetic_operations
     array_len_494
     array_shape_486
     array_subscript_403

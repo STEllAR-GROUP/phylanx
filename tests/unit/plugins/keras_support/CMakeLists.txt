@@ -6,11 +6,20 @@
 set(tests
 
     batch_dot_operation
+    conv1d_operation
+    ctc_decode_operation
     elu_operation
     hard_sigmoid_operation
+    l2_normalize_operation
     one_hot_operation
-    sigmoid_operation    softmax_operation
+    pool_operation
+    relu_operation
+    resize_operation
+    sigmoid_operation
+    softmax_operation
     softplus_operation
+    softsign_operation
+    switch_operation
    )
 
 foreach(test ${tests})
@@ -34,4 +43,3 @@ foreach(test ${tests})
     ${test}_test_exe)
 
 endforeach()
-

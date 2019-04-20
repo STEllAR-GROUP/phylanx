@@ -256,15 +256,6 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Extract a ir::node_data<std::uint8_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_data(
-        primitive_argument_type const& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT ir::node_data<std::uint8_t>&& extract_boolean_data(
-        primitive_argument_type&& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
     PHYLANX_EXPORT bool is_boolean_data_operand(
         primitive_argument_type const& val);
 
@@ -576,6 +567,18 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_string_operand(primitive_argument_type const& val);
 
+    PHYLANX_EXPORT std::string extract_string_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::string extract_string_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_string_operand_strict(
+        primitive_argument_type const& val);
+
     // Extract an AST type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
@@ -797,6 +800,12 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT std::uint8_t boolean_operand_sync(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<std::uint8_t> scalar_boolean_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
