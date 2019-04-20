@@ -137,6 +137,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#concatenate">concatenate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#constant">constant</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#constant-like">constant_like</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conv1d">conv1d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#count-nonzero">count_nonzero</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cout">cout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cross">cross</a></li>
@@ -1078,6 +1079,34 @@ dtype (string, optional): the data-type of the returned array,</p>
 <p class="last">An array of the same size as ‘a’ with each element equal to
 ‘value’. If ‘value’ is equal to None, the array elements are
 uninitialized.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="conv1d">
+<h2>conv1d<a class="headerlink" href="#conv1d" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>conv1d (x, kernel, padding, strides, dilation_rate)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>x (array) : a vector
+kernel (array) : a vector
+padding (optional, string) : padding mode, <cite>valid</cite> by default. It</p>
+<blockquote>
+<div>can be either <cite>valid</cite>, <cite>same</cite> or <cite>causal</cite>. <cite>vaild</cite> means no
+padding. <cite>same</cite> results the output with the same shape as
+original array in case of unit strides. <cite>causal</cite> zero pads the
+array in a way that no output element depend on the input
+elements of its future</div></blockquote>
+<dl class="docutils">
+<dt>strides (optional, integer) <span class="classifier-delimiter">:</span> <span class="classifier">the step to apply convolution over</span></dt>
+<dd>array. It sets to 1 by default.</dd>
+<dt>dilation_rate (optional, integer) <span class="classifier-delimiter">:</span> <span class="classifier">indicates the dilation rate,</span></dt>
+<dd>the rate to sample the array in each step of convolution, 1
+by default.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">1D convolution (or 1D mathematical cross-correlation)</p>
 </dd>
 </dl>
 </div>
@@ -2847,7 +2876,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 19, 2019.
+        Last updated on Apr 20, 2019.
       </span>
 
     </p>
