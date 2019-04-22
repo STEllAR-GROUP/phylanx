@@ -294,8 +294,8 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
             matrix_row_iterator<decltype(idx_row_slice)> const
                 idx_slice_rows_begin(idx_row_slice);
 
-            for (auto mat_row = mat_slice_rows_begin,
-                      idx_row = idx_slice_rows_begin;
+            auto idx_row = idx_slice_rows_begin;
+            for (auto mat_row = mat_slice_rows_begin;
                  mat_row != mat_slice_rows_end; ++mat_row, ++idx_row)
             {
                 std::iota(idx_row->begin(), idx_row->end(), 0);
@@ -331,8 +331,8 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
             matrix_row_iterator<decltype(idx_col_slice)> const
                 idx_slice_rows_begin(idx_col_slice);
 
-            for (auto mat_row = mat_slice_rows_begin,
-                      idx_row = idx_slice_rows_begin;
+            auto idx_row = idx_slice_rows_begin;
+            for (auto mat_row = mat_slice_rows_begin;
                  mat_row != mat_slice_rows_end; ++mat_row, ++idx_row)
             {
                 std::iota(idx_row->begin(), idx_row->end(), 0);
@@ -369,8 +369,8 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
             matrix_row_iterator<decltype(idx_page_slice)> const
                 idx_slice_pages_begin(idx_page_slice);
 
-            for (auto mat_page = mat_slice_pages_begin,
-                      idx_page = idx_slice_pages_begin;
+            auto idx_page = idx_slice_pages_begin;
+            for (auto mat_page = mat_slice_pages_begin;
                  mat_page != mat_slice_pages_end; ++mat_page, ++idx_page)
             {
                 std::iota(idx_page->begin(), idx_page->end(), 0);
