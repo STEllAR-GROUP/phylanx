@@ -10,8 +10,6 @@
 #include <phylanx/plugins/keras_support/binary_crossentropy_operation.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 #include <phylanx/util/assign.hpp>
-#include <phylanx/plugins/statistics/statistics_base.hpp>
-#include <phylanx/plugins/statistics/sum_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -19,9 +17,7 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/assert.hpp>
 
-#include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

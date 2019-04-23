@@ -1,5 +1,5 @@
-// Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2019 Stevn R. Brandt
+// Copyright (c) 2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,9 +19,7 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/assert.hpp>
 
-#include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -156,6 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 
     ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     matrix_type sum3d_axis2(const tensor_type& t) {
        matrix_type out(t.pages(),t.rows());
        out = 0;
@@ -187,6 +186,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else
             return sum3d_axis2(t);
     }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type cat_cross_operation::cat_cross2d(
