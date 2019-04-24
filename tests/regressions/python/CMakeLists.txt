@@ -41,6 +41,7 @@ set(tests
     933_arange
     933_eval_wrapper
     936_arithmetic_operations
+    956_named_argument_underscore
     962_broadcast_logical_operations
     array_len_494
     array_shape_486
