@@ -472,6 +472,42 @@ argmin (a, axis)
             specified, a vector of minima along the axis is returned.
 
 
+argsort
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+argsort (a, axis, kind, order)
+            Args:
+              a (array_like):
+                An array to sort.
+
+              axis (optional, {int, nil}):
+                Axis along which to sort.
+                The default is -1 (the last axis).
+                If nil, the flattend array is used.
+
+              kind (optional, {'quicksort', 'merrgesort', 'heapsort', 'stable'}):
+                Sorting algorithm.
+                *** ignored ***
+
+              order (optional, {str, list of str}):
+                When a is an array with fields defined, this argument specifies which
+                fields to compare first, second, etc. A single field can be specified
+                as a string, and not all fields need be specified, but unspecified
+                fields will still be used, in the order in which they come up in the
+                dtype, to break ties.
+                *** ignored ***
+
+            Returns:
+              index_array ({ndarray, int}):
+              When a is an array with fields defined, this argument specifies which
+              fields to compare first, second, etc. A single field can be specified as a
+              string, and not all fields need be specified, but unspecified fields will
+              still be used, in the order in which they come up in the dtype, to break
+              ties.
+
+source:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.argsort.
+
+
 assert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 assert (cond)

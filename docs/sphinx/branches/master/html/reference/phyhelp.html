@@ -125,6 +125,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#arange">arange</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argmax">argmax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argmin">argmin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#argsort">argsort</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#astype">astype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#avg-pool">avg_pool</a></li>
@@ -844,6 +845,44 @@ axis (optional, int) : the axis along which to find the min</div></blockquote>
 specified, a vector of minima along the axis is returned.</p>
 </dd>
 </dl>
+</div>
+<div class="section" id="argsort">
+<h2>argsort<a class="headerlink" href="#argsort" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>argsort (a, axis, kind, order)</dt>
+<dd><dl class="first last docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>a (array_like):</dt>
+<dd>An array to sort.</dd>
+<dt>axis (optional, {int, nil}):</dt>
+<dd>Axis along which to sort.
+The default is -1 (the last axis).
+If nil, the flattend array is used.</dd>
+<dt>kind (optional, {‘quicksort’, ‘merrgesort’, ‘heapsort’, ‘stable’}):</dt>
+<dd>Sorting algorithm.
+<strong>* ignored *</strong></dd>
+<dt>order (optional, {str, list of str}):</dt>
+<dd>When a is an array with fields defined, this argument specifies which
+fields to compare first, second, etc. A single field can be specified
+as a string, and not all fields need be specified, but unspecified
+fields will still be used, in the order in which they come up in the
+dtype, to break ties.
+<strong>* ignored *</strong></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>index_array ({ndarray, int}):
+When a is an array with fields defined, this argument specifies which
+fields to compare first, second, etc. A single field can be specified as a
+string, and not all fields need be specified, but unspecified fields will
+still be used, in the order in which they come up in the dtype, to break
+ties.</dd>
+</dl>
+</dd>
+</dl>
+<p>source:
+<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.argsort">https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.argsort</a>.</p>
 </div>
 <div class="section" id="assert">
 <h2>assert<a class="headerlink" href="#assert" title="Permalink to this headline">¶</a></h2>
@@ -2876,7 +2915,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 22, 2019.
+        Last updated on Apr 24, 2019.
       </span>
 
     </p>
