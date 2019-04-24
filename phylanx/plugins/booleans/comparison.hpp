@@ -15,6 +15,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <array>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -43,75 +45,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_comparison;
 
         template <typename T>
-        primitive_argument_type comparison0d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type comparison0d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type comparison0d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        template <typename T>
-        primitive_argument_type comparison0d3d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-#endif
-        template <typename T>
         primitive_argument_type comparison0d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type) const;
 
         template <typename T>
-        primitive_argument_type comparison1d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
         primitive_argument_type comparison1d1d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
-        primitive_argument_type comparison1d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        template <typename T>
-        primitive_argument_type comparison1d3d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-#endif
-        template <typename T>
         primitive_argument_type comparison1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
+            ir::node_data<T>&& rhs, bool propagate_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
 
-        template <typename T>
-        primitive_argument_type comparison2d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type comparison2d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type comparison2d2d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        template <typename T>
-        primitive_argument_type comparison2d3d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-#endif
         template <typename T>
         primitive_argument_type comparison2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
+            ir::node_data<T>&& rhs, bool propagate_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        template <typename T>
-        primitive_argument_type comparison3d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type comparison3d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type comparison3d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type comparison3d3d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type comparison3d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
+            ir::node_data<T>&& rhs, bool propagate_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
 #endif
 
         template <typename T>

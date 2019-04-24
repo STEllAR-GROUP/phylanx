@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // return argument as a vector, scalars are properly broadcast
     template <typename T>
-    void extract_value_vector(
+    PHYLANX_EXPORT void extract_value_vector(
         typename ir::node_data<T>::storage1d_type& result,
         ir::node_data<T>&& rhs, std::size_t size, std::string const& name,
         std::string const& codename)
@@ -178,7 +178,7 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_vector(ir::node_data<T>&& arg,
+    PHYLANX_EXPORT ir::node_data<T> extract_value_vector(ir::node_data<T>&& arg,
         std::size_t size, std::string const& name, std::string const& codename)
     {
         typename ir::node_data<T>::storage1d_type result;
@@ -187,8 +187,9 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_vector(primitive_argument_type const& val,
-        std::size_t size, std::string const& name, std::string const& codename)
+    PHYLANX_EXPORT ir::node_data<T> extract_value_vector(
+        primitive_argument_type const& val, std::size_t size,
+        std::string const& name, std::string const& codename)
     {
         return extract_value_vector(
             extract_node_data<T>(val, name, codename),
@@ -196,8 +197,9 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_vector(primitive_argument_type&& val,
-        std::size_t size, std::string const& name, std::string const& codename)
+    PHYLANX_EXPORT ir::node_data<T> extract_value_vector(
+        primitive_argument_type&& val, std::size_t size,
+        std::string const& name, std::string const& codename)
     {
         return extract_value_vector(
             extract_node_data<T>(std::move(val), name, codename),

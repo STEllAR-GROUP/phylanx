@@ -9,6 +9,7 @@
 #define PHYLANX_PRIMITIVES_COMPARISON_IMPL_SEP_02_2018_0443PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/plugins/booleans/comparison.hpp>
@@ -18,6 +19,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -44,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
-    primitive_argument_type comparison<Op>::comparison0d0d(
+    primitive_argument_type comparison<Op>::comparison0d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
         bool propagate_type) const
     {
@@ -58,156 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<std::uint8_t>{Op{}(lhs.scalar(), rhs.scalar())});
     }
 
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison0d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            rhs = blaze::map(rhs.vector(),
-                [&](T x) { return Op{}(lhs.scalar(), x); });
-        }
-        else
-        {
-            rhs.vector() = blaze::map(rhs.vector(),
-                [&](T x) { return Op{}(lhs.scalar(), x); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
-        }
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison0d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            rhs = blaze::map(rhs.matrix(),
-                [&](T x) -> std::uint8_t { return Op{}(lhs.scalar(), x); });
-        }
-        else
-        {
-            rhs.matrix() = blaze::map(rhs.matrix(),
-                [&](T x) -> std::uint8_t { return Op{}(lhs.scalar(), x); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison0d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            rhs = blaze::map(rhs.tensor(),
-                [&](T x) -> std::uint8_t { return Op{}(lhs.scalar(), x); });
-        }
-        else
-        {
-            rhs.tensor() = blaze::map(rhs.tensor(),
-                [&](T x) -> std::uint8_t { return Op{}(lhs.scalar(), x); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-#endif
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
-        {
-        case 0:
-            return comparison0d0d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-        case 1:
-            return comparison0d1d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-        case 2:
-            return comparison0d2d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 3:
-            return comparison0d3d(
-                std::move(lhs), std::move(rhs), propagate_type);
-#endif
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison0d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
-        }
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison1d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            lhs = blaze::map(lhs.vector(),
-                [&](T x) -> std::uint8_t { return Op{}(x, rhs.scalar()); });
-        }
-        else
-        {
-            lhs.vector() = blaze::map(lhs.vector(),
-                [&](T x) -> std::uint8_t { return Op{}(x, rhs.scalar()); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type comparison<Op>::comparison1d1d(
@@ -250,250 +103,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename Op>
     template <typename T>
-    primitive_argument_type comparison<Op>::comparison1d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
+    primitive_argument_type comparison<Op>::comparison1d(ir::node_data<T>&& lhs,
+        ir::node_data<T>&& rhs, bool propagate_type,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
     {
-        auto cv = lhs.vector();
-        auto cm = rhs.matrix();
-
-        if (cv.size() != cm.columns())
+        if (lhs.dimensions() != rhs.dimensions())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison1d2d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
+            blaze::DynamicVector<T> lhs_data, rhs_data;
 
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            blaze::DynamicMatrix<std::uint8_t> m{cm.rows(), cm.columns()};
+            extract_value_vector(
+                lhs_data, std::move(lhs), sizes[0], name_, codename_);
+            extract_value_vector(
+                rhs_data, std::move(rhs), sizes[0], name_, codename_);
 
-            for (std::size_t i = 0UL; i != cm.rows(); ++i)
-            {
-                blaze::row(m, i) =
-                    blaze::map(blaze::trans(cv), blaze::row(cm, i),
-                        [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-            }
+            auto result = ir::node_data<std::uint8_t>{
+                blaze::map(lhs_data, rhs_data,
+                    [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })
+            };
 
             if (propagate_type)
             {
-                return primitive_argument_type(ir::node_data<T>{std::move(m)});
+                return primitive_argument_type(ir::node_data<T>{std::move(result)});
             }
 
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(m)});
+            return result;
         }
 
-        for (std::size_t i = 0UL; i != cm.rows(); ++i)
-        {
-            blaze::row(cm, i) = blaze::map(blaze::trans(cv), blaze::row(cm, i),
-                [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
+        return comparison1d1d(std::move(lhs), std::move(rhs), propagate_type);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison1d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        auto cv = lhs.vector();
-        auto ct = rhs.tensor();
-
-        if (cv.size() != ct.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison1d3d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            blaze::DynamicTensor<std::uint8_t> t{
-                ct.pages(), ct.rows(), ct.columns()};
-
-            for (std::size_t k = 0UL; k != ct.pages(); ++k)
-            {
-                auto lhs_page = blaze::pageslice(t, k);
-                auto rhs_page = blaze::pageslice(ct, k);
-                for (std::size_t i = 0UL; i != ct.rows(); ++i)
-                {
-                    blaze::row(lhs_page, i) = blaze::map(blaze::trans(cv),
-                        blaze::row(rhs_page, i),
-                        [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-                }
-            }
-
-            if (propagate_type)
-            {
-                return primitive_argument_type(ir::node_data<T>{std::move(t)});
-            }
-
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(t)});
-        }
-
-        for (std::size_t k = 0UL; k != ct.pages(); ++k)
-        {
-            auto page = blaze::pageslice(ct, k);
-            for (std::size_t i = 0UL; i != ct.rows(); ++i)
-            {
-                auto row = blaze::row(page, i);
-                row = blaze::map(blaze::trans(cv), row,
-                    [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-            }
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-#endif
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
-        {
-        case 0:
-            return comparison1d0d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-        case 1:
-            return comparison1d1d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-        case 2:
-            return comparison1d2d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 3:
-            return comparison1d3d(
-                std::move(lhs), std::move(rhs), propagate_type);
-#endif
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison1d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
-        }
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison2d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        std::size_t lhs_size = lhs.dimension(0);
-        std::size_t rhs_size = rhs.dimension(0);
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            lhs = blaze::map(lhs.matrix(),
-                [&](T x) -> std::uint8_t { return Op{}(x, rhs.scalar()); });
-        }
-        else
-        {
-            lhs.matrix() = blaze::map(lhs.matrix(),
-                [&](T x) -> std::uint8_t { return Op{}(x, rhs.scalar()); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison2d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        auto cv = rhs.vector();
-        auto cm = lhs.matrix();
-
-        if (cv.size() != cm.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison2d1d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            blaze::DynamicMatrix<std::uint8_t> m{cm.rows(), cm.columns()};
-
-            for (std::size_t i = 0UL; i != cm.rows(); ++i)
-            {
-                blaze::row(m, i) = blaze::map(blaze::row(cm, i),
-                    blaze::trans(cv),
-                    [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-            }
-
-            if (propagate_type)
-            {
-                return primitive_argument_type(ir::node_data<T>{std::move(m)});
-            }
-
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(m)});
-        }
-
-        for (std::size_t i = 0UL; i != cm.rows(); ++i)
-        {
-            blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
-                blaze::trans(cv),
-                [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type comparison<Op>::comparison2d2d(
@@ -534,251 +173,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename Op>
     template <typename T>
-    primitive_argument_type comparison<Op>::comparison2d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
+    primitive_argument_type comparison<Op>::comparison2d(ir::node_data<T>&& lhs,
+        ir::node_data<T>&& rhs, bool propagate_type,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
     {
-        auto cm = lhs.matrix();
-        auto ct = rhs.tensor();
-
-        if (cm.rows() != ct.rows() || cm.columns() != ct.columns())
+        if (lhs.dimensions() != rhs.dimensions())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison2d3d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
+            blaze::DynamicMatrix<T> lhs_data, rhs_data;
 
-        // TODO: SIMD functionality should be added, blaze implementation
-        //       is not currently available
-        if (rhs.is_ref())
-        {
-            blaze::DynamicTensor<std::uint8_t> t{
-                ct.pages(), ct.rows(), ct.columns()};
+            extract_value_matrix(
+                lhs_data, std::move(lhs), sizes[0], sizes[1], name_, codename_);
+            extract_value_matrix(
+                rhs_data, std::move(rhs), sizes[0], sizes[1], name_, codename_);
 
-            for (std::size_t k = 0UL; k != ct.pages(); ++k)
-            {
-                blaze::pageslice(t, k) = blaze::map(cm, blaze::pageslice(ct, k),
-                    [&](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-            }
+            auto result = ir::node_data<std::uint8_t>{
+                blaze::map(lhs_data, rhs_data,
+                    [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })
+            };
 
             if (propagate_type)
             {
-                return primitive_argument_type(ir::node_data<T>{std::move(t)});
+                return primitive_argument_type(ir::node_data<T>{std::move(result)});
             }
 
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(t)});
+            return result;
         }
 
-        for (std::size_t k = 0UL; k != ct.pages(); ++k)
-        {
-            auto page = blaze::pageslice(ct, k);
-            page = blaze::map(
-                cm, page, [&](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-#endif
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
-        {
-        case 0:
-            return comparison2d0d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-        case 1:
-            return comparison2d1d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-        case 2:
-            return comparison2d2d(
-                std::move(lhs), std::move(rhs), propagate_type);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 3:
-            return comparison2d3d(
-                std::move(lhs), std::move(rhs), propagate_type);
-#endif
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison2d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
-        }
+        return comparison2d2d(std::move(lhs), std::move(rhs), propagate_type);
     }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison3d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            lhs = blaze::map(lhs.tensor(),
-                [&](T x) -> std::uint8_t { return Op{}(x, rhs.scalar()); });
-        }
-        else
-        {
-            lhs.tensor() = blaze::map(lhs.tensor(),
-                [&](T x) -> std::uint8_t { return Op{}(x, rhs.scalar()); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison3d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        auto ct = lhs.tensor();
-        auto cv = rhs.vector();
-
-        if (cv.size() != ct.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison3d1d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            blaze::DynamicTensor<std::uint8_t> t{
-                ct.pages(), ct.rows(), ct.columns()};
-
-            for (std::size_t k = 0UL; k != ct.pages(); ++k)
-            {
-                auto lhs_page = blaze::pageslice(t, k);
-                auto rhs_page = blaze::pageslice(ct, k);
-                for (std::size_t i = 0UL; i != ct.rows(); ++i)
-                {
-                    blaze::row(lhs_page, i) = blaze::map(
-                        blaze::row(rhs_page, i), blaze::trans(cv),
-                        [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-                }
-            }
-
-            if (propagate_type)
-            {
-                return primitive_argument_type(ir::node_data<T>{std::move(t)});
-            }
-
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(t)});
-        }
-
-        for (std::size_t k = 0UL; k != ct.pages(); ++k)
-        {
-            auto page = blaze::pageslice(ct, k);
-            for (std::size_t i = 0UL; i != ct.rows(); ++i)
-            {
-                auto row = blaze::row(page, i);
-                row = blaze::map(row, blaze::trans(cv),
-                    [](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-            }
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type comparison<Op>::comparison3d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
-    {
-        auto ct = lhs.tensor();
-        auto cm = rhs.matrix();
-
-        if (cm.rows() != ct.rows() || cm.columns() != ct.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison2d3d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        //       is not currently available
-        if (lhs.is_ref())
-        {
-            blaze::DynamicTensor<std::uint8_t> t{
-                ct.pages(), ct.rows(), ct.columns()};
-
-            for (std::size_t k = 0UL; k != ct.pages(); ++k)
-            {
-                blaze::pageslice(t, k) = blaze::map(blaze::pageslice(ct, k), cm,
-                    [&](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-            }
-
-            if (propagate_type)
-            {
-                return primitive_argument_type(ir::node_data<T>{std::move(t)});
-            }
-
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(t)});
-        }
-
-        for (std::size_t k = 0UL; k != ct.pages(); ++k)
-        {
-            auto page = blaze::pageslice(ct, k);
-            page = blaze::map(
-                page, cm, [&](T x, T y) -> std::uint8_t { return Op{}(x, y); });
-        }
-
-        if (propagate_type)
-        {
-            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type comparison<Op>::comparison3d3d(
@@ -821,37 +248,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename Op>
     template <typename T>
-    primitive_argument_type comparison<Op>::comparison3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        bool propagate_type) const
+    primitive_argument_type comparison<Op>::comparison3d(ir::node_data<T>&& lhs,
+        ir::node_data<T>&& rhs, bool propagate_type,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
     {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
+        if (lhs.dimensions() != rhs.dimensions())
         {
-        case 0:
-            return comparison3d0d(
-                std::move(lhs), std::move(rhs), propagate_type);
+            blaze::DynamicTensor<T> lhs_data, rhs_data;
 
-        case 1:
-            return comparison3d1d(
-                std::move(lhs), std::move(rhs), propagate_type);
+            extract_value_tensor(lhs_data, std::move(lhs), sizes[0], sizes[1],
+                sizes[2], name_, codename_);
+            extract_value_tensor(rhs_data, std::move(rhs), sizes[0], sizes[1],
+                sizes[2], name_, codename_);
 
-        case 2:
-            return comparison3d2d(
-                std::move(lhs), std::move(rhs), propagate_type);
+            auto result = ir::node_data<std::uint8_t>{
+                blaze::map(lhs_data, rhs_data,
+                    [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })
+            };
 
-        case 3:
-            return comparison3d3d(
-                std::move(lhs), std::move(rhs), propagate_type);
+            if (propagate_type)
+            {
+                return primitive_argument_type(ir::node_data<T>{std::move(result)});
+            }
 
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::comparison2d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
+            return result;
         }
+
+        return comparison2d2d(std::move(lhs), std::move(rhs), propagate_type);
     }
 #endif
 
@@ -861,21 +284,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
         bool propagate_type) const
     {
-        std::size_t lhs_dims = lhs.num_dimensions();
-        switch (lhs_dims)
+        auto sizes = extract_largest_dimensions(name_, codename_, lhs, rhs);
+        switch (extract_largest_dimension(name_, codename_, lhs, rhs))
         {
         case 0:
             return comparison0d(std::move(lhs), std::move(rhs), propagate_type);
 
         case 1:
-            return comparison1d(std::move(lhs), std::move(rhs), propagate_type);
+            return comparison1d(
+                std::move(lhs), std::move(rhs), propagate_type, sizes);
 
         case 2:
-            return comparison2d(std::move(lhs), std::move(rhs), propagate_type);
+            return comparison2d(
+                std::move(lhs), std::move(rhs), propagate_type, sizes);
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
-            return comparison3d(std::move(lhs), std::move(rhs), propagate_type);
+            return comparison3d(
+                std::move(lhs), std::move(rhs), propagate_type, sizes);
 #endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
