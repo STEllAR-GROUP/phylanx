@@ -269,50 +269,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 std::size_t kernel_size;
                 std::size_t remainder = -i_rel % dilation_rate;
-                if (dilated_k_size + i_rel > v_size)
+                if (v_size <= remainder)
+                {
+                    kernel_size = 1;
+                }
+                else if (dilated_k_size + i_rel > v_size)
                 {
                     kernel_size =
                         blaze::ceil(static_cast<float>(v_size - remainder) /
                             static_cast<float>(dilation_rate));
-                    if (remainder == 0)
-                        result[i] = convolve_step(v,
-                            blaze::subvector(k,
-                                blaze::ceil(static_cast<float>(-i_rel) /
-                                    static_cast<float>(dilation_rate)),
-                                kernel_size),
-                            dilation_rate, kernel_size);
-                    else
-                        result[i] = convolve_step(v,
-                            blaze::subvector(k,
-                                blaze::ceil(static_cast<float>(-i_rel) /
-                                    static_cast<float>(dilation_rate)),
-                                kernel_size),
-                            dilation_rate, kernel_size,
-                            dilation_rate - remainder);
                 }
                 else
                 {
                     kernel_size =
-                    blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
-                        static_cast<float>(dilation_rate));
-                    if (remainder == 0)
-                        result[i] = convolve_step(
-                            blaze::subvector(v, 0, dilated_k_size + i_rel),
-                            blaze::subvector(k,
-                                blaze::ceil(static_cast<float>(-i_rel) /
-                                    static_cast<float>(dilation_rate)),
-                                kernel_size),
-                            dilation_rate, kernel_size);
-                    else
-                        result[i] = convolve_step(
-                            blaze::subvector(v, 0, dilated_k_size + i_rel),
-                            blaze::subvector(k,
-                                blaze::ceil(static_cast<float>(-i_rel) /
-                                    static_cast<float>(dilation_rate)),
-                                kernel_size),
-                            dilation_rate, kernel_size,
-                            dilation_rate - remainder);
+                        blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
+                            static_cast<float>(dilation_rate));
                 }
+                std::size_t vector_size =
+                    (blaze::min)(v_size, dilated_k_size + i_rel);
+
+                if (remainder == 0)
+                    result[i] =
+                        convolve_step(blaze::subvector(v, 0, vector_size),
+                        blaze::subvector(k,
+                            blaze::ceil(static_cast<float>(-i_rel) /
+                                static_cast<float>(dilation_rate)),
+                            kernel_size),
+                        dilation_rate, kernel_size);
+                else if (dilation_rate - remainder >= v_size)
+                    result[i] = 0;
+                else
+                    result[i] = convolve_step(
+                        blaze::subvector(v, 0, vector_size),
+                        blaze::subvector(k,
+                            blaze::ceil(static_cast<float>(-i_rel) /
+                                static_cast<float>(dilation_rate)),
+                            kernel_size),
+                        dilation_rate, kernel_size, dilation_rate - remainder);
             }
             else if (i_rel > static_cast<std::int64_t>(v_size) -
                     static_cast<std::int64_t>(dilated_k_size))
@@ -542,27 +535,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "conv1d operation requires for x and kernel to be "
                             "vectors"));
 
-                std::string padding = "valid";
-                if (args.size() > 2)
-                {
-                    padding = extract_string_value(
-                        args[2], this_->name_, this_->codename_);
+                std::string padding;
+                padding = extract_string_value(
+                    args[2], this_->name_, this_->codename_);
 
-                    if (padding != "valid" && padding != "same" &&
-                        padding != "causal")
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "invalid padding. Padding can be either valid, "
-                                "same or causal"));
-                }
+                if (padding != "valid" && padding != "same" &&
+                    padding != "causal")
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv1d_operation::eval",
+                        this_->generate_error_message(
+                            "invalid padding. Padding can be either valid, "
+                            "same or causal"));
+
 
                 if (padding == "valid")
                 {
-                    if (extract_numeric_value_dimension(
-                            args[0], this_->name_, this_->codename_) <
-                        extract_numeric_value_dimension(
-                            args[1], this_->name_, this_->codename_))
+                    if (extract_numeric_value_dimensions(
+                            args[0], this_->name_, this_->codename_)[0] <
+                        extract_numeric_value_dimensions(
+                            args[1], this_->name_, this_->codename_)[0])
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "conv1d_operation::eval",
                             this_->generate_error_message(
@@ -570,68 +561,64 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "array size in the valid padding mode"));
                 }
 
-                std::int64_t strides = 1;
-                if (args.size() > 3)
+                std::int64_t strides;
+                if (is_list_operand_strict(args[3]))
                 {
-                    if (is_list_operand_strict(args[3]))
-                    {
-                        ir::range s = extract_list_value(
-                            args[3], this_->name_, this_->codename_);
-                        if (s.size() == 1)
-                            strides =
-                                extract_scalar_integer_value_strict(*s.begin());
-                        else
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "conv1d_operation::eval",
-                                this_->generate_error_message(
-                                    "conv1d_operation requires the strides to "
-                                    "be of rank 1"));
-                    }
+                    ir::range s = extract_list_value(
+                        args[3], this_->name_, this_->codename_);
+                    if (s.size() == 1)
+                        strides =
+                            extract_scalar_integer_value_strict(*s.begin());
                     else
-                        strides = extract_scalar_integer_value_strict(
-                            args[3], this_->name_, this_->codename_);
-
-                    if (strides <= 0)
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "conv1d_operation::eval",
                             this_->generate_error_message(
-                                "invalid strides. Strides must be positive"));
+                                "conv1d_operation requires the strides to "
+                                "be of rank 1"));
                 }
+                else
+                    strides = extract_scalar_integer_value_strict(
+                        args[3], this_->name_, this_->codename_);
 
-                std::int64_t dilation_rate = 1;
-                if (args.size() > 4)
+                if (strides <= 0)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv1d_operation::eval",
+                        this_->generate_error_message(
+                            "invalid strides. Strides must be positive"));
+
+
+                std::int64_t dilation_rate;
+                if (is_list_operand_strict(args[4]))
                 {
-                    if (is_list_operand_strict(args[4]))
-                    {
-                        ir::range d = extract_list_value(
-                            args[4], this_->name_, this_->codename_);
-                        if (d.size() == 1)
-                            dilation_rate =
-                                extract_scalar_integer_value_strict(*d.begin());
-                        else
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "conv1d_operation::eval",
-                                this_->generate_error_message(
-                                    "conv1d_operation requires the "
-                                    "dilation_rate to be of rank 1"));
-                    }
+                    ir::range d = extract_list_value(
+                        args[4], this_->name_, this_->codename_);
+                    if (d.size() == 1)
+                        dilation_rate =
+                            extract_scalar_integer_value_strict(*d.begin());
                     else
-                        dilation_rate = extract_scalar_integer_value_strict(
-                            args[4], this_->name_, this_->codename_);
-
-                    if (dilation_rate <= 0)
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "conv1d_operation::eval",
                             this_->generate_error_message(
-                                "dilation_rate must be positive"));
-
-                    if (strides != 1 && dilation_rate != 1)
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "strides > 1 not supported in conjunction with "
-                                "dilation_rate > 1"));
+                                "conv1d_operation requires the "
+                                "dilation_rate to be of rank 1"));
                 }
+                else
+                    dilation_rate = extract_scalar_integer_value_strict(
+                        args[4], this_->name_, this_->codename_);
+
+                if (dilation_rate <= 0)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv1d_operation::eval",
+                        this_->generate_error_message(
+                            "dilation_rate must be positive"));
+
+                if (strides != 1 && dilation_rate != 1)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv1d_operation::eval",
+                        this_->generate_error_message(
+                            "strides > 1 not supported in conjunction with "
+                            "dilation_rate > 1"));
+
 
                 if (strides == 1 && dilation_rate == 1)
                 {

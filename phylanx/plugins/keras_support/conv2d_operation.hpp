@@ -50,39 +50,40 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     private:
         template <typename Matrix1, typename Matrix2>
         double convolve_step(const Matrix1& m1, const Matrix2& m2) const;
-        //template <typename Vector1, typename Vector2>
-        //double convolve_step(const Vector1& v1, const Vector2& v2,
-        //    std::int64_t dilation_rate, std::size_t kernel_size) const;
-        //template <typename Vector1, typename Vector2>
-        //double convolve_step(const Vector1& v1, const Vector2& v2,
-        //    std::int64_t dilation_rate, std::size_t kernel_size,
-        //    std::size_t r) const;
+        template <typename Matrix1, typename Matrix2>
+        double convolve_step(const Matrix1& m1, const Matrix2& m2,
+            std::size_t dilation_rate_r, std::size_t dilation_rate_c,
+            std::size_t kernel_rows, std::size_t kernel_columns) const;
+        template <typename Vector1, typename Vector2>
+        double convolve_step(const Vector1& v1, const Vector2& v2,
+            std::int64_t dilation_rate, std::size_t kernel_size,
+            std::size_t r) const;
 
         primitive_argument_type conv2d_valid(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
-        //primitive_argument_type conv2d_valid(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, std::int64_t strides) const;
-        //primitive_argument_type conv2d_valid_dilation(
-        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    std::int64_t dilation_rate) const;
+        primitive_argument_type conv2d_valid(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, ir::range&& strides) const;
+        primitive_argument_type conv2d_valid_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+            ir::range&& dilation_rate) const;
 
         primitive_argument_type conv2d_same(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
-        //primitive_argument_type conv2d_same(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, std::int64_t strides) const;
-        //primitive_argument_type conv2d_same_dilation(
-        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    std::int64_t dilation_rate) const;
+        primitive_argument_type conv2d_same(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, ir::range&& strides) const;
+        primitive_argument_type conv2d_same_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+            ir::range&& dilation_rate) const;
 
 
         primitive_argument_type conv2d_any_pad(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel, std::string&& padding) const;
-        //primitive_argument_type conv2d_any_pad(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, std::string&& padding,
-        //    std::int64_t strides) const;
-        //primitive_argument_type conv2d_any_pad_dilation(
-        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    std::string&& padding, std::int64_t dilation_rate) const;
+        primitive_argument_type conv2d_any_pad(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, std::string&& padding,
+            ir::range&& strides) const;
+        primitive_argument_type conv2d_any_pad_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+            std::string&& padding, ir::range&& dilation_rate) const;
     };
 
     inline primitive create_conv2d_operation(hpx::id_type const& locality,

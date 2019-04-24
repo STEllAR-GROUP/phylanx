@@ -109,6 +109,17 @@ int main(int argc, char* argv[])
         R"(conv1d([4, 33, 13, 42, 0, 1, -1, 2, 6, 5, -3, 1], [ 1, -2, 3],
         "causal",  1, 4))",
         "[ 12., 99., 39., 126., -8., -63., -29., -78.,  22., 46., 6., 41.]");
+    test_conv1d_operation(R"(conv1d([33, 13, 42], [1, -2, -3], "same",  1, 5))",
+        "[-66., -26., -84.]");
+    test_conv1d_operation(
+        R"(conv1d([33, 13, 42], [1, -2, -3], "causal",  1, 5))",
+        "[ -99.,  -39., -126.]");
+    test_conv1d_operation(
+        R"(conv1d([33, 13, 42], [1, 1 ,1 ,10, 1, 1, 1], "same",  1, 5))",
+        "[ 330.,  130.,  420.]");
+    test_conv1d_operation(
+        R"(conv1d([33, 13, 42], [1, 1 ,1 ,10, 1, 1, 1], "causal",  1, 5))",
+        "[ 33.,  13.,  42.]");
 
     return hpx::util::report_errors();
 }
