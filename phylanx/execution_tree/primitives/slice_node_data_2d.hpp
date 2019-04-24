@@ -200,7 +200,7 @@ namespace phylanx { namespace execution_tree
                 ir::node_data<std::int64_t>&& columns) const
             {
                 auto result = blaze::columns(sm,
-                    reinterpret_cast<std::size_t*>(columns.vector().data()),
+                    reinterpret_cast<std::size_t const*>(columns.vector().data()),
                     columns.size());
 
                 return f.matrix(m, std::move(result));
@@ -433,7 +433,7 @@ namespace phylanx { namespace execution_tree
                 ir::node_data<std::int64_t>&& rows) const
             {
                 auto result = blaze::rows(sm,
-                    reinterpret_cast<std::size_t*>(rows.vector().data()),
+                    reinterpret_cast<std::size_t const*>(rows.vector().data()),
                     rows.size());
 
                 return f.matrix(m, std::move(result));

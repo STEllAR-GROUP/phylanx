@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto v = arg.vector();
         auto k = kernel.vector();
         std::size_t k_size = kernel.size();
-        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;;
+        std::size_t dilated_k_size = dilation_rate * (k_size - 1) + 1;
         std::size_t result_size = arg.size() - dilated_k_size + 1;
 
         blaze::DynamicVector<double> result(result_size);
@@ -267,26 +267,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
             i_rel = i - pad_left;
             if (i_rel < 0)
             {
-                std::size_t kernel_size =
+                std::size_t kernel_size;
+                std::size_t remainder = -i_rel % dilation_rate;
+                if (dilated_k_size + i_rel > v_size)
+                {
+                    kernel_size =
+                        blaze::ceil(static_cast<float>(v_size - remainder) /
+                            static_cast<float>(dilation_rate));
+                    if (remainder == 0)
+                        result[i] = convolve_step(v,
+                            blaze::subvector(k,
+                                blaze::ceil(static_cast<float>(-i_rel) /
+                                    static_cast<float>(dilation_rate)),
+                                kernel_size),
+                            dilation_rate, kernel_size);
+                    else
+                        result[i] = convolve_step(v,
+                            blaze::subvector(k,
+                                blaze::ceil(static_cast<float>(-i_rel) /
+                                    static_cast<float>(dilation_rate)),
+                                kernel_size),
+                            dilation_rate, kernel_size,
+                            dilation_rate - remainder);
+                }
+                else
+                {
+                    kernel_size =
                     blaze::ceil(static_cast<float>(dilated_k_size + i_rel) /
                         static_cast<float>(dilation_rate));
-                std::size_t remainder = -i_rel % dilation_rate;
-                if (remainder == 0)
-                    result[i] = convolve_step(
-                        blaze::subvector(v, 0, dilated_k_size + i_rel),
-                        blaze::subvector(k,
-                            blaze::ceil(static_cast<float>(-i_rel) /
-                                static_cast<float>(dilation_rate)),
-                            kernel_size),
-                        dilation_rate, kernel_size);
-                else
-                    result[i] = convolve_step(
-                        blaze::subvector(v, 0, dilated_k_size + i_rel),
-                        blaze::subvector(k,
-                            blaze::ceil(static_cast<float>(-i_rel) /
-                                static_cast<float>(dilation_rate)),
-                            kernel_size),
-                        dilation_rate, kernel_size, dilation_rate - remainder);
+                    if (remainder == 0)
+                        result[i] = convolve_step(
+                            blaze::subvector(v, 0, dilated_k_size + i_rel),
+                            blaze::subvector(k,
+                                blaze::ceil(static_cast<float>(-i_rel) /
+                                    static_cast<float>(dilation_rate)),
+                                kernel_size),
+                            dilation_rate, kernel_size);
+                    else
+                        result[i] = convolve_step(
+                            blaze::subvector(v, 0, dilated_k_size + i_rel),
+                            blaze::subvector(k,
+                                blaze::ceil(static_cast<float>(-i_rel) /
+                                    static_cast<float>(dilation_rate)),
+                                kernel_size),
+                            dilation_rate, kernel_size,
+                            dilation_rate - remainder);
+                }
             }
             else if (i_rel > static_cast<std::int64_t>(v_size) -
                     static_cast<std::int64_t>(dilated_k_size))
