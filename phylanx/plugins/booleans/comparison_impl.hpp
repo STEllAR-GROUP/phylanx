@@ -116,17 +116,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             extract_value_vector(
                 rhs_data, std::move(rhs), sizes[0], name_, codename_);
 
-            auto result = ir::node_data<std::uint8_t>{
-                blaze::map(lhs_data, rhs_data,
-                    [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })
-            };
-
             if (propagate_type)
             {
-                return primitive_argument_type(ir::node_data<T>{std::move(result)});
+                return primitive_argument_type(ir::node_data<T>{
+                    blaze::map(lhs_data, rhs_data, [&](T x, T y) -> T {
+                        return Op{}(x, y) ? T(1) : T(0);
+                    })});
             }
 
-            return result;
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                    [&](T x, T y) -> std::uint8_t { return Op{}(x, y); })});
         }
 
         return comparison1d1d(std::move(lhs), std::move(rhs), propagate_type);
@@ -188,17 +188,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             extract_value_matrix(
                 rhs_data, std::move(rhs), sizes[0], sizes[1], name_, codename_);
 
-            auto result = ir::node_data<std::uint8_t>{
-                blaze::map(lhs_data, rhs_data,
-                    [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })
-            };
-
             if (propagate_type)
             {
-                return primitive_argument_type(ir::node_data<T>{std::move(result)});
+                return primitive_argument_type(ir::node_data<T>{
+                    blaze::map(lhs_data, rhs_data, [&](T x, T y) -> T {
+                        return Op{}(x, y) ? T(1) : T(0);
+                    })});
             }
 
-            return result;
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                    [&](T x, T y) -> std::uint8_t { return Op{}(x, y); })});
         }
 
         return comparison2d2d(std::move(lhs), std::move(rhs), propagate_type);
@@ -261,20 +261,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             extract_value_tensor(rhs_data, std::move(rhs), sizes[0], sizes[1],
                 sizes[2], name_, codename_);
 
-            auto result = ir::node_data<std::uint8_t>{
-                blaze::map(lhs_data, rhs_data,
-                    [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })
-            };
-
             if (propagate_type)
             {
-                return primitive_argument_type(ir::node_data<T>{std::move(result)});
+                return primitive_argument_type(ir::node_data<T>{
+                    blaze::map(lhs_data, rhs_data, [&](T x, T y) -> T {
+                        return Op{}(x, y) ? T(1) : T(0);
+                    })});
             }
 
-            return result;
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                    [&](T x, T y) -> std::uint8_t { return Op{}(x, y); })});
         }
 
-        return comparison2d2d(std::move(lhs), std::move(rhs), propagate_type);
+        return comparison3d3d(std::move(lhs), std::move(rhs), propagate_type);
     }
 #endif
 
