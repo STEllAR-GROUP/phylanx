@@ -5,7 +5,6 @@
 
 # #962: `__eq` operation: comparing n-by-m and n-by-1 arrays
 
-
 import numpy as np
 from phylanx import Phylanx
 
@@ -24,4 +23,3 @@ def np_foo():
 
 
 assert (np_foo() == foo()).all()
-
