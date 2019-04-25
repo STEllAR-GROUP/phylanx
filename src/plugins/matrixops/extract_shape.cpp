@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> extract_shape::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -169,10 +169,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (operands.size() == 1)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type && arg)
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f)
                 -> primitive_argument_type
                 {
+                    auto&& arg = f.get();
+
                     switch (extract_numeric_value_dimension(
                         arg, this_->name_, this_->codename_))
                     {
@@ -205,16 +208,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "first operand has unsupported "
                                     "number of dimensions"));
                     }
-                }),
-                value_operand(operands[0], args,
-                    name_, codename_, std::move(ctx)));
+                },
+                value_operand(operands[0], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_)](
-                    primitive_argument_type && arg, std::int64_t index)
+                    hpx::future<primitive_argument_type>&& f1,
+                    hpx::future<std::int64_t>&& f2)
             ->  primitive_argument_type
             {
+                auto&& arg = f1.get();
+                auto&& index = f2.get();
+
                 switch (extract_numeric_value_dimension(
                     arg, this_->name_, this_->codename_))
                 {
@@ -249,9 +258,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "first operand has unsupported "
                                 "number of dimensions"));
                 }
-            }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            scalar_integer_operand_strict(operands[1], args,
+            },
+            std::move(op0),
+            scalar_integer_operand_strict(operands[1], std::move(args),
                 name_, codename_, ctx));
     }
 }}}

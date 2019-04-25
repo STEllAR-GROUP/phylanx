@@ -37,11 +37,10 @@ namespace phylanx {  namespace execution_tree {  namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args,
-            eval_context ctx) const override;
+            primitive_arguments_type&& args, eval_context ctx) const override;
 
-        using val_type   = double;
-        using mat_type   = ir::node_data<val_type>;
+        using val_type = double;
+        using mat_type = ir::node_data<val_type>;
         using alpha_type = ir::node_data<val_type>;
 
     public:

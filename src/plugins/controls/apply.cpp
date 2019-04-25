@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     hpx::future<primitive_argument_type> apply::eval(
-        primitive_arguments_type const& params, eval_context ctx) const
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -71,24 +71,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the first argument to apply must be an invocable object"));
         }
 
+        auto&& op0 = value_operand(
+            std::move(operands_[0]), params, name_, codename_,
+            add_mode(ctx,
+                eval_mode(eval_dont_wrap_functions |
+                    eval_dont_evaluate_partials | eval_dont_evaluate_lambdas)));
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), ctx](
-                primitive_argument_type&& func, ir::range&& list) mutable
+                hpx::future<primitive_argument_type>&& func,
+                hpx::future<ir::range>&& list) mutable
             {
-                if (list.is_ref())
+                auto&& list_data = list.get();
+
+                if (list_data.is_ref())
                 {
-                    return value_operand_sync(func, std::move(list.args()),
+                    return value_operand_sync(func.get(), list_data.args(),
                         this_->name_, this_->codename_, std::move(ctx));
                 }
-                return value_operand_sync(func, list.copy(), this_->name_,
-                    this_->codename_, std::move(ctx));
-            }),
-            value_operand(operands_[0], params, name_, codename_,
-                add_mode(ctx,
-                    eval_mode(eval_dont_wrap_functions |
-                        eval_dont_evaluate_partials |
-                        eval_dont_evaluate_lambdas))),
-            list_operand(operands_[1], params, name_, codename_, ctx));
+
+                return value_operand_sync(func.get(), list_data.copy(),
+                    this_->name_, this_->codename_, std::move(ctx));
+            },
+            std::move(op0),
+            list_operand(std::move(operands_[1]), std::move(params),
+                name_, codename_, std::move(ctx)));
     }
 }}}

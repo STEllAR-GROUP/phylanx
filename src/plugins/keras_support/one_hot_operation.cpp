@@ -107,17 +107,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> one_hot_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "one_hot_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the one_hot_operation primitive requires exactly "
-                    "two operands",
-                    name_, codename_));
+                    "two operands"));
         }
 
         for (auto const& i : operands)
@@ -126,19 +124,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "one_hot_operation::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the one_hot_operation primitive requires that the "
-                        "arguments given by the operands array are valid",
-                        name_, codename_));
+                        "arguments given by the operands array are valid"));
             }
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 arg_type a = extract_integer_value_strict(
                     std::move(args[0]), this_->name_, this_->codename_);
 
@@ -147,35 +143,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 val_type num_classes = extract_scalar_integer_value_strict(
                     std::move(args[1]), this_->name_, this_->codename_);
 
-                if(num_classes <0 )
+                if (num_classes < 0)
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "one_hot_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "the one_hot operation requires num_classes to be "
-                            "non-negative",
-                            this_->name_, this_->codename_));
+                            "non-negative"));
+                }
 
                 switch (a_dims)
                 {
                 case 0:
-                    return this_->one_hot0d(std::move(a),num_classes);
+                    return this_->one_hot0d(std::move(a), num_classes);
+
                 case 1:
-                    return this_->one_hot1d(std::move(a),num_classes);
+                    return this_->one_hot1d(std::move(a), num_classes);
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 2:
-                    return this_->one_hot2d(std::move(a),num_classes);
+                    return this_->one_hot2d(std::move(a), num_classes);
 #endif
                 default:
                     break;
                 }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "one_hot_operation::eval",
-                    util::generate_error_message("operand a has an invalid "
-                                                 "number of dimensions",
-                        this_->name_, this_->codename_));
+                    this_->generate_error_message(
+                        "operand a has an invalid number of dimensions"));
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}
 

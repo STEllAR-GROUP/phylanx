@@ -5,7 +5,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/solvers/decomposition.hpp>
 
@@ -115,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> decomposition::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -140,25 +140,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
 
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](args_type&& args)
-                -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](args_type&& args)
+            -> primitive_argument_type
+            {
+                if (args[0].num_dimensions() != 2)
                 {
-                    if (args[0].num_dimensions() != 2)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "decomposition_operation::eval",
-                            util::generate_error_message(
-                                "the decomposition primitive "
-                                "requires the operand to be a matrix ",
-                                this_->name_, this_->codename_));
-                    }
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "decomposition_operation::eval",
+                        util::generate_error_message(
+                            "the decomposition primitive "
+                            "requires the operand to be a matrix ",
+                            this_->name_, this_->codename_));
+                }
 
-                    return this_->calculate_decomposition(std::move(args));
-                }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                return this_->calculate_decomposition(std::move(args));
+            }),
+            detail::map_operands(operands, functional::numeric_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}
 

@@ -136,8 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> elu_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if(operands.size() != 2)
         {
@@ -157,19 +156,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "given by the operands array are valid"));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)]
-            (primitive_argument_type&& arg_mat,
-                primitive_argument_type&& arg_alpha)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                hpx::future<primitive_argument_type>&& f_mat,
+                hpx::future<primitive_argument_type>&& f_alpha)
             {
+                auto&& arg_mat = f_mat.get();
+                auto&& arg_alpha = f_alpha.get();
+
                 mat_type mat = extract_numeric_value(
                     std::move(arg_mat),
                     this_->name_, this_->codename_);
 
                 alpha_type alpha = extract_numeric_value(
-                    std::move(arg_alpha),
-                    this_->name_, this_->codename_);
+                    std::move(arg_alpha), this_->name_, this_->codename_);
 
                 if(alpha.num_dimensions() != 0)
                 {
@@ -185,10 +188,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->elu0d(std::move(mat), alpha.scalar());
+
                 case 1:
                     return this_->elu1d(std::move(mat), alpha.scalar());
+
                 case 2:
                     return this_->elu2d(std::move(mat), alpha.scalar());
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->elu3d(std::move(mat), alpha.scalar());
@@ -199,8 +205,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         this_->generate_error_message(
                             "operand a has an invalid number of dimensions"));
                 }
-            }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx));
+            },
+            std::move(op0),
+            value_operand(operands[1], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

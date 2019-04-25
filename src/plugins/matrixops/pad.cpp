@@ -360,7 +360,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> pad::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() < 3 || operands.size() > 4)
         {
@@ -383,21 +383,26 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 if (!is_string_operand(args[2]))
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "pad::eval",
                         this_->generate_error_message(
                             "the padding mode should be a string"));
+                }
+
                 if (extract_string_value(args[2]) != "constant")
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "pad::eval",
                         this_->generate_error_message(
                             "the pad primitive has only been implemented "
                             "for constant mode"));
+                }
 
                 std::size_t ndim = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
@@ -426,23 +431,26 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 {
                 case 0:
                     return std::move(args[0]);
+
                 case 1:
                     width = extract_value_vector<std::int64_t>(
                         std::move(args[1]), 2, this_->name_, this_->codename_);
                     break;
+
                 case 2:
                     width =
                         extract_value_matrix<std::int64_t>(std::move(args[1]),
                             ndim, 2, this_->name_, this_->codename_);
                     break;
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     width =
                         extract_value_matrix<std::int64_t>(std::move(args[1]),
                             ndim, 2, this_->name_, this_->codename_);
+                    break;
 #endif
                 default:
-                    break;
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "pad::pad_helper",
                         this_->generate_error_message(
@@ -461,6 +469,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                             extract_integer_value_strict(std::move(args[3]),
                                 this_->name_,
                                 this_->codename_));
+
                     case node_data_type_bool:
                         return this_->pad_helper(
                             extract_boolean_value_strict(std::move(args[0]),
@@ -469,14 +478,14 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                             extract_boolean_value_strict(std::move(args[3]),
                                 this_->name_,
                                 this_->codename_));
-                    case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+
+                    case node_data_type_unknown: HPX_FALLTHROUGH;
                     case node_data_type_double:
                         return this_->pad_helper(
-                            extract_numeric_value_strict(std::move(args[0]),
+                            extract_numeric_value(std::move(args[0]),
                                 this_->name_, this_->codename_),
                             std::move(width),
-                            extract_numeric_value_strict(
+                            extract_numeric_value(
                                 std::move(args[3]), this_->codename_));
 
                     default:
@@ -493,17 +502,18 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                                 this_->name_, this_->codename_),
                             std::move(width),
                             ir::node_data<std::int64_t>{0});
+
                     case node_data_type_bool:
                         return this_->pad_helper(
                             extract_boolean_value_strict(std::move(args[0]),
                                 this_->name_, this_->codename_),
                             std::move(width),
                             ir::node_data<std::uint8_t>{0});
-                    case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+
+                    case node_data_type_unknown: HPX_FALLTHROUGH;
                     case node_data_type_double:
                         return this_->pad_helper(
-                            extract_numeric_value_strict(std::move(args[0]),
+                            extract_numeric_value(std::move(args[0]),
                                 this_->name_, this_->codename_),
                             std::move(width),
                             ir::node_data<double>{0.0});
@@ -518,7 +528,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         "the pad primitive requires for all arguments to "
                         "be numeric data types"));
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

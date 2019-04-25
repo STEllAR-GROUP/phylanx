@@ -6,7 +6,7 @@
 //   http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/iostreams.hpp>

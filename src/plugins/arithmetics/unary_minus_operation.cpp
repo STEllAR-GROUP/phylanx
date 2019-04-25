@@ -202,7 +202,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> unary_minus_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -225,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type && op)
+            [this_ = std::move(this_)](primitive_argument_type&& op)
             -> primitive_argument_type
             {
                 std::size_t lhs_dims = extract_numeric_value_dimension(
@@ -249,6 +249,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "operand has unsupported number of dimensions"));
                 }
             }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
+            value_operand(operands[0], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

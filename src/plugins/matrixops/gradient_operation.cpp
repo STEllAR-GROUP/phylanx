@@ -229,7 +229,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> gradient_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -260,33 +260,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_arguments_type&& args)
-                -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
+                switch (extract_numeric_value_dimension(
+                    args[0], this_->name_, this_->codename_))
                 {
-                    switch (extract_numeric_value_dimension(
-                        args[0], this_->name_, this_->codename_))
-                    {
-                    case 0:
-                        return this_->gradient0d(std::move(args));
+                case 0:
+                    return this_->gradient0d(std::move(args));
 
-                    case 1:
-                        return this_->gradient1d(std::move(args));
+                case 1:
+                    return this_->gradient1d(std::move(args));
 
-                    case 2:
-                        return this_->gradient2d(std::move(args));
+                case 2:
+                    return this_->gradient2d(std::move(args));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "gradient_operation::eval",
-                            this_->generate_error_message(
-                                "left hand side operand has unsupported "
-                                    "number of dimensions"));
-                    }
-                }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "gradient_operation::eval",
+                        this_->generate_error_message(
+                            "left hand side operand has unsupported "
+                                "number of dimensions"));
+                }
+            }),
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

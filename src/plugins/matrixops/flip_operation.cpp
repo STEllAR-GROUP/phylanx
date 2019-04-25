@@ -923,7 +923,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> flip_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 1)
         {
@@ -948,74 +948,92 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (this_->mode_ == flip_mode_up_down ||
                 this_->mode_ == flip_mode_left_right)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "flip::eval",
                     this_->generate_error_message(
                         "the flip operation in up/down and left/right mode "
                         "requires exactly one operand"));
+            }
+
+            auto&& op0 =
+                value_operand(operands[0], args, name_, codename_, ctx);
 
             return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
-                    [this_ = std::move(this_)](primitive_argument_type&& arg,
-                        ir::range&& axis)->primitive_argument_type {
-
-                switch (extract_common_type(arg))
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f1,
+                        hpx::future<ir::range>&& f2)
+                -> primitive_argument_type
                 {
-                case node_data_type_bool:
-                    return this_->flipnd(
-                        extract_boolean_value(
-                            std::move(arg), this_->name_, this_->codename_),
-                        std::move(axis));
-                case node_data_type_int64:
-                    return this_->flipnd(
-                        extract_integer_value(
-                            std::move(arg), this_->name_, this_->codename_),
-                        std::move(axis));
-                case node_data_type_double:
-                    return this_->flipnd(
-                        extract_numeric_value(
-                            std::move(arg), this_->name_, this_->codename_),
-                        std::move(axis));
-                default:
-                    break;
-                }
+                    auto&& arg = f1.get();
+                    auto&& axis = f2.get();
 
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "flip::eval",
-                    this_->generate_error_message(
-                        "the flip primitive requires for all arguments "
-                        "to be numeric data types"));
-            }),
-                value_operand(operands[0], args, name_, codename_, ctx),
-                list_operand(operands[1], args, name_, codename_, ctx));
+                    switch (extract_common_type(arg))
+                    {
+                    case node_data_type_bool:
+                        return this_->flipnd(
+                            extract_boolean_value(
+                                std::move(arg), this_->name_, this_->codename_),
+                            std::move(axis));
+
+                    case node_data_type_int64:
+                        return this_->flipnd(
+                            extract_integer_value(
+                                std::move(arg), this_->name_, this_->codename_),
+                            std::move(axis));
+
+                    case node_data_type_double:
+                        return this_->flipnd(
+                            extract_numeric_value(
+                                std::move(arg), this_->name_, this_->codename_),
+                            std::move(axis));
+
+                    default:
+                        break;
+                    }
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "flip::eval",
+                        this_->generate_error_message(
+                            "the flip primitive requires for all arguments "
+                            "to be numeric data types"));
+                },
+                std::move(op0),
+                list_operand(operands[1], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
+
         if (operands.size() == 1 || mode_ == flip_mode_axes)
         {
             return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
-                    [this_ = std::move(this_)](primitive_argument_type&& arg)
-                        -> primitive_argument_type {
-                        switch (this_->mode_)
-                        {
-                        case flip_mode_up_down:
-                            return this_->flipud_helper(std::move(arg));
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& arg)
+                -> primitive_argument_type
+                {
+                    switch (this_->mode_)
+                    {
+                    case flip_mode_up_down:
+                        return this_->flipud_helper(arg.get());
 
-                        case flip_mode_left_right:
-                            return this_->fliplr_helper(std::move(arg));
+                    case flip_mode_left_right:
+                        return this_->fliplr_helper(arg.get());
 
-                        case flip_mode_axes:
-                            return this_->flipnd_helper(std::move(arg));
+                    case flip_mode_axes:
+                        return this_->flipnd_helper(arg.get());
 
-                        default:
-                            break;
-                        }
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "flip_operation::eval",
-                            this_->generate_error_message(
-                                "unsupported flip mode requested"));
-                    }),
-                value_operand(operands[0], args, name_, codename_, ctx));
+                    default:
+                        break;
+                    }
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "flip_operation::eval",
+                        this_->generate_error_message(
+                            "unsupported flip mode requested"));
+                },
+                value_operand(operands[0], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "flip::eval",
             this_->generate_error_message(

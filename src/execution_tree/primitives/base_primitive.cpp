@@ -9,13 +9,12 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/repr_manip.hpp>
-#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/actions.hpp>
 #include <hpx/include/async.hpp>
@@ -529,7 +528,6 @@ namespace phylanx { namespace execution_tree
         case 3: HPX_FALLTHROUGH;    // std::string
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         case 8:                     // phylanx::ir::dictionary
             return val;
 
@@ -563,6 +561,17 @@ namespace phylanx { namespace execution_tree
                     return primitive_argument_type{v};
                 }
                 return primitive_argument_type{v.ref()};
+            }
+            break;
+
+        case 7:     // phylanx::ir::range
+            {
+                auto const& r = util::get<7>(val);
+                if (r.is_ref())
+                {
+                    return primitive_argument_type{r};
+                }
+                return primitive_argument_type{r.ref()};
             }
             break;
 
@@ -3931,9 +3940,9 @@ namespace phylanx { namespace execution_tree
         return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
-    hpx::future<ir::range> list_operand(primitive_argument_type const& val,
+    hpx::future<ir::range> list_operand(primitive_argument_type&& val,
         primitive_arguments_type const& args, std::string const& name,
-        std::string&& codename, eval_context ctx)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -3958,9 +3967,9 @@ namespace phylanx { namespace execution_tree
             extract_list_value(std::move(val), name, codename));
     }
 
-    hpx::future<ir::range> list_operand(primitive_argument_type const& val,
+    hpx::future<ir::range> list_operand(primitive_argument_type&& val,
         primitive_arguments_type&& args, std::string const& name,
-        std::string&& codename, eval_context ctx)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -4057,10 +4066,9 @@ namespace phylanx { namespace execution_tree
             extract_list_value_strict(val, name, codename));
     }
 
-    hpx::future<ir::range> list_operand_strict(
-        primitive_argument_type const& val,
+    hpx::future<ir::range> list_operand_strict(primitive_argument_type&& val,
         primitive_arguments_type const& args, std::string const& name,
-        std::string&& codename, eval_context ctx)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -4085,9 +4093,9 @@ namespace phylanx { namespace execution_tree
             extract_list_value_strict(std::move(val), name, codename));
     }
 
-    hpx::future<ir::range> list_operand_strict(
-        primitive_argument_type const& val, primitive_arguments_type&& args,
-        std::string const& name, std::string&& codename, eval_context ctx)
+    hpx::future<ir::range> list_operand_strict(primitive_argument_type&& val,
+        primitive_arguments_type&& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)

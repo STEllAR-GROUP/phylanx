@@ -37,30 +37,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("binary_crossentropy",
         std::vector<std::string>{
-            "binary_crossentropy(_1_target,_2_output,"
+            "binary_crossentropy(_1_target, _2_output,"
                 "__arg(_3_from_logits,false))"
         },
         &create_bin_cross_operation, &create_primitive<bin_cross_operation>,
         R"(target, output, from_logits
-   Args:
+        Args:
 
-       target (array_like) : input array
-       output (array_like) : this array is not output back to the caller
-                             but is passed back with the return values.
-       from_logits (optional, boolean): boolean value, default = False
+            target (array_like) : input array
+            output (array_like) : this array is not output back to the caller
+                                  but is passed back with the return values.
+            from_logits (optional, boolean): boolean value, default = False
 
-   Returns:
-       The value should be the same as would be returned by the following
-       Python function:
+        Returns:
+            The value should be the same as would be returned by the following
+            Python function:
 
-    def bin_cross(target, output, from_logits=False):
-        if not from_logits:
-            output = np.clip(output, 1e-7, 1 - 1e-7)
-            output = np.log(output / (1 - output))
-        return (target * -np.log(sigmoid(output)) +
-                (1 - target) * -np.log(1 - sigmoid(output)))
-   )")
+            def bin_cross(target, output, from_logits=False):
+                if not from_logits:
+                    output = np.clip(output, 1e-7, 1 - 1e-7)
+                    output = np.log(output / (1 - output))
+                return (target * -np.log(sigmoid(output)) +
+                     (1 - target) * -np.log(1 - sigmoid(output)))
+        )")
     };
+
     constexpr double clip_low = 1e-7;
     constexpr double clip_high = 1 - clip_low;
 
@@ -71,76 +72,83 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     primitive_argument_type bin_cross_operation::bin_cross0d(
-        arg_type&& target,arg_type&& output,bool from_logits) const
+        arg_type&& target, arg_type&& output, bool from_logits) const
     {
         double output_ = output.scalar();
         double target_ = target.scalar();
-        if(!from_logits) {
-            double tmp = (std::min)(clip_high,(std::max)(clip_low,output_));
-            output_ = std::log(tmp/(1-tmp));
+        if (!from_logits)
+        {
+            double tmp = (std::min)(clip_high, (std::max)(clip_low, output_));
+            output_ = std::log(tmp / (1 - tmp));
         }
-        double sig = 1/(1+exp(-output_));
-        target_ = -target_*std::log(sig) - (1-target_)*std::log(1-sig);
-        primitive_argument_type part1(std::move(target_)), part2(std::move(output_));
-        primitive_arguments_type both{part1, part2};
-        phylanx::ir::range tup(both);
-        return primitive_argument_type{ std::move(tup) };
+
+        double sig = 1 / (1 + exp(-output_));
+        target_ = -target_ * std::log(sig) - (1 - target_) * std::log(1 - sig);
+
+        primitive_arguments_type result;
+        result.reserve(2);
+        result.emplace_back(std::move(target_));
+        result.emplace_back(std::move(output_));
+        return primitive_argument_type{std::move(result)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type bin_cross_operation::bin_cross1d(
-        arg_type&& target,arg_type&& output,bool from_logits) const
+        arg_type&& target, arg_type&& output, bool from_logits) const
     {
         assign_vector<arg_type> output_(output);
         assign_vector<arg_type> target_(target);
-        if(!from_logits) {
-            output_ = blaze::map(output.vector(),[](double o_){
-                double tmp = (std::min)(clip_high,(std::max)(clip_low,o_));
-                return std::log(tmp/(1-tmp));
+        if (!from_logits)
+        {
+            output_ = blaze::map(output.vector(), [](double o_) {
+                double tmp = (std::min)(clip_high, (std::max)(clip_low, o_));
+                return std::log(tmp / (1 - tmp));
             });
         }
-        target_ = blaze::map(target.vector(), output.vector(),[](double t_,double o_){
-            double sig = 1/(1+exp(-o_));
-            return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
-        });
-        primitive_argument_type part1(std::move(target)), part2(std::move(output));
-        primitive_arguments_type both{part1, part2};
-        phylanx::ir::range tup(both);
-        return primitive_argument_type{ std::move(tup) };
+        target_ = blaze::map(
+            target.vector(), output.vector(), [](double t_, double o_) {
+                double sig = 1 / (1 + exp(-o_));
+                return -t_ * std::log(sig) - (1 - t_) * std::log(1 - sig);
+            });
+
+        primitive_arguments_type result;
+        result.reserve(2);
+        result.emplace_back(std::move(target));
+        result.emplace_back(std::move(output));
+        return primitive_argument_type{std::move(result)};
     }
+
     ///////////////////////////////////////////////////////////////////////////
-
-    using matrix_type =
-         blaze::DynamicMatrix<double>;
-
-    using vector_type =
-         blaze::DynamicVector<double>;
-
+    using matrix_type = blaze::DynamicMatrix<double>;
+    using vector_type = blaze::DynamicVector<double>;
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    using tensor_type =
-         blaze::DynamicTensor<double>;
+    using tensor_type = blaze::DynamicTensor<double>;
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type bin_cross_operation::bin_cross2d(
-        arg_type&& target, arg_type&& output,bool from_logits) const
+        arg_type&& target, arg_type&& output, bool from_logits) const
     {
         assign_matrix<arg_type> output_(output);
         assign_matrix<arg_type> target_(target);
-        if(!from_logits) {
-            output_ = blaze::map(output.matrix(),[](double o_){
-                double tmp = (std::min)(clip_high,(std::max)(clip_low,o_));
-                return std::log(tmp/(1-tmp));
+        if (!from_logits)
+        {
+            output_ = blaze::map(output.matrix(), [](double o_) {
+                double tmp = (std::min)(clip_high, (std::max)(clip_low, o_));
+                return std::log(tmp / (1 - tmp));
             });
         }
-        target_ = blaze::map(target.matrix(), output.matrix(),[](double t_,double o_){
-            double sig = 1/(1+exp(-o_));
-            return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
-        });
-        primitive_argument_type part1(std::move(target)), part2(std::move(output));
-        primitive_arguments_type both{part1, part2};
-        phylanx::ir::range tup(both);
-        return primitive_argument_type{ std::move(tup) };
+        target_ = blaze::map(
+            target.matrix(), output.matrix(), [](double t_, double o_) {
+                double sig = 1 / (1 + exp(-o_));
+                return -t_ * std::log(sig) - (1 - t_) * std::log(1 - sig);
+            });
+
+        primitive_arguments_type result;
+        result.reserve(2);
+        result.emplace_back(std::move(target));
+        result.emplace_back(std::move(output));
+        return primitive_argument_type{std::move(result)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -150,28 +158,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         assign_tensor<arg_type> output_(output);
         assign_tensor<arg_type> target_(target);
-        if(!from_logits) {
-            output_ = blaze::map(output.tensor(),[](double o_){
-                double tmp = (std::min)(clip_high,(std::max)(clip_low,o_));
-                return std::log(tmp/(1-tmp));
+        if (!from_logits)
+        {
+            output_ = blaze::map(output.tensor(), [](double o_) {
+                double tmp = (std::min)(clip_high, (std::max)(clip_low, o_));
+                return std::log(tmp / (1 - tmp));
             });
         }
-        target_ = blaze::map(target.tensor(), output.tensor(),[](double t_,double o_){
-            double sig = 1/(1+exp(-o_));
-            return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
-        });
-        primitive_argument_type part1(std::move(target)), part2(std::move(output));
-        primitive_arguments_type both{part1, part2};
-        phylanx::ir::range tup(both);
-        return primitive_argument_type{ std::move(tup) };
+        target_ = blaze::map(
+            target.tensor(), output.tensor(), [](double t_, double o_) {
+                double sig = 1 / (1 + exp(-o_));
+                return -t_ * std::log(sig) - (1 - t_) * std::log(1 - sig);
+            });
+
+        primitive_arguments_type result;
+        result.reserve(2);
+        result.emplace_back(std::move(target));
+        result.emplace_back(std::move(output));
+        return primitive_argument_type{std::move(result)};
     }
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> bin_cross_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         for (auto const& i : operands)
         {
@@ -188,21 +199,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 // Extract logits
-                bool from_logits =
-                    static_cast<bool>(false);
+                bool from_logits = false;
 
                 // from_logits is the third argument
-                if (args.size() > 2)
+                if (args.size() > 2 && valid(args[2]))
                 {
-                    if (valid(args[2]))
-                        from_logits =
-                            execution_tree::extract_scalar_boolean_value(
-                                args[2], this_->name_, this_->codename_);
+                    from_logits = extract_scalar_boolean_value(
+                        std::move(args[2]), this_->name_, this_->codename_);
                 }
 
                 // Extract the matrix, the result should always be double
@@ -219,13 +227,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->bin_cross0d(
-                        std::move(target),std::move(output),from_logits);
+                        std::move(target),std::move(output), from_logits);
+
                 case 1:
                     return this_->bin_cross1d(
-                        std::move(target),std::move(output),from_logits);
+                        std::move(target),std::move(output), from_logits);
+
                 case 2:
                     return this_->bin_cross2d(
-                        std::move(target),std::move(output),from_logits);
+                        std::move(target),std::move(output), from_logits);
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->bin_cross3d(
@@ -234,14 +245,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "bin_cross_operation::eval",
-                        util::generate_error_message("operand a has an invalid "
-                                                        "number of dimensions",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "operand a has an invalid number of dimensions"));
                 }
             }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}
 

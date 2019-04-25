@@ -179,13 +179,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> relu_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (!valid(operands[0]))
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "relu_operation::eval",
                 generate_error_message("the relu primitive requires that the "
-                                       "first argument is valid"));
+                    "first argument is valid"));
+        }
         if (operands.empty() || operands.size() > 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -195,10 +197,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 double alpha = 0.;
                 double threshold = 0.;
 
@@ -235,6 +237,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[0]), this_->name_, this_->codename_),
                         alpha, max_value, threshold);
                 }
+
                 case node_data_type_bool:
                 {
                     std::uint8_t max_value;
@@ -252,8 +255,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[0]), this_->name_, this_->codename_),
                         alpha, max_value, threshold);
                 }
-                case node_data_type_unknown:
-                    HPX_FALLTHROUGH;
+
+                case node_data_type_unknown: HPX_FALLTHROUGH;
                 case node_data_type_double:
                 {
                     double max_value = 0.0;
@@ -280,11 +283,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the relu primitive requires for all arguments to "
                         "be numeric data types"));
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "relu_operation::eval",
-            this_->generate_error_message("unsupported mode requested"));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

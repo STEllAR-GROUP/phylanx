@@ -1038,7 +1038,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> random::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() > 2)
         {
@@ -1057,11 +1057,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "given by the operands array are valid"));
         }
 
-        // the first argument encodes the requested dimensionality, this
-        // can either be an instance of node_data or a list of values
-        hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>> dims =
-            dimensions_operand(operands[0], args, name_, codename_, ctx);
-
         // the second (optional) argument encodes the distribution to use
         hpx::future<distribution_parameters_type> params;
         if (operands.size() < 2)
@@ -1075,13 +1070,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operands[1], args, name_, codename_, std::move(ctx));
         }
 
+        // the first argument encodes the requested dimensionality, this
+        // can either be an instance of node_data or a list of values
+        using dimensions_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
+
+        hpx::future<dimensions_type> dims = dimensions_operand(
+            operands[0], std::move(args), name_, codename_, std::move(ctx));
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_)](
-                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> && dims,
-                    distribution_parameters_type && params)
+                    hpx::future<dimensions_type>&& f1,
+                    hpx::future<distribution_parameters_type>&& f2)
             ->  primitive_argument_type
             {
+                auto&& dims = f1.get();
+                auto&& params = f2.get();
+
                 switch (detail::num_dimensions(dims))
                 {
                 case 0:
@@ -1104,7 +1109,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "left hand side operand has unsupported "
                                 "number of dimensions"));
                 }
-            }), std::move(dims), std::move(params));
+            },
+            std::move(dims), std::move(params));
     }
 
     primitive_argument_type random::random0d(

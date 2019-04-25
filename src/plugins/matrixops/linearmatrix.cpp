@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linearmatrix::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 5)
         {
@@ -157,21 +157,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+        auto&& op0 =
+            scalar_integer_operand(operands[0], args, name_, codename_, ctx);
+        auto&& op1 =
+            scalar_integer_operand(operands[1], args, name_, codename_, ctx);
+        auto&& op2 = value_operand(operands[2], args, name_, codename_, ctx);
+        auto&& op3 = value_operand(operands[3], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](std::int64_t nx, std::int64_t ny,
-                    primitive_argument_type&& x0,
-                    primitive_argument_type&& dx,
-                    primitive_argument_type&& dy)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<std::int64_t>&& nx,
+                    hpx::future<std::int64_t>&& ny,
+                    hpx::future<primitive_argument_type>&& x0,
+                    hpx::future<primitive_argument_type>&& dx,
+                    hpx::future<primitive_argument_type>&& dy)
             -> primitive_argument_type
             {
-                return this_->linmatrix(nx, ny, std::move(x0),
-                    std::move(dx), std::move(dy));
-            }),
-            scalar_integer_operand(operands[0], args, name_, codename_, ctx),
-            scalar_integer_operand(operands[1], args, name_, codename_, ctx),
-            value_operand(operands[2], args, name_, codename_, ctx),
-            value_operand(operands[3], args, name_, codename_, ctx),
-            value_operand(operands[4], args, name_, codename_, ctx));
+                return this_->linmatrix(nx.get(), ny.get(), x0.get(),
+                    dx.get(), dy.get());
+            },
+            std::move(op0), std::move(op1), std::move(op2), std::move(op3),
+            value_operand(operands[4], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

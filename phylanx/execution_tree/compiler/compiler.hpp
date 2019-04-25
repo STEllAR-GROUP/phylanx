@@ -11,7 +11,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/util/hashed_string.hpp>

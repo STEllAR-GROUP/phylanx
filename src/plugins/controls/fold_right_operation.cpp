@@ -320,7 +320,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> fold_right_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 3)
         {
@@ -345,7 +345,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // the first argument must be an invokable
-        if (util::get_if<primitive>(&operands_[0]) == nullptr)
+        if (util::get_if<primitive>(&operands[0]) == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "fold_right_operation::eval",
@@ -354,14 +354,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "object", name_, codename_));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_,
+            add_mode(ctx,
+                eval_mode(
+                    eval_dont_evaluate_lambdas | eval_dont_evaluate_partials)));
+        auto&& op1 = value_operand(operands[1], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_), ctx](
-                    primitive_argument_type&& bound_func,
-                    primitive_argument_type&& initial,
-                    primitive_argument_type&& data)
+            [this_ = std::move(this_), ctx](
+                    hpx::future<primitive_argument_type>&& b,
+                    hpx::future<primitive_argument_type>&& i,
+                    hpx::future<primitive_argument_type>&& d)
             -> primitive_argument_type
             {
+                auto&& bound_func = b.get();
+                auto&& initial = i.get();
+                auto&& data = d.get();
+
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -390,11 +400,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return this_->fold_right_array(std::move(bound_func),
                     std::move(initial), std::move(data), std::move(ctx));
-            }),
-            value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_mode(eval_dont_evaluate_lambdas |
-                    eval_dont_evaluate_partials))),
-            value_operand(operands_[1], args, name_, codename_, ctx),
-            value_operand(operands_[2], args, name_, codename_, ctx));
+            },
+            std::move(op0), std::move(op1),
+            value_operand(operands[2], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

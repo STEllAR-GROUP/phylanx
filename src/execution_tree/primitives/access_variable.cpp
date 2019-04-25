@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
-        primitive_arguments_type const& params, eval_context ctx) const
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         // access variable from execution context
         auto const* target = ctx.get_var(target_name_);
@@ -91,7 +91,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // one slicing parameter
                 auto this_ = this->shared_from_this();
-                return value_operand(operands_[1], params, name_, codename_, ctx)
+                return value_operand(operands_[1], std::move(params),
+                        name_, codename_, ctx)
                     .then(hpx::launch::sync,
                         [this_ = std::move(this_), ctx, target = *target](
                                 hpx::future<primitive_argument_type>&& rows)
@@ -107,6 +108,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 3:
             {
                 // two slicing parameters
+                auto&& op1 =
+                    value_operand(operands_[1], params, name_, codename_, ctx);
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
                     [this_ = std::move(this_), ctx, target = *target](
@@ -124,14 +128,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             add_mode(std::move(ctx), eval_mode(
                                 eval_dont_wrap_functions|eval_slicing)));
                     },
-                    value_operand(operands_[1], params, name_, codename_, ctx),
-                    value_operand(operands_[2], params, name_, codename_, ctx));
+                    std::move(op1),
+                    value_operand(operands_[2], std::move(params),
+                        name_, codename_, ctx));
             }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 4:
             {
                 // three slicing parameters
+                auto&& op1 =
+                    value_operand(operands_[1], params, name_, codename_, ctx);
+                auto&& op2 =
+                    value_operand(operands_[2], params, name_, codename_, ctx);
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
                     [this_ = std::move(this_), ctx, target = *target](
@@ -139,21 +149,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             hpx::future<primitive_argument_type>&& rows,
                             hpx::future<primitive_argument_type>&& cols) mutable
                     -> hpx::future<primitive_argument_type>
-                {
-                    primitive_arguments_type args;
-                    args.reserve(3);
-                    args.emplace_back(pages.get());
-                    args.emplace_back(rows.get());
-                    args.emplace_back(cols.get());
+                    {
+                        primitive_arguments_type args;
+                        args.reserve(3);
+                        args.emplace_back(pages.get());
+                        args.emplace_back(rows.get());
+                        args.emplace_back(cols.get());
 
-                    return value_operand(target,
-                        std::move(args), this_->name_, this_->codename_,
-                        add_mode(std::move(ctx), eval_mode(
-                            eval_dont_wrap_functions|eval_slicing)));
+                        return value_operand(target,
+                            std::move(args), this_->name_, this_->codename_,
+                            add_mode(std::move(ctx), eval_mode(
+                                eval_dont_wrap_functions|eval_slicing)));
                     },
-                    value_operand(operands_[1], params, name_, codename_, ctx),
-                    value_operand(operands_[2], params, name_, codename_, ctx),
-                    value_operand(operands_[3], params, name_, codename_, ctx));
+                    std::move(op1),
+                    std::move(op2),
+                    value_operand(operands_[3], std::move(params),
+                        name_, codename_, ctx));
             }
 #endif
         default:

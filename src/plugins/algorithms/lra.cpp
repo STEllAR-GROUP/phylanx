@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lra::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 4 && operands.size() != 5)
         {
@@ -177,8 +177,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 return this_->calculate_lra(std::move(args));
             }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

@@ -614,7 +614,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> conv1d_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() < 2 || operands.size() > 5)
         {
@@ -644,9 +644,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t ndim = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
 
-                if (ndim !=
-                        extract_numeric_value_dimension(
-                            args[1], this_->name_, this_->codename_) ||
+                if (ndim != extract_numeric_value_dimension(
+                        args[1], this_->name_, this_->codename_) ||
                     ndim != 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -660,7 +659,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() > 2)
                 {
                     padding = extract_string_value(
-                        args[2], this_->name_, this_->codename_);
+                        std::move(args[2]), this_->name_, this_->codename_);
 
                     if (padding != "valid" && padding != "same" &&
                         padding != "causal")
@@ -670,6 +669,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->generate_error_message(
                                 "invalid padding. Padding can be either "
                                 "'valid', 'same', or 'causal'"));
+                    }
                     }
                 }
 
@@ -797,6 +797,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(padding), dilation_rate);
             }),
             detail::map_operands(operands, functional::value_operand{},
-                args, name_, codename_, std::move(ctx)));
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

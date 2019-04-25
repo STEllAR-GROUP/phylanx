@@ -556,8 +556,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> tile_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
@@ -582,12 +581,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_argument_type&& arr,
-                                      ir::range&& arg)
-                                      -> primitive_argument_type {
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f1,
+                    hpx::future<ir::range>&& f2)
+            -> primitive_argument_type
+            {
+                auto&& arr = f1.get();
+                auto&& arg = f2.get();
+
                 auto arr_dims_num = extract_numeric_value_dimension(
                     arr, this_->name_, this_->codename_);
 
@@ -612,20 +617,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "tile_operation::eval",
-                            util::generate_error_message(
-                                "operand a has an invalid "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
+                            this_->generate_error_message(
+                                "operand a has an invalid number of dimensions"));
                     }
                 }
                 else
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "tile_operation::eval",
-                        util::generate_error_message(
-                            "negative dimensions are not allowed", this_->name_,
-                            this_->codename_));
-            }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            list_operand(operands[1], args, name_, codename_, ctx));
+                        this_->generate_error_message(
+                            "negative dimensions are not allowed"));
+                }
+            },
+            std::move(op0),
+            list_operand(operands[1], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

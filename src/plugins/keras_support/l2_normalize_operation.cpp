@@ -288,8 +288,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> l2_normalize_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -312,69 +311,69 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                primitive_arguments_type&& args)
-                ->primitive_argument_type {
-
-            // Extract the array, the result should always be double
-            arg_type a = extract_numeric_value(
-                std::move(args[0]), this_->name_, this_->codename_);
-
-            std::size_t a_dims = a.num_dimensions();
-
-            if (args.size() == 2 && valid(args[1]))
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
             {
-                std::int64_t axis =
-                    execution_tree::extract_scalar_integer_value_strict(
-                        args[1], this_->name_, this_->codename_);
+                // Extract the array, the result should always be double
+                arg_type a = extract_numeric_value(
+                    std::move(args[0]), this_->name_, this_->codename_);
 
+                std::size_t a_dims = a.num_dimensions();
+
+                if (args.size() == 2 && valid(args[1]))
+                {
+                    std::int64_t axis = extract_scalar_integer_value_strict(
+                        std::move(args[1]), this_->name_, this_->codename_);
+
+                    switch (a_dims)
+                    {
+                    case 0:
+                        return this_->l2_normalize0d();
+
+                    case 1:
+                        return this_->l2_normalize1d(std::move(a));
+
+                    case 2:
+                        return this_->l2_normalize2d(std::move(a), axis);
+
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                    case 3:
+                        return this_->l2_normalize3d(std::move(a), axis);
+    #endif
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "l2_normalize_operation::eval",
+                            this_->generate_error_message(
+                                "operand a has an invalid number of dimensions"));
+                    }
+                }
+
+                // no axis is given or axis=None
                 switch (a_dims)
                 {
                 case 0:
                     return this_->l2_normalize0d();
+
                 case 1:
                     return this_->l2_normalize1d(std::move(a));
+
                 case 2:
-                    return this_->l2_normalize2d(std::move(a), axis);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                    return this_->l2_normalize2d_flatten(std::move(a));
+
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
-                    return this_->l2_normalize3d(std::move(a), axis);
-#endif
+                    return this_->l2_normalize3d_flatten(std::move(a));
+    #endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "l2_normalize_operation::eval",
-                        util::generate_error_message(
-                            "operand a has an invalid "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "operand a has an invalid number of dimensions"));
                 }
-            }
-
-            // no axis is given or axis=None
-            switch (a_dims)
-            {
-            case 0:
-                return this_->l2_normalize0d();
-            case 1:
-                return this_->l2_normalize1d(std::move(a));
-            case 2:
-                return this_->l2_normalize2d_flatten(std::move(a));
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-            case 3:
-                return this_->l2_normalize3d_flatten(std::move(a));
-#endif
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "l2_normalize_operation::eval",
-                    util::generate_error_message("operand a has an invalid "
-                        "number of dimensions ",
-                        this_->name_, this_->codename_));
-            }
-        }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            }),
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}
 

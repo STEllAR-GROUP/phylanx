@@ -10,7 +10,7 @@
 #include <phylanx/config.hpp>
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>

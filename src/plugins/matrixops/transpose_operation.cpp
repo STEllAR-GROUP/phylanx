@@ -351,7 +351,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> transpose_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1 && operands.size() != 2)
         {
@@ -373,11 +373,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 auto a_dims = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
 
@@ -460,7 +459,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

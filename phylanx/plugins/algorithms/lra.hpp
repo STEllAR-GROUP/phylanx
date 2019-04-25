@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -26,8 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args,
-            eval_context ctx) const override;
+            primitive_arguments_type&& args, eval_context ctx) const override;
 
     public:
         static match_pattern_type const match_data;

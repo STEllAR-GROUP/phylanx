@@ -224,8 +224,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> softmax_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -252,20 +251,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 // Extract axis
-                std::int64_t axis =
-                    static_cast<std::int64_t>(-1);
+                std::int64_t axis = -1;
 
                 // axis is the second argument
-                if (args.size() > 1)
+                if (args.size() > 1 && valid(args[1]))
                 {
-                    if (valid(args[1]))
-                        axis = execution_tree::extract_scalar_integer_value_strict(
-                            args[1], this_->name_, this_->codename_);
+                    axis = extract_scalar_integer_value_strict(
+                        std::move(args[1]), this_->name_, this_->codename_);
                 }
 
                 // Extract the matrix, the result should always be double
@@ -278,10 +275,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->softmax0d();
+
                 case 1:
                     return this_->softmax1d(std::move(a));
+
                 case 2:
                     return this_->softmax2d(std::move(a), axis);
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->softmax3d(std::move(a), axis);
@@ -289,14 +289,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "softmax_operation::eval",
-                        util::generate_error_message("operand a has an invalid "
-                                                        "number of dimensions",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "operand a has an invalid number of dimensions"));
                 }
             }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}
 

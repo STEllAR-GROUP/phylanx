@@ -878,7 +878,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> repeat_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
@@ -901,58 +901,60 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_arguments_type&& args)
-                ->primitive_argument_type {
-
-            hpx::util::optional<std::int64_t> axis;
-
-            // axis is argument #3
-            if (args.size() == 3)
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
             {
-                axis = extract_scalar_integer_value_strict(
-                    args[2], this_->name_, this_->codename_);
-            }
+                hpx::util::optional<std::int64_t> axis;
 
-            if (this_->validate_repetition(
-                    extract_integer_value_strict(args[1])))
-            {
-                switch (extract_common_type(args[0]))
+                // axis is argument #3
+                if (args.size() == 3)
                 {
-                case node_data_type_bool:
-                    return this_->repeatnd(
-                        extract_boolean_value(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_integer_value_strict(std::move(args[1])), axis);
-                case node_data_type_int64:
-                    return this_->repeatnd(
-                        extract_integer_value(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_integer_value_strict(std::move(args[1])), axis);
-                case node_data_type_double:
-                    return this_->repeatnd(
-                        extract_numeric_value(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_integer_value_strict(std::move(args[1])), axis);
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "repeat::eval",
-                        this_->generate_error_message(
-                            "the repeat primitive requires for all arguments "
-                            "to be numeric data types"));
+                    axis = extract_scalar_integer_value_strict(
+                        args[2], this_->name_, this_->codename_);
                 }
-            }
-            else
+
+                if (this_->validate_repetition(
+                        extract_integer_value_strict(args[1])))
+                {
+                    switch (extract_common_type(args[0]))
+                    {
+                    case node_data_type_bool:
+                        return this_->repeatnd(
+                            extract_boolean_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            extract_integer_value_strict(std::move(args[1])),
+                            axis);
+
+                    case node_data_type_int64:
+                        return this_->repeatnd(
+                            extract_integer_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            extract_integer_value_strict(std::move(args[1])),
+                            axis);
+
+                    case node_data_type_double:
+                        return this_->repeatnd(
+                            extract_numeric_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            extract_integer_value_strict(std::move(args[1])),
+                            axis);
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "repeat::eval",
+                            this_->generate_error_message(
+                                "the repeat primitive requires for all arguments "
+                                "to be numeric data types"));
+                    }
+                }
+
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "repeat_operation::eval",
-                    util::generate_error_message(
-                        "the repetition cannot be/contain a negative number.",
-                        this_->name_, this_->codename_));
-
-
-        }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                    this_->generate_error_message(
+                        "the repetition cannot be/contain a negative number."));
+            }),
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

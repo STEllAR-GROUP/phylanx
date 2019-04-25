@@ -5,7 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/solvers/linear_solver.hpp>
 
@@ -341,7 +341,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> linear_solver::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
@@ -364,6 +364,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 3)
         {
+            auto&& op0 =
+                numeric_operand(operands[0], args, name_, codename_, ctx);
+            auto&& op1 =
+                numeric_operand(operands[1], args, name_, codename_, ctx);
+
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_)](
                     arg_type&& lhs, arg_type&& rhs, std::string && ul)
@@ -390,9 +395,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->calculate_linear_solver(
                         std::move(lhs), std::move(rhs), std::move(ul));
                 }),
-                numeric_operand(operands[0], args, name_, codename_, ctx),
-                numeric_operand(operands[1], args, name_, codename_, ctx),
-                string_operand(operands[2], args, name_, codename_, ctx));
+                std::move(op0), std::move(op1),
+                string_operand(operands[2], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -415,8 +420,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return this_->calculate_linear_solver(std::move(args));
             }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::numeric_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}
 

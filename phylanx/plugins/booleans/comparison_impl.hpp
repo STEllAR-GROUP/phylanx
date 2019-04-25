@@ -538,7 +538,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op>
     hpx::future<primitive_argument_type> comparison<Op>::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() < 2 || operands.size() > 3)
         {
@@ -558,22 +558,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "arguments given by the operands array are valid"));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         bool propagate_type = (operands.size() == 3 &&
-            phylanx::execution_tree::extract_scalar_boolean_value(operands[2]));
+            extract_scalar_boolean_value(std::move(operands[2])));
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), propagate_type](
-                    primitive_argument_type&& op1,
-                    primitive_argument_type&& op2)
+                    hpx::future<primitive_argument_type>&& op1,
+                    hpx::future<primitive_argument_type>&& op2)
             ->  primitive_argument_type
             {
                 return primitive_argument_type(
                     util::visit(visit_comparison{*this_, propagate_type},
-                        std::move(op1.variant()), std::move(op2.variant())));
-            }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx));
+                        std::move(op1.get().variant()),
+                        std::move(op2.get().variant())));
+            },
+            std::move(op0),
+            value_operand(operands[1], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}
 

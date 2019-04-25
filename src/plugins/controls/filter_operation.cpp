@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> filter_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
@@ -91,12 +91,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the first argument to map must be an invocable object"));
         }
 
+        auto&& op0 = value_operand(operands_[0], args, name_, codename_,
+            add_mode(ctx, eval_dont_evaluate_lambdas));
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), ctx](
-                    primitive_argument_type&& bound_func, ir::range&& list)
+                    hpx::future<primitive_argument_type>&& func,
+                    hpx::future<ir::range>&& list)
             mutable ->  primitive_argument_type
             {
+                auto&& bound_func = func.get();
+
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -108,10 +114,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // sequentially evaluate all operations
-                primitive_arguments_type result;
-                result.reserve(list.size());
+                auto&& list_data = list.get();
 
-                for (auto && curr : list)
+                primitive_arguments_type result;
+                result.reserve(list_data.size());
+
+                for (auto && curr : list_data)
                 {
                     primitive_arguments_type arg2(1, extract_ref_value(curr));
                     if (boolean_operand_sync(bound_func, std::move(arg2),
@@ -122,9 +130,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 return primitive_argument_type{std::move(result)};
-            }),
-            value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
-            list_operand(operands_[1], args, name_, codename_, ctx));
+            },
+            std::move(op0),
+            list_operand(operands_[1], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

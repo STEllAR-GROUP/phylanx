@@ -33,9 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<unique> {
     protected:
         hpx::future<primitive_argument_type> eval(
-                primitive_arguments_type const &operands,
-                primitive_arguments_type const &args,
-                eval_context ctx) const override;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type&& args, eval_context ctx) const override;
 
     public:
         static match_pattern_type const match_data;
@@ -46,26 +45,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                std::string const &codename);
 
     private:
-        primitive_argument_type unique0d(primitive_arguments_type &&args) const;
+        primitive_argument_type unique0d(primitive_arguments_type&& args) const;
+        primitive_argument_type unique1d(primitive_arguments_type&& args) const;
+        primitive_argument_type unique2d(primitive_arguments_type&& args) const;
 
-        primitive_argument_type unique1d(primitive_arguments_type &&args) const;
+        template <typename T>
+        primitive_argument_type unique0d(ir::node_data<T>&& args) const;
 
-        primitive_argument_type unique2d(primitive_arguments_type &&args) const;
+        template <typename T>
+        primitive_argument_type unique1d(ir::node_data<T>&& args) const;
 
-        template<typename T>
-        primitive_argument_type unique0d(ir::node_data <T> &&args) const;
+        template <typename T>
+        primitive_argument_type unique2d_flatten(ir::node_data<T>&& arg) const;
 
-        template<typename T>
-        primitive_argument_type unique1d(ir::node_data <T> &&args) const;
+        template <typename T>
+        primitive_argument_type unique2d_x_axis(ir::node_data<T>&& arg) const;
 
-        template<typename T>
-        primitive_argument_type unique2d_flatten(ir::node_data <T> &&arg) const;
-
-        template<typename T>
-        primitive_argument_type unique2d_x_axis(ir::node_data <T> &&arg) const;
-
-        template<typename T>
-        primitive_argument_type unique2d_y_axis(ir::node_data <T> &&arg) const;
+        template <typename T>
+        primitive_argument_type unique2d_y_axis(ir::node_data<T>&& arg) const;
 
         template <typename T>
         primitive_argument_type unique2d(std::size_t numargs,

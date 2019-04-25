@@ -339,7 +339,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> constant::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         // verify arguments
         if ((implements_like_operations_ && operands.size() < 2) ||
@@ -391,13 +391,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+        auto&& op0 = value_operand(ops[0], args, name_, codename_, ctx);
+        auto&& op1 = value_operand(ops[1], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& value,
-                    primitive_argument_type&& op1,
-                    primitive_argument_type&& dtype_op)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f1,
+                    hpx::future<primitive_argument_type>&& f2,
+                    hpx::future<primitive_argument_type>&& f3)
             ->  primitive_argument_type
             {
+                auto&& value = f1.get();
+                auto&& op1 = f2.get();
+                auto&& dtype_op = f3.get();
+
                 if (valid(value) && extract_numeric_value_dimension(value) != 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -499,9 +507,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "left hand side operand has unsupported "
                                 "number of dimensions"));
                 }
-            }),
-            value_operand(std::move(ops[0]), args, name_, codename_, ctx),
-            value_operand(std::move(ops[1]), args, name_, codename_, ctx),
-            value_operand(std::move(ops[2]), args, name_, codename_, ctx));
+            },
+            std::move(op0), std::move(op1),
+            value_operand(ops[2], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -95,24 +95,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "literal value"));
         }
 
+        auto f = value_operand(operands_[1], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-
-        primitive_arguments_type params;
-        if (!args.empty())
-        {
-            params.reserve(args.size());
-            for (auto const& arg : args)
-            {
-                params.emplace_back(extract_ref_value(arg, name_, codename_));
-            }
-        }
-
-        auto f = value_operand(operands_[1], params, name_, codename_, ctx);
         return f.then(hpx::launch::sync,
             [
                 this_ = std::move(this_),
                 lhs = extract_ref_value(operands_[0], name_, codename_),
-                args = std::move(params),
+                args = std::move(args),
                 ctx = std::move(ctx)
             ]
             (hpx::future<primitive_argument_type>&& val) mutable

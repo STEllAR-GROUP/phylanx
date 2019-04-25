@@ -189,7 +189,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> diag_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() > 2)
         {
@@ -222,10 +222,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 1)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& arg)
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f)
                 -> primitive_argument_type
                 {
+                    auto&& arg = f.get();
+
                     switch (extract_numeric_value_dimension(
                         arg, this_->name_, this_->codename_))
                     {
@@ -245,17 +248,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "left hand side operand has unsupported "
                                 "number of dimensions"));
                     }
-                }),
-                value_operand(operands[0], args, name_, codename_,
+                },
+                value_operand(operands[0], std::move(args), name_, codename_,
                     std::move(ctx)));
         }
 
-        auto arg1 = value_operand(operands[0], args, name_, codename_, ctx);
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& arg1,
-                ir::node_data<std::int64_t>&& arg2)
+        auto&& arg1 = value_operand(operands[0], args, name_, codename_, ctx);
+
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                hpx::future<primitive_argument_type>&& f1,
+                hpx::future<ir::node_data<std::int64_t>>&& f2)
             -> primitive_argument_type
             {
+                auto&& arg1 = f1.get();
+                auto&& arg2 = f2.get();
+
                 if (arg2.size() != 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -283,9 +291,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "left hand side operand has unsupported "
                             "number of dimensions"));
                 }
-            }),
-            arg1,
-            integer_operand(operands[1], args, name_, codename_,
+            },
+            std::move(arg1),
+            integer_operand(operands[1], std::move(args), name_, codename_,
                 std::move(ctx)));
     }
 }}}

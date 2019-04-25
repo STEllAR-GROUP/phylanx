@@ -228,8 +228,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> fmap_operation::fmap_1(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
+        auto&& op0 = value_operand(operands[0], args, name_,
+            codename_, add_mode(ctx, eval_dont_evaluate_lambdas));
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), ctx](
@@ -299,9 +302,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the second argument to fmap must be an iterable "
                             "object (a list or a numeric type)"));
             },
-            value_operand(operands[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
-            value_operand(operands[1], args, name_, codename_, ctx));
+            std::move(op0),
+            value_operand(operands[1], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -509,12 +512,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> fmap_operation::fmap_n(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         // all remaining operands have to be lists
         primitive_arguments_type lists;
         std::copy(operands.begin() + 1, operands.end(),
             std::back_inserter(lists));
+
+        auto&& op0 = value_operand(operands[0], args, name_,
+            codename_, add_mode(ctx, eval_dont_evaluate_lambdas));
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -570,16 +576,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "compatible iterable objects (all lists or all "
                             "numeric)"));
             }),
-            value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            std::move(op0),
             detail::map_operands(
-                lists, functional::value_operand{}, args,
-                name_, codename_, ctx));
+                std::move(lists), functional::value_operand{}, std::move(args),
+                name_, codename_, std::move(ctx)));
     }
 
     hpx::future<primitive_argument_type> fmap_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() < 2)
         {
@@ -620,9 +625,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // handle common case separately
         if (operands.size() == 2)
         {
-            return fmap_1(operands, args, std::move(ctx));
+            return fmap_1(operands, std::move(args), std::move(ctx));
         }
 
-        return fmap_n(operands, args, std::move(ctx));
+        return fmap_n(operands, std::move(args), std::move(ctx));
     }
 }}}

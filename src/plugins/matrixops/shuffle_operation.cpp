@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> shuffle_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -156,10 +156,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& arg)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f)
             -> primitive_argument_type
             {
+                auto&& arg = f.get();
+
                 switch (extract_numeric_value_dimension(
                     arg, this_->name_, this_->codename_))
                 {
@@ -177,7 +180,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "dimensions. Only possible values are: "
                                 "1 or 2."));
                 }
-            }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
+            },
+            value_operand(operands[0], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

@@ -158,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> clip::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
@@ -169,37 +169,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         if (!valid(operands[0]))
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "clip::eval",
                 generate_error_message("the clip primitive requires that the "
-                                       "first argument is valid"));
+                    "first argument is valid"));
+        }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 switch (extract_common_type(args))
                 {
                 case node_data_type_int64:
                     return this_->clip_helper<std::int64_t>(std::move(args));
+
                 case node_data_type_bool:
                     return this_->clip_helper<std::uint8_t>(std::move(args));
-                case node_data_type_unknown:
-                    HPX_FALLTHROUGH;
+
+                case node_data_type_unknown: HPX_FALLTHROUGH;
                 case node_data_type_double:
                     return this_->clip_helper<double>(std::move(args));
 
                 default:
                     break;
                 }
+
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "clip::eval",
                     this_->generate_error_message(
                         "the clip primitive requires for all arguments to "
                         "be numeric data types"));
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

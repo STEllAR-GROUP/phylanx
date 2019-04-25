@@ -642,7 +642,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> dot_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
@@ -665,78 +665,94 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 2)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op1,
-                    primitive_argument_type&& op2)
-                ->primitive_argument_type
-            {
-                if (this_->mode_ == outer_product)
+            auto&& op0 =
+                value_operand(operands[0], args, name_, codename_, ctx);
 
-                    return this_->outer_nd_helper(
-                        std::move(op1), std::move(op2));
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& op1,
+                        hpx::future<primitive_argument_type>&& op2)
+                -> primitive_argument_type
+                {
+                    if (this_->mode_ == outer_product)
+                    {
+                        return this_->outer_nd_helper(op1.get(), op2.get());
+                    }
+                    else if (this_->mode_ == dot_product)
+                    {
+                        return this_->dot_nd(op1.get(), op2.get());
+                    }
+                    else if (this_->mode_ == doubledot_product)
+                    {
+                        return this_->contraction_nd(op1.get(), op2.get());
+                    }
 
-                else if (this_->mode_ == dot_product)
-
-                    return this_->dot_nd(std::move(op1), std::move(op2));
-
-                else if (this_->mode_ == doubledot_product)
-
-                    return this_->contraction_nd(
-                        std::move(op1), std::move(op2));
-
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dot_operation::eval",
-                    this_->generate_error_message(
-                        "unsupported dot mode requested"));
-            }),
-                value_operand(operands[0], args, name_, codename_, ctx),
-                value_operand(operands[1], args, name_, codename_, ctx));
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::eval",
+                        this_->generate_error_message(
+                            "unsupported dot mode requested"));
+                },
+                std::move(op0),
+                value_operand(operands[1], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
         else if (operands.size() == 3 && valid(operands[2]))
         {
-            if (this_->mode_ == dot_product || this_->mode_ == outer_product)
+            if (mode_ == dot_product || mode_ == outer_product)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "dot_operation::eval",
                     this_->generate_error_message(
                         "the dot/outer product requires exactly two operands"));
-            else if (this_->mode_ == doubledot_product)
-            {
-                return hpx::dataflow(hpx::launch::sync,
-                    hpx::util::unwrapping(
-                        [this_ = std::move(this_)](
-                            primitive_argument_type&& op1,
-                            primitive_argument_type&& op2,
-                            ir::range&& axes) -> primitive_argument_type {
-                    switch (axes.size())
-                    {
-                    case 1:
-                        return this_->tensordot_scalar_axis(
-                            std::move(op1), std::move(op2), std::move(axes));
-
-                    case 2:
-                        return this_->tensordot_range_axes(
-                            std::move(op1), std::move(op2), std::move(axes));
-
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dot_operation::eval",
-                            this_->generate_error_message(
-                                "the axes can only be an integer, or a tuple "
-                                "indicating a_axes and b_axes where a_axes and "
-                                "b_axes can be integers or tuples of "
-                                "integers"));
-                    }
-
-                        }),
-                    value_operand(operands[0], args, name_, codename_, ctx),
-                    value_operand(operands[1], args, name_, codename_, ctx),
-                    list_operand(operands[2], args, name_, codename_, ctx));
             }
+
+            if (mode_ == doubledot_product)
+            {
+                auto&& op0 =
+                    value_operand(operands[0], args, name_, codename_, ctx);
+                auto&& op1 =
+                    value_operand(operands[1], args, name_, codename_, ctx);
+
+                return hpx::dataflow(hpx::launch::sync,
+                    [this_ = std::move(this_)](
+                            hpx::future<primitive_argument_type>&& op1,
+                            hpx::future<primitive_argument_type>&& op2,
+                            hpx::future<ir::range>&& f_axes)
+                    -> primitive_argument_type
+                    {
+                        auto&& axes = f_axes.get();
+
+                        switch (axes.size())
+                        {
+                        case 1:
+                            return this_->tensordot_scalar_axis(
+                                op1.get(), op2.get(), std::move(axes));
+
+                        case 2:
+                            return this_->tensordot_range_axes(
+                                op1.get(), op2.get(), std::move(axes));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "dot_operation::eval",
+                                this_->generate_error_message(
+                                    "the axes can only be an integer, or a tuple "
+                                    "indicating a_axes and b_axes where a_axes and "
+                                    "b_axes can be integers or tuples of "
+                                    "integers"));
+                        }
+                    },
+                    std::move(op0), std::move(op1),
+                    list_operand(operands[2], std::move(args), name_, codename_,
+                        std::move(ctx)));
+            }
+
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
                 this_->generate_error_message(
                     "unsupported dot mode requested"));
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dot_operation::eval",
             generate_error_message(

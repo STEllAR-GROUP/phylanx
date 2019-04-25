@@ -666,7 +666,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> insert::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || (operands.size() < 3 || operands.size() > 4))
         {
@@ -686,59 +686,61 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_arguments_type&& args)
-                    -> primitive_argument_type {
-                    hpx::util::optional<std::int64_t> axis;
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+                -> primitive_argument_type
+            {
+                hpx::util::optional<std::int64_t> axis;
 
-                    if (args.size() == 4 && valid(args[3]))
-                    {
-                        axis = extract_scalar_integer_value_strict(
-                            args[3], this_->name_, this_->codename_);
-                    }
+                if (args.size() == 4 && valid(args[3]))
+                {
+                    axis = extract_scalar_integer_value_strict(
+                        args[3], this_->name_, this_->codename_);
+                }
 
-                    switch (extract_common_type(args[0]))
-                    {
-                    case node_data_type_bool:
-                        return this_->insert_nd(
-                            extract_boolean_value(std::move(args[0]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value_strict(std::move(args[1]),
-                                this_->name_, this_->codename_),
-                            extract_boolean_value(std::move(args[2]),
-                                this_->name_, this_->codename_),
-                            axis);
-                    case node_data_type_int64:
-                        return this_->insert_nd(
-                            extract_integer_value(std::move(args[0]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value_strict(std::move(args[1]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value(std::move(args[2]),
-                                this_->name_, this_->codename_),
-                            axis);
-                    case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
-                    case node_data_type_double:
-                        return this_->insert_nd(
-                            extract_numeric_value(std::move(args[0]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value_strict(std::move(args[1]),
-                                this_->name_, this_->codename_),
-                            extract_numeric_value(std::move(args[2]),
-                                this_->name_, this_->codename_),
-                            axis);
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "insert::eval",
-                            this_->generate_error_message(
-                                "the insert primitive requires for all "
-                                "arguments "
-                                "to be numeric data types"));
-                    }
-                }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                auto&& arg1 = extract_integer_value_strict(
+                    std::move(args[1]), this_->name_, this_->codename_);
+
+                switch (extract_common_type(args[0]))
+                {
+                case node_data_type_bool:
+                    return this_->insert_nd(
+                        extract_boolean_value(
+                            std::move(args[0]), this_->name_, this_->codename_),
+                        std::move(arg1),
+                        extract_boolean_value(
+                            std::move(args[2]), this_->name_, this_->codename_),
+                        axis);
+
+                case node_data_type_int64:
+                    return this_->insert_nd(
+                        extract_integer_value(
+                            std::move(args[0]), this_->name_, this_->codename_),
+                        std::move(arg1),
+                        extract_integer_value(
+                            std::move(args[2]), this_->name_, this_->codename_),
+                        axis);
+
+                case node_data_type_unknown: HPX_FALLTHROUGH;
+                case node_data_type_double:
+                    return this_->insert_nd(
+                        extract_numeric_value(
+                            std::move(args[0]), this_->name_, this_->codename_),
+                        std::move(arg1),
+                        extract_numeric_value(
+                            std::move(args[2]), this_->name_, this_->codename_),
+                        axis);
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "insert::eval",
+                        this_->generate_error_message(
+                            "the insert primitive requires for all "
+                            "arguments "
+                            "to be numeric data types"));
+                }
+            }),
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

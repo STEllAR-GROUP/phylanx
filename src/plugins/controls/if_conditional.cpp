@@ -57,22 +57,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> if_conditional::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
-        if (operands_.size() != 3 && operands_.size() != 2)
+        if (operands.size() != 3 && operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "if_conditional::if_conditional",
-                util::generate_error_message(
-                    "the if_conditional primitive requires three "
-                    "operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the if_conditional primitive requires two or three "
+                    "operands"));
         }
 
         bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
+        for (std::size_t i = 0; i != operands.size(); ++i)
         {
-            if (!valid(operands_[i]))
+            if (!valid(operands[i]))
             {
                 arguments_valid = false;
             }
@@ -90,10 +89,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // Keep data alive with a shared pointer
-        auto f = boolean_operand(operands_[0], args, name_, codename_, ctx);
+        auto f = boolean_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         return f.then(hpx::launch::sync,
-            [this_ = std::move(this_), args = args, ctx = std::move(ctx)](
+            [this_ = std::move(this_), args = std::move(args), ctx = std::move(ctx)](
                     hpx::future<std::uint8_t>&& cond_eval) mutable
             ->  hpx::future<primitive_argument_type>
             {

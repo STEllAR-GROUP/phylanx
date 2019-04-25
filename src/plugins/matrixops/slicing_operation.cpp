@@ -5,12 +5,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/slice.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
-#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -126,7 +125,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> slicing_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
 #if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (operands.empty() || operands.size() > 3)
@@ -269,7 +268,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             "either one, two, or three arguments"));
             }),
             detail::map_operands(
-                operands, functional::value_operand{}, args,
+                operands, functional::value_operand{}, std::move(args),
                 name_, codename_, std::move(ctx)));
     }
 }}}

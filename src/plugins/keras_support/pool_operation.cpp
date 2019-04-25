@@ -2070,7 +2070,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> pool_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() < 2 || operands.size() > 4)
         {
@@ -2091,11 +2091,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 std::size_t ndim = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
 
@@ -2128,11 +2127,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             extract_numeric_value_dimensions(
                                 args[0], this_->name_, this_->codename_),
                             pool_size))
+                    {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "pool_operation::eval",
                             this_->generate_error_message(
                                 "at least one of the filter sizes is greater "
                                 "than the array size in that dimension"));
+                    }
                 }
 
                 ir::range strides(0); // an empty range
@@ -2142,11 +2143,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         args[3], this_->name_, this_->codename_);
 
                     if (!this_->validate_strides(ndim, strides))
+                    {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "pool_operation::eval",
                             this_->generate_error_message(
                                 "invalid strides. padding can be either valid "
                                 "or same"));
+                    }
                 }
 
                 if (strides.empty()) // strides contain only 1s
@@ -2160,16 +2163,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 extract_boolean_value(std::move(args[0]),
                                     this_->name_, this_->codename_),
                                 std::move(pool_size), std::move(padding));
+
                         case node_data_type_int64:
                             return this_->max_pool_nd(
                                 extract_integer_value(std::move(args[0]),
                                     this_->name_, this_->codename_),
                                 std::move(pool_size), std::move(padding));
+
                         case node_data_type_double:
                             return this_->max_pool_nd(
                                 extract_numeric_value(std::move(args[0]),
                                     this_->name_, this_->codename_),
                                 std::move(pool_size), std::move(padding));
+
                         default:
                             break;
                         }
@@ -2179,63 +2185,71 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "the pool primitive requires for all arguments "
                                 "to be numeric data types"));
                     }
-                    else if(this_->mode_ == avg_pool)
+                    else if (this_->mode_ == avg_pool)
+                    {
                         return this_->avg_pool_nd(
                             extract_numeric_value(std::move(args[0]),
                                 this_->name_, this_->codename_),
                             std::move(pool_size), std::move(padding));
+                    }
 
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "pool_operation::eval",
                         this_->generate_error_message(
                             "unsupported mode requested"));
                 }
+
                 // non-default strides
                 if (this_->mode_ == max_pool)
+                {
+                    switch (extract_common_type(args[0]))
                     {
-                        switch (extract_common_type(args[0]))
-                        {
-                        case node_data_type_bool:
-                            return this_->max_pool_nd(
-                                extract_boolean_value(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                std::move(pool_size), std::move(padding),
-                                std::move(strides));
-                        case node_data_type_int64:
-                            return this_->max_pool_nd(
-                                extract_integer_value(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                std::move(pool_size), std::move(padding),
-                                std::move(strides));
-                        case node_data_type_double:
-                            return this_->max_pool_nd(
-                                extract_numeric_value(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                std::move(pool_size), std::move(padding),
-                                std::move(strides));
-                        default:
-                            break;
-                        }
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "pool_operation::eval",
-                            this_->generate_error_message(
-                                "the pool primitive requires for all arguments "
-                                "to be numeric data types"));
-                    }
-                    else if(this_->mode_ == avg_pool)
-                        return this_->avg_pool_nd(
+                    case node_data_type_bool:
+                        return this_->max_pool_nd(
+                            extract_boolean_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            std::move(pool_size), std::move(padding),
+                            std::move(strides));
+
+                    case node_data_type_int64:
+                        return this_->max_pool_nd(
+                            extract_integer_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            std::move(pool_size), std::move(padding),
+                            std::move(strides));
+
+                    case node_data_type_double:
+                        return this_->max_pool_nd(
                             extract_numeric_value(std::move(args[0]),
                                 this_->name_, this_->codename_),
                             std::move(pool_size), std::move(padding),
                             std::move(strides));
 
+                    default:
+                        break;
+                    }
+
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "pool_operation::eval",
                         this_->generate_error_message(
-                            "unsupported mode requested"));
+                            "the pool primitive requires for all arguments "
+                            "to be numeric data types"));
+                }
+                else if (this_->mode_ == avg_pool)
+                {
+                    return this_->avg_pool_nd(
+                        extract_numeric_value(std::move(args[0]),
+                            this_->name_, this_->codename_),
+                        std::move(pool_size), std::move(padding),
+                        std::move(strides));
+                }
 
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "pool_operation::eval",
+                    this_->generate_error_message(
+                        "unsupported mode requested"));
             }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

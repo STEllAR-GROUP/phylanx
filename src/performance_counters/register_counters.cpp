@@ -6,7 +6,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compile.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
 

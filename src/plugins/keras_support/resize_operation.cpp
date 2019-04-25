@@ -122,8 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> resize_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 4)
         {
@@ -143,79 +142,77 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "argument given by the operands array is valid"));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+        auto&& op1 = scalar_integer_operand_strict(
+            operands[1], args, name_, codename_, ctx);
+        auto&& op2 = scalar_integer_operand_strict(
+            operands[2], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& arg,
-                    std::int64_t height_factor, std::int64_t width_factor,
-                    std::string interpolation) -> primitive_argument_type {
-                    if (interpolation != "nearest" &&
-                        interpolation != "bilinear")
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "resize_operation::eval",
-                            this_->generate_error_message(
-                                "interpolation type not supported"));
-                    if (height_factor < 0 || width_factor < 0)
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "resize_operation::eval",
-                            this_->generate_error_message(
-                                "scaling factor should be positive"));
-
-                    if (interpolation == "nearest")
-                    {
-                        switch (extract_common_type(arg))
-                        {
-                        case node_data_type_bool:
-                            return this_->nearest(
-                                extract_boolean_value(std::move(arg),
-                                    this_->name_, this_->codename_),
-                                std::move(height_factor),
-                                std::move(width_factor),
-                                std::move(interpolation));
-
-                        case node_data_type_int64:
-                            return this_->nearest(
-                                extract_integer_value(std::move(arg),
-                                    this_->name_, this_->codename_),
-                                std::move(height_factor),
-                                std::move(width_factor),
-                                std::move(interpolation));
-
-                        case node_data_type_unknown:
-                            HPX_FALLTHROUGH;
-                        case node_data_type_double:
-                            return this_->nearest(
-                                extract_numeric_value(std::move(arg),
-                                    this_->name_, this_->codename_),
-                                std::move(height_factor),
-                                std::move(width_factor),
-                                std::move(interpolation));
-
-                        default:
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        return this_->bilinear(
-                            extract_numeric_value(
-                                std::move(arg), this_->name_, this_->codename_),
-                            std::move(height_factor), std::move(width_factor),
-                            std::move(interpolation));
-                    }
-
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& arg,
+                std::int64_t height_factor, std::int64_t width_factor,
+                std::string interpolation)
+            -> primitive_argument_type
+            {
+                if (height_factor < 0 || width_factor < 0)
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "resize_operation::eval",
                         this_->generate_error_message(
-                            "the resize_operation primitive requires for all "
-                            "arguments to "
-                            "be numeric data types"));
-                }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            scalar_integer_operand_strict(
-                operands[1], args, name_, codename_, ctx),
-            scalar_integer_operand_strict(
-                operands[2], args, name_, codename_, ctx),
-            string_operand(operands[3], args, name_, codename_, ctx));
+                            "scaling factor should be positive"));
+                }
+
+                if (interpolation == "nearest")
+                {
+                    switch (extract_common_type(arg))
+                    {
+                    case node_data_type_bool:
+                        return this_->nearest(
+                            extract_boolean_value(std::move(arg),
+                                this_->name_, this_->codename_),
+                            std::move(height_factor),
+                            std::move(width_factor),
+                            std::move(interpolation));
+
+                    case node_data_type_int64:
+                        return this_->nearest(
+                            extract_integer_value(std::move(arg),
+                                this_->name_, this_->codename_),
+                            std::move(height_factor),
+                            std::move(width_factor),
+                            std::move(interpolation));
+
+                    case node_data_type_unknown:
+                        HPX_FALLTHROUGH;
+                    case node_data_type_double:
+                        return this_->nearest(
+                            extract_numeric_value(std::move(arg),
+                                this_->name_, this_->codename_),
+                            std::move(height_factor),
+                            std::move(width_factor),
+                            std::move(interpolation));
+
+                    default:
+                        break;
+                    }
+                }
+                else if (interpolation == "bilinear")
+                {
+                    return this_->bilinear(
+                        extract_numeric_value(
+                            std::move(arg), this_->name_, this_->codename_),
+                        std::move(height_factor), std::move(width_factor),
+                        std::move(interpolation));
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "resize_operation::eval",
+                    this_->generate_error_message(
+                        "interpolation type not supported"));
+            }),
+            std::move(op0), std::move(op1), std::move(op2),
+            string_operand(operands[3], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

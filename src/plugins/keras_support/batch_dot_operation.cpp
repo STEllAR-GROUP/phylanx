@@ -526,7 +526,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> batch_dot_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
@@ -552,72 +552,88 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 2)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op1,
-                    primitive_argument_type&& op2)
+            auto&& op0 =
+                value_operand(operands[0], args, name_, codename_, ctx);
+
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f1,
+                        hpx::future<primitive_argument_type>&& f2)
                 ->primitive_argument_type
-            {
-                ir::range axes(0); // an empty range
-
-                if (this_->validate_axes(axes,
-                        extract_numeric_value_dimension(
-                            op1, this_->name_, this_->codename_),
-                        extract_numeric_value_dimension(
-                            op2, this_->name_, this_->codename_),
-                        extract_numeric_value_dimensions(
-                            op1, this_->name_, this_->codename_),
-                        extract_numeric_value_dimensions(
-                            op2, this_->name_, this_->codename_)))
                 {
-                    switch (extract_common_type(op1, op2))
+                    auto&& op1 = f1.get();
+                    auto&& op2 = f2.get();
+
+                    ir::range axes(0); // an empty range
+
+                    if (this_->validate_axes(axes,
+                            extract_numeric_value_dimension(
+                                op1, this_->name_, this_->codename_),
+                            extract_numeric_value_dimension(
+                                op2, this_->name_, this_->codename_),
+                            extract_numeric_value_dimensions(
+                                op1, this_->name_, this_->codename_),
+                            extract_numeric_value_dimensions(
+                                op2, this_->name_, this_->codename_)))
                     {
-                    case node_data_type_bool:
-                        return this_->batch_dot_nd(
-                            extract_boolean_value(
-                                std::move(op1), this_->name_, this_->codename_),
-                            extract_boolean_value(
-                                std::move(op2), this_->name_, this_->codename_));
+                        switch (extract_common_type(op1, op2))
+                        {
+                        case node_data_type_bool:
+                            return this_->batch_dot_nd(
+                                extract_boolean_value(
+                                    std::move(op1), this_->name_, this_->codename_),
+                                extract_boolean_value(
+                                    std::move(op2), this_->name_, this_->codename_));
 
-                    case node_data_type_int64:
-                        return this_->batch_dot_nd(
-                            extract_integer_value(
-                                std::move(op1), this_->name_, this_->codename_),
-                            extract_integer_value(
-                                std::move(op2), this_->name_, this_->codename_));
+                        case node_data_type_int64:
+                            return this_->batch_dot_nd(
+                                extract_integer_value(
+                                    std::move(op1), this_->name_, this_->codename_),
+                                extract_integer_value(
+                                    std::move(op2), this_->name_, this_->codename_));
 
-                    case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
-                    case node_data_type_double:
-                        return this_->batch_dot_nd(
-                            extract_numeric_value(
-                                std::move(op1), this_->name_, this_->codename_),
-                            extract_numeric_value(
-                                std::move(op2), this_->name_, this_->codename_));
+                        case node_data_type_unknown: HPX_FALLTHROUGH;
+                        case node_data_type_double:
+                            return this_->batch_dot_nd(
+                                extract_numeric_value(
+                                    std::move(op1), this_->name_, this_->codename_),
+                                extract_numeric_value(
+                                    std::move(op2), this_->name_, this_->codename_));
 
-                    default:
-                        break;
+                        default:
+                            break;
+                        }
+
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "batch_dot_operation::eval",
+                            this_->generate_error_message(
+                                "the dot primitive requires for all arguments to "
+                                "be numeric data types"));
                     }
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "batch_dot_operation::eval",
                         this_->generate_error_message(
-                            "the dot primitive requires for all arguments to "
-                            "be numeric data types"));
-                }
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "batch_dot_operation::eval",
-                    this_->generate_error_message(
-                        "operands have incompatible number of dimensions"));
-            }),
-                value_operand(operands[0], args, name_, codename_, ctx),
-                value_operand(operands[1], args, name_, codename_, ctx));
+                            "operands have incompatible number of dimensions"));
+                },
+                std::move(op0),
+                value_operand(operands[1], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+        auto&& op1 = value_operand(operands[1], args, name_, codename_, ctx);
+
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_argument_type&& op1,
-                                      primitive_argument_type&& op2,
-                                      ir::range&& axes)
-                                      -> primitive_argument_type {
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f1,
+                    hpx::future<primitive_argument_type>&& f2,
+                    hpx::future<ir::range>&& faxes)
+            -> primitive_argument_type
+            {
+                auto&& op1 = f1.get();
+                auto&& op2 = f2.get();
+                auto&& axes = faxes.get();
+
                 if (this_->validate_axes(axes,
                         extract_numeric_value_dimension(
                             op1, this_->name_, this_->codename_),
@@ -646,8 +662,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 std::move(op2), this_->name_, this_->codename_),
                             std::move(axes));
 
-                    case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+                    case node_data_type_unknown: HPX_FALLTHROUGH;
                     case node_data_type_double:
                         return this_->batch_dot_nd(
                             extract_numeric_value(
@@ -659,6 +674,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         break;
                     }
+
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "batch_dot_operation::eval",
                         this_->generate_error_message(
@@ -670,9 +686,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     this_->generate_error_message(
                         "the given axes is incompatible with the dimensions of "
                         "the operands"));
-            }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx),
-            list_operand(operands[2], args, name_, codename_, ctx));
+            },
+            std::move(op0), std::move(op1),
+            list_operand(operands[2], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

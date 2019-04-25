@@ -20,7 +20,7 @@
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/compiler/compiler.hpp>
 #include <phylanx/execution_tree/compiler/locality_attribute.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
 

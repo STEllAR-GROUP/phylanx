@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
@@ -94,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> define_variable::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         ctx.remove_mode(eval_dont_wrap_functions);
 
@@ -105,8 +105,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             auto this_ = this->shared_from_this();
             return var.then(hpx::launch::sync,
-                [this_ = std::move(this_), ctx = std::move(ctx), args = args](
-                        hpx::future<primitive_argument_type> && fvar) mutable
+                [this_ = std::move(this_),
+                    ctx = std::move(ctx), args = std::move(args)
+                ](hpx::future<primitive_argument_type> && fvar) mutable
                 -> primitive_argument_type
                 {
                     auto && var = fvar.get();
@@ -138,7 +139,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive* p = util::get_if<primitive>(&var);
         if (p != nullptr)
         {
-            p->bind(args, ctx);
+            p->bind(std::move(args), ctx);
         }
 
         // store the variable in the evaluation context

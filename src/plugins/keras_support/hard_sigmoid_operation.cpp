@@ -181,8 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> hard_sigmoid_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -203,14 +202,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return value_operand(operands[0], args, name_, codename_, std::move(ctx))
-            .then(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& arg)
+        return value_operand(operands[0], std::move(args), name_, codename_,
+                std::move(ctx))
+            .then(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f)
                 -> primitive_argument_type
                 {
                     // Extract the argument, the result should always be double
                     arg_type a = extract_numeric_value(
-                        std::move(arg), this_->name_, this_->codename_);
+                        f.get(), this_->name_, this_->codename_);
 
                     std::size_t a_dims = a.num_dimensions();
                     switch (a_dims)
@@ -235,7 +236,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "operand a has an invalid number of "
                                 "dimensions"));
                     }
-                }));
+                });
     }
 }}}
 

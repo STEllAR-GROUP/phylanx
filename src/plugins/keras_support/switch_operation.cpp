@@ -284,7 +284,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> switch_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands_.size() != 3)
         {
@@ -310,44 +310,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> cond_dims =
+                    extract_numeric_value_dimensions(
+                        args[0], this_->name_, this_->codename_);
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> then_dims =
                     extract_numeric_value_dimensions(
-                        std::move(args[1]), this_->name_, this_->codename_);
+                        args[1], this_->name_, this_->codename_);
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> else_dims =
                     extract_numeric_value_dimensions(
-                        std::move(args[2]), this_->name_, this_->codename_);
+                        args[2], this_->name_, this_->codename_);
 
                 if (then_dims != else_dims)
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "switch_operation::eval",
                         util::generate_error_message(
                             "the `then_expression` and `else_expression` "
                             "should be of the same shape",
                             this_->name_, this_->codename_));
+                }
 
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> cond_dims =
-                    extract_numeric_value_dimensions(
-                        std::move(args[0]), this_->name_, this_->codename_);
+                std::size_t dim0 = extract_numeric_value_dimension(
+                    args[0], this_->name_, this_->codename_);
+                std::size_t dim1 = extract_numeric_value_dimension(
+                    args[1], this_->name_, this_->codename_);
 
                 if (!this_->validate_shapes(
-                        extract_numeric_value_dimension(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_numeric_value_dimension(
-                            std::move(args[1]), this_->name_, this_->codename_),
-                        std::move(cond_dims),
-                        std::move(then_dims)))
+                        dim0, dim1, std::move(cond_dims), std::move(then_dims)))
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "switch_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "the condition shape is incompatible with the "
-                            "`then_expression` and `else_expression` "
-                            "shapes",
-                            this_->name_, this_->codename_));
+                            "`then_expression` and `else_expression` shapes"));
+                }
 
                 ir::node_data<std::uint8_t> cond = extract_boolean_value(
                     std::move(args[0]), this_->name_, this_->codename_);
@@ -356,17 +356,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<double> else_expr = extract_numeric_value(
                     std::move(args[2]), this_->name_, this_->codename_);
 
-                switch (extract_numeric_value_dimension(std::move(args[1])))
+                switch (dim1)
                 {
                 case 0:
                     return this_->switch0d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
+
                 case 1:
                     return this_->switch1d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
+
                 case 2:
                     return this_->switch2d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
+
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->switch3d(std::move(cond),
@@ -375,14 +378,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     break;
                 }
+
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "switch_operation::eval",
-                    util::generate_error_message(
-                        "the operand has unsupported number of dimensions",
-                        this_->name_, this_->codename_));
+                    this_->generate_error_message(
+                        "the operand has unsupported number of dimensions"));
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 
 }}}

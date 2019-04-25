@@ -108,8 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
-        primitive_arguments_type const& params,
-        eval_context ctx) const
+        primitive_arguments_type params, eval_context ctx) const
     {
         if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty())
@@ -120,11 +119,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(params, ctx);
+        return primitive_->do_eval(std::move(params), ctx);
     }
 
     hpx::future<primitive_argument_type> primitive_component::eval_single(
-        primitive_argument_type && param, eval_context ctx) const
+        primitive_argument_type&& param, eval_context ctx) const
     {
         if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty())
@@ -162,9 +161,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        primitive_arguments_type const& params, eval_context ctx) const
+        primitive_arguments_type params, eval_context ctx) const
     {
-        return primitive_->bind(params, ctx);
+        return primitive_->bind(std::move(params), ctx);
     }
 
     // access data for performance counter

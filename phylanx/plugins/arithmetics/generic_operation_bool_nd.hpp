@@ -7,7 +7,7 @@
 #define PHYLANX_GENERIC_OPERATION_BOOL_ND_HPP
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_bool.hpp>

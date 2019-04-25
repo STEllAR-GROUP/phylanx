@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> target_reference::eval(
-        primitive_arguments_type const& params, eval_context ctx) const
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         // use stored evaluation context, if available
         if (ctx_)
@@ -82,9 +82,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
-            for (auto const& param : params)
+            for (auto&& param : params)
             {
-                fargs.emplace_back(extract_value(param, name_, codename_));
+                fargs.emplace_back(
+                    extract_value(std::move(param), name_, codename_));
             }
 
             eval_context next_ctx = set_mode(std::move(ctx), eval_default);
@@ -103,15 +104,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (target_)
         {
-            return target_->eval(params, add_frame(std::move(next_ctx)));
+            return target_->eval(
+                std::move(params), add_frame(std::move(next_ctx)));
         }
 
-        return value_operand(operands_[0], params, name_, codename_,
+        return value_operand(operands_[0], std::move(params), name_, codename_,
             add_frame(std::move(next_ctx)));
     }
 
     hpx::future<primitive_argument_type> target_reference::eval(
-        primitive_argument_type && param, eval_context ctx) const
+        primitive_argument_type&& param, eval_context ctx) const
     {
         // use stored evaluation context, if available
         if (ctx_)
@@ -156,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     bool target_reference::bind(
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         return true;
     }

@@ -10,12 +10,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/generate_error_message.hpp>
-#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -1005,47 +1004,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (auto && d : in)
             {
                 out.emplace_back(
-                    hpx::util::invoke(f, std::move(d), std::ref(ts)...));
-            }
-            return out;
-        }
-
-        // Invoke the given function on all items in the input vector, while
-        // returning another vector holding the respective results.
-        template <typename T, typename Allocator, typename F, typename ... Ts>
-        auto map_operands_sv(std::vector<T, Allocator> const& in, F && f,
-                Ts && ... ts)
-        ->  util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )>
-        {
-            util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )> out;
-            out.reserve(in.size());
-
-            for (auto const& d : in)
-            {
-                out.push_back(hpx::util::invoke(f, d, std::ref(ts)...));
-            }
-            return out;
-        }
-
-        template <typename T, typename Allocator, typename F, typename ... Ts>
-        auto map_operands_sv(std::vector<T, Allocator> && in, F && f,
-                Ts && ... ts)
-        ->  util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )>
-        {
-            util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )> out;
-            out.reserve(in.size());
-
-            for (auto && d : in)
-            {
-                out.push_back(
                     hpx::util::invoke(f, std::move(d), std::ref(ts)...));
             }
             return out;

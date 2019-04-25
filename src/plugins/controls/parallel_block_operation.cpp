@@ -48,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty())
         {
@@ -63,13 +63,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Evaluate condition of while statement
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_arguments_type && ops)
+            [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
                 return ops.back();
             }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

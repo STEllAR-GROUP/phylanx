@@ -1,10 +1,10 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Steven R. Brandt
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/phytype.hpp>
+#include <phylanx/execution_tree/primitives/primitive_type.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -23,7 +23,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_phytype(hpx::id_type const& locality,
+    primitive create_primitive_type(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
@@ -32,11 +32,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const phytype::match_data =
+    match_pattern_type const primitive_type::match_data =
     {
         hpx::util::make_tuple("__type",
             std::vector<std::string>{"__type(_1)"},
-            &create_phytype, &create_primitive<phytype>,
+            &create_primitive_type, &create_primitive<primitive_type>,
             R"(arg
             Args:
 
@@ -49,22 +49,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    phytype::phytype(
+    primitive_type::primitive_type(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    hpx::future<primitive_argument_type> phytype::eval(
+    hpx::future<primitive_argument_type> primitive_type::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phytype::eval",
+                "primitive_type::eval",
                 generate_error_message(
-                    "phylanx.name requires exactly one argument"));
+                    "phylanx.__type requires exactly one argument"));
         }
 
         auto this_ = this->shared_from_this();
@@ -74,6 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 return primitive_argument_type{std::int64_t(arg.index())};
             }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
+            value_operand(operands[0], std::move(args),
+                name_, codename_, std::move(ctx)));
     }
 }}}

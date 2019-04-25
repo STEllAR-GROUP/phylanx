@@ -494,7 +494,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> nonzero_where::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (nonzero_ && operands.size() != 1)
         {
@@ -542,38 +542,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (nonzero_ || (where_ && operands.size() == 1))
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op)
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& op)
                 -> primitive_argument_type
                 {
                     return util::visit(visit_nonzero{*this_},
-                        std::move(op.variant()));
-                }),
-                value_operand(operands[0], args, name_, codename_));
+                        std::move(op.get().variant()));
+                },
+                value_operand(operands[0], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& cond,
-                primitive_argument_type&& lhs, primitive_argument_type&& rhs)
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+        auto&& op1 = value_operand(operands[1], args, name_, codename_, ctx);
+
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& cond,
+                    hpx::future<primitive_argument_type>&& lhs,
+                    hpx::future<primitive_argument_type>&& rhs)
             -> primitive_argument_type
             {
                 return util::visit(
-                    visit_where{*this_, std::move(lhs), std::move(rhs)},
-                    std::move(cond.variant()));
-            }),
-            value_operand(operands[0], args, name_, codename_),
-            value_operand(operands[1], args, name_, codename_),
-            value_operand(operands[2], args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> nonzero_where::eval(
-        primitive_arguments_type const& args, eval_context) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                    visit_where{*this_, lhs.get(), rhs.get()},
+                    std::move(cond.get().variant()));
+            },
+            std::move(op0), std::move(op1),
+            value_operand(operands[2], std::move(args), name_, codename_,
+                std::move(ctx)));
     }
 }}}

@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_bool.hpp>
@@ -216,7 +216,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> generic_operation_bool::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -238,36 +238,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op)
-                -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& op)
+            -> primitive_argument_type
+            {
+                std::size_t dims = extract_numeric_value_dimension(
+                    op, this_->name_, this_->codename_);
+                switch (dims)
                 {
-                    std::size_t dims = extract_numeric_value_dimension(
-                        op, this_->name_, this_->codename_);
-                    switch (dims)
-                    {
-                    case 0:
-                        return this_->generic0d_bool(std::move(op));
+                case 0:
+                    return this_->generic0d_bool(std::move(op));
 
-                    case 1:
-                        return this_->generic1d_bool(std::move(op));
+                case 1:
+                    return this_->generic1d_bool(std::move(op));
 
-                    case 2:
-                        return this_->generic2d_bool(std::move(op));
+                case 2:
+                    return this_->generic2d_bool(std::move(op));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                    case 3:
-                        return this_->generic3d_bool(std::move(op));
+                case 3:
+                    return this_->generic3d_bool(std::move(op));
 #endif
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "generic_operation_bool::eval",
-                            this_->generate_error_message(
-                                "left hand side operand has unsupported "
-                                "number of dimensions"));
-                    }
-                }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "generic_operation_bool::eval",
+                        this_->generate_error_message(
+                            "left hand side operand has unsupported "
+                            "number of dimensions"));
+                }
+            }),
+            value_operand(operands[0], std::move(args),
+                name_, codename_, std::move(ctx)));
     }
 }}}

@@ -439,82 +439,81 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> argsort::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         auto this_ = this->shared_from_this();
 
         // if no argument is passed to argsort, operands will hold a single element:
         // 'nil'
-        if (1 == operands.size())
+        if (operands.empty() || operands.size() > 4)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "argsort::eval",
                 this_->generate_error_message(
                     "The argsort primitive requires at least 1 argument- an "
                     "`array_like`."));
+        }
 
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_arguments_type&& args)
-                    -> primitive_argument_type {
-                    std::string kind = extract_string_value_strict(
-                        std::move(args[2]), this_->name_, this_->codename_);
-                    // TODO: order is ignored!
-                    std::string order = "";
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+                -> primitive_argument_type
+            {
+                std::string kind = extract_string_value_strict(
+                    std::move(args[2]), this_->name_, this_->codename_);
 
-                    if (is_list_operand_strict(args[0]))
+                // TODO: order is ignored!
+                std::string order = "";
+
+                if (is_list_operand_strict(args[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argsort::eval",
+                        this_->generate_error_message(
+                            "TODO: argsoft does not support lists."));
+                }
+                else
+                {
+                    if (!valid(args[1]))
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "argsort::eval",
-                            this_->generate_error_message(
-                                "TODO: argsoft does not support lists."));
+                        return this_->argsort_flatten(
+                            std::move(args[0]), -1, kind, order);
                     }
-                    else
+
+                    std::int64_t axis = extract_scalar_integer_value_strict(
+                        std::move(args[1]), this_->name_, this_->codename_);
+                    switch (extract_common_type(args[0]))
                     {
-                        if (!valid(args[1]))
-                        {
-                            return this_->argsort_flatten(
-                                std::move(args[0]), -1, kind, order);
-                        }
+                    case node_data_type_bool:
+                        return this_->argsort_helper(
+                            extract_boolean_value_strict(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            axis, kind, order);
 
-                        std::int64_t axis = extract_scalar_integer_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
-                        switch (extract_common_type(args[0]))
-                        {
-                        case node_data_type_bool:
-                            return this_->argsort_helper(
-                                extract_boolean_value_strict(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                axis, kind, order);
+                    case node_data_type_int64:
+                        return this_->argsort_helper(
+                            extract_integer_value_strict(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            axis, kind, order);
 
-                        case node_data_type_int64:
-                            return this_->argsort_helper(
-                                extract_integer_value_strict(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                axis, kind, order);
+                    case node_data_type_unknown:
+                    case node_data_type_double:
+                        return this_->argsort_helper(
+                            extract_numeric_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            axis, kind, order);
 
-                        case node_data_type_double:
-                            return this_->argsort_helper(
-                                extract_numeric_value_strict(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                axis, kind, order);
-
-                        case node_data_type_unknown:
-                            return this_->argsort_helper(
-                                extract_numeric_value(std::move(args[0]),
-                                    this_->name_, this_->codename_),
-                                axis, kind, order);
-                        default:
-                            break;
-                        }
-
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "argsort::eval",
-                            this_->generate_error_message(
-                                "`argsort` expects the input to be an "
-                                "`array_like`, i.e., numeric data type. "));
+                    default:
+                        break;
                     }
-                }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argsort::eval",
+                        this_->generate_error_message(
+                            "`argsort` expects the input to be an "
+                            "`array_like`, i.e., numeric data type. "));
+                }
+            }),
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }    // namespace primitives
 }    // namespace execution_tree

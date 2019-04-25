@@ -394,8 +394,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> squeeze_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -418,54 +417,56 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type
-        {
-
-            // Presence of axis changes behavior for >2d cases
-            hpx::util::optional<std::int64_t> axis;
-            if (args.size() > 1)
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
             {
-                if (valid(args[1]))
-                    axis = execution_tree::extract_scalar_integer_value_strict(
-                        args[1], this_->name_, this_->codename_);
+                // Presence of axis changes behavior for >2d cases
+                hpx::util::optional<std::int64_t> axis;
+                if (args.size() > 1)
+                {
+                    if (valid(args[1]))
+                    {
+                        axis =
+                            execution_tree::extract_scalar_integer_value_strict(
+                                args[1], this_->name_, this_->codename_);
+                    }
+                    else
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "squeeze_operation::eval",
+                            this_->generate_error_message(
+                                "the squeeze_operation primitive requires that the "
+                                "arguments given by the operands array are valid"));
+                    }
+                }
 
-                else
+                switch (extract_numeric_value_dimension(
+                    args[0], this_->name_, this_->codename_))
+                {
+                case 0:
+                    return this_->squeeze0d(std::move(args[0]), axis);
+
+                case 1:
+                    return this_->squeeze1d(std::move(args[0]), axis);
+
+                case 2:
+                    return this_->squeeze2d(std::move(args[0]), axis);
+
+    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return this_->squeeze3d(std::move(args[0]), axis);
+    #endif
+                default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "squeeze_operation::eval",
                         util::generate_error_message(
-                            "the squeeze_operation primitive requires that the "
-                            "arguments given by the operands array are valid",
+                            "operand a has an invalid "
+                            "number of dimensions",
                             this_->name_, this_->codename_));
-            }
-
-            switch (extract_numeric_value_dimension(
-                args[0], this_->name_, this_->codename_))
-            {
-            case 0:
-                return this_->squeeze0d(std::move(args[0]), axis);
-            case 1:
-                return this_->squeeze1d(std::move(args[0]), axis);
-            case 2:
-                return this_->squeeze2d(std::move(args[0]), axis);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-            case 3:
-                return this_->squeeze3d(std::move(args[0]), axis);
-#endif
-
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "squeeze_operation::eval",
-                    util::generate_error_message(
-                        "operand a has an invalid "
-                        "number of dimensions",
-                        this_->name_, this_->codename_));
-            }
-        }),
-        detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_));
+                }
+            }),
+            detail::map_operands(operands, functional::value_operand{},
+                std::move(args), name_, codename_, std::move(ctx)));
     }
 }}}

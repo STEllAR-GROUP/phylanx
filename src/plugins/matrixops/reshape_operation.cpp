@@ -758,8 +758,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> reshape_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        eval_context ctx) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         if (operands.size() != 1 && operands.size() != 2)
         {
@@ -787,123 +786,151 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 1)
         {
-            if (this_->mode_ == general_reshape)
+            if (mode_ == general_reshape)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "reshape_operation::eval",
                     this_->generate_error_message(
                         "the reshape requires exactly two operands"));
-            else if (this_->mode_ == flatten_mode)
+            }
+
+            if (mode_ == flatten_mode)
             {
                 return hpx::dataflow(hpx::launch::sync,
-                    hpx::util::unwrapping([this_ = std::move(this_)](
-                                              primitive_argument_type&& arr)
-                                              -> primitive_argument_type {
-                    switch (extract_common_type(arr))
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f)
+                    -> primitive_argument_type
                     {
-                    case node_data_type_bool:
-                        return this_->flatten_nd(extract_boolean_value_strict(
-                            std::move(arr), this_->name_, this_->codename_));
+                        auto&& arr = f.get();
 
-                    case node_data_type_int64:
-                        return this_->flatten_nd(extract_integer_value_strict(
-                            std::move(arr), this_->name_, this_->codename_));
+                        switch (extract_common_type(arr))
+                        {
+                        case node_data_type_bool:
+                            return this_->flatten_nd(
+                                extract_boolean_value_strict(std::move(arr),
+                                    this_->name_, this_->codename_));
 
-                    case node_data_type_double:
-                        return this_->flatten_nd(extract_numeric_value_strict(
-                            std::move(arr), this_->name_, this_->codename_));
+                        case node_data_type_int64:
+                            return this_->flatten_nd(
+                                extract_integer_value_strict(std::move(arr),
+                                    this_->name_, this_->codename_));
 
-                    case node_data_type_unknown:
-                        return this_->flatten_nd(extract_numeric_value(
-                            std::move(arr), this_->name_, this_->codename_));
+                        case node_data_type_double:
+                            return this_->flatten_nd(
+                                extract_numeric_value_strict(std::move(arr),
+                                    this_->name_, this_->codename_));
 
-                    default:
-                        break;
-                    }
+                        case node_data_type_unknown:
+                            return this_->flatten_nd(
+                                extract_numeric_value(std::move(arr),
+                                    this_->name_, this_->codename_));
 
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "reshape_operation::eval",
-                        this_->generate_error_message(
-                            "the reshape/flatten primitive requires for "
-                            "all arguments to be numeric data types"));
-                }),
-                value_operand(operands[0], args, name_, codename_, ctx));
+                        default:
+                            break;
+                        }
+
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "reshape_operation::eval",
+                            this_->generate_error_message(
+                                "the reshape/flatten primitive requires for "
+                                "all arguments to be numeric data types"));
+                    },
+                    value_operand(operands[0], std::move(args),
+                        name_, codename_, std::move(ctx)));
             }
+
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::eval",
-                this_->generate_error_message(
+                generate_error_message(
                     "unsupported reshape mode requested"));
         }
-        if (this_->mode_ == general_reshape)
+
+        if (mode_ == general_reshape)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            auto&& op0 =
+                value_operand(operands[0], args, name_, codename_, ctx);
+
+            return hpx::dataflow(hpx::launch::sync,
                 [this_ = std::move(this_)](
-                    primitive_argument_type&& arr, ir::range&& arg)
+                        hpx::future<primitive_argument_type>&& f1,
+                        hpx::future<ir::range>&& f2)
                 ->primitive_argument_type
-            {
-                std::size_t arr_dims_num = extract_numeric_value_dimension(
-                    arr, this_->name_, this_->codename_);
-                std::size_t size = extract_numeric_value_size(
-                    arr, this_->name_, this_->codename_);
-
-                if (arr_dims_num > PHYLANX_MAX_DIMENSIONS)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "reshape_operation::eval",
-                        util::generate_error_message("operand a has an invalid "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
-                }
+                    auto&& arr = f1.get();
+                    auto&& arg = f2.get();
 
-                if (!this_->validate_shape(size, arg))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "reshape_operation::eval",
-                        util::generate_error_message(
-                            "The given shape is not compatible with the shape "
-                            "of the original array. Notice that you can only "
-                            "specify one unknown dimension",
-                            this_->name_, this_->codename_));
-                }
+                    std::size_t arr_dims_num = extract_numeric_value_dimension(
+                        arr, this_->name_, this_->codename_);
+                    std::size_t size = extract_numeric_value_size(
+                        arr, this_->name_, this_->codename_);
 
-                switch (arr_dims_num)
-                {
-                case 0:
-                    return this_->reshape0d(std::move(arr), std::move(arg));
+                    if (arr_dims_num > PHYLANX_MAX_DIMENSIONS)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "reshape_operation::eval",
+                            this_->generate_error_message(
+                                "operand a has an invalid number of dimensions"));
+                    }
 
-                case 1:
-                    return this_->reshape1d(std::move(arr), std::move(arg));
+                    if (!this_->validate_shape(size, arg))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "reshape_operation::eval",
+                            this_->generate_error_message(
+                                "The given shape is not compatible with the shape "
+                                "of the original array. Notice that you can only "
+                                "specify one unknown dimension"));
+                    }
 
-                case 2:
-                    return this_->reshape2d(std::move(arr), std::move(arg));
+                    switch (arr_dims_num)
+                    {
+                    case 0:
+                        return this_->reshape0d(std::move(arr), std::move(arg));
+
+                    case 1:
+                        return this_->reshape1d(std::move(arr), std::move(arg));
+
+                    case 2:
+                        return this_->reshape2d(std::move(arr), std::move(arg));
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                case 3:
-                    return this_->reshape3d(std::move(arr), std::move(arg));
+                    case 3:
+                        return this_->reshape3d(std::move(arr), std::move(arg));
 #endif
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "reshape_operation::eval",
-                        util::generate_error_message("operand a has an invalid "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
-                }
-            }),
-                value_operand(operands[0], args, name_, codename_, ctx),
-                list_operand(operands[1], args, name_, codename_, ctx));
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "reshape_operation::eval",
+                            this_->generate_error_message(
+                                "operand a has an invalid number of dimensions"));
+                    }
+                },
+                std::move(op0),
+                list_operand(operands[1], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
-        else if (this_->mode_ == flatten_mode)
+
+        if (mode_ == flatten_mode)
         {
+            auto&& op0 =
+                value_operand(operands[0], args, name_, codename_, ctx);
+
             return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
-                    [this_ = std::move(this_)](primitive_argument_type&& arr,
-                        std::string order) -> primitive_argument_type {
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& f1,
+                        hpx::future<std::string>&& f2)
+                -> primitive_argument_type
+                {
+                    auto&& arr = f1.get();
+                    auto&& order = f2.get();
 
                     if (order != "C" && order != "F")
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "reshape_operation::eval",
-                        this_->generate_error_message(
-                            "order not understood. the order parameter could "
-                            " only be 'C' or 'F'"));
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "reshape_operation::eval",
+                            this_->generate_error_message(
+                                "order not understood. the order parameter could "
+                                " only be 'C' or 'F'"));
+                    }
 
                     switch (extract_common_type(arr))
                     {
@@ -941,13 +968,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "the reshape/flatten primitive requires for "
                             "all arguments to be numeric data types"));
 
-                    }),
-                value_operand(operands[0], args, name_, codename_, ctx),
-                string_operand(operands[1], args, name_, codename_, ctx));
+                },
+                std::move(op0),
+                string_operand(operands[1], std::move(args), name_, codename_,
+                    std::move(ctx)));
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "reshape_operation::eval",
-            this_->generate_error_message(
-                "unsupported reshape mode requested"));
+            generate_error_message("unsupported reshape mode requested"));
     }
 }}}
