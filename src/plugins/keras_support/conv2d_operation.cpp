@@ -91,18 +91,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             m2);
     }
 
-    template <typename Vector1, typename Vector2>
-    double conv2d_operation::convolve_step(const Vector1& v1, const Vector2& v2,
-        std::int64_t dilation_rate, std::size_t kernel_size,
-        std::size_t r) const
+    template <typename Matrix1, typename Matrix2>
+    double conv2d_operation::convolve_step(const Matrix1& m1,
+        const Matrix2& m2, std::size_t dilation_height,
+        std::size_t dilation_width, std::size_t kernel_rows,
+        std::size_t kernel_columns, std::size_t r_remainder,
+        std::size_t c_remainder) const
     {
-        return blaze::sum(blaze::elements(
-                              v1,
-                              [dilation_rate, kernel_size, r](std::size_t i) {
-                                  return i * dilation_rate + r;
-                              },
-                              kernel_size) *
-            v2);
+        return blaze::sum(
+            blaze::columns(
+                blaze::rows(
+                    m1,
+                    [dilation_height, kernel_rows, r_remainder](std::size_t i) {
+                        return i * dilation_height + r_remainder;
+                    },
+                    kernel_rows),
+                [dilation_width, kernel_columns, c_remainder](
+                    std::size_t j) { return j * dilation_width + c_remainder; },
+                kernel_columns) %
+            m2);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -485,86 +492,381 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 c_rel = c - pad_left;
                 if (r_rel < 0)
                 {
-                    if (c_rel < 0)
+                    std::size_t kernel_row_size;
+                    std::size_t r_remainder = -r_rel % dilation_height;
+                    if (nrows <= r_remainder)
                     {
-                        result(r, c) = convolve_step(
-                            blaze::submatrix(m, 0, 0, filter_height + r_rel,
-                                filter_width + c_rel),
-                            blaze::submatrix(k, -r_rel, -c_rel,
-                                filter_height + r_rel, filter_width + c_rel));
+                        kernel_row_size = 1;
                     }
-                    else if (c_rel > static_cast<std::int64_t>(ncolumns) -
-                            static_cast<std::int64_t>(filter_width))
+                    else if (dilated_filter_height + r_rel > nrows)
                     {
-                        result(r, c) = convolve_step(
-                            blaze::submatrix(m, 0, c_rel, filter_height + r_rel,
-                                ncolumns - c_rel),
-                            blaze::submatrix(k, -r_rel, 0,
-                                filter_height + r_rel, ncolumns - c_rel));
+                        kernel_row_size = blaze::ceil(
+                            static_cast<float>(nrows - r_remainder) /
+                            static_cast<float>(dilation_height));
                     }
                     else
                     {
-                        result(r, c) = convolve_step(
-                            blaze::submatrix(m, 0, c_rel, filter_height + r_rel,
-                                filter_width),
-                            blaze::submatrix(k, -r_rel, 0,
-                                filter_height + r_rel, filter_width));
+                        kernel_row_size = blaze::ceil(
+                            static_cast<float>(dilated_filter_height + r_rel) /
+                            static_cast<float>(dilation_height));
+                    }
+                    std::size_t vector_row_size =
+                        (blaze::min)(nrows, dilated_filter_height + r_rel);
+
+                    if (r_remainder == 0)
+                    {
+                        if (c_rel < 0)
+                        {
+                            std::size_t kernel_column_size;
+                            std::size_t c_remainder = -c_rel % dilation_width;
+                            if (ncolumns <= c_remainder)
+                            {
+                                kernel_column_size = 1;
+                            }
+                            else if (dilated_filter_width + c_rel > ncolumns)
+                            {
+                                kernel_column_size = blaze::ceil(
+                                    static_cast<float>(ncolumns - c_remainder) /
+                                    static_cast<float>(dilation_width));
+                            }
+                            else
+                            {
+                                kernel_column_size =
+                                    blaze::ceil(static_cast<float>(
+                                        dilated_filter_width + c_rel) /
+                                        static_cast<float>(dilation_width));
+                            }
+                            std::size_t vector_column_size =
+                                (blaze::min)(ncolumns, dilated_filter_width + c_rel);
+
+                            if (c_remainder == 0)
+                            {
+                                result(r, c) = convolve_step(
+                                    blaze::submatrix(m, 0, 0, vector_row_size,
+                                        vector_column_size),
+                                    blaze::submatrix(k,
+                                        blaze::ceil(static_cast<float>(-r_rel) /
+                                            static_cast<float>(
+                                                dilation_height)),
+                                        blaze::ceil(static_cast<float>(-c_rel) /
+                                            static_cast<float>(dilation_width)),
+                                        kernel_row_size, kernel_column_size),
+                                    dilation_height, dilation_width,
+                                    kernel_row_size, kernel_column_size);
+                            }
+                            else if (dilation_width - c_remainder >= ncolumns)
+                            {
+                                result(r, c) = 0;
+                            }
+                            else
+                            {
+                                result(r, c) = convolve_step(
+                                    blaze::submatrix(m, 0, 0, vector_row_size,
+                                        vector_column_size),
+                                    blaze::submatrix(k,
+                                        blaze::ceil(static_cast<float>(-r_rel) /
+                                            static_cast<float>(
+                                                dilation_height)),
+                                        blaze::ceil(static_cast<float>(-c_rel) /
+                                            static_cast<float>(dilation_width)),
+                                        kernel_row_size, kernel_column_size),
+                                    dilation_height, dilation_width,
+                                    kernel_row_size, kernel_column_size, 0,
+                                    dilation_width - c_remainder);
+                            }
+
+                        }
+                        else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                                static_cast<std::int64_t>(dilated_filter_width))
+                        {
+                            std::size_t kernel_column_size = blaze::ceil(
+                                static_cast<float>(ncolumns - c_rel) /
+                                static_cast<float>(dilation_width));
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, 0, c_rel, vector_row_size,
+                                    ncolumns - c_rel),
+                                blaze::submatrix(k,
+                                    blaze::ceil(static_cast<float>(-r_rel) /
+                                        static_cast<float>(dilation_height)),
+                                    0, kernel_row_size, kernel_column_size),
+                                dilation_height, dilation_width,
+                                kernel_row_size, kernel_column_size);
+                        }
+                        else
+                        {
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, 0, c_rel, vector_row_size,
+                                    dilated_filter_width),
+                                blaze::submatrix(k,
+                                    blaze::ceil(static_cast<float>(-r_rel) /
+                                        static_cast<float>(dilation_height)),
+                                    0, kernel_row_size, filter_width),
+                                dilation_height, dilation_width,
+                                kernel_row_size, filter_width);
+                        }
+                    }
+                    else if (dilation_height - r_remainder >= nrows)
+                    {
+                        result(r,c) = 0;
+                    }
+                    else
+                    {
+                        if (c_rel < 0)
+                        {
+                            std::size_t kernel_column_size;
+                            std::size_t c_remainder = -c_rel % dilation_width;
+                            if (ncolumns <= c_remainder)
+                            {
+                                kernel_column_size = 1;
+                            }
+                            else if (dilated_filter_width + c_rel > ncolumns)
+                            {
+                                kernel_column_size = blaze::ceil(
+                                    static_cast<float>(ncolumns - c_remainder) /
+                                    static_cast<float>(dilation_width));
+                            }
+                            else
+                            {
+                                kernel_column_size =
+                                    blaze::ceil(static_cast<float>(
+                                        dilated_filter_width + c_rel) /
+                                        static_cast<float>(dilation_width));
+                            }
+                            std::size_t vector_column_size =
+                                (blaze::min)(ncolumns, dilated_filter_width + c_rel);
+
+                            if (c_remainder == 0)
+                            {
+                                result(r, c) = convolve_step(
+                                    blaze::submatrix(m, 0, 0, vector_row_size,
+                                        vector_column_size),
+                                    blaze::submatrix(k,
+                                        blaze::ceil(static_cast<float>(-r_rel) /
+                                            static_cast<float>(
+                                                dilation_height)),
+                                        blaze::ceil(static_cast<float>(-c_rel) /
+                                            static_cast<float>(dilation_width)),
+                                        kernel_row_size, kernel_column_size),
+                                    dilation_height, dilation_width,
+                                    kernel_row_size, kernel_column_size,
+                                    dilation_height - r_remainder, 0);
+                            }
+                            else if (dilation_width - c_remainder >= ncolumns)
+                            {
+                                result(r, c) = 0;
+                            }
+                            else
+                            {
+                                result(r, c) = convolve_step(
+                                    blaze::submatrix(m, 0, 0, vector_row_size,
+                                        vector_column_size),
+                                    blaze::submatrix(k,
+                                        blaze::ceil(static_cast<float>(-r_rel) /
+                                            static_cast<float>(
+                                                dilation_height)),
+                                        blaze::ceil(static_cast<float>(-c_rel) /
+                                            static_cast<float>(dilation_width)),
+                                        kernel_row_size, kernel_column_size),
+                                    dilation_height, dilation_width,
+                                    kernel_row_size, kernel_column_size,
+                                    dilation_height - r_remainder,
+                                    dilation_width - c_remainder);
+                            }
+                        }
+                        else if (c_rel > static_cast<std::int64_t>(ncolumns) -
+                            static_cast<std::int64_t>(dilated_filter_width))
+                        {
+                            std::size_t kernel_column_size = blaze::ceil(
+                                static_cast<float>(ncolumns - c_rel) /
+                                static_cast<float>(dilation_width));
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, 0, c_rel, vector_row_size,
+                                    ncolumns - c_rel),
+                                blaze::submatrix(k,
+                                    blaze::ceil(static_cast<float>(-r_rel) /
+                                        static_cast<float>(dilation_height)),
+                                    0, kernel_row_size, kernel_column_size),
+                                dilation_height, dilation_width,
+                                kernel_row_size, kernel_column_size,
+                                dilation_height - r_remainder, 0);
+                        }
+                        else
+                        {
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, 0, c_rel, vector_row_size,
+                                    dilated_filter_width),
+                                blaze::submatrix(k,
+                                    blaze::ceil(static_cast<float>(-r_rel) /
+                                        static_cast<float>(dilation_height)),
+                                    0, kernel_row_size, filter_width),
+                                dilation_height, dilation_width,
+                                kernel_row_size, filter_width,
+                                dilation_height - r_remainder, 0);
+                        }
                     }
                 }
                 else if (r_rel > static_cast<std::int64_t>(nrows) -
-                        static_cast<std::int64_t>(filter_height))
+                        static_cast<std::int64_t>(dilated_filter_height))
                 {
+                    std::size_t kernel_row_size =
+                        blaze::ceil(static_cast<float>(nrows - r_rel) /
+                            static_cast<float>(dilation_height));
                     if (c_rel < 0)
                     {
-                        result(r, c) = convolve_step(
-                            blaze::submatrix(m, r_rel, 0, nrows - r_rel,
-                                filter_width + c_rel),
-                            blaze::submatrix(k, 0, -c_rel, nrows - r_rel,
-                                filter_width + c_rel));
+                        std::size_t kernel_column_size;
+                        std::size_t c_remainder = -c_rel % dilation_width;
+                        if (ncolumns <= c_remainder)
+                        {
+                            kernel_column_size = 1;
+                        }
+                        else if (dilated_filter_width + c_rel > ncolumns)
+                        {
+                            kernel_column_size = blaze::ceil(
+                                static_cast<float>(ncolumns - c_remainder) /
+                                static_cast<float>(dilation_width));
+                        }
+                        else
+                        {
+                            kernel_column_size =
+                                blaze::ceil(static_cast<float>(
+                                                dilated_filter_width + c_rel) /
+                                    static_cast<float>(dilation_width));
+                        }
+                        std::size_t vector_column_size =
+                            (blaze::min)(ncolumns, dilated_filter_width + c_rel);
+
+                        if (c_remainder == 0)
+                        {
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, r_rel, 0, nrows - r_rel,
+                                    vector_column_size),
+                                blaze::submatrix(k, 0,
+                                    blaze::ceil(static_cast<float>(-c_rel) /
+                                        static_cast<float>(dilation_width)),
+                                    kernel_row_size, kernel_column_size),
+                                dilation_height, dilation_width,
+                                kernel_row_size, kernel_column_size);
+                        }
+                        else if (dilation_width - c_remainder >= ncolumns)
+                        {
+                            result(r,c) = 0;
+                        }
+                        else
+                        {
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, r_rel, 0, nrows - r_rel,
+                                    vector_column_size),
+                                blaze::submatrix(k, 0,
+                                    blaze::ceil(static_cast<float>(-c_rel) /
+                                        static_cast<float>(dilation_width)),
+                                    kernel_row_size, kernel_column_size),
+                                dilation_height, dilation_width,
+                                kernel_row_size, kernel_column_size, 0,
+                                dilation_width - c_remainder);
+                        }
                     }
                     else if (c_rel > static_cast<std::int64_t>(ncolumns) -
-                            static_cast<std::int64_t>(filter_width))
+                            static_cast<std::int64_t>(dilated_filter_width))
                     {
+                        std::size_t kernel_column_size =
+                            blaze::ceil(static_cast<float>(ncolumns - c_rel) /
+                                static_cast<float>(dilation_width));
                         result(r, c) =
                             convolve_step(blaze::submatrix(m, r_rel, c_rel,
                                               nrows - r_rel, ncolumns - c_rel),
-                                blaze::submatrix(
-                                    k, 0, 0, nrows - r_rel, ncolumns - c_rel));
+                                blaze::submatrix(k, 0, 0, kernel_row_size,
+                                    kernel_column_size),
+                                dilation_height, dilation_width,
+                                kernel_row_size, kernel_column_size);
                     }
                     else
                     {
-                        result(r, c) =
-                            convolve_step(blaze::submatrix(m, r_rel, c_rel,
-                                              nrows - r_rel, filter_width),
-                                blaze::submatrix(
-                                    k, 0, 0, nrows - r_rel, filter_width));
+                        result(r, c) = convolve_step(
+                            blaze::submatrix(m, r_rel, c_rel, nrows - r_rel,
+                                dilated_filter_width),
+                            blaze::submatrix(
+                                k, 0, 0, kernel_row_size, filter_width),
+                            dilation_height, dilation_width, kernel_row_size,
+                            filter_width);
                     }
                 }
                 else
                 {
                     if (c_rel < 0)
                     {
-                        result(r, c) = convolve_step(
-                            blaze::submatrix(m, r_rel, 0, filter_height,
-                                filter_width + c_rel),
-                            blaze::submatrix(k, 0, -c_rel, filter_height,
-                                filter_width + c_rel));
+                        std::size_t kernel_column_size;
+                        std::size_t c_remainder = -c_rel % dilation_width;
+                        if (ncolumns <= c_remainder)
+                        {
+                            kernel_column_size = 1;
+                        }
+                        else if (dilated_filter_width + c_rel > ncolumns)
+                        {
+                            kernel_column_size = blaze::ceil(
+                                static_cast<float>(ncolumns - c_remainder) /
+                                static_cast<float>(dilation_width));
+                        }
+                        else
+                        {
+                            kernel_column_size =
+                                blaze::ceil(static_cast<float>(
+                                                dilated_filter_width + c_rel) /
+                                    static_cast<float>(dilation_width));
+                        }
+                        std::size_t vector_column_size =
+                            (blaze::min)(ncolumns, dilated_filter_width + c_rel);
+
+                        if (c_remainder == 0)
+                        {
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, r_rel, 0,
+                                    dilated_filter_height, vector_column_size),
+                                blaze::submatrix(k, 0,
+                                    blaze::ceil(static_cast<float>(-c_rel) /
+                                        static_cast<float>(dilation_width)),
+                                    filter_height, kernel_column_size),
+                                dilation_height, dilation_width, filter_height,
+                                kernel_column_size);
+                        }
+                        else if (dilation_width - c_remainder >= ncolumns)
+                        {
+                            result(r,c) = 0;
+                        }
+                        else
+                        {
+                            result(r, c) = convolve_step(
+                                blaze::submatrix(m, r_rel, 0,
+                                    dilated_filter_height, vector_column_size),
+                                blaze::submatrix(k, 0,
+                                    blaze::ceil(static_cast<float>(-c_rel) /
+                                        static_cast<float>(dilation_width)),
+                                    filter_height, kernel_column_size),
+                                dilation_height, dilation_width, filter_height,
+                                kernel_column_size, 0,
+                                dilation_width - c_remainder);
+                        }
                     }
                     else if (c_rel > static_cast<std::int64_t>(ncolumns) -
-                            static_cast<std::int64_t>(filter_width))
+                            static_cast<std::int64_t>(dilated_filter_width))
                     {
-                        result(r, c) =
-                            convolve_step(blaze::submatrix(m, r_rel, c_rel,
-                                              filter_height, ncolumns - c_rel),
-                                blaze::submatrix(
-                                    k, 0, 0, filter_height, ncolumns - c_rel));
+                        std::size_t kernel_column_size =
+                            blaze::ceil(static_cast<float>(ncolumns - c_rel) /
+                                static_cast<float>(dilation_width));
+                        result(r, c) = convolve_step(
+                            blaze::submatrix(m, r_rel, c_rel,
+                                dilated_filter_height, ncolumns - c_rel),
+                            blaze::submatrix(
+                                k, 0, 0, filter_height, kernel_column_size),
+                            dilation_height, dilation_width, filter_height,
+                            kernel_column_size);
                     }
                     else
                     {
-                        result(r, c) =
-                            convolve_step(blaze::submatrix(m, r_rel, c_rel,
-                                              filter_height, filter_width),
-                                k);
+                        result(r, c) = convolve_step(
+                            blaze::submatrix(m, r_rel, c_rel,
+                                dilated_filter_height, dilated_filter_width),
+                            k, dilation_height, dilation_width, filter_height,
+                            filter_width);
                     }
                 }
             }
@@ -780,7 +1082,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[1]), this_->name_, this_->codename_),
                         std::move(padding), std::move(strides));
                 }
-                // strides == 1 and dilation_rate > 1
+                // strides == (1,1) and dilation_rate != (1,1)
                 return this_->conv2d_any_pad_dilation(
                     extract_numeric_value(
                         std::move(args[0]), this_->name_, this_->codename_),

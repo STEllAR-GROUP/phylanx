@@ -289,16 +289,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     (blaze::min)(v_size, dilated_k_size + i_rel);
 
                 if (remainder == 0)
+                {
                     result[i] =
                         convolve_step(blaze::subvector(v, 0, vector_size),
-                        blaze::subvector(k,
-                            blaze::ceil(static_cast<float>(-i_rel) /
-                                static_cast<float>(dilation_rate)),
-                            kernel_size),
-                        dilation_rate, kernel_size);
+                            blaze::subvector(k,
+                                blaze::ceil(static_cast<float>(-i_rel) /
+                                    static_cast<float>(dilation_rate)),
+                                kernel_size),
+                            dilation_rate, kernel_size);
+                }
                 else if (dilation_rate - remainder >= v_size)
+                {
                     result[i] = 0;
+                }
                 else
+                {
                     result[i] = convolve_step(
                         blaze::subvector(v, 0, vector_size),
                         blaze::subvector(k,
@@ -306,6 +311,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 static_cast<float>(dilation_rate)),
                             kernel_size),
                         dilation_rate, kernel_size, dilation_rate - remainder);
+                }
             }
             else if (i_rel > static_cast<std::int64_t>(v_size) -
                     static_cast<std::int64_t>(dilated_k_size))
