@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const rnn::match_data = {hpx::util::make_tuple("rnn",
         std::vector<std::string>{
-            "rnn(_1, _2)"},
+            "rnn(_1)"},
         &create_rnn, &create_primitive<rnn>,
         R"(step_function, inputs, initial_states, go_backwards, mask, constants,
         unroll, input_length
@@ -69,8 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_ = std::move(this_), ctx](
-                    primitive_argument_type&& bound_func,
-                    ir::node_data<double>&& inputs) mutable
+                    primitive_argument_type&& bound_func) mutable
                 -> primitive_argument_type {
                     primitive const* p = util::get_if<primitive>(&bound_func);
                     if (p == nullptr)
@@ -81,22 +80,20 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                                 "the first argument to filter must be an "
                                 "invocable object"));
                     }
-                    auto m = inputs.tensor();
 
                     primitive_arguments_type f_inputs;
                     f_inputs.reserve(1);
-                    blaze::DynamicMatrix<double> m0 = blaze::rowslice(m, 0);
+                    blaze::DynamicMatrix<double> m{{1., 2.},{3., 4.}};
 
-                    f_inputs.push_back(primitive_argument_type{m0});
+                    f_inputs.push_back(primitive_argument_type{std::move(m)});
 
-                    ir::node_data<double> result =
+                    auto result =
                         numeric_operand_sync(bound_func, std::move(f_inputs),
                             this_->name_, this_->codename_, ctx);
 
                     return primitive_argument_type{std::move(result)};
                 }),
             value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
-            numeric_operand(operands_[1], args, name_, codename_, ctx));
+                add_mode(ctx, eval_dont_evaluate_lambdas)));
     }
 }}}

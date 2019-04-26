@@ -35,9 +35,8 @@ void test_rnn(std::string const& code, std::string const& expected_str)
 int main(int argc, char* argv[])
 {
     test_rnn("define(f, x, block(x))\n"
-             "rnn(f,[[[0.2, 0.2, 0.6],[0.4, 0.3, 0.3]],[[0.7, 0.15, 0.15],[0., "
-             "0., 0.]]])",
-        "[[0.2, 0.7],[0.2, 0.15],[0.6, 0.15]]");
+             "rnn(f)",
+        "[[1., 2.],[3., 4.]]");
 
     return hpx::util::report_errors();
 }
