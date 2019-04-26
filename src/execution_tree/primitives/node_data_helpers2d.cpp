@@ -25,7 +25,8 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // return argument as a matrix, scalars and vectors are properly broadcast
     template <typename T>
-    void extract_value_matrix(typename ir::node_data<T>::storage2d_type& result,
+    PHYLANX_EXPORT void extract_value_matrix(
+        typename ir::node_data<T>::storage2d_type& result,
         ir::node_data<T>&& rhs, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename)
     {
@@ -205,7 +206,7 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_matrix(ir::node_data<T>&& arg,
+    PHYLANX_EXPORT ir::node_data<T> extract_value_matrix(ir::node_data<T>&& arg,
         std::size_t rows, std::size_t columns, std::string const& name,
         std::string const& codename)
     {
@@ -216,8 +217,9 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_matrix(primitive_argument_type const& val,
-        std::size_t rows, std::size_t columns, std::string const& name,
+    PHYLANX_EXPORT ir::node_data<T> extract_value_matrix(
+        primitive_argument_type const& val, std::size_t rows,
+        std::size_t columns, std::string const& name,
         std::string const& codename)
     {
         return extract_value_matrix(
@@ -226,9 +228,9 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_matrix(primitive_argument_type && val,
-        std::size_t rows, std::size_t columns, std::string const& name,
-        std::string const& codename)
+    PHYLANX_EXPORT ir::node_data<T> extract_value_matrix(
+        primitive_argument_type&& val, std::size_t rows, std::size_t columns,
+        std::string const& name, std::string const& codename)
     {
         return extract_value_matrix(
             extract_node_data<T>(std::move(val), name, codename),

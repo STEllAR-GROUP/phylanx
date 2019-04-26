@@ -27,10 +27,11 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // return argument as a matrix, scalars and vectors are properly broadcast
     template <typename T>
-    void extract_value_tensor(typename ir::node_data<T>::storage3d_type& result,
-        ir::node_data<T>&& rhs,
-        std::size_t pages, std::size_t rows, std::size_t columns,
-        std::string const& name, std::string const& codename)
+    PHYLANX_EXPORT void extract_value_tensor(
+        typename ir::node_data<T>::storage3d_type& result,
+        ir::node_data<T>&& rhs, std::size_t pages, std::size_t rows,
+        std::size_t columns, std::string const& name,
+        std::string const& codename)
     {
         using storage3d_type = typename ir::node_data<T>::storage3d_type;
 
@@ -297,7 +298,7 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_tensor(ir::node_data<T>&& arg,
+    PHYLANX_EXPORT ir::node_data<T> extract_value_tensor(ir::node_data<T>&& arg,
         std::size_t pages, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename)
     {
@@ -308,9 +309,10 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_tensor(primitive_argument_type const& val,
-        std::size_t pages, std::size_t rows, std::size_t columns,
-        std::string const& name, std::string const& codename)
+    PHYLANX_EXPORT ir::node_data<T> extract_value_tensor(
+        primitive_argument_type const& val, std::size_t pages, std::size_t rows,
+        std::size_t columns, std::string const& name,
+        std::string const& codename)
     {
         return extract_value_tensor(
             extract_node_data<T>(val, name, codename),
@@ -318,9 +320,10 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    ir::node_data<T> extract_value_tensor(primitive_argument_type && val,
-        std::size_t pages, std::size_t rows, std::size_t columns,
-        std::string const& name, std::string const& codename)
+    PHYLANX_EXPORT ir::node_data<T> extract_value_tensor(
+        primitive_argument_type&& val, std::size_t pages, std::size_t rows,
+        std::size_t columns, std::string const& name,
+        std::string const& codename)
     {
         return extract_value_tensor(
             extract_node_data<T>(std::move(val), name, codename),

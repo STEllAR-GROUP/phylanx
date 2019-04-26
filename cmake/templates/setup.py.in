@@ -65,7 +65,7 @@ setup_args = {
     'description': 'A Python wrapper for the Phylanx execution engine',
     'long_description': '',
     'packages': ['phylanx', 'phylanx.ast', 'phylanx.execution_tree',
-                 'phylanx.core', 'phylanx.util'],
+                 'phylanx.core', 'phylanx.util', 'phylanx.plugins'],
     'package_dir': {'': '@PYTHON_PACKAGE_BASE_DIR@'},
     'ext_modules': [
         CopyExtension('@PYTHON_PACKAGE_NAME@',
