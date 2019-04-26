@@ -33,6 +33,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(relu_operation_plugin,
     phylanx::execution_tree::primitives::relu_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(resize_operation_plugin,
     phylanx::execution_tree::primitives::resize_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(rnn_plugin,
+    phylanx::execution_tree::primitives::rnn::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sigmoid_operation_plugin,
     phylanx::execution_tree::primitives::sigmoid_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softmax_operation_plugin,

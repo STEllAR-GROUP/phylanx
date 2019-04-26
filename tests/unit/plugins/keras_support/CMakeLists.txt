@@ -15,6 +15,7 @@ set(tests
     pool_operation
     relu_operation
     resize_operation
+    rnn
     sigmoid_operation
     softmax_operation
     softplus_operation
