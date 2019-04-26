@@ -103,6 +103,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         PHYLANX_EXPORT void enable_measurements();
 
+        PHYLANX_EXPORT hpx::launch select_direct_eval_execution(
+            hpx::launch policy) const;
+
         // decide whether to execute eval directly
         PHYLANX_EXPORT static hpx::launch select_direct_execution(
             eval_action, hpx::launch policy, hpx::naming::address_type lva);

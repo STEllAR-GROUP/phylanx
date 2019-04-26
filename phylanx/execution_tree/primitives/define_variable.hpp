@@ -49,7 +49,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         util::hashed_string target_name_;   // name of the represented variable
-        std::shared_ptr<primitive_component> target_;
     };
 }}}
 

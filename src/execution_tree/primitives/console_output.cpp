@@ -65,16 +65,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 bool init = true;
                 for (auto const& arg : args)
                 {
-                    if (init)
+                    if (valid(arg) || is_explicit_nil(arg))
                     {
-                        init = false;
+                        if (init)
+                        {
+                            init = false;
+                        }
+                        else
+                        {
+                            // Put spaces in the output to match Python
+                            hpx::cout << ' ';
+                        }
+                        hpx::cout << arg;
                     }
-                    else
-                    {
-                        // Put spaces in the output to match Python
-                        hpx::cout << ' ';
-                    }
-                    hpx::cout << arg;
                 }
                 hpx::cout << std::endl;
 

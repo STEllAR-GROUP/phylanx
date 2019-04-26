@@ -98,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             return hpx::make_ready_future(
-                extract_ref_value(operands_[0], name_, codename_));
+                extract_value(operands_[0], name_, codename_));
         }
 
         // simply invoke the given body with the given arguments

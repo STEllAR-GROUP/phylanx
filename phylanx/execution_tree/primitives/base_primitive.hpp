@@ -648,31 +648,34 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
-        std::string const& name = std::string(), std::string const& codename = std::string(),
+        std::string const& name = std::string(),
+        std::string const& codename = std::string(),
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type&& args,
-        std::string const& name = std::string(), std::string const& codename = std::string(),
+        primitive_argument_type const& val, primitive_arguments_type&& args,
+        std::string const& name = std::string(),
+        std::string const& codename = std::string(),
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type&& val,
-        primitive_arguments_type const& args,
-        std::string const& name = std::string(), std::string const& codename = std::string(),
+        primitive_argument_type&& val, primitive_arguments_type const& args,
+        std::string const& name = std::string(),
+        std::string const& codename = std::string(),
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type&& val,
-        primitive_arguments_type&& args,
-        std::string const& name = std::string(), std::string const& codename = std::string(),
+        primitive_argument_type&& val, primitive_arguments_type&& args,
+        std::string const& name = std::string(),
+        std::string const& codename = std::string(),
         eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val, primitive_argument_type const& arg,
-        std::string const& name = std::string(), std::string const& codename = std::string(),
+        std::string const& name = std::string(),
+        std::string const& codename = std::string(),
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
-        std::string const& name = std::string(), std::string const& codename = std::string(),
+        std::string const& name = std::string(),
+        std::string const& codename = std::string(),
         eval_context ctx = eval_context{});
 
     namespace functional

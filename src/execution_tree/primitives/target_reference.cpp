@@ -45,15 +45,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "target_reference::target_reference",
                 generate_error_message("no target given"));
         }
-
-        // try to bind to the function object locally
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            hpx::error_code ec(hpx::lightweight);
-            target_ = hpx::get_ptr<primitive_component>(
-                hpx::launch::sync, p->get_id(), ec);
-        }
     }
 
     // initialize evaluation context
@@ -88,28 +79,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     extract_value(std::move(param), name_, codename_));
             }
 
-            eval_context next_ctx = set_mode(std::move(ctx), eval_default);
-            if (target_)
-            {
-                return target_->eval(
-                    std::move(fargs), add_frame(std::move(next_ctx)));
-            }
-
             return value_operand(operands_[0], std::move(fargs), name_,
-                codename_, add_frame(std::move(next_ctx)));
-        }
-
-        eval_context next_ctx =
-            set_mode(std::move(ctx), eval_dont_wrap_functions);
-
-        if (target_)
-        {
-            return target_->eval(
-                std::move(params), add_frame(std::move(next_ctx)));
+                codename_, add_frame(set_mode(std::move(ctx), eval_default)));
         }
 
         return value_operand(operands_[0], std::move(params), name_, codename_,
-            add_frame(std::move(next_ctx)));
+            add_frame(set_mode(std::move(ctx), eval_dont_wrap_functions)));
     }
 
     hpx::future<primitive_argument_type> target_reference::eval(
@@ -134,28 +109,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             fargs.emplace_back(
                 extract_value(std::move(param), name_, codename_));
 
-            eval_context next_ctx = set_mode(std::move(ctx), eval_default);
-
-            if (target_)
-            {
-                return target_->eval(
-                    std::move(fargs), add_frame(std::move(next_ctx)));
-            }
-
             return value_operand(operands_[0], std::move(fargs), name_,
-                codename_, add_frame(std::move(next_ctx)));
-        }
-
-        eval_context next_ctx =
-            set_mode(std::move(ctx), eval_dont_wrap_functions);
-        if (target_)
-        {
-            return target_->eval_single(
-                std::move(param), add_frame(std::move(next_ctx)));
+                codename_, add_frame(set_mode(std::move(ctx), eval_default)));
         }
 
         return value_operand(operands_[0], std::move(param), name_, codename_,
-            add_frame(std::move(next_ctx)));
+            add_frame(set_mode(std::move(ctx), eval_dont_wrap_functions)));
     }
 
     bool target_reference::bind(
@@ -167,17 +126,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void target_reference::store(primitive_arguments_type&& data,
         primitive_arguments_type&& params, eval_context ctx)
     {
-        if (target_)
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
         {
-            target_->store(std::move(data), std::move(params), std::move(ctx));
-        }
-        else
-        {
-            primitive* p = util::get_if<primitive>(&operands_[0]);
-            if (p != nullptr)
-            {
-                p->store(std::move(data), std::move(params), std::move(ctx));
-            }
+            p->store(hpx::launch::sync, std::move(data), std::move(params),
+                std::move(ctx));
         }
     }
 

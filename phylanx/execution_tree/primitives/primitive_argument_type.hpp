@@ -22,6 +22,7 @@
 #include <hpx/util/assert.hpp>
 #include <hpx/util/internal_allocator.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -284,10 +285,12 @@ namespace phylanx { namespace execution_tree
         primitive(hpx::id_type && id)
           : base_type(std::move(id))
         {
+            initialize_ptr();
         }
         primitive(hpx::future<hpx::id_type> && fid)
           : base_type(std::move(fid))
         {
+            initialize_ptr();
         }
 
         PHYLANX_EXPORT primitive(hpx::future<hpx::id_type>&& fid,
@@ -323,10 +326,6 @@ namespace phylanx { namespace execution_tree
             primitive_arguments_type const& args,
             eval_context ctx = eval_context{}) const;
 
-        PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type&&,
-            primitive_arguments_type&&, eval_context ctx = eval_context{});
-        PHYLANX_EXPORT hpx::future<void> store(primitive_arguments_type&&,
-            primitive_arguments_type&&, eval_context ctx = eval_context{});
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
             primitive_argument_type&&, primitive_arguments_type&&,
             eval_context ctx = eval_context{});
@@ -353,6 +352,17 @@ namespace phylanx { namespace execution_tree
 
     public:
         static bool enable_tracing;
+
+    private:
+        bool has_ptr() const
+        {
+            return bool(ptr_);
+        }
+
+        PHYLANX_EXPORT bool execute_eval_synchronously() const;
+        PHYLANX_EXPORT void initialize_ptr();
+
+        std::shared_ptr<primitives::primitive_component> ptr_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

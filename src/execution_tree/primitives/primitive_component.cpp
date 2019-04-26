@@ -187,6 +187,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_->enable_measurements();
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::launch primitive_component::select_direct_eval_execution(
+        hpx::launch policy) const
+    {
+        return primitive_->select_direct_eval_execution(policy);
+    }
+
     hpx::launch primitive_component::select_direct_execution(
         primitive_component::eval_action, hpx::launch policy,
         hpx::naming::address_type lva)

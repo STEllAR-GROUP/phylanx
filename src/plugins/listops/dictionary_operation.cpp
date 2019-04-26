@@ -106,19 +106,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "arguments given by the operands array are valid"));
         }
 
-        if (!operands.empty() && !valid(operands[0]))
+        if (operands.empty() ||
+            (operands.size() == 1 && is_implicit_nil(operands[0])))
+        {
+            return hpx::make_ready_future(
+                primitive_argument_type{ir::dictionary{}});
+        }
+
+        if (!valid(operands[0]) && is_explicit_nil(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dict_operation::eval",
                 generate_error_message(
                     "the dictionary_operation primitive requires that the "
                     "argument given by the operand is a valid list"));
-        }
-
-        if (operands.empty())
-        {
-            return hpx::make_ready_future(
-                primitive_argument_type{ir::dictionary{}});
         }
 
         using range_list =

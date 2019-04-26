@@ -37,28 +37,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
-            ir::range const& shape)
+            ir::range const& shape, std::string const& name,
+            std::string const& codename)
         {
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0, 0};
             if (!shape.empty())
             {
                 if (shape.size() == 1)
                 {
-                    result[0] = extract_scalar_integer_value(*shape.begin());
+                    result[0] = extract_scalar_integer_value(
+                        *shape.begin(), name, codename);
                 }
                 else if (shape.size() == 2)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_integer_value(*elem_1);
-                    result[1] = extract_scalar_integer_value(*++elem_1);
+                    result[0] =
+                        extract_scalar_integer_value(*elem_1, name, codename);
+                    result[1] =
+                        extract_scalar_integer_value(*++elem_1, name, codename);
                 }
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 else if (shape.size() == 3)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_integer_value(*elem_1);
-                    result[1] = extract_scalar_integer_value(*++elem_1);
-                    result[2] = extract_scalar_integer_value(*++elem_1);
+                    result[0] =
+                        extract_scalar_integer_value(*elem_1, name, codename);
+                    result[1] =
+                        extract_scalar_integer_value(*++elem_1, name, codename);
+                    result[2] =
+                        extract_scalar_integer_value(*++elem_1, name, codename);
                 }
 #endif
             }
@@ -437,13 +444,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
-                            this_->generate_error_message(
+                            this_->generate_error_message(hpx::util::format(
                                 "the constant primitive requires "
                                 "for the shape not to have more than "
-                                "two entries"));
+                                "{} entries", PHYLANX_MAX_DIMENSIONS)));
                     }
 
-                    dims = detail::extract_dimensions(r);
+                    dims = detail::extract_dimensions(
+                        r, this_->name_, this_->codename_);
                     numdims = detail::extract_num_dimensions(r);
                 }
                 else if (is_numeric_operand(op1))

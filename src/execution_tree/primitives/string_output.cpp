@@ -72,7 +72,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::stringstream strm;
                 for (auto const& arg : args)
                 {
-                    strm << arg;
+                    if (valid(arg) || is_explicit_nil(arg))
+                    {
+                        strm << arg;
+                    }
                 }
 
                 return primitive_argument_type(strm.str());

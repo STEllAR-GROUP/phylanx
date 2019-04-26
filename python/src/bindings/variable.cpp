@@ -93,8 +93,18 @@ namespace phylanx { namespace execution_tree
     primitive variable::create_variable(
         primitive_argument_type&& value, std::string const& name)
     {
-        return create_primitive_component(
-            hpx::find_here(), "variable", std::move(value), name, "", false);
+        pybind11::gil_scoped_release release;       // release GIL
+
+        auto f = [&]() {
+            return create_primitive_component(hpx::find_here(), "variable",
+                std::move(value), name, "", false);
+        };
+
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::threads::run_as_hpx_thread(f);
+        }
+        return f();
     }
 
     std::size_t variable::variable_count = 0;
@@ -184,6 +194,8 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     pybind11::handle variable::eval(pybind11::args args) const
     {
+        HPX_ASSERT(hpx::threads::get_self_ptr() != nullptr);
+
         phylanx::execution_tree::primitive_arguments_type keep_alive;
         keep_alive.reserve(args.size());
         phylanx::execution_tree::primitive_arguments_type fargs;
@@ -275,14 +287,18 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::primitive_argument_type const& rhs)           \
     {                                                                          \
         using namespace phylanx::execution_tree;                               \
-        primitive_arguments_type args;                                         \
-        args.reserve(2);                                                       \
-        args.emplace_back(lhs.value());                                        \
-        args.emplace_back(rhs);                                                \
-        return phylanx::execution_tree::variable{                              \
-            primitives::create_##op##_operation(                               \
-                hpx::find_here(), std::move(args)),                            \
-            lhs.dtype(), name};                                                \
+        pybind11::gil_scoped_release release;                                  \
+        return hpx::threads::run_as_hpx_thread([&]() {                         \
+            primitive_arguments_type args;                                     \
+            args.reserve(2);                                                   \
+            args.emplace_back(lhs.value());                                    \
+            args.emplace_back(rhs);                                            \
+            auto p = primitives::create_##op##_operation(                      \
+                hpx::find_here(), std::move(args));                            \
+            pybind11::gil_scoped_acquire acquire;                              \
+            return phylanx::execution_tree::variable{                          \
+                std::move(p), lhs.dtype(), name};                              \
+        });                                                                    \
     }                                                                          \
                                                                                \
     phylanx::execution_tree::variable op##_variables(                          \
@@ -298,14 +314,18 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::primitive_argument_type const& lhs)           \
     {                                                                          \
         using namespace phylanx::execution_tree;                               \
-        primitive_arguments_type args;                                         \
-        args.reserve(2);                                                       \
-        args.emplace_back(lhs);                                                \
-        args.emplace_back(rhs.value());                                        \
-        return phylanx::execution_tree::variable{                              \
-            primitives::create_##op##_operation(                               \
-                hpx::find_here(), std::move(args)),                            \
-            rhs.dtype(), name};                                                \
+        pybind11::gil_scoped_release release;                                  \
+        return hpx::threads::run_as_hpx_thread([&]() {                         \
+            primitive_arguments_type args;                                     \
+            args.reserve(2);                                                   \
+            args.emplace_back(lhs);                                            \
+            args.emplace_back(rhs.value());                                    \
+            auto p = primitives::create_##op##_operation(                      \
+                hpx::find_here(), std::move(args));                            \
+            pybind11::gil_scoped_acquire acquire;                              \
+            return phylanx::execution_tree::variable{                          \
+                std::move(p), rhs.dtype(), name};                              \
+        });                                                                    \
     }                                                                          \
     /**/
 
@@ -317,20 +337,25 @@ namespace phylanx { namespace execution_tree
     {                                                                          \
         using namespace phylanx::execution_tree;                               \
                                                                                \
-        /* create operation */                                                 \
-        primitive_arguments_type args;                                         \
-        args.reserve(2);                                                       \
-        args.emplace_back(lhs.value());                                        \
-        args.emplace_back(rhs);                                                \
-        primitive op = primitives::create_##op##_operation(                    \
-            hpx::find_here(), std::move(args));                                \
+        pybind11::gil_scoped_release release;                                  \
+        return hpx::threads::run_as_hpx_thread([&]() {                         \
+            /* create operation */                                             \
+            primitive_arguments_type args;                                     \
+            args.reserve(2);                                                   \
+            args.emplace_back(lhs.value());                                    \
+            args.emplace_back(rhs);                                            \
+            primitive op = primitives::create_##op##_operation(                \
+                hpx::find_here(), std::move(args));                            \
                                                                                \
-        /* set the new expression tree to the lhs variable */                  \
-        lhs.value(std::move(op));                                              \
+            pybind11::gil_scoped_acquire acquire;                              \
                                                                                \
-        /* return */                                                           \
-        return phylanx::execution_tree::variable{                              \
-            lhs.value(), lhs.dtype(), __name};                                 \
+            /* set the new expression tree to the lhs variable */              \
+            lhs.value(std::move(op));                                          \
+                                                                               \
+            /* return */                                                       \
+            return phylanx::execution_tree::variable{                          \
+                lhs.value(), lhs.dtype(), __name};                             \
+        });                                                                    \
     }                                                                          \
                                                                                \
     phylanx::execution_tree::variable i##op##_variables(                       \
@@ -339,7 +364,7 @@ namespace phylanx { namespace execution_tree
     {                                                                          \
         return i##op##_variables_gen(lhs, rhs.value());                        \
     }                                                                          \
-    /**/
+        /**/
 
     ///////////////////////////////////////////////////////////////////////////
     // implement arithmetic operations
@@ -359,13 +384,17 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::variable const& target)
     {
         using namespace phylanx::execution_tree;
-        primitive_arguments_type args;
-        args.reserve(1);
-        args.emplace_back(target.value());
-        return phylanx::execution_tree::variable{
-            primitives::create_unary_minus_operation(
-                hpx::find_here(), std::move(args)),
-            target.dtype(), "Neg"};
+        pybind11::gil_scoped_release release;
+        return hpx::threads::run_as_hpx_thread([&]() {
+            primitive_arguments_type args;
+            args.reserve(1);
+            auto p = primitives::create_unary_minus_operation(
+                hpx::find_here(), std::move(args));
+            pybind11::gil_scoped_acquire acquire;
+            args.emplace_back(target.value());
+            return phylanx::execution_tree::variable{
+                std::move(p), target.dtype(), "Neg"};
+        });
     }
 
     // The moving average of 'variable' updated with 'value' is:
@@ -382,37 +411,42 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::primitive_argument_type const& value,
         phylanx::execution_tree::primitive_argument_type const& momentum)
     {
-        // create operations
-        primitive_arguments_type args;
-        args.reserve(2);
-        args.emplace_back(primitive_argument_type{1.0});
-        args.emplace_back(momentum);
-        primitive op1 = primitives::create_sub_operation(
-            hpx::find_here(), std::move(args));
+        pybind11::gil_scoped_release release;
+        return hpx::threads::run_as_hpx_thread([&]() {
+            // create operations
+            primitive_arguments_type args;
+            args.reserve(2);
+            args.emplace_back(primitive_argument_type{1.0});
+            args.emplace_back(momentum);
+            primitive op1 = primitives::create_sub_operation(
+                hpx::find_here(), std::move(args));
 
-        args.reserve(2);
-        args.emplace_back(var.value());
-        args.emplace_back(value);
-        primitive op2 = primitives::create_sub_operation(
-            hpx::find_here(), std::move(args));
+            args.reserve(2);
+            args.emplace_back(var.value());
+            args.emplace_back(value);
+            primitive op2 = primitives::create_sub_operation(
+                hpx::find_here(), std::move(args));
 
-        args.reserve(2);
-        args.emplace_back(std::move(op1));
-        args.emplace_back(std::move(op2));
-        primitive op3 = primitives::create_mul_operation(
-            hpx::find_here(), std::move(args));
+            args.reserve(2);
+            args.emplace_back(std::move(op1));
+            args.emplace_back(std::move(op2));
+            primitive op3 = primitives::create_mul_operation(
+                hpx::find_here(), std::move(args));
 
-        args.reserve(2);
-        args.emplace_back(var.value());
-        args.emplace_back(std::move(op3));
-        primitive result = primitives::create_sub_operation(
-            hpx::find_here(), std::move(args));
+            args.reserve(2);
+            args.emplace_back(var.value());
+            args.emplace_back(std::move(op3));
+            primitive result = primitives::create_sub_operation(
+                hpx::find_here(), std::move(args));
 
-        // set the new expression tree to the target variable
-        var.value(std::move(result));
+            pybind11::gil_scoped_acquire acquire;
 
-        return phylanx::execution_tree::variable{
-            var.value(), var.dtype(), "AssignMovingAvg"};
+            // set the new expression tree to the target variable
+            var.value(std::move(result));
+
+            return phylanx::execution_tree::variable{
+                var.value(), var.dtype(), "AssignMovingAvg"};
+        });
     }
 
     phylanx::execution_tree::variable moving_average_variables(

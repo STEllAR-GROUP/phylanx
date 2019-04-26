@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return p->eval(std::move(args), std::move(ctx));
         }
         return hpx::make_ready_future(
-            extract_ref_value(operands_[0], name_, codename_));
+            extract_value(operands_[0], name_, codename_));
     }
 
     bool function::bind(primitive_arguments_type&& args, eval_context ctx) const

@@ -65,6 +65,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type && args)
             ->  primitive_argument_type
             {
+                if (args.size() == 1 && !valid(args[0]) &&
+                    is_implicit_nil(args[0]))
+                {
+                    return primitive_argument_type{primitive_arguments_type{}};
+                }
                 return primitive_argument_type{std::move(args)};
             }),
             detail::map_operands(operands, functional::value_operand{},

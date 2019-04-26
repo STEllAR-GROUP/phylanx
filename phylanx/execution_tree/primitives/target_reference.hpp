@@ -48,7 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         eval_context ctx_;
-        std::shared_ptr<primitive_component> target_;
     };
 }}}
 
