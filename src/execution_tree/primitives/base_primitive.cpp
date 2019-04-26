@@ -140,8 +140,24 @@ namespace phylanx { namespace execution_tree
         primitive_arguments_type const& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
+
+        if (params.empty())
+        {
+            hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+                hpx::unwrap_result(this->base_type::get_id()),
+                primitive_arguments_type{}, std::move(ctx));
+            return detail::lazy_trace("eval", *this, std::move(f));
+        }
+
+        primitive_arguments_type args;
+        args.reserve(params.size());
+        for (auto const& p : params)
+        {
+            args.push_back(extract_ref_value(p));
+        }
+
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
-            hpx::unwrap_result(this->base_type::get_id()), params,
+            hpx::unwrap_result(this->base_type::get_id()), std::move(args),
             std::move(ctx));
         return detail::lazy_trace("eval", *this, std::move(f));
     }
@@ -167,17 +183,32 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> primitive::eval(eval_context ctx) const
     {
-        static primitive_arguments_type params;
-        return eval(params, std::move(ctx));
+        return eval(primitive_arguments_type{}, std::move(ctx));
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         primitive_arguments_type const& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
+
+        if (params.empty())
+        {
+            hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+                hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
+                primitive_arguments_type{}, std::move(ctx));
+            return detail::trace("eval", *this, f.get());
+        }
+
+        primitive_arguments_type args;
+        args.reserve(params.size());
+        for (auto const& p : params)
+        {
+            args.push_back(extract_ref_value(p));
+        }
+
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
             hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
-            std::move(params), std::move(ctx));
+            std::move(args), std::move(ctx));
         return detail::trace("eval", *this, f.get());
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
@@ -191,7 +222,7 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        primitive_argument_type && param, eval_context ctx) const
+        primitive_argument_type&& param, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_single_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
@@ -204,9 +235,9 @@ namespace phylanx { namespace execution_tree
         eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        static primitive_arguments_type params;
-        hpx::future<primitive_argument_type> f = hpx::sync<action_type>(
-            this->base_type::get_id(), std::move(params), std::move(ctx));
+        hpx::future<primitive_argument_type> f =
+            hpx::sync<action_type>(this->base_type::get_id(),
+                primitive_arguments_type{}, std::move(ctx));
         return detail::trace("eval", *this, f.get());
     }
 
@@ -475,7 +506,7 @@ namespace phylanx { namespace execution_tree
                 {
                     return primitive_argument_type{v.copy()};
                 }
-                return primitive_argument_type{v};
+                return val;
             }
             break;
 
@@ -486,7 +517,7 @@ namespace phylanx { namespace execution_tree
                 {
                     return primitive_argument_type{v.copy()};
                 }
-                return primitive_argument_type{v};
+                return val;
             }
             break;
 
@@ -536,7 +567,7 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<1>(val);
                 if (v.is_ref())
                 {
-                    return primitive_argument_type{v};
+                    return val;
                 }
                 return primitive_argument_type{v.ref()};
             }
@@ -547,7 +578,7 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<2>(val);
                 if (v.is_ref())
                 {
-                    return primitive_argument_type{v};
+                    return val;
                 }
                 return primitive_argument_type{v.ref()};
             }
@@ -558,7 +589,7 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
                 {
-                    return primitive_argument_type{v};
+                    return val;
                 }
                 return primitive_argument_type{v.ref()};
             }
@@ -569,7 +600,7 @@ namespace phylanx { namespace execution_tree
                 auto const& r = util::get<7>(val);
                 if (r.is_ref())
                 {
-                    return primitive_argument_type{r};
+                    return val;
                 }
                 return primitive_argument_type{r.ref()};
             }
@@ -636,7 +667,7 @@ namespace phylanx { namespace execution_tree
                 {
                     return primitive_argument_type{v.copy()};
                 }
-                return primitive_argument_type{std::move(v)};
+                return std::move(val);
             }
             break;
 
@@ -647,7 +678,7 @@ namespace phylanx { namespace execution_tree
                 {
                     return primitive_argument_type{v.copy()};
                 }
-                return primitive_argument_type{std::move(v)};
+                return std::move(val);
             }
             break;
 
@@ -658,7 +689,7 @@ namespace phylanx { namespace execution_tree
                 {
                     return primitive_argument_type{v.copy()};
                 }
-                return primitive_argument_type{std::move(v)};
+                return std::move(val);
             }
             break;
 
@@ -819,7 +850,7 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<2>(val);
                 if (v.is_ref())
                 {
-                    return primitive_argument_type{v};
+                    return val;
                 }
                 return primitive_argument_type{v.ref()};
             }
@@ -833,7 +864,7 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
                 {
-                    return primitive_argument_type{v};
+                    return val;
                 }
                 return primitive_argument_type{v.ref()};
             }
@@ -858,7 +889,7 @@ namespace phylanx { namespace execution_tree
                 auto const& r = util::get<7>(val);
                 if (r.is_ref())
                 {
-                    return primitive_argument_type{r};
+                    return val;
                 }
                 return primitive_argument_type{r.ref()};
             }

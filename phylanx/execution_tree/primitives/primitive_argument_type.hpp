@@ -107,6 +107,15 @@ namespace phylanx { namespace execution_tree
         {
         }
 
+        inline std::size_t size() const noexcept
+        {
+            return variables_.size();
+        }
+        inline bool empty() const noexcept
+        {
+            return variables_.empty();
+        }
+
         inline primitive_argument_type* get_var(
             util::hashed_string const& name) noexcept;
         inline primitive_argument_type const* get_var(
@@ -147,7 +156,7 @@ namespace phylanx { namespace execution_tree
         }
 
         explicit eval_context(eval_mode mode = eval_default)
-            : mode_(mode)
+          : mode_(mode)
           , variables_(std::allocate_shared<variable_frame>(alloc_))
         {}
 
@@ -185,8 +194,11 @@ namespace phylanx { namespace execution_tree
 
         eval_context& add_frame()
         {
-            variables_ = std::allocate_shared<variable_frame>(
-                alloc_, std::move(variables_));
+            if (variables_ && !variables_->empty())
+            {
+                variables_ = std::allocate_shared<variable_frame>(
+                    alloc_, std::move(variables_));
+            }
             return *this;
         }
 
@@ -214,40 +226,47 @@ namespace phylanx { namespace execution_tree
     inline eval_context set_mode(eval_context const& ctx, eval_mode mode)
     {
         eval_context newctx = ctx;
-        return std::move(newctx.set_mode(mode));
+        newctx.set_mode(mode);
+        return newctx;
     }
     inline eval_context set_mode(eval_context && ctx, eval_mode mode) noexcept
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.set_mode(mode));
+        newctx.set_mode(mode);
+        return newctx;
     }
 
     inline eval_context add_mode(eval_context const& ctx, eval_mode mode)
     {
         eval_context newctx = ctx;
-        return std::move(newctx.add_mode(mode));
+        newctx.add_mode(mode);
+        return newctx;
     }
     inline eval_context add_mode(eval_context && ctx, eval_mode mode) noexcept
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.add_mode(mode));
+        newctx.add_mode(mode);
+        return newctx;
     }
 
     inline eval_context remove_mode(eval_context const& ctx, eval_mode mode)
     {
         eval_context newctx = ctx;
-        return std::move(newctx.remove_mode(mode));
+        newctx.remove_mode(mode);
+        return newctx;
     }
     inline eval_context remove_mode(eval_context && ctx, eval_mode mode) noexcept
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.remove_mode(mode));
+        newctx.remove_mode(mode);
+        return newctx;
     }
 
     inline eval_context add_frame(eval_context && ctx)
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.add_frame());
+        newctx.add_frame();
+        return newctx;
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -98,15 +98,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         ctx.remove_mode(eval_dont_wrap_functions);
 
+        primitive_arguments_type params = args;
+
         if (target_)
         {
             // create a new instance of this variable
-            auto var = target_->eval(args, ctx);
+            auto var = target_->eval(std::move(args), ctx);
 
             auto this_ = this->shared_from_this();
             return var.then(hpx::launch::sync,
                 [this_ = std::move(this_),
-                    ctx = std::move(ctx), args = std::move(args)
+                    ctx = std::move(ctx), args = std::move(params)
                 ](hpx::future<primitive_argument_type> && fvar) mutable
                 -> primitive_argument_type
                 {
@@ -131,15 +133,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // create a new instance of this variable
-        auto var =
-            value_operand_sync(operands_[0], args, name_, codename_, ctx);
+        auto var = value_operand_sync(
+            operands_[0], std::move(args), name_, codename_, ctx);
 
         // evaluate the expression bound to this name and store the value in
         // the newly created variable
         primitive* p = util::get_if<primitive>(&var);
         if (p != nullptr)
         {
-            p->bind(std::move(args), ctx);
+            p->bind(std::move(params), ctx);
         }
 
         // store the variable in the evaluation context

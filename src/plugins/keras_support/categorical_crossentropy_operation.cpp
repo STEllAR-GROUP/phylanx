@@ -53,7 +53,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 The value should be the same as would be returned by the following
                 Python function:
 
-                def categorical_crossentropy(target, output, from_logits=False, axis=True):
+                def categorical_crossentropy(
+                    target, output, from_logits=False, axis=True):
+
                     if from_logits:
                         axis = -1
                         outval = softmax(output, axis=axis)

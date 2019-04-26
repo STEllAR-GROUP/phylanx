@@ -101,7 +101,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return f.then(hpx::launch::sync,
             [
                 this_ = std::move(this_),
-                lhs = extract_ref_value(operands_[0], name_, codename_),
                 args = std::move(args),
                 ctx = std::move(ctx)
             ]
@@ -109,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ->  primitive_argument_type
             {
                 auto p = primitive_operand(
-                    std::move(lhs), this_->name_, this_->codename_);
+                    this_->operands_[0], this_->name_, this_->codename_);
 
                 p.store(hpx::launch::sync, val.get(), std::move(args),
                     std::move(ctx));
@@ -157,15 +156,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             value_operand(operands_[1], std::move(arg), name_, codename_, ctx);
 
         return f.then(hpx::launch::sync,
-                [   this_ = std::move(this_),
-                    lhs = extract_ref_value(operands_[0], name_, codename_),
+                [
+                    this_ = std::move(this_),
                     args = std::move(params),
                     ctx = std::move(ctx)
-                ](hpx::future<primitive_argument_type>&& val) mutable
+                ]
+                (hpx::future<primitive_argument_type>&& val) mutable
                 -> primitive_argument_type
                 {
                     auto p = primitive_operand(
-                        std::move(lhs), this_->name_, this_->codename_);
+                        this_->operands_[0], this_->name_, this_->codename_);
 
                     p.store(hpx::launch::sync, val.get(), std::move(args),
                         std::move(ctx));

@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
-        primitive_arguments_type params, eval_context ctx) const
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty())

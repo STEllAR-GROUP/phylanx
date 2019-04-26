@@ -138,7 +138,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (target_)
             {
-                return target_->eval(fargs, add_frame(std::move(next_ctx)));
+                return target_->eval(
+                    std::move(fargs), add_frame(std::move(next_ctx)));
             }
 
             return value_operand(operands_[0], std::move(fargs), name_,
