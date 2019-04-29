@@ -34,14 +34,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         hpx::future<primitive_argument_type> fmap_1(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const;
+            primitive_arguments_type const& args, eval_context ctx) const;
         hpx::future<primitive_argument_type> fmap_n(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const;
+            primitive_arguments_type const& args, eval_context ctx) const;
 
         primitive_argument_type fmap_1_scalar(primitive const* p,
             primitive_argument_type&& arg, eval_context ctx) const;

@@ -228,7 +228,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> fmap_operation::fmap_1(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         auto&& op0 = value_operand(operands[0], args, name_,
             codename_, add_mode(ctx, eval_dont_evaluate_lambdas));
@@ -303,8 +303,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "object (a list or a numeric type)"));
             },
             std::move(op0),
-            value_operand(operands[1], std::move(args), name_, codename_,
-                std::move(ctx)));
+            value_operand(operands[1], args, name_, codename_, std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -512,7 +511,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> fmap_operation::fmap_n(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // all remaining operands have to be lists
         primitive_arguments_type lists;
@@ -578,13 +577,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             std::move(op0),
             detail::map_operands(
-                std::move(lists), functional::value_operand{}, std::move(args),
+                std::move(lists), functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }
 
     hpx::future<primitive_argument_type> fmap_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() < 2)
         {
@@ -625,9 +624,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // handle common case separately
         if (operands.size() == 2)
         {
-            return fmap_1(operands, std::move(args), std::move(ctx));
+            return fmap_1(operands, args, std::move(ctx));
         }
 
-        return fmap_n(operands, std::move(args), std::move(ctx));
+        return fmap_n(operands, args, std::move(ctx));
     }
 }}}

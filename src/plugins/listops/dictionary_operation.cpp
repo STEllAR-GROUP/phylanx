@@ -95,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> dict_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() > 1)
         {
@@ -134,6 +134,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->generate_dict(std::move(args));
             }),
             detail::map_operands(operands, functional::list_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

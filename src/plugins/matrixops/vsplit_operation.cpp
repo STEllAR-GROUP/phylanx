@@ -230,7 +230,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> vsplit_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty())
         {
@@ -265,7 +265,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 return this_->vsplit_args(std::move(ops));
             }),
-            detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

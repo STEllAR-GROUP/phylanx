@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_function::eval(
-        primitive_arguments_type&& params, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         // access variable from execution context
         auto const* target = ctx.get_var(target_name_);
@@ -74,10 +74,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             fargs.reserve(params.size() + 1);
 
             fargs.push_back(extract_ref_value(*target, name_, codename_));
-            for (auto&& param : params)
+            for (auto const& param : params)
             {
-                fargs.push_back(
-                    extract_value(std::move(param), name_, codename_));
+                fargs.push_back(extract_value(param, name_, codename_));
             }
 
             compiler::primitive_name_parts name_parts =

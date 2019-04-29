@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> target_reference::eval(
-        primitive_arguments_type&& params, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         // use stored evaluation context, if available
         if (ctx_)
@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
-            for (auto&& param : params)
+            for (auto const& param : params)
             {
                 fargs.emplace_back(
                     extract_value(std::move(param), name_, codename_));
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     bool target_reference::bind(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         return true;
     }

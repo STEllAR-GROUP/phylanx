@@ -41,7 +41,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
         hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type&& args, eval_context ctx) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         // return the topology for this variable definition
         topology expression_topology(std::set<std::string>&& functions,

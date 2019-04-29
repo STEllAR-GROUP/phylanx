@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using operand_type = ir::node_data<double>;
         using operands_type = std::vector<operand_type>;

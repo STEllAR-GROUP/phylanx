@@ -494,7 +494,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> nonzero_where::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (nonzero_ && operands.size() != 1)
         {
@@ -550,7 +550,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return util::visit(visit_nonzero{*this_},
                         std::move(op.get().variant()));
                 },
-                value_operand(operands[0], std::move(args), name_, codename_,
+                value_operand(operands[0], args, name_, codename_,
                     std::move(ctx)));
         }
 
@@ -569,7 +569,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(cond.get().variant()));
             },
             std::move(op0), std::move(op1),
-            value_operand(operands[2], std::move(args), name_, codename_,
-                std::move(ctx)));
+            value_operand(operands[2], args, name_, codename_, std::move(ctx)));
     }
 }}}

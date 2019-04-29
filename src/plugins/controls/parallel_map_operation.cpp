@@ -56,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_1(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         auto&& op0 = value_operand(operands[0], args, name_,
             codename_, add_mode(ctx, eval_dont_evaluate_lambdas));
@@ -104,13 +104,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(result));
             },
             std::move(op0),
-            list_operand_strict(operands[1], std::move(args), name_, codename_,
+            list_operand_strict(operands[1], args, name_, codename_,
                 std::move(ctx)));
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_n(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // all remaining operands have to be lists
         primitive_arguments_type lists;
@@ -197,14 +197,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(result));
             }),
             std::move(op0),
-            detail::map_operands(std::move(lists),
-                functional::list_operand_strict{}, std::move(args),
+            detail::map_operands(lists,
+                functional::list_operand_strict{}, args,
                 name_, codename_, std::move(ctx)));
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() < 2)
         {
@@ -245,9 +245,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // handle common case separately
         if (operands.size() == 2)
         {
-            return map_1(operands, std::move(args), std::move(ctx));
+            return map_1(operands, args, std::move(ctx));
         }
 
-        return map_n(operands, std::move(args), std::move(ctx));
+        return map_n(operands, args, std::move(ctx));
     }
 }}}

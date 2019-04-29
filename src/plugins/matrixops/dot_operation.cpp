@@ -642,7 +642,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> dot_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
@@ -693,8 +693,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "unsupported dot mode requested"));
                 },
                 std::move(op0),
-                value_operand(operands[1], std::move(args), name_, codename_,
-                    std::move(ctx)));
+                value_operand(operands[1], args, name_, codename_, std::move(ctx)));
         }
         else if (operands.size() == 3 && valid(operands[2]))
         {
@@ -743,8 +742,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         }
                     },
                     std::move(op0), std::move(op1),
-                    list_operand(operands[2], std::move(args), name_, codename_,
-                        std::move(ctx)));
+                    list_operand(operands[2], args, name_, codename_, std::move(ctx)));
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

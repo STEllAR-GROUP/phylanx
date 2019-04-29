@@ -34,7 +34,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         primitive_argument_type fold_right_list(
             primitive_argument_type&& bound_func,

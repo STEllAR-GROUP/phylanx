@@ -385,7 +385,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     hpx::future<primitive_argument_type> cumulative<Op, Derived>::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
@@ -453,8 +453,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     this_->generate_error_message(
                         "target operand has unsupported type"));
             }),
-            detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+            detail::map_operands(
+                operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}
 

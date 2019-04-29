@@ -564,7 +564,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     hpx::future<primitive_argument_type> argminmax<Op, Derived>::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -616,8 +616,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "operand a has an invalid number of dimensions"));
                 }
             }),
-            detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+            detail::map_operands(
+                operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}
 

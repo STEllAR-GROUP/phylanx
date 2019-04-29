@@ -758,7 +758,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> reshape_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1 && operands.size() != 2)
         {
@@ -835,8 +835,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "the reshape/flatten primitive requires for "
                                 "all arguments to be numeric data types"));
                     },
-                    value_operand(operands[0], std::move(args),
-                        name_, codename_, std::move(ctx)));
+                    value_operand(operands[0], args, name_, codename_, std::move(ctx)));
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -905,8 +904,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 },
                 std::move(op0),
-                list_operand(operands[1], std::move(args), name_, codename_,
-                    std::move(ctx)));
+                list_operand(operands[1], args, name_, codename_, std::move(ctx)));
         }
 
         if (mode_ == flatten_mode)
@@ -970,8 +968,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 },
                 std::move(op0),
-                string_operand(operands[1], std::move(args), name_, codename_,
-                    std::move(ctx)));
+                string_operand(operands[1], args, name_, codename_, std::move(ctx)));
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,

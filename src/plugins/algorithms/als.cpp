@@ -193,7 +193,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> als::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 5 && operands.size() != 6)
         {
@@ -225,11 +225,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_ = std::move(this_)](primitive_arguments_type&& args)
-                -> primitive_argument_type
+            -> primitive_argument_type
             {
                 return this_->calculate_als(std::move(args));
             }),
             detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

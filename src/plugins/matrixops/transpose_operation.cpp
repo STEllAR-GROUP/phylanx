@@ -351,7 +351,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> transpose_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1 && operands.size() != 2)
         {
@@ -460,6 +460,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             }),
             detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

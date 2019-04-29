@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
-        primitive_arguments_type&& params, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         // access variable from execution context
         auto const* target = ctx.get_var(target_name_);
@@ -91,12 +91,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // one slicing parameter
                 auto this_ = this->shared_from_this();
-                return value_operand(operands_[1], std::move(params),
-                        name_, codename_, ctx)
-                    .then(hpx::launch::sync,
-                        [this_ = std::move(this_), ctx, target = *target](
-                                hpx::future<primitive_argument_type>&& rows)
-                        mutable -> hpx::future<primitive_argument_type>
+                auto f = value_operand(operands_[1], params, name_, codename_, ctx);
+                return f.then(hpx::launch::sync,
+                        [
+                            this_ = std::move(this_), ctx = std::move(ctx),
+                            target = *target
+                        ]
+                        (hpx::future<primitive_argument_type>&& rows) mutable
+                        -> hpx::future<primitive_argument_type>
                         {
                             return value_operand(target,
                                 rows.get(), this_->name_, this_->codename_,
@@ -129,8 +131,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 eval_dont_wrap_functions|eval_slicing)));
                     },
                     std::move(op1),
-                    value_operand(operands_[2], std::move(params),
-                        name_, codename_, ctx));
+                    value_operand(operands_[2], params, name_, codename_,
+                        std::move(ctx)));
             }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
@@ -163,8 +165,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     },
                     std::move(op1),
                     std::move(op2),
-                    value_operand(operands_[3], std::move(params),
-                        name_, codename_, ctx));
+                    value_operand(operands_[3], params, name_, codename_,
+                        std::move(ctx)));
             }
 #endif
         default:

@@ -125,7 +125,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> slicing_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
 #if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (operands.empty() || operands.size() > 3)
@@ -268,7 +268,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             "either one, two, or three arguments"));
             }),
             detail::map_operands(
-                operands, functional::value_operand{}, std::move(args),
+                operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }
 }}}

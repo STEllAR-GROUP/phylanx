@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lambda::eval(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!valid(operands_[0]))
         {
@@ -80,10 +80,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 fargs.push_back(
                     extract_ref_value(operands_[0], name_, codename_));
-                for (auto&& arg : args)
+                for (auto const& arg : args)
                 {
-                    fargs.push_back(
-                        extract_value(std::move(arg), name_, codename_));
+                    fargs.push_back(extract_value(arg, name_, codename_));
                 }
 
                 compiler::primitive_name_parts name_parts =
@@ -105,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         eval_context next_ctx = set_mode(std::move(ctx),
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
 
-        return value_operand(operands_[0], std::move(args), name_, codename_,
+        return value_operand(operands_[0], args, name_, codename_,
             add_frame(std::move(next_ctx)));
     }
 

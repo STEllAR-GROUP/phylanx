@@ -71,10 +71,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (is_list_operand_strict(rhs))
         {
-            auto&& rhs_list =
+            auto rhs_list =
                 extract_list_value_strict(std::move(rhs), name_, codename_);
 
-            for (auto&& elem : std::move(rhs_list))
+            for (auto&& elem : rhs_list)
             {
                 result.emplace_back(std::move(elem));
             }
@@ -132,7 +132,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> add_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() < 2)
         {
@@ -181,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(lhs_val), rhs.get());
                 },
                 std::move(op0),
-                value_operand(operands[1], std::move(args), name_, codename_,
+                value_operand(operands[1], args, name_, codename_,
                     std::move(ctx)));
         }
 
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->handle_numeric_operands(std::move(ops));
             }),
             detail::map_operands(
-                operands, functional::value_operand{}, std::move(args),
+                operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }
 }}}

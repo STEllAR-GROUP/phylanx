@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable::eval(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -93,21 +93,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (args.size() == 2)
             {
                 // handle row/column-slicing
-                return hpx::make_ready_future(slice(target, std::move(args[0]),
-                    std::move(args[1]), name_, codename_));
+                return hpx::make_ready_future(
+                    slice(target, args[0], args[1], name_, codename_));
             }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             if (args.size() > 2)
             {
                 // handle page/row/column-slicing
-                return hpx::make_ready_future(slice(target, std::move(args[0]),
-                    std::move(args[1]), std::move(args[2]), name_, codename_));
+                return hpx::make_ready_future(
+                    slice(target, args[0], args[1], args[2], name_, codename_));
             }
 #endif
             // handle row-slicing
             return hpx::make_ready_future(
-                slice(target, std::move(args[0]), name_, codename_));
+                slice(target, args[0], name_, codename_));
         }
 
         return hpx::make_ready_future(
@@ -143,7 +143,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     //////////////////////////////////////////////////////////////////////////
-    bool variable::bind(primitive_arguments_type&& args, eval_context ctx) const
+    bool variable::bind(primitive_arguments_type const& args,
+        eval_context ctx) const
     {
         if (!value_set_)
         {
@@ -158,7 +159,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (p != nullptr)
         {
             bound_value_ = extract_copy_value(
-                p->eval(hpx::launch::sync, std::move(args), std::move(ctx)),
+                p->eval(hpx::launch::sync, args, std::move(ctx)),
                 name_, codename_);
         }
         else

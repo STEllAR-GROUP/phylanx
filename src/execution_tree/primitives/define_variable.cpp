@@ -85,22 +85,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> define_variable::eval(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         ctx.remove_mode(eval_dont_wrap_functions);
 
-        primitive_arguments_type params = args;
 
         // create a new instance of this variable
         auto var = value_operand_sync(
-            operands_[0], std::move(args), name_, codename_, ctx);
+            operands_[0], params, name_, codename_, ctx);
 
         // evaluate the expression bound to this name and store the value in
         // the newly created variable
         primitive* p = util::get_if<primitive>(&var);
         if (p != nullptr)
         {
-            p->bind(std::move(params), ctx);
+            p->bind(params, ctx);
         }
 
         // store the variable in the evaluation context

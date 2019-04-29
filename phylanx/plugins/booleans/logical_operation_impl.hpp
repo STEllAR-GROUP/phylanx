@@ -429,7 +429,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op>
     hpx::future<primitive_argument_type> logical_operation<Op>::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // TODO: support for operands.size() > 2
         if (operands.size() != 2)
@@ -466,8 +466,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(op2.get().variant())));
             },
             std::move(op0),
-            value_operand(operands[1], std::move(args), name_, codename_,
-                std::move(ctx)));
+            value_operand(operands[1], args, name_, codename_, std::move(ctx)));
     }
 }}}
 

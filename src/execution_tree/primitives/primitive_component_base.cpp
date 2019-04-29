@@ -93,7 +93,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        primitive_arguments_type&& params, eval_context ctx) const
+        primitive_arguments_type const& params,
+        eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -108,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ++eval_count_;
         }
 
-        auto f = this->eval(std::move(params), std::move(ctx));
+        auto f = this->eval(params, std::move(ctx));
 
         if (enable_timer && !f.is_ready())
         {
@@ -158,14 +159,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        primitive_arguments_type&& params, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (no_operands())
         {
-            return this->eval(
-                params, primitive_arguments_type{}, std::move(ctx));
+            return this->eval(params, noargs, std::move(ctx));
         }
-        return this->eval(operands_, std::move(params), std::move(ctx));
+        return this->eval(this->operands(), params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
@@ -173,12 +173,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         primitive_arguments_type params;
         params.emplace_back(std::move(param));
-        return this->eval(std::move(params), std::move(ctx));
+        return this->eval(params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -243,7 +243,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component_base::bind(
-        primitive_arguments_type&& params, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::"

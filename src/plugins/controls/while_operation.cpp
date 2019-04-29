@@ -48,9 +48,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     struct while_operation::iteration : std::enable_shared_from_this<iteration>
     {
-        iteration(primitive_arguments_type&& args,
+        iteration(primitive_arguments_type const& args,
             std::shared_ptr<while_operation const> that, eval_context ctx)
-          : that_(that), args_(std::move(args)), ctx_(std::move(ctx))
+          : that_(that), args_(args), ctx_(std::move(ctx))
         {
             if (that_->operands_.size() != 2)
             {
@@ -120,9 +120,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given while statement
     hpx::future<primitive_argument_type> while_operation::eval(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
+        if (this->no_operands())
+        {
+            return std::make_shared<iteration>(
+                noargs, shared_from_this(), std::move(ctx))->loop();
+        }
         return std::make_shared<iteration>(
-            std::move(args), shared_from_this(), std::move(ctx))->loop();
+            args, shared_from_this(), std::move(ctx))->loop();
     }
 }}}

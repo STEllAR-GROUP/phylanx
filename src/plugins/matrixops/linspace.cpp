@@ -122,7 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linspace::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 3)
         {
@@ -159,7 +159,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->linspace1d(start.get(), end.get(), nelements.get());
             },
             std::move(op0), std::move(op1),
-            scalar_integer_operand(operands[2], std::move(args),
-                name_, codename_, std::move(ctx)));
+            scalar_integer_operand(operands[2], args, name_, codename_, std::move(ctx)));
     }
 }}}

@@ -80,9 +80,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> init(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args)
+            primitive_arguments_type const& args)
         {
-            this->args_ = std::move(args);
+            this->args_ = args;
             auto this_ = this->shared_from_this();
             return value_operand(that_->operands_[0], args_,
                     that_->name_, that_->codename_, ctx_)
@@ -158,17 +158,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> for_operation::eval(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (this->no_operands())
         {
             return std::make_shared<iteration_for>(
-                shared_from_this(), std::move(ctx))->init(
-                    args, primitive_arguments_type{});
+                shared_from_this(), std::move(ctx))->init(args, noargs);
         }
 
         return std::make_shared<iteration_for>(
-            shared_from_this(), std::move(ctx))->init(
-                this->operands_, std::move(args));
+            shared_from_this(), std::move(ctx))->init(operands_, args);
     }
 }}}

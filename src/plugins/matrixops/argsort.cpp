@@ -439,7 +439,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> argsort::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         auto this_ = this->shared_from_this();
 
@@ -513,7 +513,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
                 }
             }),
             detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+                args, name_, codename_, std::move(ctx)));
     }
 }    // namespace primitives
 }    // namespace execution_tree

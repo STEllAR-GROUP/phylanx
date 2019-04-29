@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> if_conditional::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 3 && operands.size() != 2)
         {
@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return f.then(hpx::launch::sync,
-            [this_ = std::move(this_), args = std::move(args), ctx = std::move(ctx)](
+            [this_ = std::move(this_), args = args, ctx = std::move(ctx)](
                     hpx::future<std::uint8_t>&& cond_eval) mutable
             ->  hpx::future<primitive_argument_type>
             {

@@ -42,7 +42,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         using val_type = std::int64_t;
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
     public:
         static std::vector<match_pattern_type> const match_data;

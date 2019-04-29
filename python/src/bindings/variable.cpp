@@ -388,10 +388,11 @@ namespace phylanx { namespace execution_tree
         return hpx::threads::run_as_hpx_thread([&]() {
             primitive_arguments_type args;
             args.reserve(1);
+            args.emplace_back(target.value());
             auto p = primitives::create_unary_minus_operation(
                 hpx::find_here(), std::move(args));
+
             pybind11::gil_scoped_acquire acquire;
-            args.emplace_back(target.value());
             return phylanx::execution_tree::variable{
                 std::move(p), target.dtype(), "Neg"};
         });

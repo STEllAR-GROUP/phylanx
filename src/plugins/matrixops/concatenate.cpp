@@ -737,8 +737,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> concatenate::handle_concatenate(
         primitive_arguments_type const& operands,
-        primitive_argument_type const& axis, primitive_arguments_type&& args,
-        eval_context ctx) const
+        primitive_argument_type const& axis,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         hpx::future<primitive_argument_type> axis_f =
             value_operand(axis, args, name_, codename_, ctx);
@@ -797,14 +797,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the operands have unsupported number of dimensions"));
             }),
             detail::map_operands(operands, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)),
+                args, name_, codename_, std::move(ctx)),
             std::move(axis_f));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> concatenate::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -851,11 +851,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (operands.size() == 2)
         {
-            return handle_concatenate(
-                ops, operands[1], std::move(args), std::move(ctx));
+            return handle_concatenate(ops, operands[1], args, std::move(ctx));
         }
 
         return handle_concatenate(ops, primitive_argument_type{std::int64_t(0)},
-            std::move(args), std::move(ctx));
+            args, std::move(ctx));
     }
 }}}

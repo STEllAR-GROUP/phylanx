@@ -36,10 +36,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {}
 
         hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type&& args, eval_context ctx) const override
+            primitive_arguments_type const& args,
+            eval_context ctx) const override
         {
-            return hpx::async(Action(), hpx::find_here(), operands_,
-                std::move(args), name_, codename_, std::move(ctx));
+            return hpx::async(Action(), hpx::find_here(), operands_, args,
+                name_, codename_, std::move(ctx));
         }
     };
 

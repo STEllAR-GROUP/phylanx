@@ -157,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> eye_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 4)
         {
@@ -225,6 +225,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->eye_nmk(n, m, k, dtype);
             }),
             detail::map_operands(ops, functional::value_operand{},
-                std::move(args), name_, codename_, std::move(ctx)));
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

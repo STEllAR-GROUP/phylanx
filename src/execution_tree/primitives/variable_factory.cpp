@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable_factory::eval(
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // copy operand as we have to move it
         primitive_argument_type body = operands_[0];
@@ -78,9 +78,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             fargs.reserve(args.size() + 1);
 
             fargs.emplace_back(std::move(func));
-            for (auto&& arg : args)
+            for (auto const& arg : args)
             {
-                fargs.push_back(extract_value(std::move(arg), name_, codename_));
+                fargs.push_back(extract_value(arg, name_, codename_));
             }
 
             compiler::primitive_name_parts name_parts =

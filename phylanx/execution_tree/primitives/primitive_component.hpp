@@ -61,7 +61,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // eval_action
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type&& params, eval_context ctx) const;
+            primitive_arguments_type const& params,
+            eval_context ctx) const;
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval_single(
             primitive_argument_type&& param, eval_context ctx) const;
@@ -80,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // bind an invocable object
         PHYLANX_EXPORT bool bind(
-            primitive_arguments_type params, eval_context ctx) const;
+            primitive_arguments_type const& params, eval_context ctx) const;
 
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, eval, eval_action);

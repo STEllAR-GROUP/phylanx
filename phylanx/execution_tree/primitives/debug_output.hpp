@@ -25,7 +25,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type&& args, eval_context ctx) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using args_type = primitive_arguments_type;
 
@@ -49,8 +50,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     extern match_pattern_type const locality_match_data;
 
     hpx::future<primitive_argument_type> locality_id(
-        phylanx::execution_tree::primitive_arguments_type,
-        phylanx::execution_tree::primitive_arguments_type,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
         std::string const&, std::string const&, eval_context);
 }}}
 

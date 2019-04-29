@@ -122,7 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> resize_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 4)
         {
@@ -212,7 +212,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "interpolation type not supported"));
             }),
             std::move(op0), std::move(op1), std::move(op2),
-            string_operand(operands[3], std::move(args), name_, codename_,
-                std::move(ctx)));
+            string_operand(operands[3], args, name_, codename_, std::move(ctx)));
     }
 }}}

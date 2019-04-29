@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linearmatrix::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 5)
         {
@@ -178,7 +178,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     dx.get(), dy.get());
             },
             std::move(op0), std::move(op1), std::move(op2), std::move(op3),
-            value_operand(operands[4], std::move(args), name_, codename_,
-                std::move(ctx)));
+            value_operand(operands[4], args, name_, codename_, std::move(ctx)));
     }
 }}}

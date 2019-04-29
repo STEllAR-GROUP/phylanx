@@ -56,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> primitive_name::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type&& args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -75,7 +75,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::string name = get_primitive_argument_type_name(arg.index());
                 return primitive_argument_type{std::move(name)};
             }),
-            value_operand(operands[0], std::move(args),
-                name_, codename_, std::move(ctx)));
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}
