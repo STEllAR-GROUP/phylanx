@@ -65,29 +65,19 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         primitive_argument_type conv2d_trans_valid(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel, ir::range&& output_shape) const;
-        //primitive_argument_type conv2d_valid(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, ir::range&& strides) const;
-        //primitive_argument_type conv2d_valid_dilation(
-        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    ir::range&& dilation_rate) const;
+        primitive_argument_type conv2d_trans_same(ir::node_data<double>&& arg,
+            ir::node_data<double>&& kernel, ir::range&& output_shape) const;
 
-        //primitive_argument_type conv2d_same(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel) const;
-        //primitive_argument_type conv2d_same(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, ir::range&& strides) const;
-        //primitive_argument_type conv2d_same_dilation(
+        //primitive_argument_type conv2d_trans_strides(
         //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    ir::range&& dilation_rate) const;
+        //    ir::range&& output_shape, ir::range&& strides) const;
+        primitive_argument_type conv2d_trans_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+            ir::range&& output_shape, ir::range&& dilation_rate) const;
 
         primitive_argument_type conv2d_trans_any_pad(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             ir::range&& output_shape, std::string&& padding) const;
-        //primitive_argument_type conv2d_any_pad(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, std::string&& padding,
-        //    ir::range&& strides) const;
-        //primitive_argument_type conv2d_any_pad_dilation(
-        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    std::string&& padding, ir::range&& dilation_rate) const;
     };
 
     inline primitive create_conv2d_transpose_operation(
