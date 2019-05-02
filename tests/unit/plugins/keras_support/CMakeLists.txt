@@ -15,6 +15,7 @@ set(tests
     pool_operation
     relu_operation
     resize_operation
+    separable_conv1d_operation
     sigmoid_operation
     softmax_operation
     softplus_operation
