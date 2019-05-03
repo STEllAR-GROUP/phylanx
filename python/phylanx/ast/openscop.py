@@ -7,6 +7,7 @@
 import ast
 import numpy as np
 import copy
+import re
 # from itertools import chain
 from string import Template
 from .utils import dump_to_file
@@ -27,11 +28,16 @@ def mycgen(python_ast):
     print(a)
 """
 
+DEBUG_RAW = 0
+
 
 class Oscop:
     def __init__(self, kwargs):
         """
-        openscope elements
+        openscope specs
+        http://icps.u-strasbg.fr/~bastoul/development/openscop/
+
+        elements in openscope
             global
                 param                        p
                 number of statements
@@ -67,6 +73,8 @@ class Oscop:
         # stmt -> For
         self.domain = []  # domain stack
         self.domain_iter = []  # domain stack, only iterators
+        self.all_iterators_set = set()   # all iterators
+        self.all_iterators_list = []   # all iterators
 
         # updating scatter appears in:
         # stmt -> For                 self.scatter.append(iterator)
@@ -79,15 +87,8 @@ class Oscop:
 
     def empty_global(self):
         d = dict(
-            num_rows=0,
-            num_cols=0,
-            num_output_dim=0,
-            num_input_dim=0,
-            num_local_dim=0,
-            num_params=0,
-            num_statements=0,
             params=[],
-            relation=[],
+            context=[],
         )
         return d
 
@@ -121,17 +122,16 @@ class Oscop:
 
         # import inspect # DEBUG
         # print(inspect.stack()) # DEBUG
-        print("debug fill_param_to_globalinfo", expr)
-        print("debug fill_param_to_globalinfo", expr_set)
-        print("debug fill_param_to_globalinfo", domain_set)
+        # print("debug fill_param_to_globalinfo", expr)
+        # print("debug fill_param_to_globalinfo", expr_set)
+        # print("debug fill_param_to_globalinfo", domain_set)
 
         # Finding a new parameter constraint \
         # when the expr does not have domain constraints \
         # A.K.A the intersection is empty
         if (len(expr_set & domain_set) == 0):
             # data collected, to format in "generate_global" method
-            self.globalinfo["relation"].append(copy.deepcopy(expr))
-            self.globalinfo["num_rows"] += 1
+            self.globalinfo["context"].append(copy.deepcopy(expr))
 
         # Finding a new parameter.
         for a in (expr_set - domain_set):
@@ -157,6 +157,7 @@ class Oscop:
         if (op == "enter"):
             self.domain.append(copy.deepcopy(domaininfo))
             self.domain_iter.append(iterator)
+            self.all_iterators_set.add(iterator)
         elif (op == "exit"):
             self.domain.pop()
             self.domain_iter.pop()
@@ -220,47 +221,88 @@ class Oscop:
         else:
             raise Exception("Not supported")
 
+    def generate_context_str(self, rows, output_dim, input_dim, local_dim, params):
+        cols = output_dim + input_dim + local_dim + params + 2
+        rv = ""
+        rv += str(rows) + " "
+        rv += str(cols) + " "
+        rv += str(output_dim) + " "
+        rv += str(input_dim) + " "
+        rv += str(local_dim) + " "
+        rv += str(params) + "\n"
+        return rv
+
     def generate_oscop_global(self):
-        self.globalinfo["num_output_dim"] = 0  # always 0 in CONTEXT relation
-        self.globalinfo["num_input_dim"] = 0  # always 0 in CONTEXT relation
-        self.globalinfo["num_local_dim"] = 0  # always 0 in CONTEXT relation
-        self.globalinfo["num_params"] = len(self.globalinfo["params"])
-        self.globalinfo["num_cols"] = \
-            self.globalinfo["num_output_dim"] + \
-            self.globalinfo["num_input_dim"] + \
-            self.globalinfo["num_local_dim"] + \
-            self.globalinfo["num_params"] + \
-            2
-        self.globalinfo["num_statements"] = len(self.statements)
+        num_rows = len(self.globalinfo["context"])
+        num_output_dim = 0  # always 0 in CONTEXT relation
+        num_input_dim = 0   # always 0 in CONTEXT relation
+        num_local_dim = 0   # always 0 in CONTEXT relation
+        num_params = len(self.globalinfo["params"])
 
         mydata = dict(
-            relation="",
+            context="",
             params_exist="",
             params_names="",
             num_statements="",
         )
 
-        s = "CONTEXT" + "\n"
-        s += str(self.globalinfo["num_rows"]) + " "
-        s += str(self.globalinfo["num_cols"]) + " "
-        s += str(self.globalinfo["num_output_dim"]) + " "
-        s += str(self.globalinfo["num_input_dim"]) + " "
-        s += str(self.globalinfo["num_local_dim"]) + " "
-        s += str(self.globalinfo["num_params"]) + "\n"
-        for expr in self.globalinfo["relation"]:
-            s += "  TOFORMAT " + str(expr) + "\n"
-        mydata["relation"] = s
+        rv = "CONTEXT" + "\n"
 
-        if self.globalinfo["num_params"] > 0:
+        if DEBUG_RAW == 1:
+            rv += "# RAW1 " + str(self.globalinfo["context"]) + "\n"
+            for expr in self.globalinfo["context"]:
+                rv += "# RAW " + str(expr) + "\n"
+
+        rv += self.generate_context_str(num_rows,\
+                                        num_output_dim,\
+                                        num_input_dim,\
+                                        num_local_dim,\
+                                        num_params)
+
+        # currently only support Lt, LtE, Gt, GtE
+        # does not support Eq, NotEq
+        # see "_Compare" for details
+
+        rv += "# %6s " % ("e/i")
+        rv += "| "
+        for p in self.globalinfo["params"]:
+            rv += "%6s " % (p)
+        rv += "| "
+        rv += "%6s" % ("1")
+        rv += "\n"
+
+        for expr in self.globalinfo["context"]:
+            rv += "  %6s " % ("1")
+            rv += "  "
+            for p in self.globalinfo["params"]:
+                if p in expr.keys():
+                    val = expr[p]
+                else:
+                    val = 0
+                rv += "%6s " % (val)
+            rv += "  "
+            rv += "%6s" % (expr["literals"])
+            rv += "\n"
+
+        mydata["context"] = rv
+
+        # PARAM EXIST
+        if num_params > 0:
             mydata["params_exist"] = "1"
         else:
             mydata["params_exist"] = "0"
 
+        # PARAM NAMES
+        mydata["params_names"] += "<strings>"
+        mydata["params_names"] += "\n"
         for a in self.globalinfo["params"]:
             mydata["params_names"] += a + " "
+        mydata["params_names"] += "\n"
+        mydata["params_names"] += "</strings>"
+        mydata["params_names"] += "\n"
 
-        mydata["num_statements"] = \
-            str(self.globalinfo["num_statements"])
+        # NUM STATEMENTS
+        mydata["num_statements"] = len(self.statements)
 
         template = """
 <OpenScop>
@@ -270,7 +312,7 @@ class Oscop:
 C
 
 # Context
-$relation
+$context
 
 # Parameter names are provided
 $params_exist
@@ -286,32 +328,165 @@ $num_statements
         return rv
 
     def generate_domain(self, statement):
-        # s = ""
+        # rv = ""
         # for key in raw.keys():
-        #     s += key + ": "
-        #     s += raw[key] + "\n"
+        #     rv += key + ": "
+        #     rv += raw[key] + "\n"
 
         # print("gen domain", statement)
         # print("gen domain", statement["domain"])
 
         statement["num_relations"] += 1
 
+        num_rows = 0        # number of domain constraints
+        num_output_dim = 0  # number of iterators used in this statement
+        num_input_dim = 0   # always 0 in DOMAIN relation
+        num_local_dim = 0   # currently always 0, TBD
+        num_params = len(self.globalinfo["params"])
+
+        # generating a list containing all iterators in this statement
+        iterator_set = set()
+        for d1 in statement["domain"]:
+            for d2 in d1:
+                num_rows += 1
+                for d3 in d2.keys():
+                    iterator_set.add(d3)
+        set2 = set(["literals"] + self.globalinfo["params"])
+        iterator_set = iterator_set - set2
+        iterator_list = list(iterator_set)
+        iterator_list.sort()
+        num_output_dim = len(iterator_list)
+        # print(iterator_list)
+
         rv = ""
-        rv += "# ----------------------------------------------  " + \
-            str(statement["idx"]) + ".1 Domain\n"
-        rv += "  TOFORMAT " + str(statement["domain"]) + "\n"
+        rv += "# ----------------------------------------------  "
+        rv += str(statement["idx"]) + ".1 Domain\n"
+
+        if DEBUG_RAW == 1:
+            rv += "# RAW1 " + str(statement["domain"]) + "\n"
+            for d1 in statement["domain"]:
+                for d2 in d1:
+                    rv += "# RAW " + str(d2) + "\n"
+
+        rv += self.generate_context_str(num_rows,\
+                                        num_output_dim,\
+                                        num_input_dim,\
+                                        num_local_dim,\
+                                        num_params)
+        rv += "# %6s " % ("e/i")
+        rv += "| "
+        for iterator in iterator_list:
+            rv += "%6s " % (iterator)
+        rv += "| "
+        for p in self.globalinfo["params"]:
+            rv += "%6s " % (p)
+        rv += "| "
+        rv += "%6s" % ("1")
+        rv += "\n"
+
+        for d1 in statement["domain"]:
+            for d2 in d1:
+                rv += "  %6s " % ("1")
+                rv += "  "
+                for iterator in iterator_list:
+                    if iterator in d2.keys():
+                        val = d2[iterator]
+                    else:
+                        val = 0
+                    rv += "%6s " % (val)
+                rv += "  "
+                for p in self.globalinfo["params"]:
+                    if p in d2.keys():
+                        val = d2[p]
+                    else:
+                        val = 0
+                    rv += "%6s " % (val)
+                rv += "  "
+                rv += "%6s" % (d2["literals"])
+                rv += "\n"
+
         rv += "\n"
         return rv
 
     def generate_scatter(self, statement):
         # print("gen scatter", statement)
         # print("gen scatter", statement["scatter"])
+
         statement["num_relations"] += 1
 
+        num_rows = len(statement["scatter"])    # size of the scatter vevtor
+        num_output_dim = num_rows               # same as "num_rows"
+        num_input_dim = 0   # calc later, number of iterators used in this statement
+        num_local_dim = 0   # always 0 in SCATTER relation
+        num_params = len(self.globalinfo["params"])
+
+        iterator_set = set(statement["scatter"])
+        iterator_set = iterator_set & self.all_iterators_set
+        iterator_list = list(iterator_set)
+        iterator_list.sort()
+        num_input_dim = len(iterator_list)
+        # print(iterator_list)
+
         rv = ""
-        rv += "# ----------------------------------------------  " + \
-            str(statement["idx"]) + ".2 Scattering\n"
-        rv += "  TOFORMAT " + str(statement["scatter"]) + "\n"
+        rv += "# ----------------------------------------------  "
+        rv += str(statement["idx"]) + ".2 Scattering\n"
+
+        if DEBUG_RAW == 1:
+            rv += "# RAW1 " + str(statement["scatter"]) + "\n"
+
+        rv += self.generate_context_str(num_rows,\
+                                        num_output_dim,\
+                                        num_input_dim,\
+                                        num_local_dim,\
+                                        num_params)
+
+        rv += "# %6s " % ("e/i")
+        rv += "| "
+        for i in range(1, num_rows + 1):
+            t = "s" + str(i)
+            rv += "%6s " % (t)
+        rv += "| "
+        for iterator in iterator_list:
+            rv += "%6s " % (iterator)
+        rv += "| "
+        for p in self.globalinfo["params"]:
+            rv += "%6s " % (p)
+        rv += "| "
+        rv += "%6s" % ("1")
+        rv += "\n"
+
+        for i in range(1, num_rows + 1):
+            rv += "  %6s " % ("0")
+            rv += "  "
+            for j in range(1, num_rows + 1):
+                if j == i:
+                    val = -1
+                else:
+                    val = 0
+                rv += "%6s " % (val)
+            rv += "  "
+            for iterator in iterator_list:
+                if (iterator == statement["scatter"][i - 1]):
+                    val = 1
+                else:
+                    val = 0
+                rv += "%6s " % (val)
+            rv += "  "
+            for p in self.globalinfo["params"]:
+                rv += "%6s " % ("0")
+            rv += "  "
+
+            t = statement["scatter"][i - 1]
+            if (isinstance(t, int)):
+                val = t
+            else:
+                val = 0
+            rv += "%6s" % (val)
+
+            rv += " # "
+            rv += "%s" % (statement["scatter"][i - 1])
+            rv += "\n"
+
         rv += "\n"
         return rv
 
@@ -321,27 +496,150 @@ $num_statements
 
         if len(statement["access"]) == 0:
             return ""
+        statement["num_relations"] += len(statement["access"])
 
-        rv = ""
-        rv += "# ----------------------------------------------  " + \
-            str(statement["idx"]) + ".3 Access\n"
-        rv += "  TOFORMAT1 " + str(statement["access"]) + "\n"
+        num_rows = 0        # calc later, dimension of the array + 1
+        num_output_dim = 0  # calc later, same as "num_rows"
+        num_input_dim = 0   # calc later, number of iterators used in this statement
+        num_local_dim = 0   # currently always 0, TBD
+        num_params = len(self.globalinfo["params"])
 
+        myacs = []
         for access in statement["access"]:
-            statement["num_relations"] += 1
-            array_name = access[0]["array_name"]
-            rv += "  TOFORMAT2 " + access[0]["rw"] + " " + array_name + "\n"
+            myac = {}
+            myac["array_name"] = access[0]["array_name"]
+            myac["rw"] = access[0]["rw"]
+            myac["idxes"] = []
             for dim in access:
+                idx = {}
                 for iterator in statement["domain_iter"]:
                     if (iterator in dim.keys()):
-                        rv += " " + iterator + ":" + str(dim[iterator])
+                        idx[iterator] = dim[iterator]
                 for para in self.globalinfo["params"]:
                     if (para in dim.keys()):
-                        rv += " " + para + ":" + str(dim[para])
+                        idx[para] = dim[para]
                 if ("literals" in dim.keys()):
-                    rv += " " + "literals" + ":" + str(dim["literals"])
-                rv += "\n"
-        rv += "\n"
+                    idx["literals"] = dim["literals"]
+                myac["idxes"].append(copy.deepcopy(idx))
+            myacs.append(myac)
+
+        iterator_set = set()
+        for myac in myacs:
+            for dim in myac["idxes"]:
+                iterator_set = iterator_set | set(dim.keys())
+        iterator_set = iterator_set & self.all_iterators_set
+        iterator_list = list(iterator_set)
+        iterator_list.sort()
+        num_input_dim = len(iterator_list)
+        # print(iterator_list)
+
+        rv = ""
+        rv += "# ----------------------------------------------  "
+        rv += str(statement["idx"]) + ".3 Access\n"
+
+        if DEBUG_RAW == 1:
+            rv += "# RAW1 " + str(statement["access"]) + "\n"
+            for myac in myacs:
+                rv += "# RAW " + str(myac) + "\n"
+
+        myac_idx = 0
+        for myac in myacs:
+            myac_idx += 1
+
+            num_rows = len(myac["idxes"]) + 1
+            num_output_dim = num_rows
+
+            if (myac["rw"] in ["assign_rhs", "augassign_rhs"]):
+                t = "READ"
+            elif (myac["rw"] in ["assign_lhs"]):
+                t = "WRITE"
+            elif (myac["rw"] in ["augassign_lhs"]):
+                t = "READ_WRITE"
+            else:
+                raise Exception("rw = %s is not supported", myac["rw"])
+            rt = ""
+            rt += t
+            rt += "\n"
+
+            rt += self.generate_context_str(num_rows,\
+                                            num_output_dim,\
+                                            num_input_dim,\
+                                            num_local_dim,\
+                                            num_params)
+            rt += "# %6s " % ("e/i")
+            rt += "| "
+            rt += "%6s " % ("Arr")
+            for i in range(1, num_rows):
+                t = "[%s]" % (str(i))
+                rt += "%6s " % (t)
+            rt += "| "
+            for iterator in iterator_list:
+                rt += "%6s " % (iterator)
+            rt += "| "
+            for p in self.globalinfo["params"]:
+                rt += "%6s " % (p)
+            rt += "| "
+            rt += "%6s" % ("1")
+            rt += "\n"
+
+            for i in range(1, num_rows + 1):
+                is_1st_row = (i == 1)
+
+                rt += "  %6s " % ("0")
+                rt += "  "
+                for j in range(1, num_rows + 1):
+                    if j == i:
+                        val = -1
+                    else:
+                        val = 0
+                    rt += "%6s " % (val)
+                rt += "  "
+
+                for iterator in iterator_list:
+                    if is_1st_row:
+                        val = 0
+                    else:
+                        if (iterator in myac["idxes"][i - 2].keys()):
+                            val = 1
+                        else:
+                            val = 0
+                    rt += "%6s " % (val)
+                rt += "  "
+                for p in self.globalinfo["params"]:
+                    if is_1st_row:
+                        val = 0
+                    else:
+                        if (p in myac["idxes"][i - 2].keys()):
+                            val = myac["idxes"][i - 2][p]
+                        else:
+                            val = 0
+                    rt += "%6s " % (val)
+                rt += "  "
+
+                if is_1st_row:
+                    val = myac_idx
+                else:
+                    if ("literals" in myac["idxes"][i - 2].keys()):
+                        val = myac["idxes"][i - 2]["literals"]
+                    else:
+                        val = 0
+                rt += "%6s " % (val)
+                rt += "# "
+
+                if is_1st_row:
+                    val = myac["array_name"]
+                else:
+                    val = str(myac["idxes"][i - 2])
+                rt += "%s" % (val)
+
+                rt += "\n"
+
+            rt += "\n"
+            if (re.match("^READ_WRITE", rt)):
+                rv += re.sub("^READ_WRITE", "WRITE", rt)
+                rv += re.sub("^READ_WRITE", "READ", rt)
+            else:
+                rv += rt
         return rv
 
     def generate_oscop_statement(self, statement):
@@ -365,6 +663,9 @@ $num_statements
         return rv
 
     def generate(self):
+        self.all_iterators_list = list(self.all_iterators_set)
+        self.all_iterators_list.sort()
+
         code = ""
         code = code + self.generate_oscop_global()
         for statement in self.statements:
@@ -409,7 +710,6 @@ class OpenSCoP:
             self.expr = copy.deepcopy(self.default_expr)
             self.visit(node, self.default_coef, self.default_mode)
 
-        print("############################")
         # dump_to_file(self.__src__, "dump_openscop", kwargs)
         aststr = python_ast_format(python_ast)
         save_to_file(aststr, "ooo_pythonast.txt", True)
@@ -442,7 +742,7 @@ class OpenSCoP:
         if not isinstance(node, ast.AST):
             raise Exception("The type is not \"python AST node\"")
 
-        self.print1(node, coef, mode)
+        # self.print1(node, coef, mode)
         f = eval("self._%s" % node.__class__.__name__)
         return f(node, coef, mode)
 
@@ -693,8 +993,15 @@ class OpenSCoP:
                 self.visit(left, coef, mode)
                 self.visit(right, coef, mode)
 
+        elif (isinstance(node.op, ast.Div)):
+            if (mode == "address"):
+                raise Exception("SCoP does not support Div in address mode")
+            self.visit(left, coef, mode)
+            self.visit(right, coef, mode)
+
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "%s is not supported" % node.op)
         return
 
     def _UnaryOp(self, node, coef, mode):
@@ -727,6 +1034,7 @@ class OpenSCoP:
             "Gt": (-1, 1),
             "GtE": (0, 1),
         }
+        # Eq, NotEq is not yet supported
         self.expr["literals"], coef_ = my_cmpop[ops.__class__.__name__]
         self.visit(left, coef_, mode)
         self.visit(right, coef_ * -1, mode)
