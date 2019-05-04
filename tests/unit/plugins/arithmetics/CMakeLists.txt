@@ -10,6 +10,7 @@ set(tests
     cumsum
     div_operation
     generic_operation
+    generic_operation_bool
     maximum
     minimum
     mul_operation

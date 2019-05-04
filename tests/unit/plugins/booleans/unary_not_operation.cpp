@@ -1,4 +1,4 @@
-//   Copyright (c) 2017-2018 Hartmut Kaiser
+//   Copyright (c) 2017-2019 Hartmut Kaiser
 //   Copyright (c) 2018 Shahrzad Shirzad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -11,6 +11,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,7 +31,7 @@ void test_unary_not_operation_0d_false()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_0d_true()
@@ -49,7 +50,7 @@ void test_unary_not_operation_0d_true()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_0d_false_lit()
@@ -64,7 +65,7 @@ void test_unary_not_operation_0d_false_lit()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_0d_true_lit()
@@ -79,7 +80,7 @@ void test_unary_not_operation_0d_true_lit()
         unary_not.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d()
@@ -104,7 +105,7 @@ void test_unary_not_operation_1d()
         blaze::map(v, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d_lit()
@@ -127,7 +128,7 @@ void test_unary_not_operation_1d_lit()
         blaze::map(v, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d_double()
@@ -152,7 +153,7 @@ void test_unary_not_operation_1d_double()
         blaze::map(v, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_1d_double_lit()
@@ -175,7 +176,7 @@ void test_unary_not_operation_1d_double_lit()
         blaze::map(v, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d()
@@ -200,7 +201,7 @@ void test_unary_not_operation_2d()
         blaze::map(m, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d_lit()
@@ -223,7 +224,7 @@ void test_unary_not_operation_2d_lit()
         blaze::map(m, [](bool x) { return (x == false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d_double()
@@ -248,7 +249,7 @@ void test_unary_not_operation_2d_double()
         blaze::map(m, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
 void test_unary_not_operation_2d_double_lit()
@@ -271,8 +272,38 @@ void test_unary_not_operation_2d_double_lit()
         blaze::map(m, [](double x) { return (x == 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
-        phylanx::execution_tree::extract_boolean_data(f.get()));
+        phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_unary_not_operation(std::string const& code,
+    std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+void test_unary_not_operation_3d()
+{
+    test_unary_not_operation(
+        R"(!astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))",
+        R"( astype([[[0, 0], [0, 1]], [[0, 0], [0, 0]]], "bool"))");
+    test_unary_not_operation(
+        R"(!!astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))",
+        R"(  astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))");
+}
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -291,6 +322,10 @@ int main(int argc, char* argv[])
     test_unary_not_operation_2d_lit();
     test_unary_not_operation_2d_double();
     test_unary_not_operation_2d_double_lit();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_unary_not_operation_3d();
+#endif
 
     return hpx::util::report_errors();
 }

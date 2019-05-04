@@ -13,7 +13,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <hpx/util/detail/pp/stringize.hpp>
+#include <hpx/preprocessor/stringize.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(_DEBUG)

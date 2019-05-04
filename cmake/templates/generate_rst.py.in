@@ -1,0 +1,36 @@
+# Copyright (c) 2019 Steven R. Brandt
+# Copyright (c) 2019 Bibek Wagle
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# flake8: noqa
+
+import subprocess as sub
+import sys, re, os
+sys.path.append('@PHYLANX_PYTHON_EXTENSION_LOCATION@')
+
+from phylanx import PhylanxSession
+PhylanxSession.init(1)
+
+from phylanx.util import phyhelpex
+
+file_name = sys.argv[1]
+f= open(file_name,"w+")
+print("=========================",file=f)
+print("Primitives ", file=f)
+print("=========================",file=f)
+
+p = sub.Popen(["@CMAKE_BINARY_DIR@/bin/physl","--docs"],stdout=sub.PIPE)
+for bline in p.stdout.readlines():
+    line = str(bline,'ASCII').strip()
+    g = re.match(r'pattern:\s*(\w+)',line)
+    if g:
+        pat = g.group(1)
+        try:
+            print(pat, file=f)
+            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^", file=f)
+            print(pat,re.sub(r'^(.*)',r'(\1)',re.sub('^\s*','',phyhelpex(pat))), file=f)
+            print('\n', file=f)
+        except:
+            print("")

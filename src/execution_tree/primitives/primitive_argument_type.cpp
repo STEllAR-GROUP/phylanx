@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,11 +7,15 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 
 #include <hpx/include/serialization.hpp>
+#include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
 
 namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::util::internal_allocator<variable_frame> eval_context::alloc_;
+
     ///////////////////////////////////////////////////////////////////////////
     void topology::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
@@ -27,13 +31,39 @@ namespace phylanx { namespace execution_tree
     void eval_context::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
         std::int32_t mode = mode_;
-        ar & mode;
+        ar & mode & variables_;
     }
 
     void eval_context::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
         std::int32_t mode = 0;
-        ar & mode;
+        ar & mode & variables_;
         mode_ = eval_mode(mode);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    void variable_frame::serialize(
+        hpx::serialization::output_archive& ar, unsigned)
+    {
+        ar & variables_;
+    }
+
+    void variable_frame::serialize(
+        hpx::serialization::input_archive& ar, unsigned)
+    {
+        ar & variables_;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    void primitive_argument_type::serialize(
+        hpx::serialization::output_archive& ar, unsigned)
+    {
+        ar & variant();
+    }
+
+    void primitive_argument_type::serialize(
+        hpx::serialization::input_archive& ar, unsigned)
+    {
+        ar & variant();
     }
 }}

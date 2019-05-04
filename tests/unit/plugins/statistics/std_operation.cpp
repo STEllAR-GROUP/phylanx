@@ -37,115 +37,103 @@ int main(int argc, char* argv[])
 {
     // scalars
     test_count_std_operation("std(1.0)", "0.0");
-    test_count_std_operation("std(1)", "0");
+    test_count_std_operation("std(1)", "0.0");
     test_count_std_operation("std__float(1)", "0.0");
 
     // vectors
-    test_count_std_operation("std(hstack(1.0, 2.0, 3.0, 4.0))", "sqrt(1.25)");
-    test_count_std_operation("std__float(hstack(1, 2, 3, 4))", "sqrt(1.25)");
+    test_count_std_operation("std([1.0, 2.0, 3.0, 4.0])", "sqrt(1.25)");
+    test_count_std_operation("std__float([1, 2, 3, 4])", "sqrt(1.25)");
 
-    test_count_std_operation("std(hstack(1.0, 2.0, 3.0, 4.0), 0)", "sqrt(1.25)");
-    test_count_std_operation("std(hstack(1.0, 2.0, 3.0, 4.0), -1)", "sqrt(1.25)");
+    test_count_std_operation("std([1.0, 2.0, 3.0, 4.0], 0)", "sqrt(1.25)");
+    test_count_std_operation("std([1.0, 2.0, 3.0, 4.0], -1)", "sqrt(1.25)");
 
     test_count_std_operation(
-        "std(hstack(1.0, 2.0, 3.0, 4.0), nil, false)", "sqrt(1.25)");
+        "std([1.0, 2.0, 3.0, 4.0], nil, false)", "sqrt(1.25)");
     test_count_std_operation(
-        "std(hstack(1.0, 2.0, 3.0, 4.0), nil, true)", "hstack(sqrt(1.25))");
+        "std([1.0, 2.0, 3.0, 4.0], nil, true)", "hstack(list(sqrt(1.25)))");
     test_count_std_operation(
-        "std(hstack(1.0, 2.0, 3.0, 4.0), 0, false)", "sqrt(1.25)");
+        "std([1.0, 2.0, 3.0, 4.0], 0, false)", "sqrt(1.25)");
     test_count_std_operation(
-        "std(hstack(1.0, 2.0, 3.0, 4.0), 0, true)", "hstack(sqrt(1.25))");
+        "std([1.0, 2.0, 3.0, 4.0], 0, true)", "hstack(list(sqrt(1.25)))");
     test_count_std_operation(
-        "std(hstack(1.0, 2.0, 3.0, 4.0), -1, false)", "sqrt(1.25)");
+        "std([1.0, 2.0, 3.0, 4.0], -1, false)", "sqrt(1.25)");
     test_count_std_operation(
-        "std(hstack(1.0, 2.0, 3.0, 4.0), -1, true)", "hstack(sqrt(1.25))");
+        "std([1.0, 2.0, 3.0, 4.0], -1, true)", "hstack(list(sqrt(1.25)))");
 
     // matrices
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)))", "sqrt(1.25)");
+        "std([[1.0, 2.0], [3.0, 4.0]])", "sqrt(1.25)");
 
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), nil, false)",
+        "std([[1.0, 2.0], [3.0, 4.0]], nil, false)",
         "sqrt(1.25)");
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), nil, true)",
-        "vstack(hstack(sqrt(1.25)))");
+        "std([[1.0, 2.0], [3.0, 4.0]], nil, true)",
+        "vstack(list(hstack(list(sqrt(1.25)))))");
 
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), 0)",
-        "hstack(1.0, 1.0)");
+        "std([[1.0, 2.0], [3.0, 4.0]], 0)",
+        "[1.0, 1.0]");
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), 1)",
-        "hstack(0.5, 0.5)");
+        "std([[1.0, 2.0], [3.0, 4.0]], 1)",
+        "[0.5, 0.5]");
 
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), 0, false)",
-        "hstack(1.0, 1.0)");
+        "std([[1.0, 2.0], [3.0, 4.0]], 0, false)",
+        "[1.0, 1.0]");
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), 1, false)",
-        "hstack(0.5, 0.5)");
+        "std([[1.0, 2.0], [3.0, 4.0]], 1, false)",
+        "[0.5, 0.5]");
 
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), 0, true)",
-        "vstack(hstack(1.0, 1.0))");
+        "std([[1.0, 2.0], [3.0, 4.0]], 0, true)",
+        "[[1.0, 1.0]]");
     test_count_std_operation(
-        "std(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), 1, true)",
-        "vstack(hstack(0.5), hstack(0.5))");
+        "std([[1.0, 2.0], [3.0, 4.0]], 1, true)",
+        "[[0.5], [0.5]]");
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensors
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))))",
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]])",
         "sqrt(1.25)");
 
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), nil, false)",
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], nil, false)",
         "sqrt(1.25)");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), nil, true)",
-        "dstack(vstack(hstack(sqrt(1.25))))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], nil, true)",
+        "dstack(list(vstack(list(hstack(list(sqrt(1.25)))))))");
 
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 0)",
-        "vstack(hstack(1.0, 1.0), hstack(1.0, 1.0))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 0)",
+        "[[1.5, 0.5], [0.5, 1.5]]");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 1)",
-        "vstack(hstack(0.5, 0.5), hstack(0.5, 0.5))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 1)",
+        "[[1.0, 1.0], [1.0, 1.0]]");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 2)",
-        "vstack(hstack(1.5, 0.5), hstack(0.5, 1.5))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 2)",
+        "[[0.5, 0.5], [0.5, 0.5]]");
 
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 0, false)",
-        "vstack(hstack(1.0, 1.0), hstack(1.0, 1.0))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 0, false)",
+        "[[1.5, 0.5], [0.5, 1.5]]");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 1, false)",
-        "vstack(hstack(0.5, 0.5), hstack(0.5, 0.5))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 1, false)",
+        "[[1.0, 1.0], [1.0, 1.0]]");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 2, false)",
-        "vstack(hstack(1.5, 0.5), hstack(0.5, 1.5))");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 2, false)",
+        "[[0.5, 0.5], [0.5, 0.5]]");
 
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 0, true)",
-        "[[[1.0, 1.0], [1.0, 1.0]]]");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 0, true)",
+        "[[[1.5, 0.5], [0.5, 1.5]]]");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 1, true)",
-        "[[[0.5, 0.5]], [[0.5, 0.5]]]");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 1, true)",
+        "[[[1.0, 1.0]], [[1.0, 1.0]]]");
     test_count_std_operation(
-        "std(dstack(vstack(hstack(1.0, 2.0), hstack(3.0, 4.0)), "
-                   "vstack(hstack(4.0, 3.0), hstack(2.0, 1.0))), 2, true)",
-        "[[[1.5], [0.5]], [[0.5], [1.5]]]");
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 2, true)",
+        "[[[0.5], [0.5]], [[0.5], [0.5]]]");
 #endif
 
     return hpx::util::report_errors();

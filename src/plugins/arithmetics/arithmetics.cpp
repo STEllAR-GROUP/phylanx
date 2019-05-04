@@ -43,7 +43,23 @@ namespace phylanx { namespace plugin
                 pet::primitives::generic_operation::match_data)
             {
                 pet::register_pattern(
-                    generic_operation_name, pattern, fullpath);
+                    generic_operation_name, pattern.first, fullpath);
+            }
+        }
+    };
+
+    struct generic_operation_bool_plugin : plugin_base
+    {
+        void register_known_primitives(std::string const& fullpath) override
+        {
+            namespace pet = phylanx::execution_tree;
+
+            std::string generic_operation_bool_name("__gen_bool");
+            for (auto const& pattern :
+                pet::primitives::generic_operation_bool::match_data)
+            {
+                pet::register_pattern(
+                    generic_operation_bool_name, pattern, fullpath);
             }
         }
     };
@@ -51,4 +67,10 @@ namespace phylanx { namespace plugin
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::generic_operation_plugin,
     generic_operation_plugin,
-    phylanx::execution_tree::primitives::make_list::match_data, "__gen");
+    phylanx::execution_tree::primitives::generic_operation::match_data,
+    "__gen");
+
+PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::generic_operation_bool_plugin,
+    generic_operation_bool_plugin,
+    phylanx::execution_tree::primitives::generic_operation_bool::match_data,
+    "__gen_bool");

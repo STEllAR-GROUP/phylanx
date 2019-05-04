@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using arg_type = ir::node_data<T>;
 
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static std::vector<std::pair<match_pattern_type, bool>> const match_data;
 
         generic_operation() = default;
 
@@ -107,6 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         std::string func_name_;
         node_data_type dtype_;
+        bool retain_argument_type_;
     };
 
     inline primitive create_generic_operation(hpx::id_type const& locality,

@@ -16,6 +16,7 @@
 #include <hpx/lcos/future.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -56,83 +57,124 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         template <typename T>
         hpx::future<primitive_argument_type> empty_helper() const;
-        hpx::future<primitive_argument_type> empty() const;
 
         std::size_t get_vecsize(
             primitive_arguments_type const& args) const;
 
-        primitive_argument_type stack0d(
-            primitive_arguments_type&& args) const;
-        primitive_argument_type stack1d(
-            primitive_arguments_type&& args) const;
-        primitive_argument_type stack2d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type handle_hvdstack(
+            primitive_arguments_type&& ops, primitive_arguments_type&& args,
+            eval_context ctx) const;
+        primitive_argument_type handle_stack(
+            primitive_arguments_type&& ops, primitive_arguments_type&& args,
+            eval_context ctx) const;
+
+        primitive_argument_type stack0d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        primitive_argument_type stack0d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype, std::int64_t axis) const;
+        primitive_argument_type stack1d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        primitive_argument_type stack1d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype, std::int64_t axis) const;
+        primitive_argument_type stack2d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        primitive_argument_type stack2d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype, std::int64_t axis) const;
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        primitive_argument_type stack3d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type stack3d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        primitive_argument_type stack3d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype, std::int64_t axis) const;
 #endif
 
+        // support for stack
+        template <typename T>
+        primitive_argument_type stack1d_axis1_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack1d_axis1(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type stack2d_axis0_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack2d_axis0(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        template <typename T>
+        primitive_argument_type stack2d_axis1_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack2d_axis1(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        template <typename T>
+        primitive_argument_type stack3d_axis1_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack3d_axis1(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+        template <typename T>
+        primitive_argument_type stack3d_axis2_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type stack3d_axis2(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
+#endif
         // support for hstack
         template <typename T>
         primitive_argument_type hstack0d1d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type hstack0d1d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type hstack0d1d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         template <typename T>
         primitive_argument_type hstack2d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type hstack2d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type hstack2d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         // support for vstack
         template <typename T>
         primitive_argument_type vstack0d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type vstack0d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type vstack0d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         template <typename T>
         primitive_argument_type vstack1d2d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type vstack1d2d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type vstack1d2d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type hstack3d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type hstack3d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type hstack3d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         template <typename T>
         primitive_argument_type vstack3d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type vstack3d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type vstack3d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         // support for dstack
         template <typename T>
         primitive_argument_type dstack0d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type dstack0d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type dstack0d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         template <typename T>
         primitive_argument_type dstack1d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type dstack1d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type dstack1d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 
         template <typename T>
         primitive_argument_type dstack2d3d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type dstack2d3d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type dstack2d3d(primitive_arguments_type&& args,
+            primitive_argument_type&& dtype) const;
 #endif
 
     private:
-        node_data_type dtype_;
         stacking_mode mode_;
     };
 

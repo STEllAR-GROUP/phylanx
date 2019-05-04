@@ -15,6 +15,14 @@ namespace phylanx { namespace util
     PHYLANX_EXPORT std::ostream& repr(std::ostream& stream);
     PHYLANX_EXPORT std::ostream& norepr(std::ostream& stream);
     PHYLANX_EXPORT bool is_repr(std::ostream& stream);
+
+    struct PHYLANX_EXPORT repr_wrapper
+    {
+        repr_wrapper(std::ostream& strm);
+        ~repr_wrapper();
+
+        std::ostream& strm_;
+    };
 }}
 
 #endif

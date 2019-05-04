@@ -162,11 +162,11 @@ namespace boost
       // boost
       { "(\\bboost\\s*::\\s*intrusive_ptr\\b)", "boost::intrusive_ptr", "boost/intrusive_ptr.hpp" },
       // macros
-      { "(\\bHPX_PP_CAT\\b)", "HPX_PP_CAT", "hpx/util/detail/pp/cat.hpp" },
-      { "(\\bHPX_PP_EXPAND\\b)", "HPX_PP_EXPAND", "hpx/util/detail/pp/expand.hpp" },
-      { "(\\bHPX_PP_NARGS\\b)", "HPX_PP_NARGS", "hpx/util/detail/pp/nargs.hpp" },
-      { "(\\bHPX_PP_STRINGIZE\\b)", "HPX_PP_STRINGIZE", "hpx/util/detail/pp/stringize.hpp" },
-      { "(\\bHPX_PP_STRIP_PARENS\\b)", "HPX_PP_STRIP_PARENS", "hpx/util/detail/pp/strip_parens.hpp" },
+      { "(\\bHPX_PP_CAT\\b)", "HPX_PP_CAT", "hpx/preprocessor/cat.hpp" },
+      { "(\\bHPX_PP_EXPAND\\b)", "HPX_PP_EXPAND", "hpx/preprocessor/expand.hpp" },
+      { "(\\bHPX_PP_NARGS\\b)", "HPX_PP_NARGS", "hpx/preprocessor/nargs.hpp" },
+      { "(\\bHPX_PP_STRINGIZE\\b)", "HPX_PP_STRINGIZE", "hpx/preprocessor/stringize.hpp" },
+      { "(\\bHPX_PP_STRIP_PARENS\\b)", "HPX_PP_STRIP_PARENS", "hpx/preprocessor/strip_parens.hpp" },
       //
       { "(\\HPX_ASSERT\\b)", "HPX_ASSERT", "hpx/util/assert.hpp" },
       { nullptr, nullptr, nullptr }

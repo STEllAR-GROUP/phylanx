@@ -33,14 +33,16 @@ namespace phylanx { namespace ast
         ///////////////////////////////////////////////////////////////////////
         struct on_placeholder_match
         {
-            std::multimap<std::string, ast::expression>& placeholders;
+            using placeholder_map_type =
+                std::multimap<std::string, ast::expression>;
+
+            placeholder_map_type& placeholders;
 
             template <typename Ast1, typename Ast2, typename... Ts>
             bool operator()(
                 Ast1 const& ast1, Ast2 const& ast2, Ts const&... ts) const
             {
-                using value_type = typename std::multimap<std::string,
-                    ast::expression>::value_type;
+                using value_type = placeholder_map_type::value_type;
 
                 if (ast::detail::is_placeholder(ast1))
                 {
@@ -59,7 +61,7 @@ namespace phylanx { namespace ast
                 }
                 else if (ast::detail::is_placeholder(ast2))
                 {
-                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    if (ast::detail::is_placeholder_ellipses(ast2))
                     {
                         placeholders.insert(value_type(
                             ast::detail::identifier_name(ast2).substr(1),

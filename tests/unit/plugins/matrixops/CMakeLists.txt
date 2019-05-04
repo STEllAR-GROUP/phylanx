@@ -9,6 +9,7 @@ set(tests
     argmax
     clip
     column_slicing
+    concatenate
     constant
     count_nonzero
     cross_operation
@@ -18,17 +19,18 @@ set(tests
     expand_dims
     extract_shape
     eye_operation
-    flatten
     flip_operation
     gradient_operation
     hsplit_operation
     hstack_operation
     identity
+    insert
     inverse_operation
     linearmatrix
     linspace
     list_slicing_operation
     ndim
+    pad
     power_operation
     random
     random_distributions
@@ -36,9 +38,11 @@ set(tests
     reshape_operation
     row_slicing
     shuffle_operation
+    size
     slicing_operation
-    softmax_operation
+    sort
     squeeze_operation
+    stack_operation
     tile_operation
     transpose_operation
     unique

@@ -1,9 +1,10 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2019 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    364_local_variables
     466_compiler_problems
     508_unknown_named_argument
     522_multidimension_np_arrays
@@ -14,6 +15,34 @@ set(tests
     636_boolean_array
     640_function_argument
     651_vstack_dtype
+    794_3d_array
+    805_lazy_variable
+    805_two_variables
+    808_print_twice
+    815_plain_return
+    826_default_args
+    827_random_0dim
+    832_performance_data
+    837_none_default_argument
+    846_if_expression
+    852_concatenate_list
+    862_var_std_two_axis
+    866_dynamic_dtype
+    874_0d_shape
+    886_notnone
+    896_return_none
+    903_variable_conversion
+    903_variable_dtype
+    904_pass_decorator
+    905_call_python_snippet
+    911_list_comprehension
+    912_zip
+    925_none_dtype
+    933_arange
+    933_eval_wrapper
+    936_arithmetic_operations
+    956_named_argument_underscore
+    962_broadcast_logical_operations
     array_len_494
     array_shape_486
     array_subscript_403

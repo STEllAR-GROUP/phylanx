@@ -80,7 +80,7 @@ std::string const lra_code = R"(block(
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
                     // exp(-dot(x, weights)): [N], pred: [N]
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
+                    store(pred, sigmoid(dot(x, weights))),
                     store(weights, weights - (alpha * dot(transx, pred - y))),
                     store(step, step + 1)
                 )
@@ -306,10 +306,10 @@ int hpx_main(boost::program_options::variables_map& vm)
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
     auto const& code_read_x = phylanx::execution_tree::compile(
-        "read_x", phylanx::ast::generate_ast(read_x_code), snippets);
+        "read_x", read_x_code, snippets);
 
     auto const& code_read_y = phylanx::execution_tree::compile(
-        "read_y", phylanx::ast::generate_ast(read_y_code), snippets);
+        "read_y", read_y_code, snippets);
 
     auto const& code_lra = phylanx::execution_tree::compile(
         vm.count("direct") != 0 ? "lra_direct" : "lra",

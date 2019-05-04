@@ -10,11 +10,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
+#include <hpx/util/optional.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -49,17 +49,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type squeeze0d(primitive_argument_type&& arg) const;
-        primitive_argument_type squeeze1d(primitive_argument_type&& arg) const;
-        primitive_argument_type squeeze2d(primitive_argument_type&& arg) const;
+        primitive_argument_type squeeze0d(primitive_argument_type&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
+        primitive_argument_type squeeze1d(primitive_argument_type&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
+        primitive_argument_type squeeze2d(primitive_argument_type&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
 
         template <typename T>
         primitive_argument_type squeeze1d(ir::node_data<T>&& arg) const;
         template <typename T>
-        primitive_argument_type squeeze2d(ir::node_data<T>&& arg) const;
+        primitive_argument_type squeeze2d_axis0(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze2d_axis1(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze2d_all_axes(
+            ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze2d(ir::node_data<T>&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
 
-    private:
-        node_data_type dtype_;
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type squeeze3d(primitive_argument_type&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
+
+        template <typename T>
+        primitive_argument_type squeeze3d_axis0(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze3d_axis1(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze3d_axis2(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze3d_all_axes(
+            ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze3d(ir::node_data<T>&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
+#endif
+
     };
     inline primitive create_squeeze_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,

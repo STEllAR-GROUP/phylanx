@@ -10,6 +10,7 @@ set(tests
     dynamic_init
     for
     eval
+    lazy_eval
     make_array
     map_numpy
     map_numpy_constants
@@ -18,6 +19,8 @@ set(tests
     parallel
     set_operation
     slice
+    categorical_crossentropy
+    binary_crossentropy
    )
 
 foreach(test ${tests})

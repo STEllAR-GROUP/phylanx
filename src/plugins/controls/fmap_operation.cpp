@@ -54,10 +54,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type fmap_operation::fmap_1_scalar(
-        primitive const* p, primitive_argument_type&& arg) const
+    primitive_argument_type fmap_operation::fmap_1_scalar(primitive const* p,
+        primitive_argument_type&& arg, eval_context ctx) const
     {
-        return p->eval(hpx::launch::sync, std::move(arg));
+        return p->eval(hpx::launch::sync, std::move(arg), std::move(ctx));
     }
 
     namespace detail
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             static vector_type call(primitive const* p,
                 vector_view_type const& vec, std::string const& name,
-                std::string const& codename)
+                std::string const& codename, eval_context ctx)
             {
                 vector_type result(vec.size(), T{0});
 
@@ -79,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto && val : vec)
                 {
                     auto r = p->eval(hpx::launch::sync,
-                        primitive_argument_type{std::move(val)});
+                        primitive_argument_type{std::move(val)}, ctx);
 
                     if (valid(r))
                     {
@@ -106,34 +106,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    primitive_argument_type fmap_operation::fmap_1_vector(
-        primitive const* p, primitive_argument_type&& arg) const
+    primitive_argument_type fmap_operation::fmap_1_vector(primitive const* p,
+        primitive_argument_type&& arg, eval_context ctx) const
     {
+        if (is_integer_operand_strict(arg))
+        {
+            auto v = extract_integer_value(std::move(arg), name_, codename_);
+            HPX_ASSERT(v.num_dimensions() == 1);
+            return primitive_argument_type{ir::node_data<std::int64_t>{
+                detail::fmap_1_vector<std::int64_t>::call(
+                    p, v.vector(), name_, codename_, std::move(ctx))}};
+        }
+
+        if (is_boolean_operand_strict(arg))
+        {
+            auto v = extract_boolean_value(std::move(arg), name_, codename_);
+            HPX_ASSERT(v.num_dimensions() == 1);
+            return primitive_argument_type{ir::node_data<std::uint8_t>{
+                detail::fmap_1_vector<std::uint8_t>::call(
+                    p, v.vector(), name_, codename_, std::move(ctx))}};
+        }
+
         if (is_numeric_operand(arg))
         {
             auto v = extract_numeric_value(std::move(arg), name_, codename_);
             HPX_ASSERT(v.num_dimensions() == 1);
             return primitive_argument_type{
                 ir::node_data<double>{detail::fmap_1_vector<double>::call(
-                    p, v.vector(), name_, codename_)}};
-        }
-
-        if (is_integer_operand(arg))
-        {
-            auto v = extract_integer_value(std::move(arg), name_, codename_);
-            HPX_ASSERT(v.num_dimensions() == 1);
-            return primitive_argument_type{ir::node_data<std::int64_t>{
-                detail::fmap_1_vector<std::int64_t>::call(
-                    p, v.vector(), name_, codename_)}};
-        }
-
-        if (is_boolean_operand(arg))
-        {
-            auto v = extract_boolean_value(std::move(arg), name_, codename_);
-            HPX_ASSERT(v.num_dimensions() == 1);
-            return primitive_argument_type{ir::node_data<std::uint8_t>{
-                detail::fmap_1_vector<std::uint8_t>::call(
-                    p, v.vector(), name_, codename_)}};
+                    p, v.vector(), name_, codename_, std::move(ctx))}};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -154,7 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             static matrix_type call(primitive const* p,
                 matrix_view_type const& m, std::string const& name,
-                std::string const& codename)
+                std::string const& codename, eval_context ctx)
             {
                 matrix_type result(m.rows(), m.columns(), T{0});
 
@@ -163,7 +163,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     vector_type row{blaze::trans(blaze::row(m, i))};
 
                     auto r = p->eval(hpx::launch::sync,
-                        primitive_argument_type{std::move(row)});
+                        primitive_argument_type{std::move(row)}, ctx);
 
                     if (valid(r))
                     {
@@ -190,34 +190,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    primitive_argument_type fmap_operation::fmap_1_matrix(
-        primitive const* p, primitive_argument_type&& arg) const
+    primitive_argument_type fmap_operation::fmap_1_matrix(primitive const* p,
+        primitive_argument_type&& arg, eval_context ctx) const
     {
+        if (is_integer_operand_strict(arg))
+        {
+            auto m = extract_integer_value(std::move(arg), name_, codename_);
+            HPX_ASSERT(m.num_dimensions() == 2);
+            return primitive_argument_type{ir::node_data<std::int64_t>{
+                detail::fmap_1_matrix<std::int64_t>::call(
+                    p, m.matrix(), name_, codename_, std::move(ctx))}};
+        }
+
+        if (is_boolean_operand_strict(arg))
+        {
+            auto m = extract_boolean_value(std::move(arg), name_, codename_);
+            HPX_ASSERT(m.num_dimensions() == 2);
+            return primitive_argument_type{ir::node_data<std::uint8_t>{
+                detail::fmap_1_matrix<std::uint8_t>::call(
+                    p, m.matrix(), name_, codename_, std::move(ctx))}};
+        }
+
         if (is_numeric_operand(arg))
         {
             auto m = extract_numeric_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
             return primitive_argument_type{
                 ir::node_data<double>{detail::fmap_1_matrix<double>::call(
-                    p, m.matrix(), name_, codename_)}};
-        }
-
-        if (is_integer_operand(arg))
-        {
-            auto m = extract_integer_value(std::move(arg), name_, codename_);
-            HPX_ASSERT(m.num_dimensions() == 2);
-            return primitive_argument_type{ir::node_data<std::int64_t>{
-                detail::fmap_1_matrix<std::int64_t>::call(
-                    p, m.matrix(), name_, codename_)}};
-        }
-
-        if (is_boolean_operand(arg))
-        {
-            auto m = extract_boolean_value(std::move(arg), name_, codename_);
-            HPX_ASSERT(m.num_dimensions() == 2);
-            return primitive_argument_type{ir::node_data<std::uint8_t>{
-                detail::fmap_1_matrix<std::uint8_t>::call(
-                    p, m.matrix(), name_, codename_)}};
+                    p, m.matrix(), name_, codename_, std::move(ctx))}};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -234,7 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), ctx](
                     hpx::future<primitive_argument_type>&& f,
-                    hpx::future<primitive_argument_type>&& l)
+                    hpx::future<primitive_argument_type>&& l) mutable
             -> primitive_argument_type
             {
                 auto && bound_func = f.get();
@@ -277,13 +277,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (dim)
                     {
                     case 0:
-                        return this_->fmap_1_scalar(p, std::move(arg));
+                        return this_->fmap_1_scalar(
+                            p, std::move(arg), std::move(ctx));
 
                     case 1:
-                        return this_->fmap_1_vector(p, std::move(arg));
+                        return this_->fmap_1_vector(
+                            p, std::move(arg), std::move(ctx));
 
                     case 2:
-                        return this_->fmap_1_matrix(p, std::move(arg));
+                        return this_->fmap_1_matrix(
+                            p, std::move(arg), std::move(ctx));
 
                     default:
                         break;
@@ -345,8 +348,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type fmap_operation::fmap_n_lists(
-        primitive const* p, primitive_arguments_type&& args) const
+    primitive_argument_type fmap_operation::fmap_n_lists(primitive const* p,
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         std::vector<ir::range> lists;
         lists.reserve(args.size());
@@ -396,20 +399,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             // Evaluate function for each of the argument sets
-            result.push_back(p->eval(hpx::launch::sync, std::move(args)));
+            result.push_back(p->eval(hpx::launch::sync, std::move(args), ctx));
         }
 
         return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type fmap_operation::fmap_n_scalar(primitive const* p,
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
-        return p->eval(hpx::launch::sync, std::move(args));
+        return p->eval(hpx::launch::sync, std::move(args), std::move(ctx));
     }
 
     primitive_argument_type fmap_operation::fmap_n_vector(primitive const* p,
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         std::vector<ir::node_data<double>> values;
         values.reserve(args.size());
@@ -431,7 +434,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 params.emplace_back(values[j].vector()[i]);
             }
 
-            auto r = p->eval(hpx::launch::sync, std::move(params));
+            auto r = p->eval(hpx::launch::sync, std::move(params), ctx);
             if (valid(r))
             {
                 auto num_result =
@@ -454,7 +457,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type fmap_operation::fmap_n_matrix(primitive const* p,
-        primitive_arguments_type&& args) const
+        primitive_arguments_type&& args, eval_context ctx) const
     {
         std::vector<ir::node_data<double>> values;
         values.reserve(args.size());
@@ -480,7 +483,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 params.emplace_back(std::move(row));
             }
 
-            auto r = p->eval(hpx::launch::sync, std::move(params));
+            auto r = p->eval(hpx::launch::sync, std::move(params), ctx);
 
             if (valid(r))
             {
@@ -515,8 +518,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& bound_func,
-                primitive_arguments_type&& args)
+            [this_ = std::move(this_), ctx](
+                    primitive_argument_type&& bound_func,
+                    primitive_arguments_type&& args) mutable
             ->  primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -531,7 +535,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (detail::all_list_operands(args))
                 {
-                    return this_->fmap_n_lists(p, std::move(args));
+                    return this_->fmap_n_lists(
+                        p, std::move(args), std::move(ctx));
                 }
 
                 if (detail::all_numeric_operands(args))
@@ -542,13 +547,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (dim)
                     {
                     case 0:
-                        return this_->fmap_n_scalar(p, std::move(args));
+                        return this_->fmap_n_scalar(
+                            p, std::move(args), std::move(ctx));
 
                     case 1:
-                        return this_->fmap_n_vector(p, std::move(args));
+                        return this_->fmap_n_vector(
+                            p, std::move(args), std::move(ctx));
 
                     case 2:
-                        return this_->fmap_n_matrix(p, std::move(args));
+                        return this_->fmap_n_matrix(
+                            p, std::move(args), std::move(ctx));
 
                     default:
                         break;

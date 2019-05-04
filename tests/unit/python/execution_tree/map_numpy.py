@@ -85,7 +85,7 @@ assert np_exp.__src__ == \
 # def np_hstack(x, y):
 #     return np.hstack((x, y))
 #
-# assert (np_hstack(np_x, np_y) == np.hstack((np_x, np_y))).all
+# assert (np_hstack(np_x, np_y) == np.hstack(np_x, np_y)).all
 
 
 @Phylanx
@@ -182,10 +182,10 @@ assert np_transpose.__src__ == \
     'define$175$0(np_transpose$175$0, x$175$17, block(define$176$4(transx$176$4, transpose$176$13(x$176$26)), transx$177$11))' # noqa E501
 
 # @Phylanx
-# def np_vstack(np_x, np_y):
+# def np_vstack((np_x, np_y)):
 #     return np.vstack((np_x, np_y))
 #
-# assert (np_vstack(np_x, np_y) == np.vstack((np_x, np_y))).all
+# assert (np_vstack((np_x, np_y)) == np.vstack((np_x, np_y))).all
 
 # Please note that even if class::abc did have member function `shape` this code
 # would not have worked as, at this point, Phylanx does not support not support

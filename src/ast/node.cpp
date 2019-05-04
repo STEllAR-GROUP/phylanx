@@ -7,6 +7,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/util/none_manip.hpp>
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/serialization.hpp>
@@ -116,6 +117,18 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    void serialize(
+        hpx::serialization::output_archive& ar, nil const& val, unsigned)
+    {
+        ar << val.explicit_nil;
+    }
+
+    void serialize(hpx::serialization::input_archive& ar, nil& val, unsigned)
+    {
+        ar >> val.explicit_nil;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     void identifier::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
         ar << name << id << col;
@@ -187,13 +200,13 @@ namespace phylanx { namespace ast
     void function_call::serialize(
         hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << function_name << args;
+        ar << function_name << attribute << args;
     }
 
     void function_call::serialize(
         hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> function_name >> args;
+        ar >> function_name >> attribute >> args;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -344,9 +357,13 @@ namespace phylanx { namespace ast
 
     std::ostream& operator<<(std::ostream& out, nil)
     {
-        if (util::is_repr(out))
+        if (util::is_none(out) || util::is_repr(out))
         {
-            out << "<nil>";
+            out << "None";
+        }
+        else
+        {
+            out << "nil";
         }
         return out;
     }
@@ -448,7 +465,13 @@ namespace phylanx { namespace ast
 
     std::ostream& operator<<(std::ostream& out, function_call const& f)
     {
-        out << f.function_name << "(";
+        out << f.function_name;
+        if (!f.attribute.empty())
+        {
+            out << '{' << f.attribute << '}';
+        }
+
+        out << "(";
         bool first = true;
         for (auto const& arg : f.args)
         {
@@ -481,9 +504,13 @@ namespace phylanx { namespace ast
         return out;
     }
 
-    std::string to_string(expression const& expr)
+    std::string to_string(expression const& expr, bool isrepr)
     {
         std::ostringstream str;
+        if (isrepr)
+        {
+            str << util::repr;
+        }
         str << expr;
         return str.str();
     }

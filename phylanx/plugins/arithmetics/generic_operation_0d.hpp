@@ -87,6 +87,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }},
             {"erf", [](T m) -> T { return blaze::erf(m); }},
             {"erfc", [](T m) -> T { return blaze::erfc(m); }},
+            {"square", [](T m) -> T { return m * m; }},
+            {"sign", [](T m) -> T { return blaze::sign(m); }},
             {"normalize",
                 [](T m) -> T {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",

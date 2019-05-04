@@ -38,59 +38,82 @@ namespace phylanx { namespace execution_tree
             ast::expression const& expr, compiler::function_list& snippets,
             compiler::environment& env,
             hpx::id_type const& default_locality = hpx::find_here());
+
+        /// Compile a given expressions into a function, which when invoked will
+        /// evaluate the expression corresponding to the expression. Reuse the
+        /// given compilation environment.
+        PHYLANX_EXPORT compiler::function compile(std::string const& name,
+            ast::expression const& expr, compiler::function_list& snippets,
+            compiler::environment& env,
+            compiler::expression_pattern_list const& patterns,
+            hpx::id_type const& default_locality = hpx::find_here());
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    /// Compile a given expression into a function.
-    PHYLANX_EXPORT compiler::entry_point const& compile(
-        std::vector<ast::expression> const& exprs,
-        compiler::function_list& snippets,
-        hpx::id_type const& default_locality = hpx::find_here());
-
-    /// Compile a given expression into a function.
-    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& expr,
-        compiler::function_list& snippets,
-        hpx::id_type const& default_locality = hpx::find_here());
-
     /// Compile a given expression into a function. Reuse the given compilation
     /// environment.
-    PHYLANX_EXPORT compiler::entry_point const& compile(
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, compiler::environment& env,
+        compiler::expression_pattern_list const& patterns,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::string const& expr,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
         std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality = hpx::find_here());
 
-    /// Compile a given expression into a function. Reuse the given compilation
-    /// environment.
-    PHYLANX_EXPORT compiler::entry_point const& compile(
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
         std::string const& expr, compiler::function_list& snippets,
         compiler::environment& env,
         hpx::id_type const& default_locality = hpx::find_here());
 
-    ///////////////////////////////////////////////////////////////////////////
-    /// Compile a given expression into a function.
     PHYLANX_EXPORT compiler::entry_point const& compile(
-        std::string const& name,
+        std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& expr,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
+        std::string const& func_name, std::string const& expr,
+        compiler::function_list& snippets,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
+        std::string const& expr, compiler::function_list& snippets,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& name,
         std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets,
         hpx::id_type const& default_locality = hpx::find_here());
 
     PHYLANX_EXPORT compiler::entry_point const& compile(
-        std::string const& name, std::string const& expr,
+        std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets,
         hpx::id_type const& default_locality = hpx::find_here());
 
-    /// Compile a given expression into a function. Reuse the given compilation
-    /// environment.
-    PHYLANX_EXPORT compiler::entry_point const& compile(
-        std::string const& name, std::vector<ast::expression> const& exprs,
-        compiler::function_list& snippets, compiler::environment& env,
-        hpx::id_type const& default_locality = hpx::find_here());
-
-    /// Compile a given expression into a function. Reuse the given compilation
-    /// environment.
-    PHYLANX_EXPORT compiler::entry_point const& compile(
-        std::string const& name, std::string const& expr,
-        compiler::function_list& snippets, compiler::environment& env,
+    PHYLANX_EXPORT compiler::entry_point const& compile(std::string const& expr,
+        compiler::function_list& snippets,
         hpx::id_type const& default_locality = hpx::find_here());
 
     ///////////////////////////////////////////////////////////////////////////
@@ -100,6 +123,13 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, compiler::environment& env,
         primitive_argument_type body,
         hpx::id_type const& default_locality = hpx::find_here());
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Helper function allowing to construct the internal data structures for
+    // a pattern
+    PHYLANX_EXPORT void add_patterns(
+        compiler::expression_pattern_list& patterns,
+        match_pattern_type const& p);
 }}
 
 #endif

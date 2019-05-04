@@ -183,58 +183,92 @@ int main(int argc, char* argv[])
     test_constant_3d();
 #endif
 
-    // zeros, ones, full
-    test_constant_operation("constant(42, list())", "42");
-    test_constant_operation("constant(42, list(4))", "hstack(42, 42, 42, 42)");
+    // zeros, ones, full, default dtype is 'float64'
     test_constant_operation(
-        "constant(42, list(2, 2))", "hstack(vstack(42, 42), vstack(42, 42))");
+        "constant(42, list())", "42.0");
+    test_constant_operation(
+        "constant(42, list(4))", "[42.0, 42.0, 42.0, 42.0]");
+    test_constant_operation(
+        "constant(42, list(2, 2))", "[[42.0, 42.0], [42.0, 42.0]]");
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_operation("constant(42, list(2, 2, 2))",
-        "dstack(hstack(vstack(42, 42), vstack(42, 42)), "
-        "       hstack(vstack(42, 42), vstack(42, 42)))");
+        "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
 #endif
 
-    // ...like operations
-    test_constant_operation("constant_like(42, 1)", "42");
-    test_constant_operation("constant_like(42, hstack(1, 2, 3, 4))",
-        "hstack(42, 42, 42, 42)");
     test_constant_operation(
-        "constant_like(42, hstack(vstack(1, 2), vstack(3, 4)))",
-        "hstack(vstack(42, 42), vstack(42, 42))");
+        R"(constant(42, list(), __arg(dtype, "int")))", "42");
+    test_constant_operation(
+        R"(constant(42, list(4), __arg(dtype, "int")))",
+        "[42, 42, 42, 42]");
+    test_constant_operation(
+        R"(constant(42, list(2, 2), __arg(dtype, "int")))",
+        "[[42, 42], [42, 42]]");
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_operation(
-        "constant_like(42, "
-        "   dstack(hstack(vstack(1, 2), vstack(3, 4)), "
-        "          hstack(vstack(1, 2), vstack(3, 4))))",
-        "dstack(hstack(vstack(42, 42), vstack(42, 42)), "
-        "       hstack(vstack(42, 42), vstack(42, 42)))");
+        R"(constant(42, list(2, 2, 2), __arg(dtype, "int")))",
+        "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
+#endif
+
+    // ...like operations, default dtype is derived from argument
+    test_constant_operation("constant_like(42, 1)", "42");
+    test_constant_operation("constant_like(42, [1, 2, 3, 4])",
+        "[42, 42, 42, 42]");
+    test_constant_operation(
+        "constant_like(42, [[1, 2], [3, 4]])",
+        "[[42, 42], [42, 42]]");
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_constant_operation(
+        "constant_like(42, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
+        "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
+#endif
+
+    test_constant_operation(
+        "constant_like(42.0, 1)", "42.0");
+    test_constant_operation(
+        "constant_like(42.0, [1, 2, 3, 4])",
+        "[42.0, 42.0, 42.0, 42.0]");
+    test_constant_operation(
+        "constant_like(42.0, [[1, 2], [3, 4]])",
+        "[[42.0, 42.0], [42.0, 42.0]]");
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_constant_operation(
+        "constant_like(42.0, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
+        "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
 #endif
 
     // empty
     test_empty_operation(
-        "constant__int(list())", std::array<int, PHYLANX_MAX_DIMENSIONS>{});
+        R"(constant(nil, list(), __arg(dtype, "int")))",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{});
     test_empty_operation(
-        "constant__int(list(4))", std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
-    test_empty_operation("constant__int(list(2, 2))",
+        R"(constant(nil, list(4), __arg(dtype, "int")))",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
+    test_empty_operation(
+        R"(constant(nil, list(2, 2), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    test_empty_operation("constant__int(list(2, 2, 2))",
+    test_empty_operation(
+        R"(constant(nil, list(2, 2, 2), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
 #endif
 
     // empty_like
-    test_empty_operation("constant_like__int(1)",
+    test_empty_operation(
+        R"(constant_like(nil, 1, __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{});
-    test_empty_operation("constant_like__int(hstack(1, 2, 3, 4))",
+    test_empty_operation(
+        R"(constant_like(nil, [1, 2, 3, 4], __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
     test_empty_operation(
-        "constant_like__int(hstack(vstack(1, 2), vstack(3, 4)))",
+        R"(constant_like(nil, [[1, 2], [3, 4]], __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_empty_operation(
-        "constant_like__int("
-        "   dstack(hstack(vstack(1, 2), vstack(3, 4)), "
-        "          hstack(vstack(1, 2), vstack(3, 4))))",
+        R"(constant_like(
+                nil,
+                [[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
+                __arg(dtype, "int"))
+        )",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
 #endif
 

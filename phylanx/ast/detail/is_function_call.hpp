@@ -15,31 +15,33 @@
 namespace phylanx { namespace ast { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
-//     inline bool is_function_call(identifier const& id);
-//     inline std::string function_name(identifier const& id);
-
     PHYLANX_EXPORT bool is_function_call(primary_expr const& pe);
     PHYLANX_EXPORT std::string function_name(primary_expr const& pe);
+    PHYLANX_EXPORT std::string function_attribute(primary_expr const& pe);
     PHYLANX_EXPORT std::vector<expression> function_arguments(
         primary_expr const& pe);
 
     PHYLANX_EXPORT bool is_function_call(operand const& op);
     PHYLANX_EXPORT std::string function_name(operand const& op);
+    PHYLANX_EXPORT std::string function_attribute(operand const& op);
     PHYLANX_EXPORT std::vector<expression> function_arguments(
         operand const& op);
 
     inline bool is_function_call(operation const& op);
     inline std::string function_name(operation const& op);
+    inline std::string function_attribute(operation const& op);
     inline std::vector<expression> function_arguments(
         operation const& op);
 
     inline bool is_function_call(expression const& expr);
     inline std::string function_name(expression const& expr);
+    inline std::string function_attribute(expression const& expr);
     inline std::vector<expression> function_arguments(
         expression const& expr);
 
     inline bool is_function_call(function_call const& fc);
     inline std::string function_name(function_call const& fc);
+    inline std::string function_attribute(function_call const& fc);
     inline std::vector<expression> function_arguments(
             function_call const& id);
 
@@ -50,6 +52,11 @@ namespace phylanx { namespace ast { namespace detail
     }
     template <typename Ast>
     std::string function_name(Ast const&)
+    {
+        return "";
+    }
+    template <typename Ast>
+    std::string function_attribute(Ast const&)
     {
         return "";
     }
@@ -71,6 +78,11 @@ namespace phylanx { namespace ast { namespace detail
         return function_name(ast.get());
     }
     template <typename Ast>
+    std::string function_attribute(util::recursive_wrapper<Ast> const& ast)
+    {
+        return function_attribute(ast.get());
+    }
+    template <typename Ast>
     inline std::vector<expression> function_arguments(
         util::recursive_wrapper<Ast> const& ast)
     {
@@ -84,6 +96,10 @@ namespace phylanx { namespace ast { namespace detail
     inline std::string function_name(operation const& op)
     {
         return function_name(op.operand_);
+    }
+    inline std::string function_attribute(operation const& op)
+    {
+        return function_attribute(op.operand_);
     }
     inline std::vector<expression> function_arguments(
         operation const& op)
@@ -107,6 +123,14 @@ namespace phylanx { namespace ast { namespace detail
         }
         return function_name(expr.first);
     }
+    inline std::string function_attribute(expression const& expr)
+    {
+        if (!expr.rest.empty())
+        {
+            return "";
+        }
+        return function_attribute(expr.first);
+    }
     inline std::vector<expression> function_arguments(
         expression const& expr)
     {
@@ -125,6 +149,10 @@ namespace phylanx { namespace ast { namespace detail
     inline std::string function_name(function_call const& fc)
     {
         return fc.function_name.name;
+    }
+    inline std::string function_attribute(function_call const& fc)
+    {
+        return fc.attribute;
     }
     inline std::vector<expression> function_arguments(
         function_call const& fc)

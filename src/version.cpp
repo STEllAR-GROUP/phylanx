@@ -7,8 +7,8 @@
 #include <phylanx/config/user_main_config.hpp>
 #include <phylanx/version.hpp>
 
-#include <hpx/util/detail/pp/expand.hpp>
-#include <hpx/util/detail/pp/stringize.hpp>
+#include <hpx/preprocessor/expand.hpp>
+#include <hpx/preprocessor/stringize.hpp>
 #include <hpx/util/format.hpp>
 
 #include <cstdint>
@@ -83,7 +83,7 @@ namespace phylanx
             if (path != nullptr)
             {
                 cfg.emplace_back(hpx::util::format(
-                    "hpx.plugin_paths=$[hpx.plugin_paths]{1}{2}",
+                    "hpx.component_paths=$[hpx.component_paths]{1}{2}",
                     HPX_INI_PATH_DELIMITER, std::string(path)));
             }
 

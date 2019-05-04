@@ -41,10 +41,10 @@ void test_slicing()
             define(result, slice(x, list(nil, nil, -(1)))),
             result
         ))
-        test(hstack(1, 2, 3, 4, 5))
+        test(hstack(list(1, 2, 3, 4, 5)))
     )";
 
-    test_slicing_operation(code, "hstack(5, 4, 3, 2, 1)");
+    test_slicing_operation(code, "hstack(list(5, 4, 3, 2, 1))");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

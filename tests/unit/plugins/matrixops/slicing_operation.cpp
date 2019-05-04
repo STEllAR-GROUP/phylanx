@@ -41,10 +41,23 @@ void test_slicing_operation_0d()
     HPX_TEST_EQ(result[0], 42.0);
 }
 
+void test_tuple_slicing_operation_0d()
+{
+    std::string const code = R"(
+        tuple_slice(42.0, list())
+    )";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 42.0);
+}
+
 void test_slicing_operation_1d()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(2,4))
     ))";
 
@@ -56,10 +69,24 @@ void test_slicing_operation_1d()
     HPX_TEST_EQ(result[1], 4);
 }
 
+void test_tuple_slicing_operation_1d()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        tuple_slice(a, list(2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 3);
+}
+
 void test_slicing_operation_1d_start()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(2))
     ))";
 
@@ -73,7 +100,7 @@ void test_slicing_operation_1d_start()
 void test_slicing_operation_1d_start_negative()
 {
     std::string const code = R"(block(
-        define(a, hstack(1, 2, 3, 4, 5, 6, 7, 8)),
+        define(a, [1, 2, 3, 4, 5, 6, 7, 8]),
         slice(a, list(-2))
     ))";
 
@@ -87,7 +114,7 @@ void test_slicing_operation_1d_start_negative()
 void test_slicing_operation_1d_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(2,6,2))
     ))";
 
@@ -102,7 +129,7 @@ void test_slicing_operation_1d_step()
 void test_slicing_operation_1d_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(6,2,-2))
     ))";
 
@@ -117,7 +144,7 @@ void test_slicing_operation_1d_neg_step()
 void test_slicing_operation_1d_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(-6,-2))
     ))";
 
@@ -134,7 +161,7 @@ void test_slicing_operation_1d_negative_index()
 void test_slicing_operation_1d_single_slice_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(-6,-5))
     ))";
 
@@ -148,7 +175,7 @@ void test_slicing_operation_1d_single_slice_negative_index()
 void test_slicing_operation_1d_negative_index_zero_start()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(0,-1))
     ))";
 
@@ -168,7 +195,7 @@ void test_slicing_operation_1d_negative_index_zero_start()
 void test_slicing_operation_1d_negative_index_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, list(-2,-6,-2))
     ))";
 
@@ -183,7 +210,7 @@ void test_slicing_operation_1d_negative_index_neg_step()
 void test_slicing_operation_1d_single()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, 2)
     ))";
 
@@ -197,7 +224,7 @@ void test_slicing_operation_1d_single()
 void test_slicing_operation_1d_single_negative()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, [1,2,3,4,5,6,7,8]),
         slice(a, -2)
     ))";
 
@@ -211,13 +238,13 @@ void test_slicing_operation_1d_single_negative()
 void test_slicing_operation_2d_value()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, 2, 2)
     ))";
 
@@ -231,13 +258,13 @@ void test_slicing_operation_2d_value()
 void test_slicing_operation_2d_single_row()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, 2, list(0, 8))
     ))";
 
@@ -252,13 +279,13 @@ void test_slicing_operation_2d_single_row()
 void test_slicing_operation_2d_single_row_v2()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(0, 6), 2)
     ))";
 
@@ -273,13 +300,13 @@ void test_slicing_operation_2d_single_row_v2()
 void test_slicing_operation_2d_single_row_result_matrix()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(2,3), list(0,8))
     ))";
 
@@ -294,14 +321,55 @@ void test_slicing_operation_2d_single_row_result_matrix()
 void test_slicing_operation_2d()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(2,4), list(2,4))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+    auto expected = phylanx::ir::node_data<double>(
+        blaze::DynamicMatrix<double>{{30, 40}, {103, 104}});
+
+    HPX_TEST_EQ(result, expected);
+}
+
+void test_tuple_slicing_operation_2d_value()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
+        tuple_slice(input, list(2, 2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 30);
+}
+
+void test_tuple_slicing_operation_2d()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
+        tuple_slice(input, list(list(2,4), list(2,4)))
     ))";
 
     auto result =
@@ -315,13 +383,13 @@ void test_slicing_operation_2d()
 void test_slicing_operation_2d_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(1,5,2), list(1,5,2))
     ))";
 
@@ -336,13 +404,13 @@ void test_slicing_operation_2d_step()
 void test_slicing_operation_2d_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(5,1,-2), list(5,1,-2))
     ))";
 
@@ -357,13 +425,13 @@ void test_slicing_operation_2d_neg_step()
 void test_slicing_operation_2d_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(-5,-2), list(-5,-2))
     ))";
 
@@ -378,13 +446,13 @@ void test_slicing_operation_2d_negative_index()
 void test_slicing_operation_2d_single_slice_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(-5,-4),list(0,8))
     ))";
 
@@ -399,13 +467,13 @@ void test_slicing_operation_2d_single_slice_negative_index()
 void test_slicing_operation_2d_single_slice_negative_index_v2()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(0,6),list(-5,-4))
     ))";
 
@@ -420,13 +488,13 @@ void test_slicing_operation_2d_single_slice_negative_index_v2()
 void test_slicing_operation_2d_negative_index_zero_start()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(0,-2), list(0,-2))
     ))";
 
@@ -442,13 +510,13 @@ void test_slicing_operation_2d_negative_index_zero_start()
 void test_slicing_operation_2d_negative_index_neg_step()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(e, hstack(31,32,33,34,35,36,37,83)),
-        define(f, hstack(311,132,313,134,135,136,137,318)),
-        define(input, vstack(a,b,c,d,e,f)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(e, [31,32,33,34,35,36,37,83]),
+        define(f, [311,132,313,134,135,136,137,318]),
+        define(input, vstack(list(a,b,c,d,e,f))),
         slice(input, list(-1,-4,-2), list(-1,-4,-2))
     ))";
 
@@ -463,7 +531,7 @@ void test_slicing_operation_2d_negative_index_neg_step()
 void test_set_index_scalar()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55)),
+        define(a, [0.052, 0.95, 0.55]),
         slice(a, 1)
     ))";
 
@@ -478,7 +546,7 @@ void test_set_index_scalar()
 void test_set_index_list()
 {
     std::string const code = R"(block(
-        define(a, hstack(0.052, 0.95, 0.55)),
+        define(a, [0.052, 0.95, 0.55]),
         slice(a, list(1, 2, 1))
     ))";
 
@@ -494,64 +562,89 @@ void test_set_index_list()
 void test_slicing_operation_3d_value()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(x1, vstack(a,b,c,d)),
-        define(x2, vstack(b,c,d,a)),
-        define(x3, vstack(c,d,a,b)),
-        define(input, dstack(x1, x2, x3)),
-        slice(input, 1, 2, 3)
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(x1, vstack(list(a,b,c,d))),
+        define(x2, vstack(list(b,c,d,a))),
+        define(x3, vstack(list(c,d,a,b))),
+        define(input, dstack(list(x1, x2, x3))),
+        slice(input, 0, 1, 2)
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 104);
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result[0], 2);
+}
+
+void test_tuple_slicing_operation_3d_value()
+{
+    std::string const code = R"(block(
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(x1, vstack(list(a,b,c,d))),
+        define(x2, vstack(list(b,c,d,a))),
+        define(x3, vstack(list(c,d,a,b))),
+        define(input, dstack(list(x1, x2, x3))),
+        tuple_slice(input, list(0, 1, 2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result[0], 2);
 }
 
 void test_slicing_operation_3d_value_negative_index()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(x1, vstack(a,b,c,d)),
-        define(x2, vstack(b,c,d,a)),
-        define(x3, vstack(c,d,a,b)),
-        define(input, dstack(x1, x2, x3)),
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(x1, vstack(list(a,b,c,d))),
+        define(x2, vstack(list(b,c,d,a))),
+        define(x3, vstack(list(c,d,a,b))),
+        define(input, dstack(list(x1, x2, x3))),
         slice(input, -1, -2, -3)
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 6);
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result[0], 107);
 }
 
 void test_slicing_operation_3d_single_slice()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
-        define(b, hstack(11,12,13,14,15,16,17,18)),
-        define(c, hstack(10,02,30,40,05,60,70,80)),
-        define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(x1, vstack(a,b,c,d)),
-        define(x2, vstack(b,c,d,a)),
-        define(x3, vstack(c,d,a,b)),
-        define(input, dstack(x1, x2, x3)),
-        slice(input, list(1), list(2), list(3))
+        define(a, [1,2,3,4,5,6,7,8]),
+        define(b, [11,12,13,14,15,16,17,18]),
+        define(c, [10,02,30,40,05,60,70,80]),
+        define(d, [101,102,103,104,105,106,107,108]),
+        define(x1, vstack(list(a,b,c,d))),
+        define(x2, vstack(list(b,c,d,a))),
+        define(x3, vstack(list(c,d,a,b))),
+        define(input, dstack(list(x1, x2, x3))),
+        slice(input, list(0, 1), list(1, 2), list(2, 3))
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_integer_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 104);
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(3));
+    HPX_TEST_EQ(result.tensor()(0, 0, 0), 2);
 }
 
 #endif
@@ -594,7 +687,16 @@ int main(int argc, char* argv[])
     test_slicing_operation_3d_value();
     test_slicing_operation_3d_value_negative_index();
 
-//     test_slicing_operation_3d_single_slice();
+    test_slicing_operation_3d_single_slice();
+#endif
+
+    test_tuple_slicing_operation_0d();
+    test_tuple_slicing_operation_1d();
+    test_tuple_slicing_operation_2d_value();
+    test_tuple_slicing_operation_2d();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_tuple_slicing_operation_3d_value();
 #endif
 
     return hpx::util::report_errors();

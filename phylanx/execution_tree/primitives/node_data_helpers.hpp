@@ -27,13 +27,14 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     enum node_data_type
     {
-        node_data_type_unknown = -1,
         node_data_type_double = 0,
         node_data_type_int64 = 1,
         node_data_type_bool = 2,
+        node_data_type_unknown = 3,     // must be largest value
     };
 
     /// Extract node_data_type from a primitive name
+    PHYLANX_EXPORT node_data_type map_dtype(std::string const& spec);
     PHYLANX_EXPORT node_data_type extract_dtype(std::string name);
 
     /// Return the common data type to be used for the result of an operation
@@ -53,10 +54,26 @@ namespace phylanx { namespace execution_tree
     {
         int const __dummy[] = {
             extract_common_type(args)...,
-            node_data_type_bool
+            node_data_type_unknown
         };
         return node_data_type(
             *std::min_element(&__dummy[0], &__dummy[sizeof...(args)]));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    std::size_t extract_numeric_value_dimension(ir::node_data<T> const& val,
+        std::string const& name, std::string const& codename)
+    {
+        return val.num_dimensions();
+    }
+
+    template <typename T>
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_numeric_value_dimensions(ir::node_data<T> const& val,
+        std::string const& name, std::string const& codename)
+    {
+        return val.dimensions();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -147,44 +164,51 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Extract a scalar value from the given argument
     template <typename T>
-    ir::node_data<T> extract_value_scalar(primitive_argument_type const& val,
-        std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_scalar(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename);
 
     template <typename T>
-    ir::node_data<T> extract_value_scalar(primitive_argument_type&& val,
-        std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_scalar(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename);
 
     // Extract a vector value from the given argument
     template <typename T>
-    ir::node_data<T> extract_value_vector(primitive_argument_type const& val,
-        std::size_t size, std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_vector(
+        primitive_argument_type const& val, std::size_t size,
+        std::string const& name, std::string const& codename);
 
     template <typename T>
-    ir::node_data<T> extract_value_vector(primitive_argument_type&& val,
-        std::size_t size, std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_vector(
+        primitive_argument_type&& val, std::size_t size,
+        std::string const& name, std::string const& codename);
 
     // Extract a matrix value from the given argument
     template <typename T>
-    ir::node_data<T> extract_value_matrix(primitive_argument_type const& val,
-        std::size_t rows, std::size_t columns, std::string const& name,
+    PHYLANX_EXPORT ir::node_data<T> extract_value_matrix(
+        primitive_argument_type const& val, std::size_t rows,
+        std::size_t columns, std::string const& name,
         std::string const& codename);
 
     template <typename T>
-    ir::node_data<T> extract_value_matrix(primitive_argument_type&& val,
-        std::size_t rows, std::size_t columns, std::string const& name,
-        std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_matrix(
+        primitive_argument_type&& val, std::size_t rows, std::size_t columns,
+        std::string const& name, std::string const& codename);
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // Extract a matrix value from the given argument
     template <typename T>
-    ir::node_data<T> extract_value_tensor(primitive_argument_type const& val,
-        std::size_t pages, std::size_t rows, std::size_t columns,
-        std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_tensor(
+        primitive_argument_type const& val, std::size_t pages, std::size_t rows,
+        std::size_t columns, std::string const& name,
+        std::string const& codename);
 
     template <typename T>
-    ir::node_data<T> extract_value_tensor(primitive_argument_type&& val,
-        std::size_t pages, std::size_t rows, std::size_t columns,
-        std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT ir::node_data<T> extract_value_tensor(
+        primitive_argument_type&& val, std::size_t pages, std::size_t rows,
+        std::size_t columns, std::string const& name,
+        std::string const& codename);
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
@@ -272,20 +296,20 @@ namespace phylanx { namespace execution_tree
 
 
     template <typename T>
-    void extract_value_vector(
+    PHYLANX_EXPORT void extract_value_vector(
         typename ir::node_data<T>::storage1d_type& result,
         ir::node_data<T>&& val, std::size_t size, std::string const& name,
         std::string const& codename);
 
     template <typename T>
-    void extract_value_matrix(
+    PHYLANX_EXPORT void extract_value_matrix(
         typename ir::node_data<T>::storage2d_type& result,
         ir::node_data<T>&& rhs, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename);
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
-    void extract_value_tensor(
+    PHYLANX_EXPORT void extract_value_tensor(
         typename ir::node_data<T>::storage3d_type& result,
         ir::node_data<T>&& rhs,
         std::size_t pages, std::size_t rows, std::size_t columns,

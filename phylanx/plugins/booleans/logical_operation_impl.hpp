@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 Shahrzad Shirzad
 //  Copyright (c) 2018 Tiany Zhang
 //
@@ -9,9 +9,10 @@
 #define PHYLANX_PRIMITIVES_LOGICAL_OPERATION_IMPL_SEP_02_2018_0703PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/booleans/logical_operation.hpp>
 #include <phylanx/ir/ranges.hpp>
+#include <phylanx/plugins/booleans/logical_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -19,12 +20,18 @@
 #include <hpx/throw_exception.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -91,11 +98,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_argument_type operator()(ast::nil lhs, ast::nil rhs) const
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::eval",
-                util::generate_error_message(
-                    "left hand side logical right hand side can't be compared",
-                    logical_.name_, logical_.codename_));
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{Op{}(bool(lhs), bool(rhs))});
         }
 
         primitive_argument_type operator()(ir::range lhs, ir::range rhs) const
@@ -213,97 +217,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
-    primitive_argument_type logical_operation<Op>::logical0d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            rhs = blaze::map(rhs.vector(),
-                [&](bool x) { return Op{}(x, lhs.scalar()); });
-        }
-        else
-        {
-            rhs.vector() = blaze::map(rhs.vector(),
-                [&](bool x) { return Op{}(x, lhs.scalar()); });
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type logical_operation<Op>::logical0d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            rhs = blaze::map(rhs.matrix(),
-                [&](bool x) { return Op{}(x, lhs.scalar()); });
-        }
-        else
-        {
-            rhs.matrix() = blaze::map(rhs.matrix(),
-                [&](bool x) { return Op{}(x, lhs.scalar()); });
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
     primitive_argument_type logical_operation<Op>::logical0d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch (rhs_dims)
-        {
-        case 0:
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{Op{}(lhs.scalar(), rhs.scalar())});
-
-        case 1:
-            return logical0d1d(std::move(lhs), std::move(rhs));
-
-        case 2:
-            return logical0d2d(std::move(lhs), std::move(rhs));
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::logical0d",
-                util::generate_error_message(
-                    "the operands have incompatible number of dimensions",
-                    name_, codename_));
-        }
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type logical_operation<Op>::logical1d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            lhs = blaze::map(lhs.vector(),
-                [&](bool x) { return Op{}(x, rhs.scalar()); });
-        }
-        else
-        {
-            lhs.vector() = blaze::map(lhs.vector(),
-                [&](bool x) { return Op{}(x, rhs.scalar()); });
-        }
-
         return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
+            ir::node_data<std::uint8_t>{Op{}(lhs.scalar(), rhs.scalar())});
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type logical_operation<Op>::logical1d1d(
@@ -326,152 +247,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (lhs.is_ref())
         {
             lhs = blaze::map(lhs.vector(), rhs.vector(),
-                [&](bool x, bool y) { return Op{}(x, y); });
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
         }
         else
         {
             lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
-                [&](bool x, bool y) { return Op{}(x, y); });
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
         }
 
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type logical_operation<Op>::logical1d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        auto cv = lhs.vector();
-        auto cm = rhs.matrix();
-
-        if (cv.size() != cm.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::logical1d2d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (rhs.is_ref())
-        {
-            blaze::DynamicMatrix<std::uint8_t> m{cm.rows(), cm.columns()};
-            for (std::size_t i = 0UL; i != cm.rows(); ++i)
-            {
-                blaze::row(m, i) =
-                    blaze::map(blaze::row(cm, i), blaze::trans(cv),
-                        [](bool x, bool y) { return Op{}(x, y); });
-            }
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(m)});
-        }
-
-        for (std::size_t i = 0UL; i != rhs.matrix().rows(); ++i)
-        {
-            blaze::row(cm, i) =
-                blaze::map(blaze::row(cm, i), blaze::trans(cv),
-                    [](bool x, bool y) { return Op{}(x, y); });
-        }
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename Op>
     template <typename T>
     primitive_argument_type logical_operation<Op>::logical1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
     {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch (rhs_dims)
+        if (lhs.dimensions() != rhs.dimensions())
         {
-        case 0:
-            return logical1d0d(std::move(lhs), std::move(rhs));
+            blaze::DynamicVector<T> lhs_data, rhs_data;
 
-        case 1:
-            return logical1d1d(std::move(lhs), std::move(rhs));
+            extract_value_vector(
+                lhs_data, std::move(lhs), sizes[0], name_, codename_);
+            extract_value_vector(
+                rhs_data, std::move(rhs), sizes[0], name_, codename_);
 
-        case 2:
-            return logical1d2d(std::move(lhs), std::move(rhs));
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::logical1d",
-                util::generate_error_message(
-                    "the operands have incompatible number of dimensions",
-                    name_, codename_));
+            return ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })};
         }
+
+        return logical1d1d(std::move(lhs), std::move(rhs));
     }
 
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type logical_operation<Op>::logical2d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        std::size_t lhs_size = lhs.dimension(0);
-        std::size_t rhs_size = rhs.dimension(0);
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            lhs = blaze::map(lhs.matrix(),
-                [&](bool x) { return Op{}(x, rhs.scalar()); });
-        }
-        else
-        {
-            lhs.matrix() = blaze::map(lhs.matrix(),
-                [&](bool x) { return Op{}(x, rhs.scalar()); });
-        }
-
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
-    template <typename Op>
-    template <typename T>
-    primitive_argument_type logical_operation<Op>::logical2d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        auto cv = rhs.vector();
-        auto cm = lhs.matrix();
-
-        if (cv.size() != cm.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::logical2d1d",
-                generate_error_message(
-                    "the dimensions of the operands do not match"));
-        }
-
-        // TODO: SIMD functionality should be added, blaze implementation
-        // is not currently available
-        if (lhs.is_ref())
-        {
-            blaze::DynamicMatrix<std::uint8_t> m{cm.rows(), cm.columns()};
-            for (std::size_t i = 0UL; i != cm.rows(); ++i)
-            {
-                blaze::row(m, i) =
-                    blaze::map(blaze::row(cm, i), blaze::trans(cv),
-                        [](bool x, bool y) { return Op{}(x, y); });
-            }
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{std::move(m)});
-        }
-
-        for (std::size_t i = 0UL; i != cm.rows(); ++i)
-        {
-            blaze::row(cm, i) =
-                blaze::map(blaze::row(cm, i), blaze::trans(cv),
-                    [](bool x, bool y) { return Op{}(x, y); });
-        }
-        return primitive_argument_type(
-            ir::node_data<std::uint8_t>{std::move(lhs)});
-    }
-
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type logical_operation<Op>::logical2d2d(
@@ -493,12 +303,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (lhs.is_ref())
         {
             lhs = blaze::map(lhs.matrix(), rhs.matrix(),
-                [&](bool x, bool y) { return Op{}(x, y); });
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
         }
         else
         {
             lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
-                [&](bool x, bool y) { return Op{}(x, y); });
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
         }
 
         return primitive_argument_type(
@@ -508,45 +318,105 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op>
     template <typename T>
     primitive_argument_type logical_operation<Op>::logical2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
     {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch (rhs_dims)
+        if (lhs.dimensions() != rhs.dimensions())
         {
-        case 0:
-            return logical2d0d(std::move(lhs), std::move(rhs));
+            blaze::DynamicMatrix<T> lhs_data, rhs_data;
 
-        case 1:
-            return logical2d1d(std::move(lhs), std::move(rhs));
+            extract_value_matrix(
+                lhs_data, std::move(lhs), sizes[0], sizes[1], name_, codename_);
+            extract_value_matrix(
+                rhs_data, std::move(rhs), sizes[0], sizes[1], name_, codename_);
 
-        case 2:
-            return logical2d2d(std::move(lhs), std::move(rhs));
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::logical2d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
+            return ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })};
         }
+
+        return logical2d2d(std::move(lhs), std::move(rhs));
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename Op>
+    template <typename T>
+    primitive_argument_type logical_operation<Op>::logical3d3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "logical_operation<Op>::logical3d3d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        // TODO: SIMD functionality should be added, blaze implementation
+        //       is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.tensor(), rhs.tensor(),
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
+        }
+        else
+        {
+            lhs.tensor() = blaze::map(lhs.tensor(), rhs.tensor(),
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
+        }
+
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
+
+    template <typename Op>
+    template <typename T>
+    primitive_argument_type logical_operation<Op>::logical3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
+    {
+        if (lhs.dimensions() != rhs.dimensions())
+        {
+            blaze::DynamicTensor<T> lhs_data, rhs_data;
+
+            extract_value_tensor(lhs_data, std::move(lhs), sizes[0], sizes[1],
+                sizes[2], name_, codename_);
+            extract_value_tensor(rhs_data, std::move(rhs), sizes[0], sizes[1],
+                sizes[2], name_, codename_);
+
+            return ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })};
+        }
+
+        return logical3d3d(std::move(lhs), std::move(rhs));
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type logical_operation<Op>::logical_all(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
     {
-        std::size_t lhs_dims = lhs.num_dimensions();
-        switch (lhs_dims)
+        auto sizes = extract_largest_dimensions(name_, codename_, lhs, rhs);
+        switch (extract_largest_dimension(name_, codename_, lhs, rhs))
         {
         case 0:
             return logical0d(std::move(lhs), std::move(rhs));
 
         case 1:
-            return logical1d(std::move(lhs), std::move(rhs));
+            return logical1d(std::move(lhs), std::move(rhs), sizes);
 
         case 2:
-            return logical2d(std::move(lhs), std::move(rhs));
+            return logical2d(std::move(lhs), std::move(rhs), sizes);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return logical3d(std::move(lhs), std::move(rhs), sizes);
+#endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::logical_all",

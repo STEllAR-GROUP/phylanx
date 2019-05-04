@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/util/internal_allocator.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -61,10 +62,10 @@ namespace phylanx { namespace execution_tree
 
             // store_action
             virtual void store(primitive_arguments_type&&,
-                primitive_arguments_type&&);
+                primitive_arguments_type&&, eval_context ctx);
 
             virtual void store(primitive_argument_type&&,
-                primitive_arguments_type&&);
+                primitive_arguments_type&&, eval_context ctx);
 
             // extract_topology_action
             virtual topology expression_topology(
@@ -74,6 +75,9 @@ namespace phylanx { namespace execution_tree
             // bind_action
             virtual bool bind(
                 primitive_arguments_type const& params, eval_context ctx) const;
+
+            // initialize evaluation context (used by target-reference only)
+            virtual void set_eval_context(eval_context ctx);
 
         protected:
             friend class primitive_component;
@@ -106,7 +110,8 @@ namespace phylanx { namespace execution_tree
             primitive_arguments_type const& operands() const
             {
                 return operands_.empty() ||
-                        (operands_.size() == 1 && !valid(operands_[0])) ?
+                        (operands_.size() == 1 &&
+                            is_implicit_nil(operands_[0])) ?
                     noargs : operands_;
             }
 
@@ -200,8 +205,13 @@ namespace phylanx { namespace execution_tree
         bool supports_dtype_;
     };
 
-    using pattern_list =
-        std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
+    struct pattern
+    {
+        std::string name_;
+        match_pattern_type data_;
+    };
+
+    using pattern_list = std::vector<pattern>;
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT void register_pattern(std::string const& name,
@@ -217,12 +227,21 @@ namespace phylanx { namespace execution_tree
         hpx::id_type const& locality, std::string const& type,
         primitive_arguments_type&& operands,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        bool register_with_agas = true);
+
+    PHYLANX_EXPORT primitive create_primitive_component(
+        hpx::id_type const& locality, std::string const& type,
+        primitive_arguments_type&& operands, eval_context ctx,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        bool register_with_agas = true);
 
     PHYLANX_EXPORT primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
         primitive_argument_type operand, std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        bool register_with_agas = true);
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>
@@ -230,8 +249,11 @@ namespace phylanx { namespace execution_tree
     create_primitive(primitive_arguments_type&& args,
         std::string const& name, std::string const& codename)
     {
+        static hpx::util::internal_allocator<Primitive> alloc_;
+
         return std::static_pointer_cast<primitives::primitive_component_base>(
-            std::make_shared<Primitive>(std::move(args), name, codename));
+            std::allocate_shared<Primitive>(
+                alloc_, std::move(args), name, codename));
     }
 }}
 

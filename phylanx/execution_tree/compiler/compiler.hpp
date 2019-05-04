@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,13 +9,15 @@
 #define PHYLANX_EXECUTION_TREE_COMPILER_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/util/hashed_string.hpp>
 
-#include <hpx/include/util.hpp>
 #include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
@@ -32,13 +34,63 @@ namespace phylanx { namespace execution_tree { namespace compiler
     class environment;
 
     ///////////////////////////////////////////////////////////////////////////
-    using expression_pattern = hpx::util::tuple<
-        std::string, ast::expression, factory_function_type>;
+    struct expression_pattern
+    {
+        std::size_t num_default_value_arguments() const
+        {
+            return defaults_.size();
+        }
+
+        std::size_t num_keyword_arguments() const
+        {
+            std::size_t count = 0;
+            for (auto const& arg : args_)
+            {
+                if (!arg.empty() && !ast::detail::is_placeholder_ellipses(arg))
+                {
+                    ++count;
+                }
+            }
+            return count;
+        }
+
+        std::size_t keyword_position(std::string const& name) const
+        {
+            std::size_t pos = 0;
+            for (auto const& arg : args_)
+            {
+                if (arg == name)
+                {
+                    return pos;
+                }
+                ++pos;
+            }
+            return std::size_t(-1);
+        }
+
+        bool expect_variadics() const
+        {
+            for (auto const& arg : args_)
+            {
+                if (ast::detail::is_placeholder_ellipses(arg))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        std::string pattern_;               // pattern
+        ast::expression pattern_ast_;       // simplified pattern AST (no arg())
+        factory_function_type creator_;     // creator function for the primitive
+        std::vector<std::string> args_;     // argument names
+        std::vector<std::string> defaults_; // default values
+    };
+
     using expression_pattern_list =
         std::multimap<std::string, expression_pattern>;
 
-    PHYLANX_EXPORT expression_pattern_list generate_patterns(
-        pattern_list const& patterns_list);
+    PHYLANX_EXPORT expression_pattern_list const& generate_patterns();
 
     /// Create default compilation environment based on the given list of
     /// patterns and using the given default locality.
@@ -132,6 +184,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
         factory_function_type f_;
     };
 
+    // compose a nil
+    struct list_value : compiled_actor<list_value>
+    {
+        list_value(hpx::id_type const& locality)
+          : compiled_actor<list_value>(locality)
+        {}
+
+        function compose(std::list<function>&& elements,
+            primitive_name_parts&& name_parts,
+            std::string const& codename = "<unknown>") const
+        {
+            primitive_arguments_type fargs;
+            fargs.reserve(elements.size());
+
+            for (auto&& arg : elements)
+            {
+                fargs.emplace_back(std::move(arg.arg_));
+            }
+
+            return function{primitive_argument_type{std::move(fargs)}};
+        }
+    };
+
     // compose a literal value
     struct primitive_literal_value
     {
@@ -216,6 +291,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
         }
 
+        access_argument(std::size_t argnum,
+                primitive_argument_type&& default_value,
+                hpx::id_type const& locality = hpx::find_here())
+          : compiled_actor<access_argument>(locality)
+          , argnum_(argnum)
+          , default_value_(default_value)
+        {
+        }
+
         function compose(std::list<function>&& elements,
             primitive_name_parts&& name_parts,
             std::string const& codename = "<unknown>") const
@@ -230,19 +314,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
             name_parts.sequence_number = sequence_number++;
 
             std::string full_name = compose_primitive_name(name_parts);
+
+            primitive_arguments_type fargs;
+            fargs.reserve(elements.size() + 2);
+
+            fargs.emplace_back(argnum_);
+            fargs.push_back(default_value_);
+
             if (elements.empty())
             {
                 return function{
                     primitive_argument_type{create_primitive_component(
                         this->locality_, name_parts.primitive,
-                        primitive_argument_type{argnum_}, full_name, codename)},
+                        std::move(fargs), full_name, codename)},
                     full_name};
             }
 
-            primitive_arguments_type fargs;
-            fargs.reserve(elements.size() + 1);
-
-            fargs.push_back(primitive_argument_type{argnum_});
             for (auto&& arg : elements)
             {
                 fargs.emplace_back(std::move(arg.arg_));
@@ -256,6 +343,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         std::int64_t argnum_;
+        primitive_argument_type default_value_;
     };
 
     // compose an object that accesses an existing variable or function
@@ -265,8 +353,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::reference_wrapper<function const> f_;
         std::string target_name_;
 
-        explicit access_target(function const& f,
-                std::string && target_name,
+        explicit access_target(function const& f, std::string&& target_name,
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<access_target>(locality)
           , f_(f)
@@ -286,13 +373,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string full_name = compose_primitive_name(name_parts);
             if (elements.empty())
             {
+                auto p = create_primitive_component(this->locality_,
+                    name_parts.primitive, f_.get().arg_, full_name, codename);
+
                 return function{
-                    primitive_argument_type{
-                        create_primitive_component(
-                            this->locality_, name_parts.primitive, f_.get().arg_,
-                            full_name, codename)
-                    },
-                    full_name};
+                    primitive_argument_type{std::move(p)}, full_name};
             }
 
             primitive_arguments_type fargs;
@@ -304,13 +389,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.emplace_back(std::move(arg.arg_));
             }
 
-            return function{
-                primitive_argument_type{
-                    create_primitive_component(
-                        this->locality_, name_parts.primitive, std::move(fargs),
-                        full_name, codename)
-                },
-                full_name};
+            auto p = create_primitive_component(this->locality_,
+                name_parts.primitive, std::move(fargs), full_name, codename);
+
+            return function{primitive_argument_type{std::move(p)}, full_name};
         }
     };
 
@@ -322,6 +404,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
     };
 
+    ///////////////////////////////////////////////////////////////////////////
     // compose a call-function object
     struct call_function : compiled_actor<call_function>
     {
@@ -367,19 +450,47 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     class environment
     {
-        using iterator = std::map<std::string, compiled_function>::iterator;
-        using value_type = std::map<std::string, compiled_function>::value_type;
+    public:
+        using definition_data = compiled_function;
+
+    private:
+        using map_type = std::map<util::hashed_string, definition_data>;
+        using iterator = map_type::iterator;
+        using const_iterator = map_type::const_iterator;
+        using value_type = map_type::value_type;
 
     public:
-        environment(environment* outer = nullptr, std::size_t base_arg_num = 0)
+        environment(environment* outer = nullptr, std::size_t arg_num = 0,
+            std::int64_t var_num = 0)
           : outer_(outer)
-          , base_arg_num_(outer != nullptr ?
-                    outer->base_arg_num_ + base_arg_num :
-                    base_arg_num)
+          , base_arg_num_(
+                outer != nullptr ? outer->base_arg_num_ + arg_num : arg_num)
         {}
 
         template <typename F>
-        compiled_function* define(std::string name, F && f)
+        compiled_function* define_variable(std::string name, F&& f)
+        {
+            auto existing = definitions_.find(name);
+            if (existing != definitions_.end())
+            {
+                definitions_.erase(existing);
+            }
+
+            auto result = definitions_.emplace(value_type(
+                std::move(name), compiled_function(std::forward<F>(f))));
+
+            if (!result.second)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::environment::define",
+                    "couldn't insert name into symbol table");
+            }
+
+            return &result.first->second;
+        }
+
+        template <typename F>
+        compiled_function* define(std::string name, F&& f)
         {
             auto existing = definitions_.find(name);
             if (existing != definitions_.end())
@@ -431,13 +542,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     private:
         environment* outer_;
-        std::map<std::string, compiled_function> definitions_;
+        map_type definitions_;
         std::size_t base_arg_num_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT environment default_environment(
         pattern_list const& patterns_list,
+        hpx::id_type const& default_locality);
+
+    PHYLANX_EXPORT environment default_environment(
+        compiler::expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);
 
     ///////////////////////////////////////////////////////////////////////////

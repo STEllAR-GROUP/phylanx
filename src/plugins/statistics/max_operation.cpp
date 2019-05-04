@@ -33,6 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         struct statistics_max_op
         {
+            using result_type = T;
+
             statistics_max_op(std::string const& name,
                 std::string const& codename)
             {}
@@ -51,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector const& v, T initial) const
+            operator()(Vector& v, T initial) const
             {
                 return (std::max)((blaze::max)(v), initial);
             }

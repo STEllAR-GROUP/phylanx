@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -35,6 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
+      , target_name_(compiler::extract_instance_name(name_))
     {
         // operands_[0] is expected to be the actual variable, operands_[1],
         // operands_[2] and operands_[3] are optional slicing arguments
@@ -64,21 +65,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             operands_[0] =
                 extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
-
-        // try to bind to the variable object locally
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            hpx::error_code ec(hpx::lightweight);
-            target_ = hpx::get_ptr<primitive_component>(
-                hpx::launch::sync, p->get_id(), ec);
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
         primitive_arguments_type const& params, eval_context ctx) const
     {
+        // access variable from execution context
+        auto const* target = ctx.get_var(target_name_);
+        if (target == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_variable::eval",
+                generate_error_message(
+                    hpx::util::format("the variable '{}' is unbound in the "
+                                      "current execution environment",
+                        target_name_)));
+        }
+
         // handle slicing, we can replace the params with our slicing
         // parameters as variable evaluation can't depend on those anyways
         switch (operands_.size())
@@ -89,19 +93,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return value_operand(operands_[1], params, name_, codename_, ctx)
                     .then(hpx::launch::sync,
-                        [this_ = std::move(this_), ctx](
+                        [this_ = std::move(this_), ctx, target = *target](
                                 hpx::future<primitive_argument_type>&& rows)
                         mutable -> hpx::future<primitive_argument_type>
                         {
-                            ctx.add_mode(eval_dont_wrap_functions);
-                            if (this_->target_)
-                            {
-                                return this_->target_->eval_single(
-                                    rows.get(), std::move(ctx));
-                            }
-                            return value_operand(this_->operands_[0],
+                            return value_operand(target,
                                 rows.get(), this_->name_, this_->codename_,
-                                std::move(ctx));
+                                add_mode(std::move(ctx), eval_mode(
+                                    eval_dont_wrap_functions|eval_slicing)));
                         });
             }
 
@@ -110,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // two slicing parameters
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
-                    [this_ = std::move(this_), ctx](
+                    [this_ = std::move(this_), ctx, target = *target](
                             hpx::future<primitive_argument_type>&& rows,
                             hpx::future<primitive_argument_type>&& cols) mutable
                     -> hpx::future<primitive_argument_type>
@@ -120,15 +119,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         args.emplace_back(rows.get());
                         args.emplace_back(cols.get());
 
-                        ctx.add_mode(eval_dont_wrap_functions);
-                        if (this_->target_)
-                        {
-                            return this_->target_->eval(
-                                std::move(args), std::move(ctx));
-                        }
-                        return value_operand(this_->operands_[0],
+                        return value_operand(target,
                             std::move(args), this_->name_, this_->codename_,
-                            std::move(ctx));
+                            add_mode(std::move(ctx), eval_mode(
+                                eval_dont_wrap_functions|eval_slicing)));
                     },
                     value_operand(operands_[1], params, name_, codename_, ctx),
                     value_operand(operands_[2], params, name_, codename_, ctx));
@@ -140,27 +134,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // three slicing parameters
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
-                    [this_ = std::move(this_), ctx](
+                    [this_ = std::move(this_), ctx, target = *target](
                             hpx::future<primitive_argument_type>&& pages,
                             hpx::future<primitive_argument_type>&& rows,
                             hpx::future<primitive_argument_type>&& cols) mutable
                     -> hpx::future<primitive_argument_type>
-                    {
-                        primitive_arguments_type args;
-                        args.reserve(3);
-                        args.emplace_back(pages.get());
-                        args.emplace_back(rows.get());
-                        args.emplace_back(cols.get());
+                {
+                    primitive_arguments_type args;
+                    args.reserve(3);
+                    args.emplace_back(pages.get());
+                    args.emplace_back(rows.get());
+                    args.emplace_back(cols.get());
 
-                        ctx.add_mode(eval_dont_wrap_functions);
-                        if (this_->target_)
-                        {
-                            return this_->target_->eval(
-                                std::move(args), std::move(ctx));
-                        }
-                        return value_operand(this_->operands_[0],
-                            std::move(args), this_->name_, this_->codename_,
-                            std::move(ctx));
+                    return value_operand(target,
+                        std::move(args), this_->name_, this_->codename_,
+                        add_mode(std::move(ctx), eval_mode(
+                            eval_dont_wrap_functions|eval_slicing)));
                     },
                     value_operand(operands_[1], params, name_, codename_, ctx),
                     value_operand(operands_[2], params, name_, codename_, ctx),
@@ -172,17 +161,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // no slicing parameters given, access variable directly
-        ctx.add_mode(eval_dont_wrap_functions);
-        if (target_)
-        {
-            return target_->eval(noargs, std::move(ctx));
-        }
-        return value_operand(
-            operands_[0], noargs, name_, codename_, std::move(ctx));
+        auto var = *target;
+        return value_operand(std::move(var), noargs, name_, codename_,
+            add_mode(std::move(ctx), eval_dont_wrap_functions));
     }
 
     void access_variable::store(primitive_arguments_type&& vals,
-            primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         if (vals.size() != 1)
         {
@@ -192,30 +177,53 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "invoking store with slicing parameters is not supported"));
         }
 
+        // access variable from execution context
+        auto* target = ctx.get_var(target_name_);
+        if (target == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_variable::store",
+                generate_error_message(
+                    hpx::util::format("the variable '{}' is unbound in the "
+                                      "current execution environment",
+                        target_name_)));
+        }
+
         // handle slicing, simply append the slicing parameters to the end of
         // the argument list
+        if (operands_.size() > 1)
+        {
+            ctx = add_mode(std::move(ctx), eval_slicing);
+        }
+
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
             vals.emplace_back(extract_ref_value(*it, name_, codename_));
         }
 
-        if (target_)
+        primitive* p = util::get_if<primitive>(target);
+        if (p != nullptr)
         {
-            target_->store(std::move(vals), std::move(params));
-        }
-        else
-        {
-            primitive* p = util::get_if<primitive>(&operands_[0]);
-            if (p != nullptr)
-            {
-                p->store(hpx::launch::sync, std::move(vals), std::move(params));
-            }
+            p->store(hpx::launch::sync, std::move(vals), std::move(params),
+                std::move(ctx));
         }
     }
 
     void access_variable::store(primitive_argument_type&& val,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
+        // access variable from execution context
+        auto* target = ctx.get_var(target_name_);
+        if (target == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_variable::store",
+                generate_error_message(
+                    hpx::util::format("the variable '{}' is unbound in the "
+                                      "current execution environment",
+                        target_name_)));
+        }
+
         if (operands_.size() > 1)
         {
             // handle slicing, simply append the slicing parameters to the end of
@@ -229,35 +237,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 vals.emplace_back(extract_ref_value(*it, name_, codename_));
             }
 
-            if (target_)
+            primitive* p = util::get_if<primitive>(target);
+            if (p != nullptr)
             {
-                target_->store(std::move(vals), std::move(params));
-            }
-            else
-            {
-                primitive* p = util::get_if<primitive>(&operands_[0]);
-                if (p != nullptr)
-                {
-                    p->store(
-                        hpx::launch::sync, std::move(vals), std::move(params));
-                }
+                p->store(hpx::launch::sync, std::move(vals), std::move(params),
+                    add_mode(std::move(ctx), eval_slicing));
             }
         }
         else
         {
             // no slicing parameters given, simply dispatch request
-            if (target_)
+            primitive* p = util::get_if<primitive>(target);
+            if (p != nullptr)
             {
-                target_->store_single(std::move(val), std::move(params));
-            }
-            else
-            {
-                primitive* p = util::get_if<primitive>(&operands_[0]);
-                if (p != nullptr)
-                {
-                    p->store(
-                        hpx::launch::sync, std::move(val), std::move(params));
-                }
+                p->store(hpx::launch::sync, std::move(val), std::move(params),
+                    std::move(ctx));
             }
         }
     }

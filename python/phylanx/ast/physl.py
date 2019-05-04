@@ -1,6 +1,6 @@
 # Copyright (c) 2017 Hartmut Kaiser
 # Copyright (c) 2018 Steven R. Brandt
-# Copyright (c) 2018 R. Tohid
+# Copyright (c) 2018-2019 R. Tohid
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,9 +8,26 @@
 import re
 import ast
 import inspect
+import numpy as np
 import phylanx.execution_tree
-from phylanx import compiler_state, PhylanxSession
-from phylanx.ast.utils import dump_info
+from phylanx import PhylanxSession
+
+
+def physl_zip(loop):
+    def define(i, idx):
+        return ['define', (i, ['slice', ('__physl_iterator', str(idx))])]
+
+    if isinstance(loop, ast.For):
+        targets = [it.id for it in loop.target.elts]
+        args = [arg.id for arg in loop.iter.args]
+    elif isinstance(loop, list):
+        targets = loop[0]
+        args = loop[1][1]
+
+    lambda_ = ['lambda', (*targets, ['list', (*targets, )])]
+    fmap = ['fmap', (lambda_, *args)]
+    iterators = tuple(define(i, idx) for idx, i in enumerate(targets))
+    return (fmap, iterators)
 
 
 mapped_methods = {
@@ -23,7 +40,7 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "subtract": "__sub",
+    "subtract": "__sub"
 }
 
 numpy_constants = {
@@ -40,12 +57,14 @@ numpy_constants = {
     "NZERO": 'NZERO',
     "e": 'euler',
     "euler_gamma": 'euler_gamma',
-    "pi": 'pi'
+    "pi": 'pi',
+    "float": 'float',
+    "int": 'int',
+    "bool": 'bool'
 }
 
 methods_supporting_dtype = [
     'absolute',
-    'arange',
     'arccos',
     'arccosh',
     'arcsin',
@@ -57,16 +76,14 @@ methods_supporting_dtype = [
     'conj',
     'cos',
     'cosh',
-    'cumsum',
-    'dstack',
     'erf',
     'erfc',
+    'square',
+    'sign',
     'exp',
     'exp2',
     'exp10',
-    'eye',
     'floor',
-    'hstack',
     'identity',
     'imag',
     'invcbrt',
@@ -85,13 +102,100 @@ methods_supporting_dtype = [
     'sin',
     'sinh',
     'sqrt',
-    'stack',
     'tan',
     'tanh',
     'trace'
     'trunc',
-    'vstack',
 ]
+
+
+def create_array(array_tree, kwargs):
+    symbol_info = []
+
+    hstack_symbol = 'hstack'
+    vstack_symbol = 'vstack'
+    dstack_symbol = 'dstack'
+
+    def extract_data(arr):
+        if isinstance(arr, tuple):
+            if not arr:
+                return []
+            elif isinstance(arr[0], str):
+                return [i for i in arr]
+            else:
+                current_dim = []
+                for entry in arr:
+                    current_dim.append(extract_data(entry))
+                return current_dim
+        elif isinstance(arr, list):
+            symbol_info.append('$' + arr[0].split('$', 1)[1])
+            return extract_data(arr[1])
+
+    data = extract_data(array_tree)
+
+    if not symbol_info:
+        if kwargs:
+            args = (['list', tuple(data)], kwargs)
+        else:
+            args = (['list', tuple(data)], )
+        return [hstack_symbol, args]
+
+    data = np.array(*extract_data(array_tree))
+    num_dim = len(data.shape)
+
+    if 3 == num_dim:
+        columns = [data[:, :, i] for i in range(data.shape[-1])]
+        dstacks = []
+        for i, column in enumerate(columns):
+            dstacks.append([])
+            if kwargs:
+                [dstacks[i].append((['list', tuple(data)], kwargs)) for data in column]
+            else:
+                [dstacks[i].append((['list', tuple(data)], )) for data in column]
+
+        outer_symbol = '' if not symbol_info else symbol_info.pop(0)
+        arr = []
+        for d in dstacks:
+            vstack = []
+            for hstacks in d:
+                vstack.append([hstack_symbol + symbol_info.pop(0), hstacks])
+            sym_info = '' if not symbol_info else symbol_info.pop(0)
+            if kwargs:
+                args = (['list', tuple(vstack)], kwargs)
+            else:
+                args = (['list', tuple(vstack)], )
+            vstack = [vstack_symbol + sym_info, args]
+            arr.append(vstack)
+        if kwargs:
+            args = (['list', tuple(arr)], kwargs, )
+        else:
+            args = (['list', tuple(arr)], )
+        arr = [dstack_symbol + outer_symbol, args]
+    elif 2 == num_dim:
+        arr = []
+        for hstacks in data:
+            sym_info = '' if not symbol_info else symbol_info.pop(0)
+            if kwargs:
+                args = (['list', tuple(hstacks)], kwargs)
+            else:
+                args = (['list', tuple(hstacks)], )
+            arr.append([hstack_symbol + sym_info, args])
+        sym_info = '' if not symbol_info else symbol_info.pop(0)
+        if kwargs:
+            args = (['list', tuple(arr)], kwargs)
+        else:
+            args = (['list', tuple(arr)], )
+        arr = [vstack_symbol + sym_info, args]
+    elif 1 == num_dim:
+        sym_info = '' if not symbol_info else symbol_info.pop(0)
+        if kwargs:
+            args = (['list', tuple(data)], kwargs)
+        else:
+            args = (['list', tuple(data)], )
+        arr = [hstack_symbol + sym_info, args]
+    else:
+        ValueError("Phylanx supports arrays with 3 dimensions or less.")
+    return (arr,)
 
 
 def primitive_name(method_name):
@@ -262,16 +366,19 @@ class PhySL:
         self.numpy_aliases = {'numpy'}
         self.wrapped_function = func
         self.kwargs = kwargs
-        self.fglobals = self.kwargs['fglobals']
         self.is_compiled = False
-        for key, val in self.fglobals.items():
-            if type(val).__name__ == 'module' and val.__name__ == 'numpy':
-                self.numpy_aliases.add(key)
-        self.file_name = self.fglobals.get('__file__')
+        self.file_name = None
+        if self.kwargs.get('fglobals'):
+            self.fglobals = self.kwargs['fglobals']
+            for key, val in self.fglobals.items():
+                if type(val).__name__ == 'module' and val.__name__ == 'numpy':
+                    self.numpy_aliases.add(key)
+            self.file_name = self.fglobals.get('__file__')
         if not self.file_name:
             self.file_name = "<none>"
 
-        self.performance = self.kwargs.get('performance')
+        self.performance = self.kwargs.get('performance', False)
+        self.localities = self.kwargs.get('localities')
         self.__perfdata__ = (None, None, None)
 
         # Add arguments of the function to the list of discovered variables.
@@ -294,10 +401,13 @@ class PhySL:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                    self.file_name)
 
             phylanx.execution_tree.compile(
-                self.file_name, self.__src__, PhySL.compiler_state)
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
             self.is_compiled = True
 
     def generate_physl(self, ir):
@@ -328,7 +438,7 @@ class PhySL:
             return eval('self._%s' % node_name)(node)
 
     def block(self, node):
-        """Returns a map representation of a PhySL bolck."""
+        """Returns a map representation of a PhySL block."""
 
         if isinstance(node, list):
             block = tuple(map(self.apply_rule, node))
@@ -340,44 +450,93 @@ class PhySL:
             block = (self.apply_rule(node), )
             return block
 
-    def call(self, args):
-        func_name = self.wrapped_function.__name__
+    class eval_wrapper:
+        """evaluation wrapper binding arguments to a compiled function"""
 
-        self.__perfdata__ = (None, None, None)
-        self.performance_primitives = None
+        def __init__(self, outer, args):
+            """initialize evaluation wrapper"""
+            self.outer = outer
+            self.args = args
+            self.func_name = self.outer.wrapped_function.__name__
+
+        def eval(self):
+            """evaluate given compiled function using the bound arguments"""
+
+            self.outer.__perfdata__ = (None, None, None)
+            self.outer.performance_primitives = None
+
+            if self.outer.performance:
+                self.outer.performance_primitives = \
+                    phylanx.execution_tree.enable_measurements(
+                        PhySL.compiler_state, True)
+
+            result = phylanx.execution_tree.eval(
+                PhySL.compiler_state, self.outer.file_name, self.func_name,
+                *self.args)
+
+            if self.outer.performance:
+                treedata = phylanx.execution_tree.retrieve_tree_topology(
+                    PhySL.compiler_state, self.outer.file_name, self.func_name)
+                self.outer.__perfdata__ = (
+                    phylanx.execution_tree.retrieve_counter_data(
+                        PhySL.compiler_state),
+                    treedata[0], treedata[1]
+                )
+
+            return result
+
+        def code(self):
+            """Expose the wrapped Phylanx primitive, either directly or
+               with its arguments bound"""
+
+            return self.outer.map_wrapped(self)
+
+    def map_wrapped(self, val):
+        """If a eval_wrapper is passed as an argument to an
+            invocation of a Phylanx function we need to extract the
+            compiled execution tree and pass along that instead"""
+
+        if isinstance(val, self.eval_wrapper):
+            if len(val.args) == 0:
+                return phylanx.execution_tree.code_for(
+                    PhySL.compiler_state, self.file_name, val.func_name)
+
+            args = tuple(map(self.map_wrapped, val.args))
+            return phylanx.execution_tree.bound_code_for(
+                PhySL.compiler_state, self.file_name, val.func_name, *args)
+
+        return val
+
+    def lazy(self, args=()):
+        """Compile a given function, return wrapper binding the function to
+           arguments"""
 
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
 
-        if self.performance:
-            self.performance_primitives = \
-                phylanx.execution_tree.enable_measurements(
-                    PhySL.compiler_state, True)
-
         if not self.is_compiled:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
-            # the static method compiler_state is constructed only once
             elif PhySL.compiler_state is None:
-                PhySL.compiler_state = compiler_state()
+                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                    self.file_name)
 
             phylanx.execution_tree.compile(
-                self.file_name, self.__src__, PhySL.compiler_state)
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
             self.is_compiled = True
 
-        result = phylanx.execution_tree.eval(
-            self.file_name, func_name, PhySL.compiler_state, *args)
+        return self.eval_wrapper(self, tuple(map(self.map_wrapped, args)))
 
-        if self.performance:
-            treedata = phylanx.execution_tree.retrieve_tree_topology(
-                self.file_name, func_name, PhySL.compiler_state)
-            self.__perfdata__ = (
-                phylanx.execution_tree.retrieve_counter_data(
-                    PhySL.compiler_state),
-                treedata[0], treedata[1]
-            )
+    def call(self, args=()):
+        """Invoke this Phylanx function, pass along the given arguments"""
 
-        return result
+        if 'deploy' not in self.kwargs:
+            return self.lazy(args).eval()
+
+        deployer = self.kwargs['deploy']
+        return deployer(args)
 
 # #############################################################################
 # Transducer rules
@@ -423,11 +582,20 @@ class PhySL:
         """
         if node.vararg or node.kwarg:
             raise (Exception("Phylanx does not support *args and **kwargs"))
-        args = tuple(map(self.apply_rule, node.args))
-        for arg in args:
-            symbol_name = re.sub(r'\$\d+', '', arg)
+
+        defaults = tuple(map(self.apply_rule, node.defaults))
+        result = tuple()
+        padded_defaults = (None,) * (len(node.args) - len(defaults)) + defaults
+        for arg, default in zip(node.args, padded_defaults):
+            a = self.apply_rule(arg)
+            symbol_name = re.sub(r'\$\d+', '', a)
             self.defined.add(symbol_name)
-        return args
+            if default is None:
+                result = (*result, a)
+            else:
+                op = get_symbol_info(arg, '__arg')
+                result = (*result, [op, (a, default)])
+        return result
 
     def _Assign(self, node):
         """class Assign(targets, value)
@@ -526,89 +694,78 @@ class PhySL:
             Add support for keywords, starargs, and kwargs
         """
 
+        def __apply(self, k):
+            kw = self.apply_rule(k.value)
+            return (k.arg, kw)
+
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
-        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
-        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
-        dtypes_bools = ['b', 'bool']
-        phylanx_dtype = {
-            **dict.fromkeys(dtype_floats, 'float'),
-            **dict.fromkeys(dtype_ints, 'int'),
-            **dict.fromkeys(dtypes_bools, 'bool')
-        }
+        op = get_symbol_info(node.func, '__arg')
+        kwargs = tuple([op, __apply(self, k)] for k in node.keywords)
+
         dtype = ''
-        for k in node.keywords:
-            if k.arg == 'dtype':
-                if isinstance(k.value, ast.Name):
-                    type_str = phylanx_dtype.get(k.value.id)
-                if isinstance(k.value, ast.Str):
-                    type_str = phylanx_dtype.get(k.value.s)
-                if type_str:
-                    dtype = '__' + type_str
-                else:
-                    raise NotImplementedError(
-                        'Only the followig are acceptable Phylanx array types:\n'
-                        'booleans: %s\nfloats: %s\nintegers %s' %
-                        (dtypes_bools, dtype_floats, dtype_ints))
-                break
 
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        if 'hstack' in symbol and isinstance(args[0], list):
-            if args[0][1] and isinstance(args[0][1][0], list):
-                symbol = symbol.replace('hstack', 'vstack' + dtype)
-                for i in range(len(args[0][1])):
-                    args[0][1][i][0] = args[0][1][i][0].replace(
-                        'list', 'hstack' + dtype)
-                    if isinstance(args[0][1][i][1][0], list):
-                        raise NotImplementedError(
-                            'Phylanx only supports 1 and 2 dimensional arrays.'
-                        )
-            else:
-                symbol = symbol.replace('hstack', 'hstack' + dtype)
-            args = args[0][1]
+        if 'hstack' in symbol:
+            return create_array(args, kwargs)
+        elif 'vstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = (['list', (tuple(args), )],)
+        elif 'dstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = (['list', (tuple(args), )],)
+
         elif 'zeros_like' in symbol:
-            symbol = symbol.replace('zeros_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, ('0', [op, args])]
+            symbol = symbol.replace('zeros_like', 'constant_like')
+            return [symbol, ('0', args + kwargs)]
         elif 'ones_like' in symbol:
-            symbol = symbol.replace('ones_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, ('1', [op, args])]
+            symbol = symbol.replace('ones_like', 'constant_like')
+            return [symbol, ('1', args + kwargs)]
         elif 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'shape')
-            return [symbol, (args[1], [op, (args[0], )])]
+            symbol = symbol.replace('full_like', 'constant_like')
+            return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty_like' in symbol:
+            symbol = symbol.replace('empty_like', 'constant_like')
+            return [symbol, (None, args + kwargs)]
+
         elif 'zeros' in symbol:
-            symbol = symbol.replace('zeros', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
+            symbol = symbol.replace('zeros', 'constant')
             if isinstance(args[0], tuple):
-                return [symbol, ('0', [op, args])]
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, ('0', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('0', args)]
+                return [symbol, ('0', args + kwargs)]
         elif 'ones' in symbol:
-            symbol = symbol.replace('ones', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
+            symbol = symbol.replace('ones', 'constant')
             if isinstance(args[0], tuple):
-                return [symbol, ('1', [op, args])]
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, ('1', [op, args[0]]) + kwargs]
             else:
-                return [symbol, ('1', args)]
+                return [symbol, ('1', args + kwargs)]
         elif 'full' in symbol:
-            symbol = symbol.replace('full', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
+            symbol = symbol.replace('full', 'constant')
             if isinstance(args[0], tuple):
-                return [symbol, (args[1], [op, args[0]])]
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, (args[1], [op, args[0]]) + kwargs]
             else:
-                return [symbol, (args[1], args[0])]
+                return [symbol, (args[1], (args[0], ) + kwargs)]
+        elif 'empty' in symbol:
+            symbol = symbol.replace('empty', 'constant')
+            if isinstance(args[0], tuple):
+                op = get_symbol_info(node.func, 'list')
+                return [symbol, (None, [op, args[0]]) + kwargs]
+            else:
+                return [symbol, (None, args + kwargs)]
+
         else:
             method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
             if len(method) == 1:
                 symbol = symbol.replace(method[0], method[0] + dtype)
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        return [symbol, args]
+        return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):
     #     """class ClassDef(name, bases, keywords, starargs, kwargs, body,
@@ -672,6 +829,26 @@ class PhySL:
 
             return comparison
 
+    def _comprehension(self, node):
+        """class comprehension(target, iter, ifs, is_async)
+
+        1 for clause in a comprehension.
+        `target` is the reference to use in each element- a `name` or `Tuple`.
+        `iter` is the object to iterate over.
+        `ifs` is a list of test expressions (a for clause may have multiple ifs).
+        `is_async` indicates a comprehension is asynchronous.
+        """
+
+        target = self.apply_rule(node.target)
+        iteration_space = self.apply_rule(node.iter)
+
+        comprehension = {
+            'target': target,
+            'iter': iteration_space
+        }
+
+        return comprehension
+
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
 
@@ -725,14 +902,24 @@ class PhySL:
         # target_name = target.split('$', 1)[0]
         # self.defined.add(target_name)
         iteration_space = self.apply_rule(node.iter)
+        if isinstance(iteration_space, list) and iteration_space[0].startswith('zip'):
+            iter_space, indices = physl_zip(node)
+            symbol = get_symbol_info(node, 'for_each')
+            body = self.block(node.body)
+            body = ['block', (*indices, *body)]
+            op = get_symbol_info(node, 'lambda')
+            return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
 
         # extract the type of the iteration space- used as the lookup key in
         # `mapping_function` dictionary above.
-        symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
-        symbol = get_symbol_info(node, symbol_name)
+        if isinstance(iteration_space, list):
+            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            symbol = get_symbol_info(node, symbol_name)
+            # replace keyword `prange` to `range` for compatibility with Phylanx.
+            iteration_space[0] = iteration_space[0].replace('prange', 'range')
+        else:
+            symbol = get_symbol_info(node, 'for_each')
 
-        # replace keyword `prange` to `range` for compatibility with Phylanx.
-        iteration_space[0] = iteration_space[0].replace('prange', 'range')
         body = self.block(node.body)
         # orelse = self.block(node.orelse)
         op = get_symbol_info(node, 'lambda')
@@ -757,11 +944,12 @@ class PhySL:
         symbol = get_symbol_info(node, node.name)
         args = self.apply_rule(node.args)
         body = self.block(node.body)
+        lambda_op = get_symbol_info(node, 'lambda')
 
         if (args):
             return [op, (symbol, args, body)]
         else:
-            return [op, (symbol, body)]
+            return [op, (symbol, (lambda_op, (body,)))]
 
     def _Gt(self, node):
         """Leaf node, returning raw string of the 'greater than' operation."""
@@ -774,6 +962,20 @@ class PhySL:
         return '__ge'
 
     def _If(self, node):
+        """class If(test, body, orelse)
+
+       `test` holds a single node, such as a Compare node.
+       `body` and `orelse` each hold a list of nodes.
+       """
+
+        symbol = '%s' % get_symbol_info(node, 'if')
+        test = self.apply_rule(node.test)
+        body = self.block(node.body)
+        orelse = self.block(node.orelse)
+
+        return [symbol, (test, body, orelse)]
+
+    def _IfExp(self, node):
         """class IfExp(test, body, orelse)
 
        `test` holds a single node, such as a Compare node.
@@ -828,6 +1030,34 @@ class PhySL:
         op = get_symbol_info(node, 'list')
         elements = tuple(map(self.apply_rule, node.elts))
         return [op, (*elements, )]
+
+    def _ListComp(self, node):
+        """class ListComp(elt, generators)
+
+        `elt` (or key and value) is a single node representing the part that
+              will be evaluated for each item.
+        `generators` is a list of comprehension nodes.
+        """
+
+        if len(node.generators) > 1:
+            raise NotImplementedError("Nested comprehensions is not yet supported!")
+
+        elt = self.apply_rule(node.elt)
+        loop = self.apply_rule(node.generators[0])
+
+        target = loop['target']
+        iter_space = loop['iter']
+        if isinstance(iter_space, list) and iter_space[0].startswith('zip'):
+            iter_space, iterators = physl_zip([target, iter_space])
+            symbol = get_symbol_info(node, 'fmap')
+            body = ['block', (*iterators, elt)]
+            op = get_symbol_info(node, 'lambda')
+            return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
+
+        lambda_ = ['lambda', (target, elt)]
+        fmap = ['fmap', (lambda_, iter_space)]
+
+        return fmap
 
     def _Lt(self, node):
         """Leaf node, returning raw string of the 'less than' operation."""
@@ -912,7 +1142,11 @@ class PhySL:
         if type(node.value) == ast.Tuple:
             return [symbol, (["list", self.apply_rule(node.value)],)]
 
-        return [symbol, (self.apply_rule(node.value),)]
+        value = self.apply_rule(node.value)
+        if value is None:
+            value = get_symbol_info(node, "nil")
+
+        return [symbol, (value,)]
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""

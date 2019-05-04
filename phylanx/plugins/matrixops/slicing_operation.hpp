@@ -70,12 +70,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-
         bool slice_rows_;
         bool slice_columns_;
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         bool slice_pages_;
 #endif
+        bool is_tuple_slice_;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,

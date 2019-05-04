@@ -51,6 +51,10 @@ macro(add_phylanx_test category name)
     add_test(
       NAME "${category}.${name}"
       COMMAND ${cmd} ${args})
+      # The debug tests can take longer than 100 seconds - so double the timeout.
+      if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set_tests_properties("${category}.${name}" PROPERTIES TIMEOUT 200)
+      endif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     else()
       if(HPX_WITH_PARCELPORT_MPI)
         set(_add_test FALSE)
@@ -67,6 +71,10 @@ macro(add_phylanx_test category name)
           add_test(
             NAME "${category}.distributed.mpi.${name}"
             COMMAND ${cmd} "-p" "mpi" "-r" "mpi" ${args})
+            # The debug tests can take longer than 100 seconds - so double the timeout.
+            if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+              set_tests_properties("${category}.distributed.mpi.${name}" PROPERTIES TIMEOUT 200)
+            endif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         endif()
       endif()
       if(HPX_WITH_PARCELPORT_TCP)
@@ -84,6 +92,10 @@ macro(add_phylanx_test category name)
           add_test(
             NAME "${category}.distributed.tcp.${name}"
             COMMAND ${cmd} "-p" "tcp" ${args})
+            # The debug tests can take longer than 100 seconds - so double the timeout.
+            if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+              set_tests_properties("${category}.distributed.tcp.${name}" PROPERTIES TIMEOUT 200)
+            endif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         endif()
       endif()
     endif()

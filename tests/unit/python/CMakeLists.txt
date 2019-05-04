@@ -28,6 +28,7 @@ endforeach()
 set(subdirs
     ast
     execution_tree
+    plugins
     util
    )
 

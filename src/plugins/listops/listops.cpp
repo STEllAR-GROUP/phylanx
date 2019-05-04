@@ -11,18 +11,21 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
-PHYLANX_REGISTER_PLUGIN_FACTORY(dict_operation_plugin,
-    phylanx::execution_tree::primitives::dict_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(list_plugin,
-    phylanx::execution_tree::primitives::make_list::match_data[0]);
-PHYLANX_REGISTER_PLUGIN_FACTORY(make_list_plugin,
-    phylanx::execution_tree::primitives::make_list::match_data[1]);
-PHYLANX_REGISTER_PLUGIN_FACTORY(len_operation_plugin,
-    phylanx::execution_tree::primitives::len_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(append_operation_plugin,
     phylanx::execution_tree::primitives::append_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(dict_operation_plugin,
+    phylanx::execution_tree::primitives::dict_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(len_operation_plugin,
+    phylanx::execution_tree::primitives::len_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(make_list_plugin,
+    phylanx::execution_tree::primitives::make_list::match_data[1]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(list_plugin,
+    phylanx::execution_tree::primitives::make_list::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(prepend_operation_plugin,
+    phylanx::execution_tree::primitives::prepend_operation::match_data);
 
-namespace phylanx { namespace plugin {
+namespace phylanx { namespace plugin
+{
     struct car_cdr_plugin : plugin_base
     {
         void register_known_primitives(std::string const& fullpath) override
@@ -40,5 +43,5 @@ namespace phylanx { namespace plugin {
 }}
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::car_cdr_plugin, car_cdr_plugin,
-    phylanx::execution_tree::primitives::make_list::match_data,
+    phylanx::execution_tree::primitives::car_cdr_operation::match_data,
     "car_cdr_plugin");

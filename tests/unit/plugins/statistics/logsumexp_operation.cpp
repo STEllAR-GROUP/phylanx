@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 {
     // scalars
     test_logsumexp_operation("logsumexp(42.0)", "42.0");
-    test_logsumexp_operation("logsumexp(1)", "1");
+    test_logsumexp_operation("logsumexp(1)", "1.0");
     test_logsumexp_operation("logsumexp__float(1)", "1.0");
 
     // vectors

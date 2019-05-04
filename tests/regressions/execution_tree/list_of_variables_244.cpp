@@ -19,7 +19,7 @@ std::string const codestr = R"(block(
         define(b, 6),
         define(lst1, list(a, b, 42)),
         debug(lst1),
-        define(lst2, list(hstack(a, b), lst1, "string")),
+        define(lst2, list(hstack(list(a, b)), lst1, "string")),
         debug(lst2)
     )),
     f

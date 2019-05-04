@@ -11,6 +11,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -179,6 +180,33 @@ void test_transpose_operation_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_transpose_operation_2d_nil()
+{
+    blaze::DynamicMatrix<std::int64_t> subject{{1, 2, 3},
+                                               {3, 4, 1}};
+    phylanx::execution_tree::primitive arg0 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(subject));
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ast::nil{});
+
+    phylanx::execution_tree::primitive l2_normalize =
+        phylanx::execution_tree::primitives::create_transpose_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(arg0), std::move(arg1)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        l2_normalize.eval();
+
+    blaze::DynamicMatrix<std::int64_t> expected{{1, 3},{2, 4},{3, 1}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(std::move(expected)),
+        phylanx::execution_tree::extract_integer_value(f.get()));
+}
+
 void test_transpose_operation_2d_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
@@ -265,6 +293,26 @@ void test_transpose_operation_2d_axes_nochange()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void test_transpose_operation(std::string const& code,
+    std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_transpose_operation_0d();
@@ -276,9 +324,51 @@ int main(int argc, char* argv[])
     test_transpose_operation_1d_axes1d();
 
     test_transpose_operation_2d();
+    test_transpose_operation_2d_nil();
     test_transpose_operation_2d_lit();
     test_transpose_operation_2d_axes();
     test_transpose_operation_2d_axes_nochange();
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]]])", "[[[1], [4]],[[2], [5]],[[3], [6]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]], [[19,20,21],[22,23,24]]], [2, 1, 0])",
+        "[[[ 1,  7, 13, 19],[ 4, 10, 16, 22]],[[ 2,  8, 14, 20],"
+        "[ 5, 11, 17, 23]],[[ 3,  9, 15, 21],[ 6, 12, 18, 24]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]],[[19,20,21],[22,23,24]]], make_list(1, 0, 2))",
+        "[[[ 1,  2,  3],[ 7,  8,  9],[13, 14, 15],[19, 20, 21]],"
+        "[[ 4,  5,  6],[10, 11, 12],[16, 17, 18],[22, 23, 24]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]], [[19,20,21],[22,23,24]]], [0, 2, 1])",
+        "[[[ 1,  4],[ 2,  5],[ 3,  6]], [[ 7, 10],[ 8, 11],[ 9, 12]],"
+        "[[13, 16],[14, 17],[15, 18]], [[19, 22],[20, 23],[21, 24]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]],[[19,20,21],[22,23,24]]], make_list(1, 2, 0))",
+        "[[[ 1,  7, 13, 19],[ 2,  8, 14, 20],[ 3,  9, 15, 21]],"
+        "[[ 4, 10, 16, 22],[ 5, 11, 17, 23],[ 6, 12, 18, 24]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]], [[19,20,21],[22,23,24]]], [1, -1, -3])",
+        "[[[ 1,  7, 13, 19],[ 2,  8, 14, 20],[ 3,  9, 15, 21]],"
+        "[[ 4, 10, 16, 22],[ 5, 11, 17, 23],[ 6, 12, 18, 24]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]], [[19,20,21],[22,23,24]]], [2, 0, 1])",
+        "[[[ 1,  4],[ 7, 10],[13, 16],[19, 22]],"
+        "[[ 2,  5],[ 8, 11],[14, 17],[20, 23]],"
+        "[[ 3,  6],[ 9, 12],[15, 18],[21, 24]]]");
+    test_transpose_operation(
+        "transpose([[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]],"
+        "[[13,14,15],[16,17,18]], [[19,20,21],[22,23,24]]], [0, -2, -1])",
+        "[[[ 1,  2,  3],[ 4,  5,  6]],[[ 7,  8,  9],[10, 11, 12]],"
+        "[[13, 14, 15],[16, 17, 18]],[[19, 20, 21],[22, 23, 24]]]");
+#endif
 
     return hpx::util::report_errors();
 }

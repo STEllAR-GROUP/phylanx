@@ -175,10 +175,6 @@ if(PHYLANX_WITH_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(PHYLANX_WITH_DOCUMENTATION)
-  add_subdirectory(docs)
-endif()
-
 ################################################################################
 # Targets related to Python (must come before tests)
 add_subdirectory(python)
@@ -188,6 +184,12 @@ phylanx_export_targets(${phylanx_targets})
 foreach(target ${phylanx_targets})
   add_phylanx_pseudo_dependencies(core ${target})
 endforeach()
+
+###############################################################################
+# Must come after Python
+if(PHYLANX_WITH_DOCUMENTATION)
+  add_subdirectory(docs)
+endif()
 
 ###############################################################################
 # Tests
@@ -310,12 +312,12 @@ if(PHYLANX_WITH_DOCUMENTATION)
   # Install Phylanx documentation files
   install(
     FILES "${PROJECT_SOURCE_DIR}/docs/index.html"
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/ OPTIONAL
     COMPONENT docs)
 
   install(
     DIRECTORY "${CMAKE_BINARY_DIR}/share/phylanx/docs/html/"
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/docs/html
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/docs/html OPTIONAL
     COMPONENT docs
     PATTERN ".git" EXCLUDE)
 endif()

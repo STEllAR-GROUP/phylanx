@@ -24,6 +24,24 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+    node_data_type map_dtype(std::string const& spec)
+    {
+        node_data_type result = node_data_type_unknown;
+        if (spec == "bool")
+        {
+            result = node_data_type_bool;
+        }
+        else if (spec.find("int") == 0)
+        {
+            result = node_data_type_int64;
+        }
+        else if (spec.find("float") == 0)
+        {
+            result = node_data_type_double;
+        }
+        return result;
+    }
+
     node_data_type extract_dtype(std::string name)
     {
         compiler::primitive_name_parts name_parts;
@@ -32,31 +50,18 @@ namespace phylanx { namespace execution_tree
             name = std::move(name_parts.primitive);
         }
 
-        node_data_type result = node_data_type_unknown;
         auto p = name.find("__");
         if (p != std::string::npos)
         {
-            boost::string_ref spec(&name[p + 2], name.size() - p - 2);
-            if (spec == "bool")
-            {
-                result = node_data_type_bool;
-            }
-            else if (spec == "int")
-            {
-                result = node_data_type_int64;
-            }
-            else if (spec == "float")
-            {
-                result = node_data_type_double;
-            }
+            return map_dtype(std::string(&name[p + 2], name.size() - p - 2));
         }
-        return result;
+        return node_data_type_unknown;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     node_data_type extract_common_type(primitive_argument_type const& arg)
     {
-        node_data_type result = node_data_type_bool;
+        node_data_type result = node_data_type_unknown;
         if (is_numeric_operand_strict(arg))
         {
             result = node_data_type_double;
@@ -65,9 +70,9 @@ namespace phylanx { namespace execution_tree
         {
             result = node_data_type_int64;
         }
-        else if (!is_boolean_operand_strict(arg))
+        else if (is_boolean_operand_strict(arg))
         {
-            result = node_data_type_unknown;
+            result = node_data_type_bool;
         }
         return result;
     }
@@ -76,7 +81,7 @@ namespace phylanx { namespace execution_tree
     node_data_type extract_common_type(
         primitive_arguments_type const& args)
     {
-        node_data_type result = node_data_type_bool;
+        node_data_type result = node_data_type_unknown;
         for (auto const& arg : args)
         {
             if (is_numeric_operand_strict(arg))
@@ -84,14 +89,16 @@ namespace phylanx { namespace execution_tree
                 result = node_data_type_double;
                 break;
             }
-            else if (is_integer_operand_strict(arg))
+            else if (is_integer_operand_strict(arg) &&
+                (result == node_data_type_unknown ||
+                    result == node_data_type_bool))
             {
                 result = node_data_type_int64;
             }
-            else if (!is_boolean_operand_strict(arg))
+            else if (is_boolean_operand_strict(arg) &&
+                result == node_data_type_unknown)
             {
-                result = node_data_type_unknown;
-                break;
+                result = node_data_type_bool;
             }
         }
         return result;
@@ -105,12 +112,15 @@ namespace phylanx { namespace execution_tree
         std::size_t result = 2;
         for (auto const& arg : args)
         {
-            result = (std::min)(
-                result, extract_numeric_value_dimension(arg, name, codename));
-
-            if (result == 0)
+            if (is_numeric_operand(arg))
             {
-                break;      // can't get larger than that
+                result = (std::min)(result,
+                    extract_numeric_value_dimension(arg, name, codename));
+
+                if (result == 0)
+                {
+                    break;      // can't get larger than that
+                }
             }
         }
         return result;
@@ -230,12 +240,15 @@ namespace phylanx { namespace execution_tree
         std::size_t result = 0;
         for (auto const& arg : args)
         {
-            result = (std::max)(
-                result, extract_numeric_value_dimension(arg, name, codename));
-
-            if (result == PHYLANX_MAX_DIMENSIONS)
+            if (is_numeric_operand(arg))
             {
-                break;      // can't get larger than that
+                result = (std::max)(result,
+                    extract_numeric_value_dimension(arg, name, codename));
+
+                if (result == PHYLANX_MAX_DIMENSIONS)
+                {
+                    break;      // can't get larger than that
+                }
             }
         }
         return result;
@@ -254,9 +267,12 @@ namespace phylanx { namespace execution_tree
 
         for (auto const& arg : args)
         {
-            sizes.emplace_back(extract_aligned_dimensions(
-                extract_numeric_value_dimensions(arg, name, codename),
-                numdims, name, codename));
+            if (is_numeric_operand(arg))
+            {
+                sizes.emplace_back(extract_aligned_dimensions(
+                    extract_numeric_value_dimensions(arg, name, codename),
+                    numdims, name, codename));
+            }
         }
 
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};

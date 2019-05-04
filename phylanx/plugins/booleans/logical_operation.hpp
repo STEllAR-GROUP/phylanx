@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 Shahrzad Shirzad
 //  Copyright (c) 2018 Tiany Zhang
 //
@@ -15,6 +15,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -44,38 +46,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_logical;
 
         template <typename T>
-        primitive_argument_type logical0d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type logical0d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
         primitive_argument_type logical0d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type logical1d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
         template <typename T>
         primitive_argument_type logical1d1d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type logical1d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
         primitive_argument_type logical1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type logical2d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type logical2d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
+
         template <typename T>
         primitive_argument_type logical2d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
         primitive_argument_type logical2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primitive_argument_type logical3d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type logical3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
+#endif
         template <typename T>
         primitive_argument_type logical_all(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;

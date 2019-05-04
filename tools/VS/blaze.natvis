@@ -15,6 +15,7 @@
             <Item Name="[pages]">o_</Item>
             <Item Name="[rows]">m_</Item>
             <Item Name="[columns]">n_</Item>
+            <Item Name="[spacing]">nn_</Item>
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>3</Rank>
@@ -30,7 +31,7 @@
             <Item Name="[pages]">o_</Item>
             <Item Name="[rows]">m_</Item>
             <Item Name="[columns]">n_</Item>
-            <Item Name="[padding]">nn_</Item>
+            <Item Name="[spacing]">nn_</Item>
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>3</Rank>
@@ -45,6 +46,7 @@
         <Expand>
             <Item Name="[rows]">m_</Item>
             <Item Name="[columns]">n_</Item>
+            <Item Name="[spacing]">nn_</Item>
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>2</Rank>
@@ -59,6 +61,7 @@
         <Expand>
             <Item Name="[rows]">m_</Item>
             <Item Name="[columns]">n_</Item>
+            <Item Name="[spacing]">nn_</Item>
             <ArrayItems>
                 <Direction>Backward</Direction>
                 <Rank>2</Rank>
@@ -73,7 +76,7 @@
         <Expand>
             <Item Name="[rows]">m_</Item>
             <Item Name="[columns]">n_</Item>
-            <Item Name="[padding]">nn_</Item>
+            <Item Name="[spacing]">nn_</Item>
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>2</Rank>
@@ -88,7 +91,7 @@
         <Expand>
             <Item Name="[rows]">m_</Item>
             <Item Name="[columns]">n_</Item>
-            <Item Name="[padding]">nn_</Item>
+            <Item Name="[spacing]">nn_</Item>
             <ArrayItems>
                 <Direction>Backward</Direction>
                 <Rank>2</Rank>

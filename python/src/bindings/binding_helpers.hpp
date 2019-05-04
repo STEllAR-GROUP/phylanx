@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -10,6 +10,7 @@
 
 #include <phylanx/phylanx.hpp>
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
 #include <hpx/runtime/threads/run_as_hpx_thread.hpp>
@@ -39,6 +40,10 @@ namespace phylanx { namespace bindings
 
         phylanx::execution_tree::compiler::environment eval_env;
         phylanx::execution_tree::compiler::function_list eval_snippets;
+        phylanx::execution_tree::eval_context eval_ctx;
+
+        // name of the main source compiled file
+        std::string codename_;
 
         // data related to measurement status
         bool enable_measurements;
@@ -53,10 +58,11 @@ namespace phylanx { namespace bindings
 #endif
         }
 
-        compiler_state()
+        compiler_state(std::string codename)
           : m(import_phylanx())
           , eval_env(phylanx::execution_tree::compiler::default_environment())
           , eval_snippets()
+          , codename_(std::move(codename))
           , enable_measurements(false)
         {
         }
@@ -177,13 +183,26 @@ namespace phylanx { namespace bindings
 
     ///////////////////////////////////////////////////////////////////////////
     // compile expression
-    std::string expression_compiler(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c);
+    std::string expression_compiler(compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        std::string const& xexpr_str);
 
     // evaluate compiled expression
     phylanx::execution_tree::primitive_argument_type expression_evaluator(
-        std::string const& file_name, std::string const& xexpr_str,
-        compiler_state& c, pybind11::args args);
+        compiler_state& state, std::string const& file_name,
+        std::string const& xexpr_str, pybind11::args args);
+
+    // extract pre-compiled code for given function name
+    phylanx::execution_tree::primitive code_for(
+        phylanx::bindings::compiler_state& state,
+        std::string const& file_name, std::string const& func_name);
+
+    // extract pre-compiled code for given function name with bound given
+    // arguments
+    phylanx::execution_tree::primitive bound_code_for(
+        phylanx::bindings::compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        pybind11::args args);
 
     ///////////////////////////////////////////////////////////////////////////
     // initialize measurements for tree evaluations
@@ -194,17 +213,20 @@ namespace phylanx { namespace bindings
     std::string retrieve_counter_data(compiler_state& c);
 
     // retrieve tree topology in DOT format for given expression
-    std::list<std::string> retrieve_tree_topology(
-        std::string const& file_name, std::string const& xexpr_str,
-        compiler_state& c);
+    std::list<std::string> retrieve_tree_topology(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str);
 
     // retrieve tree topology in DOT format for given expression
-    std::string retrieve_dot_tree_topology(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c);
+    std::string retrieve_dot_tree_topology(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str);
 
     // retrieve tree topology in Newick format for given expression
-    std::string retrieve_newick_tree_topology(std::string const& file_name,
-        std::string const& xexpr_str, compiler_state& c);
+    std::string retrieve_newick_tree_topology(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str);
+
+    // extract the dtype of the given variable/expression
+    pybind11::dtype extract_dtype(
+        phylanx::execution_tree::primitive_argument_type const& p);
 }}
 
 #endif

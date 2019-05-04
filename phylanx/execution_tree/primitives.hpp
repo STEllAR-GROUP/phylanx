@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //                2018 R. Tohid
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -13,15 +13,19 @@
 #include <phylanx/execution_tree/primitives/assert_condition.hpp>
 #include <phylanx/execution_tree/primitives/call_function.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>
+#include <phylanx/execution_tree/primitives/phytype.hpp>
+#include <phylanx/execution_tree/primitives/phyname.hpp>
 #include <phylanx/execution_tree/primitives/debug_output.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/enable_tracing.hpp>
 #include <phylanx/execution_tree/primitives/format_string.hpp>
 #include <phylanx/execution_tree/primitives/function.hpp>
+#include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/execution_tree/primitives/lambda.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
 #include <phylanx/execution_tree/primitives/target_reference.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives/variable_factory.hpp>
 
 #endif

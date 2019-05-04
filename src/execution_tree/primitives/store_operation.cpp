@@ -1,5 +1,6 @@
 // Copyright (c) 2017 Alireza Kheirkhahan
 // Copyright (c) 2018 Bibek Wagle
+// Copyright (c) 2018-2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -106,13 +107,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        auto f = value_operand(
-            operands_[1], params, name_, codename_, std::move(ctx));
+        auto f = value_operand(operands_[1], params, name_, codename_, ctx);
         return f.then(hpx::launch::sync,
             [
                 this_ = std::move(this_),
                 lhs = extract_ref_value(operands_[0], name_, codename_),
-                args = std::move(params)
+                args = std::move(params),
+                ctx = std::move(ctx)
             ]
             (hpx::future<primitive_argument_type>&& val) mutable
             ->  primitive_argument_type
@@ -120,7 +121,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto p = primitive_operand(
                     std::move(lhs), this_->name_, this_->codename_);
 
-                p.store(hpx::launch::sync, val.get(), std::move(args));
+                p.store(hpx::launch::sync, val.get(), std::move(args),
+                    std::move(ctx));
                 return primitive_argument_type{};
             });
     }
@@ -161,19 +163,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type params;
         params.emplace_back(extract_ref_value(arg, name_, codename_));
 
-        return value_operand(
-                operands_[1], std::move(arg), name_, codename_, std::move(ctx))
-            .then(hpx::launch::sync,
+        auto f =
+            value_operand(operands_[1], std::move(arg), name_, codename_, ctx);
+
+        return f.then(hpx::launch::sync,
                 [   this_ = std::move(this_),
                     lhs = extract_ref_value(operands_[0], name_, codename_),
-                    args = std::move(params)
+                    args = std::move(params),
+                    ctx = std::move(ctx)
                 ](hpx::future<primitive_argument_type>&& val) mutable
                 -> primitive_argument_type
                 {
                     auto p = primitive_operand(
                         std::move(lhs), this_->name_, this_->codename_);
 
-                    p.store(hpx::launch::sync, val.get(), std::move(args));
+                    p.store(hpx::launch::sync, val.get(), std::move(args),
+                        std::move(ctx));
                     return primitive_argument_type{};
                 });
     }

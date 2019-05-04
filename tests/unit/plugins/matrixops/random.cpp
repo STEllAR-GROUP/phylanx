@@ -31,7 +31,8 @@ void test_random_0d()
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
-    HPX_TEST_EQ(result.num_dimensions(), 0);
+    HPX_TEST_EQ(result.num_dimensions(), 1);
+    HPX_TEST_EQ(result.dimension(0), 1);
 }
 
 void test_random_1d()

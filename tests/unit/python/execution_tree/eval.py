@@ -6,24 +6,24 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx import Phylanx, PhylanxSession
+from phylanx import Phylanx, PhylanxSession, execution_tree
 import numpy as np
 
 PhylanxSession.init(1)
 
 et = phylanx.execution_tree
-cs = phylanx.compiler_state()
+cs = et.compiler_state(__name__)
 
-fib10 = et.eval("""
+fib10 = et.eval(cs, """
 block(
     define(fib,n,
     if(n<2,n,
         fib(n-1)+fib(n-2))),
-    fib)""", cs, 10)
+    fib)""", 10)
 
 assert fib10 == 55.0
 
-sum10 = et.eval("""
+sum10 = et.eval(cs, """
 block(
     define(sum10,
         block(
@@ -35,7 +35,7 @@ block(
                   store(i,i+n)
                 )),
             i)),
-    sum10)""", cs)
+    sum10)""")
 
 assert sum10 == 55.0
 
@@ -203,8 +203,70 @@ def pair():
 
 assert [1, 2] == pair()
 
-# @Phylanx(debug=True)
-# def f8():
-#     a = [1, 2]
-#     a[0] = 1
-#     return a[0]
+
+@Phylanx
+def do_sign(n):
+    return np.sign(n)
+
+
+@Phylanx
+def do_square(n):
+    return np.square(n)
+
+
+assert np.sign(2) == do_sign(2)
+assert np.sign(-3) == do_sign(-3)
+assert np.square(2) == do_square(2)
+assert np.square(-3) == do_square(-3)
+
+v = np.array([2, 0, -3])
+assert np.all(np.sign(v) == do_sign(v))
+assert np.all(np.square(v) == do_square(v))
+
+v = np.array([[1, -2, 3], [4, 0, 6]])
+assert np.all(np.sign(v) == do_sign(v))
+assert np.all(np.square(v) == do_square(v))
+
+v = np.array([
+    [[1, 2], [3, 4]],
+    [[-5, 6], [-7, 8]],
+    [[9, 0], [1, 2]]
+])
+assert np.all(np.sign(v) == do_sign(v))
+assert np.all(np.square(v) == do_square(v))
+
+
+def phytype(x):
+    return execution_tree.variable(x).dtype
+
+
+def get_types():
+    return [
+        phytype(None),
+        phytype(0),
+        phytype(1.0),
+        phytype("x"),
+        phytype(np.array([True, False])),
+        phytype(np.array([1, 2], dtype='int16')),
+        phytype(np.array([1, 2], dtype='int32')),
+        phytype(np.array([1, 2], dtype='int64')),
+        phytype(np.array([1.0, 2.0], dtype='float32')),
+        phytype(np.array([1.0, 2.0])),
+        phytype([1.0, "x"]),
+        phytype({"x": 1})]
+
+
+types = get_types()
+assert types == [
+    np.dtype('O'),
+    np.dtype('int64'),
+    np.dtype('float64'),
+    np.dtype('S'),
+    np.dtype('bool'),
+    np.dtype('int16'),
+    np.dtype('int32'),
+    np.dtype('int64'),
+    np.dtype('float32'),
+    np.dtype('float64'),
+    np.dtype('O'),
+    np.dtype('O')], types

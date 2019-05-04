@@ -28,452 +28,102 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const dot_operation::match_data =
-    {
-        hpx::util::make_tuple("dot",
-            std::vector<std::string>{"dot(_1, _2)"},
+    std::vector<match_pattern_type> const dot_operation::match_data = {
+        match_pattern_type{"outer", std::vector<std::string>{"outer(_1, _2)"},
             &create_dot_operation, &create_primitive<dot_operation>, R"(
-            v1, v2
+            a, b
             Args:
 
-                v1 (array) : a scalar, vector, matrix or a tensor
-                v2 (array) : a scalar, vector, matrix or a tensor
+                a (array) : a scalar, vector, matrix or a tensor.Input is
+                    flattened if not already 1-dimensional.
+                b (array) : a scalar, vector, matrix or a tensor.Input is
+                    flattened if not already 1-dimensional.
 
             Returns:
 
-            The dot product of two arrays: `v1` and `v2`.)")
-    };
+            Computes the outer product of two arrays. Always returns a matrix)"},
+
+        match_pattern_type{"dot", std::vector<std::string>{"dot(_1, _2)"},
+            &create_dot_operation, &create_primitive<dot_operation>, R"(
+            a, b
+            Args:
+
+                a (array) : a scalar, vector, matrix or a tensor
+                b (array) : a scalar, vector, matrix or a tensor
+
+            Returns:
+
+            The dot product of two arrays: `a` and `b`. The dot product of an
+            N-D array and an M-D array is of dimension N+M-2)"},
+
+        match_pattern_type{"tensordot",
+            std::vector<std::string>{
+                "tensordot(_1, _2)", "tensordot(_1, _2, _3)"},
+            &create_dot_operation, &create_primitive<dot_operation>, R"(
+            a, b, axes
+            Args:
+
+                a (array) : a vector, matrix or a tensor
+                b (array) : a vector, matrix or a tensor
+                axes(optional, integer or tuple of integers): if a scalar N, sum
+                    over the last N axes of a and the first N axes of b in
+                    order. The sizes of the corresponding axes must match.
+                    If given `(axes_a,axes_b)`, sum the products of two arrays
+                    elements (components) over the axes specified by `a_axes`
+                    and `b_axes`.
+                    The default is 2 (scalar axis).
+
+            Returns:
+
+            The tensor dot product along specified axes for arrays>=1-D.)"}};
 
     ///////////////////////////////////////////////////////////////////////////
+    dot_operation::dot_mode extract_dot_mode(std::string const& name)
+    {
+        dot_operation::dot_mode result = dot_operation::dot_product;
+
+        if (name.find("outer") != std::string::npos)
+        {
+            result = dot_operation::outer_product;
+        }
+        else if (name.find("tensordot") != std::string::npos)
+        {
+            result = dot_operation::doubledot_product;
+        }
+        return result;
+    }
+
     dot_operation::dot_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+        , mode_(extract_dot_mode(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    primitive_argument_type dot_operation::dot0d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    void dot_operation::positivize_axis(
+        val_type& axis, std::size_t const& dim) const
     {
-        lhs.scalar() *= rhs.scalar();
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot0d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (rhs.is_ref())
-        {
-            rhs = rhs.vector() * lhs.scalar();
-        }
-        else
-        {
-            rhs.vector() *= lhs.scalar();
-        }
-
-        return primitive_argument_type{std::move(rhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot0d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (rhs.is_ref())
-        {
-            rhs = rhs.matrix() * lhs.scalar();
-        }
-        else
-        {
-            rhs.matrix() *= lhs.scalar();
-        }
-
-        return primitive_argument_type{std::move(rhs)};
-    }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename T>
-    primitive_argument_type dot_operation::dot0d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (rhs.is_ref())
-        {
-            rhs = rhs.tensor() * lhs.scalar();
-        }
-        else
-        {
-            rhs.tensor() *= lhs.scalar();
-        }
-
-        return primitive_argument_type{std::move(rhs)};
-    }
-#endif
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        switch (rhs.num_dimensions())
+        switch (dim)
         {
         case 0:
-            // If is_scalar(lhs) && is_scalar(rhs)
-            return dot0d0d(std::move(lhs), std::move(rhs));
-
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::positivize_axis",
+                generate_error_message("tuple index out of range"));
         case 1:
-            // If is_scalar(lhs) && is_vector(rhs)
-            return dot0d1d(std::move(lhs), std::move(rhs));
-
+            axis += 1; break;
         case 2:
-            // If is_scalar(lhs) && is_matrix(rhs)
-            return dot0d2d(std::move(lhs), std::move(rhs));
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            axis += 2; break;
         case 3:
-            // If is_scalar(lhs) && is_tensor(rhs)
-            return dot0d3d(std::move(lhs), std::move(rhs));
-#endif
-
-        default:
-            // lhs_order == 1 && rhs_order != 2
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot0d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    primitive_argument_type dot_operation::dot1d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.is_ref())
-        {
-            lhs = lhs.vector() * rhs.scalar();
-        }
-        else
-        {
-            lhs.vector() *= rhs.scalar();
-        }
-
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot1d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.size() != rhs.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d1d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        // lhs.dimension(0) == rhs.dimension(0)
-        lhs = T(blaze::dot(lhs.vector(), rhs.vector()));
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot1d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.size() != rhs.dimension(0))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d2d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        lhs = blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename T>
-    primitive_argument_type dot_operation::dot1d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.size() != rhs.dimension(1))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d3d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        auto t = rhs.tensor();
-        blaze::DynamicMatrix<T> result(t.pages(), t.columns());
-
-        for (std::size_t i = 0; i != t.pages(); ++i)
-            blaze::row(blaze::submatrix(result, i, 0, 1, t.columns()), 0) =
-                blaze::trans(lhs.vector()) * blaze::pageslice(t, i);
-
-        return primitive_argument_type{std::move(result)};
-    }
-#endif
-
-    // lhs_num_dims == 1
-    // Case 1: Inner product of two vectors
-    // Case 2: Inner product of a vector and an array of vectors
-    // Case 3: Inner product of a matrix (tensor slice)
-    template <typename T>
-    primitive_argument_type dot_operation::dot1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        switch (rhs.num_dimensions())
-        {
-        case 0:
-            // If is_vector(lhs) && is_scalar(rhs)
-            return dot1d0d(std::move(lhs), std::move(rhs));
-
-        case 1:
-            // If is_vector(lhs) && is_vector(rhs)
-            return dot1d1d(std::move(lhs), std::move(rhs));
-
-        case 2:
-            // If is_vector(lhs) && is_matrix(rhs)
-            return dot1d2d(std::move(lhs), std::move(rhs));
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 3:
-            // If is_vector(lhs) && is_tensor(rhs)
-            return dot1d3d(std::move(lhs), std::move(rhs));
-#endif
-
+            axis += 3; break;
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d",
+                "dot_operation::positivize_axis",
                 generate_error_message(
-                    "the operands have incompatible number of dimensions"));
+                    "the operand has >3 dimensions "
+                    "which is not supported"));
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    primitive_argument_type dot_operation::dot2d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.is_ref())
-        {
-            lhs = lhs.matrix() * rhs.scalar();
-        }
-        else
-        {
-            lhs.matrix() *= rhs.scalar();
-        }
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot2d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.dimension(1) != rhs.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot2d1d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        rhs = lhs.matrix() * rhs.vector();
-        return primitive_argument_type{std::move(rhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot2d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.dimension(1) != rhs.dimension(0))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot2d2d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        lhs = lhs.matrix() * rhs.matrix();
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename T>
-    primitive_argument_type dot_operation::dot2d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.dimension(1) != rhs.dimension(1))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot2d3d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        auto m = lhs.matrix();
-        auto t = rhs.tensor();
-
-        blaze::DynamicTensor<T> result(m.rows(), t.pages(), t.columns());
-
-        for (std::size_t i = 0; i != t.pages(); ++i)
-            blaze::rowslice(
-                blaze::subtensor(result, 0, i, 0, m.rows(), 1, t.columns()),
-                0) = blaze::trans(m * blaze::pageslice(t, i));
-
-        return primitive_argument_type{std::move(result)};
-    }
-#endif
-
-    // lhs_num_dims == 2
-    // Multiply a matrix with a vector
-    // Regular matrix multiplication
-    template <typename T>
-    primitive_argument_type dot_operation::dot2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        switch (rhs.num_dimensions())
-        {
-        case 0:
-            // If is_matrix(lhs) && is_scalar(rhs)
-            return dot2d0d(std::move(lhs), std::move(rhs));
-
-        case 1:
-            // If is_matrix(lhs) && is_vector(rhs)
-            return dot2d1d(std::move(lhs), std::move(rhs));
-
-        case 2:
-            // If is_matrix(lhs) && is_matrix(rhs)
-            return dot2d2d(std::move(lhs), std::move(rhs));
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        case 3:
-            // If is_matrix(lhs) && is_tensor(rhs)
-            return dot2d3d(std::move(lhs), std::move(rhs));
-#endif
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot2d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename T>
-    primitive_argument_type dot_operation::dot3d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.is_ref())
-        {
-            lhs = lhs.tensor() * rhs.scalar();
-        }
-        else
-        {
-            lhs.tensor() *= rhs.scalar();
-        }
-        return primitive_argument_type{std::move(lhs)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot3d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.dimension(2) != rhs.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot3d1d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-        auto t = lhs.tensor();
-        blaze::DynamicMatrix<T> result(t.pages(), t.rows());
-
-        for (std::size_t i = 0; i != t.pages(); ++i)
-            blaze::row(blaze::submatrix(result, i, 0, 1, t.rows()), 0) =
-                blaze::trans(blaze::pageslice(t, i) * rhs.vector());
-
-        return primitive_argument_type{std::move(result)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot3d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.dimension(2) != rhs.dimension(0))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot3d2d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-
-        auto m = rhs.matrix();
-        auto t = lhs.tensor();
-
-        blaze::DynamicTensor<T> result(t.pages(), t.rows(), m.columns());
-
-        for (std::size_t i = 0; i != t.pages(); ++i)
-            blaze::pageslice(
-                blaze::subtensor(result, i, 0, 0, 1, t.rows(), m.columns()),
-                0) = blaze::pageslice(t, i) * m;
-
-        return primitive_argument_type{std::move(result)};
-    }
-
-    template <typename T>
-    primitive_argument_type dot_operation::dot3d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        if (lhs.dimension(2) != rhs.dimension(1))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot3d3d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dot_operation::dot3d3d",
-            generate_error_message(
-                "it is not supported by Phylanx yet"));
-    }
-
-    // lhs_num_dims == 3
-    template <typename T>
-    primitive_argument_type dot_operation::dot3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        switch (rhs.num_dimensions())
-        {
-        case 0:
-            // If is_tensor(lhs) && is_scalar(rhs)
-            return dot3d0d(std::move(lhs), std::move(rhs));
-
-        case 1:
-            // If is_tensor(lhs) && is_vector(rhs)
-            return dot3d1d(std::move(lhs), std::move(rhs));
-
-        case 2:
-            // If is_tensor(lhs) && is_matrix(rhs)
-            return dot3d2d(std::move(lhs), std::move(rhs));
-
-        case 3:
-            // If is_tensor(lhs) && is_tensor(rhs)
-            return dot3d3d(std::move(lhs), std::move(rhs));
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot3d",
-                generate_error_message(
-                    "the operands have incompatible number of dimensions"));
-        }
-    }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type dot_operation::dot0d(
@@ -606,18 +256,401 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 #endif
 
+    primitive_argument_type dot_operation::outer1d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return outer1d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return outer1d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return outer1d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::outer1d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+    primitive_argument_type dot_operation::outer2d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return outer2d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return outer2d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return outer2d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::outer2d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    primitive_argument_type dot_operation::outer3d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return outer3d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return outer3d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return outer3d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::outer3d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+#endif
+
+    primitive_argument_type dot_operation::contraction2d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return contraction2d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return contraction2d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return contraction2d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction2d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    primitive_argument_type dot_operation::contraction3d(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return contraction3d(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return contraction3d(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return contraction3d(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::contraction3d",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+#endif
+
+    primitive_argument_type dot_operation::tensordot_range_of_scalars(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs,
+        val_type axis_a, val_type axis_b) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return tensordot_range_of_scalars(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_), axis_a,
+                axis_b);
+
+        case node_data_type_int64:
+            return tensordot_range_of_scalars(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_), axis_a,
+                axis_b);
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return tensordot_range_of_scalars(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_), axis_a,
+                axis_b);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::tensordot_range_of_scalars",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+    primitive_argument_type dot_operation::outer_nd_helper(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_common_type(lhs, rhs))
+        {
+        case node_data_type_bool:
+            return outer_nd_helper(
+                extract_boolean_value(std::move(lhs), name_, codename_),
+                extract_boolean_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_int64:
+            return outer_nd_helper(
+                extract_integer_value(std::move(lhs), name_, codename_),
+                extract_integer_value(std::move(rhs), name_, codename_));
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return outer_nd_helper(
+                extract_numeric_value(std::move(lhs), name_, codename_),
+                extract_numeric_value(std::move(rhs), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::outer_nd_helper",
+            generate_error_message(
+                "the dot_operation primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type dot_operation::dot_nd(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_numeric_value_dimension(lhs, name_, codename_))
+        {
+        case 0:
+            return dot0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return dot1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return dot2d(std::move(lhs), std::move(rhs));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return dot3d(std::move(lhs), std::move(rhs));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot_nd",
+                generate_error_message("left hand side operand has unsupported "
+                                       "number of dimensions"));
+        }
+    }
+
+    primitive_argument_type dot_operation::outer_nd(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_numeric_value_dimension(lhs, name_, codename_))
+        {
+        case 0:
+            //outer0d has the same functionality as dot0d
+            return dot0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return outer1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return outer2d(std::move(lhs), std::move(rhs));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return outer3d(std::move(lhs), std::move(rhs));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::outer_nd",
+                generate_error_message("left hand side operand has unsupported "
+                                       "number of dimensions"));
+        }
+    }
+
+    primitive_argument_type dot_operation::contraction_nd(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
+    {
+        switch (extract_numeric_value_dimension(lhs, name_, codename_))
+        {
+
+        case 2:
+            return contraction2d(std::move(lhs), std::move(rhs));
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return contraction3d(std::move(lhs), std::move(rhs));
+#endif
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::contraction_nd",
+                generate_error_message("left hand side operand has unsupported "
+                                       "number of dimensions"));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type dot_operation::tensordot_scalar_axis(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs,
+        ir::range&& axes) const
+    {
+        std::size_t axis =
+            extract_scalar_integer_value_strict(*axes.begin()) > 0 ?
+            extract_scalar_integer_value_strict(*axes.begin()) :
+            0;
+
+        if (extract_numeric_value_dimension(lhs) < axis ||
+            extract_numeric_value_dimension(rhs) < axis)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::tensordot_scalar_axis",
+                generate_error_message(
+                    "the given axes should not be "
+                    "greater than any of operands dimensions"));
+        else
+        {
+            switch (axis)
+            {
+            case 0:
+                return outer_nd(std::move(lhs), std::move(rhs));
+
+            case 1:
+                return dot_nd(std::move(lhs), std::move(rhs));
+
+            case 2:
+                return contraction_nd(std::move(lhs), std::move(rhs));
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dot_operation::tensordot_scalar_axis",
+                    generate_error_message("the given axes is out of range. A "
+                                           "scalar axis should be <3"));
+            }
+        }
+    }
+
+    primitive_argument_type dot_operation::tensordot_range_axes(
+        primitive_argument_type&& lhs, primitive_argument_type&& rhs,
+        ir::range&& axes) const
+    {
+        auto it = axes.begin();
+        if (!is_list_operand_strict(*it) && !is_list_operand_strict(*++it))
+        {
+            val_type axis_a = extract_scalar_integer_value_strict(*axes.begin());
+            val_type axis_b = extract_scalar_integer_value_strict(*it);
+
+            if (axis_a < 0)
+                positivize_axis(axis_a,
+                    extract_numeric_value_dimension(lhs, name_, codename_));
+
+            if (axis_b < 0)
+                positivize_axis(axis_b,
+                    extract_numeric_value_dimension(rhs, name_, codename_));
+
+            return tensordot_range_of_scalars(
+                std::move(lhs), std::move(rhs), axis_a, axis_b);
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::tensordot_range_axes",
+            generate_error_message(
+                "range of ranges is not supportedby this version"));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> dot_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 2)
+        if (operands.size() != 2 && operands.size() != 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
                 generate_error_message(
                     "the dot_operation primitive requires exactly "
-                        "two operands"));
+                        "two or three operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
@@ -630,37 +663,84 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& op1,
+        if (operands.size() == 2)
+        {
+            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                [this_ = std::move(this_)](primitive_argument_type&& op1,
                     primitive_argument_type&& op2)
-            ->  primitive_argument_type
+                ->primitive_argument_type
             {
-                switch (extract_numeric_value_dimension(
-                    op1, this_->name_, this_->codename_))
-                {
-                case 0:
-                    return this_->dot0d(std::move(op1), std::move(op2));
+                if (this_->mode_ == outer_product)
 
-                case 1:
-                    return this_->dot1d(std::move(op1), std::move(op2));
+                    return this_->outer_nd_helper(
+                        std::move(op1), std::move(op2));
 
-                case 2:
-                    return this_->dot2d(std::move(op1), std::move(op2));
+                else if (this_->mode_ == dot_product)
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                case 3:
-                    return this_->dot3d(std::move(op1), std::move(op2));
-#endif
+                    return this_->dot_nd(std::move(op1), std::move(op2));
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dot_operation::eval",
-                        this_->generate_error_message(
-                            "left hand side operand has unsupported "
-                                "number of dimensions"));
-                }
+                else if (this_->mode_ == doubledot_product)
+
+                    return this_->contraction_nd(
+                        std::move(op1), std::move(op2));
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dot_operation::eval",
+                    this_->generate_error_message(
+                        "unsupported dot mode requested"));
             }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx));
+                value_operand(operands[0], args, name_, codename_, ctx),
+                value_operand(operands[1], args, name_, codename_, ctx));
+        }
+        else if (operands.size() == 3 && valid(operands[2]))
+        {
+            if (this_->mode_ == dot_product || this_->mode_ == outer_product)
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dot_operation::eval",
+                    this_->generate_error_message(
+                        "the dot/outer product requires exactly two operands"));
+            else if (this_->mode_ == doubledot_product)
+            {
+                return hpx::dataflow(hpx::launch::sync,
+                    hpx::util::unwrapping(
+                        [this_ = std::move(this_)](
+                            primitive_argument_type&& op1,
+                            primitive_argument_type&& op2,
+                            ir::range&& axes) -> primitive_argument_type {
+                    switch (axes.size())
+                    {
+                    case 1:
+                        return this_->tensordot_scalar_axis(
+                            std::move(op1), std::move(op2), std::move(axes));
+
+                    case 2:
+                        return this_->tensordot_range_axes(
+                            std::move(op1), std::move(op2), std::move(axes));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::eval",
+                            this_->generate_error_message(
+                                "the axes can only be an integer, or a tuple "
+                                "indicating a_axes and b_axes where a_axes and "
+                                "b_axes can be integers or tuples of "
+                                "integers"));
+                    }
+
+                        }),
+                    value_operand(operands[0], args, name_, codename_, ctx),
+                    value_operand(operands[1], args, name_, codename_, ctx),
+                    list_operand(operands[2], args, name_, codename_, ctx));
+            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::eval",
+                this_->generate_error_message(
+                    "unsupported dot mode requested"));
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dot_operation::eval",
+            generate_error_message(
+                "the dot_operation primitive requires that the "
+                "arguments given by the operands array are valid"));
     }
 }}}
