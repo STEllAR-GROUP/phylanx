@@ -55,14 +55,6 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             else:
                 kwargs['fglobals'] = f.__globals__
 
-            # determine if code is sent to a remote cluster
-            #
-            self.remote = None
-            if 'cluster' in kwargs.keys():
-                self.remote = create_cluster(kwargs['cluster'])
-            else:
-                raise NotImplementedError("Unknown Phylanx argument '%s'" % (kwargs['cluster'],))
-
             python_src = self.get_python_src(f)
             python_ast = self.get_python_ast(python_src, f)
 
@@ -151,7 +143,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                     "OpenSCoP kernels are not yet callable.")
 
             result = self.backend.call(map(self.map_decorated, args))
-            result = self.backend.call(args)
+
             self.__perfdata__ = self.backend.__perfdata__
             return result
 
