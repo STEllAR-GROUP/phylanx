@@ -57,5 +57,7 @@ class kubernetes_deployer(deployer):
         except ApiException as e:
             if e.status != 404:
                 print('unknown error: %s' % (str(e),))
+                return None
 
         self.set_result(resp)
+        return resp
