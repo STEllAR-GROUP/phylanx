@@ -11,6 +11,7 @@ import inspect
 import numpy as np
 import phylanx.execution_tree
 from phylanx import PhylanxSession
+from deploy import *
 
 
 def physl_zip(loop):
