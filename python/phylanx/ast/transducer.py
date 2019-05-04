@@ -15,7 +15,6 @@ from .openscop import OpenSCoP
 from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
-from phylanx.clusters import create_cluster
 
 class LambdaExtractor(ast.NodeVisitor):
     _ast = None
