@@ -1,8 +1,14 @@
+# Copyright (c) 2019 Christopher Taylor 
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# uses this library: https://github.com/kubernetes-client/python
+#
 from kubernetes import client, config, utils
 from kubernetes.client.rest import ApiException
 
-# uses this library
-# https://github.com/litl/backoff
+# uses this library: https://github.com/litl/backoff
 #
 import backoff 
 
