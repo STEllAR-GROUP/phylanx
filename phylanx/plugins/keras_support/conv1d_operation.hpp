@@ -49,14 +49,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
     private:
         template <typename Vector1, typename Vector2>
-        double convolve_step(const Vector1& v1, const Vector2& v2) const;
+        static double convolve_step(Vector1 const& v1, Vector2 const& v2);
         template <typename Vector1, typename Vector2>
-        double convolve_step(const Vector1& v1, const Vector2& v2,
-            std::int64_t dilation_rate, std::size_t kernel_size) const;
-        template <typename Vector1, typename Vector2>
-        double convolve_step(const Vector1& v1, const Vector2& v2,
+        static double convolve_step(Vector1 const& v1, Vector2 const& v2,
             std::int64_t dilation_rate, std::size_t kernel_size,
-            std::size_t r) const;
+            std::size_t offset = 0);
 
         primitive_argument_type conv1d_valid(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
