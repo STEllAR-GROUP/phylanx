@@ -34,10 +34,10 @@ char const* const kmeans_code = R"(
 
 define(closest_centroids, points, centroids, block(
     define(points_x,
-        add_dim(slice_column(points, 0))
+        expand_dims(slice_column(points, 0), 0)
     ),
     define(points_y,
-        add_dim(slice_column(points, 1))
+        expand_dims(slice_column(points, 1), 0)
     ),
     define(centroids_x,
         slice_column(centroids, 0)
@@ -54,7 +54,7 @@ define(closest_centroids, points, centroids, block(
 define(move_centroids, points, closest, centroids, block(
     fmap(lambda(k, block(
                 define(x, closest == k),
-                mean(points * add_dim(x), 1)
+                mean(points * add_dim(x, 0), 1)
         )),
         range(shape(centroids, 0))
     )
@@ -85,7 +85,9 @@ int hpx_main(boost::program_options::variables_map& vm)
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
     auto const& prog = phylanx::execution_tree::compile(kmeans_code, snippets);
-    auto kmeans = prog.run();
+
+    phylanx::execution_tree::eval_context ctx;
+    auto kmeans = prog.run(ctx);
 
     // evaluate generated execution tree
     std::int64_t centroids = vm["centroids"].as<std::int64_t>();
@@ -98,7 +100,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     hpx::util::high_resolution_timer timer;
 
     auto result = phylanx::execution_tree::extract_numeric_value(
-        kmeans(points, centroids, iterations));
+        kmeans(ctx, points, centroids, iterations));
 
     auto elapsed = timer.elapsed();
 
