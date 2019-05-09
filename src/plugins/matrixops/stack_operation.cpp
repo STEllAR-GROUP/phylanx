@@ -1386,6 +1386,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("unsupported axis requested"));
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type stack_operation::stack2d_axis0_helper(
         primitive_arguments_type&& args) const
@@ -1621,6 +1622,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the stack_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
+#endif
 
     primitive_argument_type stack_operation::stack2d(
         primitive_arguments_type&& args, primitive_argument_type&& dtype) const
@@ -1655,8 +1657,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (axis == 0 || axis == -2)
                 return primitive_argument_type{std::move(args[0])};
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             if (axis == 1 || axis == -1)
                 return stack2d_axis1(std::move(args), std::move(dtype));
+#endif
         }
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         else {
