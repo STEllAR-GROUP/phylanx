@@ -24,10 +24,10 @@ define(initialize_centroids, points, k, block(
 
 define(closest_centroids, points, centroids, block(
     define(points_x,
-        add_dim(slice_column(points, 0))
+        expand_dims(slice_column(points, 0), -1)
     ),
     define(points_y,
-        add_dim(slice_column(points, 1))
+        expand_dims(slice_column(points, 1), -1)
     ),
     define(centroids_x,
         slice_column(centroids, 0)
@@ -38,14 +38,14 @@ define(closest_centroids, points, centroids, block(
     argmin(sqrt(
                 power(points_x - centroids_x, 2
                 )+power(points_y - centroids_y, 2)
-        ), 0
+        ), 1
     )
 ))
 
 define(move_centroids, points, closest, centroids, block(
     fmap(lambda(k, block(
                 define(x, closest == k),
-                mean(points * add_dim(x), 1)
+                mean(points * expand_dims(x, -1), 1)
     )),
         range(shape(centroids, 0))
     )
@@ -56,18 +56,20 @@ define(kmeans, points, k, iterations, block(
     for(define(i, 0), i < iterations, store(i, i + 1), block(
         store(centroids,
               apply(vstack,
-                    move_centroids(points,
+                    list(move_centroids(points,
                                    closest_centroids(points, centroids),
-                                   centroids)))
+                                   centroids))))
     )),
     centroids
 ))
 
 define(program, iterations, block(
     define(points, vstack(
-        apply(vstack, fmap(lambda(x, random(2) * .75), range(150))) + [1., 0.],
-        apply(vstack, fmap(lambda(x, random(2) * .25), range(50))) + [-.5, .5],
-        apply(vstack, fmap(lambda(x, random(2) * .5), range(50))) + [-.5, -.5]
+        list(
+			apply(vstack, list(fmap(lambda(x, random(2) * .75), range(150)))) + [1., 0.],
+			apply(vstack, list(fmap(lambda(x, random(2) * .25), range(50)))) + [-.5, .5],
+			apply(vstack, list(fmap(lambda(x, random(2) * .5), range(50)))) + [-.5, -.5]
+		)
     )),
     define(k, 3),
     kmeans(points, k, iterations)
