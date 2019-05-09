@@ -670,7 +670,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "invalid padding. Padding can be either "
                                 "'valid', 'same', or 'causal'"));
                     }
-                    }
                 }
 
                 if (padding == "valid")
