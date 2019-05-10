@@ -355,11 +355,25 @@ def check_return(ir):
         for s in ir:
             check_return(s)
 
+class PhySLFunction:
+    def __init__(self, file_name, function_name, src):
+        self.file_name = file_name
+        self.func_name = function_name
+        self.src = src
+
+    def compile(self):
+        if PhySL.compiler_state is None:
+            PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+                self.file_name)
+        phylanx.execution_tree.compile(PhySL.compiler_state, self.file_name,
+                                       self.func_name, self.src)
+
 
 class PhySL:
     """Python AST to PhySL Transducer."""
 
     compiler_state = None
+    functions = []
 
     def __init__(self, func, tree, kwargs):
         self.defined = set()
@@ -409,6 +423,11 @@ class PhySL:
                 self.wrapped_function.__name__, self.__src__)
 
             self.is_compiled = True
+        else:
+            func_name = self.wrapped_function.__name__
+            func = PhySLFunction(self.file_name, func_name, self.__src__)
+            PhySL.functions.append(func)
+
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -513,6 +532,9 @@ class PhySL:
 
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
+                    
+            for func in PhySL.functions:
+                func.compile()
 
         if not self.is_compiled:
             if "compiler_state" in self.kwargs:
