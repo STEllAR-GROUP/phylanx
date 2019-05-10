@@ -247,14 +247,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         arg_type&& arg) const
     {
         auto t = arg.tensor();
-    //    if (!arg.is_ref())
-    //    {
-    //        t = t / blaze::l2Norm(t);
+        if (!arg.is_ref())
+        {
+            t = t / blaze::l2Norm(t);
             return primitive_argument_type{std::move(arg)};
-    //    }
+        }
 
-    //    blaze::DynamicMatrix<val_type> result = t / blaze::l2Norm(t);
-    //    return primitive_argument_type{std::move(result)};
+        blaze::DynamicTensor<val_type> result = t / blaze::l2Norm(t);
+        return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type l2_normalize_operation::l2_normalize3d(
