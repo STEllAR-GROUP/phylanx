@@ -94,6 +94,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     std::int64_t centroids = vm["centroids"].as<std::int64_t>();
     std::int64_t iterations = vm["iterations"].as<int64_t>();
     std::int64_t num_points = vm["points"].as<int64_t>();
+    bool show_result = vm["show_result"].as<bool>();
 
     auto points = generate_random(centroids, num_points);
 
@@ -109,8 +110,10 @@ int hpx_main(boost::program_options::variables_map& vm)
     // counter values
     hpx::reinit_active_counters(false);
 
-    std::cout << result
-              << "\nTime: " << elapsed << " seconds"
+    if (show_result)
+       std::cout<<result<<"\n";
+
+    std::cout << "Time: " << elapsed << " seconds"
               << std::endl;
 
     return hpx::finalize();
@@ -126,7 +129,9 @@ int main(int argc, char* argv[])
         ("iterations", boost::program_options::value<std::int64_t>()->default_value(2),
             "number of iterations (default: 2)")
         ("points", boost::program_options::value<std::int64_t>()->default_value(250),
-            "alpha (default: 250)");
+            "alpha (default: 250)")
+        ("show_result", boost::program_options::value<bool>()->default_value(false),
+            "show calculated result (default: false)");
 
     return hpx::init(desc, argc, argv);
 }
