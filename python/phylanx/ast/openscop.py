@@ -103,12 +103,10 @@ class Oscop:
         )
         return d
 
-    """
-    def check_iterator_in_domain(self, iterator):
-        if iterator not in self.domain_iter:
-            raise Exception( \
-                "Iterator %s is not defined in this scope." % iterator)
-    """
+    # def check_iterator_in_domain(self, iterator):
+    #   if iterator not in self.domain_iter:
+    #       raise Exception( \
+    #           "Iterator %s is not defined in this scope." % iterator)
 
     def fill_params_to_globalinfo(self, expr):
         """
@@ -221,6 +219,7 @@ class Oscop:
         else:
             raise Exception("Not supported")
 
+    @classmethod
     def generate_context_str(self, rows, output_dim, input_dim, local_dim, params):
         cols = output_dim + input_dim + local_dim + params + 2
         rv = ""
@@ -957,6 +956,7 @@ class OpenSCoP:
 
         return
 
+    @classmethod
     def _Pass(self, node, coef, mode):
         """
         stmt -> Pass
@@ -1040,6 +1040,7 @@ class OpenSCoP:
         self.visit(right, coef_ * -1, mode)
         return
 
+    @classmethod
     def _Call(self, node, coef, mode):
         """
         expr -> Call(expr func, expr* args, keyword* keywords)
@@ -1161,6 +1162,7 @@ class OpenSCoP:
         self.visit(node.value, coef, mode)
         return
 
+    @classmethod
     def _Slice(self, node, coef, mode):
         raise Exception("Not supported")
         return
