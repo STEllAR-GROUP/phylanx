@@ -311,7 +311,7 @@ int main(int argc, char* argv[])
     test_l2_normalize_operation_2d_axis0();
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    //test_l2_normalize_operation_3d();
+    test_l2_normalize_operation_3d();
     test_l2_normalize_operation_3d_axis0();
     test_l2_normalize_operation_3d_axis1();
     test_l2_normalize_operation_3d_axis2();
