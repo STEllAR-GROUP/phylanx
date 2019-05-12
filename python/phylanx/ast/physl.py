@@ -355,6 +355,7 @@ def check_return(ir):
         for s in ir:
             check_return(s)
 
+
 class PhySLFunction:
     def __init__(self, file_name, function_name, src):
         self.file_name = file_name
@@ -427,7 +428,6 @@ class PhySL:
             func_name = self.wrapped_function.__name__
             func = PhySLFunction(self.file_name, func_name, self.__src__)
             PhySL.functions.append(func)
-
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -532,7 +532,7 @@ class PhySL:
 
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
-                    
+
             for func in PhySL.functions:
                 func.compile()
 
