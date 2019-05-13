@@ -44,6 +44,7 @@ set(tests
     956_named_argument_underscore
     962_broadcast_logical_operations
     979_lazy_compilation
+    979_lazy_compilation_with_init
     array_len_494
     array_shape_486
     array_subscript_403

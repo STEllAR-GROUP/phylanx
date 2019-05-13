@@ -357,24 +357,32 @@ def check_return(ir):
 
 
 class PhySLFunction:
+
+    functions = []
+
     def __init__(self, file_name, function_name, src):
         self.file_name = file_name
         self.func_name = function_name
         self.src = src
 
-    def compile(self):
+    def compile_function(self):
         if PhySL.compiler_state is None:
             PhySL.compiler_state = phylanx.execution_tree.compiler_state(
                 self.file_name)
         phylanx.execution_tree.compile(PhySL.compiler_state, self.file_name,
                                        self.func_name, self.src)
 
+    @staticmethod
+    def compile():
+        for func in PhySLFunction.functions:
+            func.compile_function()
+        PhySLFunction.functions = []
+
 
 class PhySL:
     """Python AST to PhySL Transducer."""
 
     compiler_state = None
-    functions = []
 
     def __init__(self, func, tree, kwargs):
         self.defined = set()
@@ -419,6 +427,8 @@ class PhySL:
                 PhySL.compiler_state = phylanx.execution_tree.compiler_state(
                     self.file_name)
 
+            PhySLFunction.compile()
+
             phylanx.execution_tree.compile(
                 PhySL.compiler_state, self.file_name,
                 self.wrapped_function.__name__, self.__src__)
@@ -427,7 +437,7 @@ class PhySL:
         else:
             func_name = self.wrapped_function.__name__
             func = PhySLFunction(self.file_name, func_name, self.__src__)
-            PhySL.functions.append(func)
+            PhySLFunction.functions.append(func)
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -533,10 +543,8 @@ class PhySL:
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
 
-            for func in PhySL.functions:
-                func.compile()
-
         if not self.is_compiled:
+            PhySLFunction.compile()
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             elif PhySL.compiler_state is None:
