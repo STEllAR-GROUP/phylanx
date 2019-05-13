@@ -15,7 +15,7 @@ from .utils import save_to_file
 from .utils import print_python_ast_node
 from .utils import dump_ast as python_ast_format
 # from .utils import dump_ast_v2 as python_ast_format
-"""
+'''
 def mycgen(python_ast):
     import cgen
 
@@ -26,7 +26,7 @@ def mycgen(python_ast):
     a = cgen.Statement(aststr)
     print("mycgen")
     print(a)
-"""
+'''
 
 DEBUG_RAW = 0
 
