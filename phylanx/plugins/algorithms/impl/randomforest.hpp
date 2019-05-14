@@ -26,6 +26,11 @@
 #include <cmath>
 
 #include <blaze/Math.h>
+#include <phylanx/phylanx.hpp>
+#include <phylanx/util/variant.hpp>
+#include <phylanx/execution_tree/primitives.hpp>
+#include <phylanx/ir/dictionary.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -39,39 +44,7 @@
  */
 namespace phylanx { namespace algorithms { namespace impl {
 
-using namespace phylanx::util;
-
-struct nil {};
-struct randomforest_node;
-
-using randomforest_node_variant = phylanx::util::variant<
-    nil
-    , phylanx::util::recursive_wrapper<randomforest_node>
-    , std::int64_t
-    , double
-    , std::tuple< std::vector< std::int64_t >, std::vector< std::int64_t > >
->;
-
-using randomforest_node_map = std::map<
-    std::string, randomforest_node_variant
->;
-
-struct randomforest_node {
-    randomforest_node()
-        : fields() {
-    }
-
-    randomforest_node_map fields;
-};
-
-}}} // end namespace
-
-BOOST_FUSION_ADAPT_STRUCT(
-    phylanx::algorithms::impl::randomforest_node,
-    (phylanx::algorithms::impl::randomforest_node_map, fields)
-)
-
-namespace phylanx { namespace algorithms { namespace impl {
+using randomforest_node = phylanx::execution_tree::primitive_argument_type; //phylanx::ir::dictionary;
 
 struct randomforest_impl {
 
@@ -87,8 +60,8 @@ struct randomforest_impl {
             std::int64_t const feature
             , double const val
             , blaze::DynamicMatrix<double> const& dataset
-            , std::tuple< std::vector< std::int64_t >
-                , std::vector< std::int64_t > > & groups ) {
+            , std::tuple< blaze::DynamicVector< std::int64_t >
+                , blaze::DynamicVector< std::int64_t > > & groups ) {
 
         std::vector< std::int64_t > left, right;
         auto const rows = dataset.rows();
@@ -102,19 +75,24 @@ struct randomforest_impl {
             }
         }
 
-        groups = std::make_tuple(left, right);
+        blaze::DynamicVector< std::int64_t > lvec(left.size()), rvec(right.size());
+        std::copy(left.begin(), left.end(), lvec.begin());
+        std::copy(right.begin(), right.end(), rvec.begin());
+
+        groups = std::make_tuple(lvec, rvec);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     static double gini_index(
         blaze::DynamicMatrix<double> const& dataset
         , blaze::DynamicVector<double> const& dataset_labels
-        , std::tuple< std::vector<std::int64_t>, std::vector<std::int64_t> > const& groups
+        , std::tuple< blaze::DynamicVector<std::int64_t>, blaze::DynamicVector<std::int64_t> > const& groups
         , std::unordered_map<double, std::int64_t> & classes) {
 
         std::vector<std::int64_t> groups_len{static_cast<std::int64_t>(std::get<0>(groups).size())
             , static_cast<std::int64_t>(std::get<1>(groups).size())};
-        std::vector< std::vector<std::int64_t> > groups_vec{std::get<0>(groups)
+
+        std::vector< blaze::DynamicVector<std::int64_t> > groups_vec{std::get<0>(groups)
             , std::get<1>(groups)};
 
         double const n_instances = static_cast<double>(
@@ -151,13 +129,13 @@ struct randomforest_impl {
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename F>
-    static void argsort(std::vector<T> const& v, std::vector<F> & idx ) {
+    static void argsort(T const& v, F & idx ) {
         if(idx.size() < v.size())
             idx.resize(v.size());
 
         std::iota(idx.begin(), idx.end(), 0);
         std::sort(idx.begin(), idx.end()
-            , [&v](F const i1, F const i2) {
+            , [&v](auto const i1, auto const i2) {
                 return v[i1] < v[i2];
             }
         );
@@ -167,15 +145,16 @@ struct randomforest_impl {
     static void get_split(
         blaze::DynamicMatrix<double> const& dataset
         , blaze::DynamicVector<double> const& dataset_labels
-        , std::vector<std::int64_t> const& dataset_indices
+        , blaze::DynamicVector<std::int64_t> const& dataset_indices
         , std::int64_t const n_features
         , std::unordered_map<double, std::int64_t> & classes
         , randomforest_node & ret) {
 
-        auto b_idx = std::numeric_limits<std::int64_t>::max();
-        auto b_val = std::numeric_limits<double>::max();
-        auto b_score = std::numeric_limits<double>::max();
-        std::tuple< std::vector<std::int64_t>, std::vector<std::int64_t> > b_groups;
+        std::int64_t b_idx = std::numeric_limits<std::int64_t>::max();
+        double b_val = std::numeric_limits<double>::max();
+        double b_score = std::numeric_limits<double>::max();
+        //std::tuple< std::vector<std::int64_t>, std::vector<std::int64_t> > b_groups;
+        std::tuple< blaze::DynamicVector<std::int64_t>, blaze::DynamicVector<std::int64_t> > b_groups;
 
         std::vector<std::int64_t> features(n_features);
 
@@ -205,11 +184,11 @@ struct randomforest_impl {
             );
         }
 
-        std::tuple< std::vector< std::int64_t >
-            , std::vector< std::int64_t > > groups;
+        std::tuple< blaze::DynamicVector< std::int64_t >
+            , blaze::DynamicVector< std::int64_t > > groups;
 
-        for(auto feature : features) {
-            for(auto const r : dataset_indices) {
+        for(std::int64_t feature : features) {
+            for(std::int64_t r : dataset_indices) {
                 test_split(feature, dataset(r, feature), dataset, groups);
                 auto const gini = gini_index(dataset
                     , dataset_labels, groups, classes);
@@ -223,17 +202,41 @@ struct randomforest_impl {
             }
         }
 
-        ret.fields["index"] = b_idx;
-        ret.fields["value"] = b_val;
-        ret.fields["groups"] = b_groups;
-        ret.fields["lw"] = std::numeric_limits<std::int64_t>::max();
-        ret.fields["rw"] = std::numeric_limits<std::int64_t>::max();
+        auto& node_ = phylanx::util::get<phylanx::ir::dictionary>(ret);
+        node_[phylanx::execution_tree::primitive_argument_type{std::string("index")}] =
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<std::int64_t>(b_idx)
+            };
+        node_[phylanx::execution_tree::primitive_argument_type{std::string("value")}] =
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(b_val)
+            };
+        node_[phylanx::execution_tree::primitive_argument_type{std::string("groups_l")}] =
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<std::int64_t>( std::get<0>(b_groups) )
+            };
+        node_[phylanx::execution_tree::primitive_argument_type{std::string("groups_r")}] =
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<std::int64_t>( std::get<1>(b_groups) )
+            };
+        node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<std::int64_t>(
+                    std::numeric_limits<std::int64_t>::max()
+                )
+            };
+        node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<std::int64_t>(
+                    std::numeric_limits<std::int64_t>::max()
+                )
+            };
     }
 
     ///////////////////////////////////////////////////////////////////////////
     static std::int64_t to_terminal(
         blaze::DynamicVector<double> const& train_labels
-        , std::vector<std::int64_t> const& group
+        , blaze::DynamicVector<std::int64_t> const& group
         , std::unordered_map<double, std::int64_t> & classes) {
 
         blaze::DynamicVector<double> outcome_hist(classes.size());
@@ -258,55 +261,71 @@ struct randomforest_impl {
         , std::int64_t depth
         , std::unordered_map<double, std::int64_t> & classes) {
 
-        using tuple_vec_vec = std::tuple< std::vector<std::int64_t>
-            , std::vector<std::int64_t> >;
-        tuple_vec_vec left_right = phylanx::util::get<tuple_vec_vec>(
-            node.fields["groups"]);
-        node.fields.erase("groups");
+        auto& node_ = phylanx::util::get<phylanx::ir::dictionary>(node);
 
-        auto& left = std::get<0>(left_right);
-        auto& right = std::get<1>(left_right);
+        blaze::DynamicVector<std::int64_t> left =
+            phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+                node_[phylanx::execution_tree::primitive_argument_type{std::string("groups_l")}].get().variant()
+            ).vector();
+
+        blaze::DynamicVector<std::int64_t> right =
+            phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+                node_[phylanx::execution_tree::primitive_argument_type{std::string("groups_r")}].get().variant()
+            ).vector();
+
+
+        node_.erase(phylanx::execution_tree::primitive_argument_type{std::string("groups_l")});
+        node_.erase(phylanx::execution_tree::primitive_argument_type{std::string("groups_r")});
 
         if(left.size() == 0 || right.size() == 0) {
-            std::vector<std::int64_t> joint{left};
-            joint.reserve(joint.size() + right.size());
-            joint.insert(joint.end(), right.begin(), right.end());
+            blaze::DynamicVector<std::int64_t> joint{left};
+            auto jsz = joint.size();
+            joint.reserve(jsz + right.size());
+            std::for_each(right.begin(), right.end(), [&joint, &jsz](auto rval) { joint[jsz] = rval; ++jsz; });
             auto term = to_terminal(train_labels, joint, classes);
-            node.fields["lw"] = term;
-            node.fields["rw"] = term;
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
+                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{term}};
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
+                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{term}};
             return;
         }
 
         if(depth >= max_depth) {
             auto lterm = to_terminal(train_labels, left, classes);
             auto rterm = to_terminal(train_labels, right, classes);
-            node.fields["lw"] = lterm;
-            node.fields["rw"] = rterm;
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
+                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{lterm}};
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
+                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{rterm}};
             return;
         }
 
         if(left.size() <= min_size) {
              auto lterm = to_terminal(train_labels, left, classes);
-             node.fields["lw"] = lterm;
+             node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
+                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{lterm}};
         }
         else {
             randomforest_node left_node{};
             get_split(train, train_labels, left, n_features, classes, left_node);
             split(left_node, train, train_labels, max_depth, min_size, n_features
                 , depth + 1, classes);
-            node.fields["left"] = std::move(left_node);
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}] =
+                std::move(left_node);
         }
         
         if(right.size() <= min_size) {
             auto rterm = to_terminal(train_labels, right, classes);
-            node.fields["rw"] = rterm;
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
+                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{rterm}};
         }
         else {
             randomforest_node right_node{};
             get_split(train, train_labels, right, n_features, classes, right_node);
             split(right_node, train, train_labels, max_depth, min_size, n_features
                 , depth + 1, classes);
-            node.fields["right"] = std::move(right_node);
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("right")}] =
+                std::move(right_node);
         }
     }
 
@@ -315,7 +334,7 @@ struct randomforest_impl {
         randomforest_node & tree_root
         , blaze::DynamicMatrix<double> const& train
         , blaze::DynamicVector<double> const& train_labels
-        , std::vector<std::int64_t> const& sample_indices
+        , blaze::DynamicVector<std::int64_t> const& sample_indices
         , std::int64_t max_depth
         , std::int64_t min_size
         , std::int64_t n_features
@@ -333,18 +352,25 @@ struct randomforest_impl {
         , blaze::DynamicMatrix<double> const& r
         , std::int64_t const i) {
 
-        auto index = phylanx::util::get<std::int64_t>(node.fields["index"]);
-        auto value = phylanx::util::get<double>(node.fields["value"]);
+        auto& node_ = phylanx::util::get<phylanx::ir::dictionary>(node);
+
+        std::int64_t index = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("index")}].get().variant()
+        ).scalar();
+
+        double value = phylanx::util::get<phylanx::ir::node_data<double>>(
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("value")}].get().variant()
+        ).scalar();
 
         if(r(i, index) < value) {
-            auto lw = phylanx::util::get<std::int64_t>(node.fields["lw"]);
-            if( lw == std::numeric_limits<std::int64_t>::max()) {
-                auto& left_var = phylanx::util::get<
-                    phylanx::util::recursive_wrapper<
-                        randomforest_node>
-                >(node.fields["left"]);
+            std::int64_t lw = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+                node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}].get().variant()
+            ).scalar();
 
-                auto& left = left_var.get();
+            if( lw == std::numeric_limits<std::int64_t>::max()) {
+                auto& left = //phylanx::util::get<phylanx::ir::dictionary>(
+                    node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}].get(); //.variant()
+                //);
                 return node_predict(left, r, i);
             }
             else {
@@ -352,13 +378,14 @@ struct randomforest_impl {
             }
         }
 
-        auto rw = phylanx::util::get<std::int64_t>(node.fields["rw"]);
+        auto rw = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}].get().variant()
+        ).scalar();
+
         if(rw == std::numeric_limits<std::int64_t>::max()) {
-            auto& right_var = phylanx::util::get<
-                phylanx::util::recursive_wrapper<
-                    randomforest_node>
-            >(node.fields["right"]);
-            auto& right = right_var.get();
+            auto& right = //phylanx::util::get<phylanx::ir::dictionary>(
+                node_[phylanx::execution_tree::primitive_argument_type{std::string("right")}].get(); //.variant()
+            //);
             return node_predict(right, r, i);
         }
 
@@ -368,7 +395,7 @@ struct randomforest_impl {
     ///////////////////////////////////////////////////////////////////////////
     static void subsample(
         blaze::DynamicMatrix<double> const& dataset
-        , std::vector<std::int64_t> & idx_w_sort
+        , blaze::DynamicVector<std::int64_t> & idx_w_sort
         , std::int64_t const ratio) {
 
         std::int64_t const n_sample =
@@ -455,9 +482,10 @@ struct randomforest_impl {
         }
 
         std::int64_t const n_features = static_cast<std::int64_t>(
-            std::floor(std::sqrt(train.rows())));
+            std::floor(std::sqrt(train.rows()))
+        );
         
-        std::vector< std::vector<std::int64_t> > subsample_indices(trees.size());
+        std::vector< blaze::DynamicVector<std::int64_t> > subsample_indices(trees.size());
         
         auto tree_indices = boost::irange<std::int64_t>(0, trees.size());
 
@@ -469,6 +497,7 @@ struct randomforest_impl {
                 , &sample_size, &n_features]
                 (std::int64_t const idx) {
                     subsample(train, subsample_indices[idx], sample_size);
+                    trees[idx] = std::move(phylanx::execution_tree::primitive_argument_type{phylanx::ir::dictionary()});
                     build_tree(trees[idx], train, train_labels, subsample_indices[idx]
                         , max_depth, min_size, n_features, classes);
             }
