@@ -49,10 +49,12 @@ using randomforest_node = phylanx::execution_tree::primitive_argument_type; //ph
 struct randomforest_impl {
 
     std::vector<randomforest_node> trees;
+    std::int64_t ntrees;
     std::unordered_map<double, std::int64_t> classes;
 
-    randomforest_impl(std::int64_t const ntrees)
-        : trees(ntrees)
+    randomforest_impl(std::int64_t const n_trees)
+        : trees(n_trees)
+        , ntrees(n_trees)
         , classes() {
     }
 
@@ -485,9 +487,17 @@ struct randomforest_impl {
             std::floor(std::sqrt(train.rows()))
         );
         
-        std::vector< blaze::DynamicVector<std::int64_t> > subsample_indices(trees.size());
-        
-        auto tree_indices = boost::irange<std::int64_t>(0, trees.size());
+        std::vector< blaze::DynamicVector<std::int64_t> > subsample_indices(ntrees);
+        auto tree_indices = boost::irange<std::int64_t>(0, ntrees);
+
+        std::for_each(std::begin(tree_indices)
+            , std::end(tree_indices)
+            , [this](std::int64_t const idx) {
+               trees[idx] =
+                    std::move(phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::dictionary()
+                    });
+             });
 
         hpx::parallel::for_each(
             hpx::parallel::execution::par
@@ -497,8 +507,8 @@ struct randomforest_impl {
                 , &sample_size, &n_features]
                 (std::int64_t const idx) {
                     subsample(train, subsample_indices[idx], sample_size);
-                    trees[idx] = std::move(phylanx::execution_tree::primitive_argument_type{phylanx::ir::dictionary()});
-                    build_tree(trees[idx], train, train_labels, subsample_indices[idx]
+                    build_tree( trees[idx]
+                        , train, train_labels, subsample_indices[idx]
                         , max_depth, min_size, n_features, classes);
             }
         );
