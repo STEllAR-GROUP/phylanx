@@ -34,20 +34,6 @@ using namespace phylanx::algorithms::impl;
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    static phylanx::ir::dictionary randomforest_fit_fn(
-        blaze::DynamicMatrix<double> const& train
-        , blaze::DynamicVector<double> const& train_labels
-        , std::int64_t const max_depth
-        , std::int64_t const min_size
-        , std::int64_t const sample_size
-        , std::int64_t const n_trees) {
-
-        randomforest_impl rf(n_trees);
-        rf.fit(train, train_labels, max_depth, min_size, sample_size);
-
-        return std::move(forest);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const randomforest_fit::match_data =
     {
@@ -123,32 +109,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto n_trees = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[5], name_, codename_));
 
-/*
-        auto arg6 = extract_numeric_value(args[6], name_, codename_);
-        if (arg6.num_dimensions() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
-                generate_error_message(
-                    "the randomforest algorithm primitive requires for the first "
-                    "argument ('testing') to represent a matrix"));
-        }
-
-        auto testing_data = arg6.matrix();
-*/
-//        using vector_type = ir::node_data<double>::storage1d_type;
-
-        // perform calculations
-//        vector_type testing_labels(training_data.rows(), 0);
-
-
-        auto forest = randomforest_fit_fn(training_data
+        randomforest_impl rf(n_trees);
+        rf.fit(training_data
             , training_labels
             , max_depth
             , min_size
-            , sample_size
-            , n_trees);
+            , sample_size);
+ 
+        phylanx::ir::dictionary trees;
+        for(std::int64_t i = 0; i < rf.trees.size(); ++i) {
+            trees[phylanx::execution_tree::primitive_argument_type{
+                     phylanx::ir::node_data<std::int64_t>(i)
+                }] =
+                phylanx::execution_tree::primitive_argument_type{
+                   rf.trees[i]
+            };
+        }
 
-        return primitive_argument_type{std::move(forest)}; //std::move(forest)};
+        phylanx::ir::dictionary classes;
+        for(auto & cls : rf.classes) {
+            trees[phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<double>(std::get<0>(cls))
+                }] =
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>(std::get<1>(cls))
+            };
+        }
+
+        phylanx::ir::dictionary model;
+        model[phylanx::execution_tree::primitive_argument_type{std::string("forest")}] =
+            phylanx::execution_tree::primitive_argument_type{trees};
+        model[phylanx::execution_tree::primitive_argument_type{std::string("n_trees")}] =
+            phylanx::execution_tree::primitive_argument_type{rf.ntrees};
+        model[phylanx::execution_tree::primitive_argument_type{std::string("classes")}] =
+            phylanx::execution_tree::primitive_argument_type{classes};
+
+        return primitive_argument_type{std::move(model)}; //std::move(forest)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -201,9 +197,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , blaze::DynamicMatrix<double> const& test) {
 
         blaze::DynamicVector<double> test_labels(test.rows());
-        randomforest_impl rf(tree.size());
-        transform(tree, rf);
+
+        std::int64_t const ntree = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+             tree[phylanx::execution_tree::primitive_argument_type{
+                 std::string("n_trees")
+             }].get().variant()).scalar();
+
+        randomforest_impl rf(ntree);
+
+        phylanx::ir::dictionary model = phylanx::util::get<phylanx::ir::dictionary>(
+            tree[phylanx::execution_tree::primitive_argument_type{
+                 std::string("forest")
+            }].get().variant());
+
+        for(std::int64_t i = 0; i < ntree; ++i) {
+            rf.trees.push_back(
+                phylanx::util::get<phylanx::ir::dictionary>(
+                     tree[phylanx::execution_tree::primitive_argument_type{
+                          phylanx::ir::node_data<std::int64_t>(i)
+                     }].get().variant()));
+        }
+
+        phylanx::ir::dictionary classes = phylanx::util::get<phylanx::ir::dictionary>(
+            tree[phylanx::execution_tree::primitive_argument_type{
+                std::string("classes")
+            }].get().variant());
+
+        for(auto & cls : classes) {
+            double const k = phylanx::util::get<phylanx::ir::node_data<double>>(std::get<0>(cls).get().variant()).scalar();
+            std::int64_t const v = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(std::get<1>(cls).get().variant()).scalar();
+            rf.classes[k] = v;
+        }
+
         rf.predict(test, test_labels);
+
         return std::move(test_labels);
     }
 
