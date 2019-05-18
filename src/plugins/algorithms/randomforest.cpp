@@ -224,8 +224,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }].get().variant());
 
         for(auto & cls : classes) {
-            double const k = phylanx::util::get<phylanx::ir::node_data<double>>(std::get<0>(cls).get().variant()).scalar();
-            std::int64_t const v = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(std::get<1>(cls).get().variant()).scalar();
+            double const k = phylanx::util::get<phylanx::ir::node_data<double>>(
+                 std::get<0>(cls).get().variant()
+            ).scalar();
+            std::int64_t const v = phylanx::util::get<
+                phylanx::ir::node_data<std::int64_t>>(
+                    std::get<1>(cls).get().variant()
+                ).scalar();
             rf.classes[k] = v;
         }
 
