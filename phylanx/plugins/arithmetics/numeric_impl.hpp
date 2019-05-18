@@ -255,48 +255,77 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type numeric<Op, Derived>::handle_numeric_operands_helper(
         primitive_argument_type&& op1, primitive_argument_type&& op2) const
     {
-        auto sizes = extract_largest_dimensions(name_, codename_, op1, op2);
         switch (extract_largest_dimension(name_, codename_, op1, op2))
         {
         case 0:
             {
-                auto lhs = extract_value_scalar<T>(
-                    std::move(op1), name_, codename_);
-                auto rhs = extract_value_scalar<T>(
-                    std::move(op2), name_, codename_);
-
-                return numeric0d0d<T>(std::move(lhs), std::move(rhs));
+                return numeric0d0d<T>(
+                    extract_node_data<T>(std::move(op1), name_, codename_),
+                    extract_node_data<T>(std::move(op2), name_, codename_));
             }
 
         case 1:
             {
-                auto lhs = extract_value_vector<T>(
-                    std::move(op1), sizes[0], name_, codename_);
-                auto rhs = extract_value_vector<T>(
-                    std::move(op2), sizes[0], name_, codename_);
+                if (extract_numeric_value_dimensions(op1, name_, codename_) !=
+                    extract_numeric_value_dimensions(op2, name_, codename_))
+                {
+                    auto sizes =
+                        extract_largest_dimensions(name_, codename_, op1, op2);
 
-                return numeric1d1d<T>(std::move(lhs), std::move(rhs));
+                    auto lhs = extract_value_vector<T>(
+                        std::move(op1), sizes[0], name_, codename_);
+                    auto rhs = extract_value_vector<T>(
+                        std::move(op2), sizes[0], name_, codename_);
+
+                    return numeric1d1d<T>(std::move(lhs), std::move(rhs));
+                }
+
+                return numeric1d1d<T>(
+                    extract_node_data<T>(std::move(op1), name_, codename_),
+                    extract_node_data<T>(std::move(op2), name_, codename_));
             }
 
         case 2:
             {
-                auto lhs = extract_value_matrix<T>(
-                    std::move(op1), sizes[0], sizes[1], name_, codename_);
-                auto rhs = extract_value_matrix<T>(
-                    std::move(op2), sizes[0], sizes[1], name_, codename_);
+                if (extract_numeric_value_dimensions(op1, name_, codename_) !=
+                    extract_numeric_value_dimensions(op2, name_, codename_))
+                {
+                    auto sizes =
+                        extract_largest_dimensions(name_, codename_, op1, op2);
 
-                return numeric2d2d<T>(std::move(lhs), std::move(rhs));
+                    auto lhs = extract_value_matrix<T>(
+                        std::move(op1), sizes[0], sizes[1], name_, codename_);
+                    auto rhs = extract_value_matrix<T>(
+                        std::move(op2), sizes[0], sizes[1], name_, codename_);
+
+                    return numeric2d2d<T>(std::move(lhs), std::move(rhs));
+                }
+
+                return numeric2d2d<T>(
+                    extract_node_data<T>(std::move(op1), name_, codename_),
+                    extract_node_data<T>(std::move(op2), name_, codename_));
             }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
-                auto lhs = extract_value_tensor<T>(std::move(op1), sizes[0],
-                    sizes[1], sizes[2], name_, codename_);
-                auto rhs = extract_value_tensor<T>(std::move(op2), sizes[0],
-                    sizes[1], sizes[2], name_, codename_);
+                if (extract_numeric_value_dimensions(op1, name_, codename_) !=
+                    extract_numeric_value_dimensions(op2, name_, codename_))
+                {
+                    auto sizes =
+                        extract_largest_dimensions(name_, codename_, op1, op2);
 
-                return numeric3d3d<T>(std::move(lhs), std::move(rhs));
+                    auto lhs = extract_value_tensor<T>(std::move(op1), sizes[0],
+                        sizes[1], sizes[2], name_, codename_);
+                    auto rhs = extract_value_tensor<T>(std::move(op2), sizes[0],
+                        sizes[1], sizes[2], name_, codename_);
+
+                    return numeric3d3d<T>(std::move(lhs), std::move(rhs));
+                }
+
+                return numeric3d3d<T>(
+                    extract_node_data<T>(std::move(op1), name_, codename_),
+                    extract_node_data<T>(std::move(op2), name_, codename_));
             }
 #endif
 

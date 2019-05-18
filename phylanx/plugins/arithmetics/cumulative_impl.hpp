@@ -7,7 +7,7 @@
 #define PHYLANX_PRIMITIVES_CUMULATIVE_IMPL_JAN_22_2019_0345PM
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
+#include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/plugins/arithmetics/cumulative.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         ir::node_data<T> value =
-            extract_value_scalar<T>(ops[0], name_, codename_);
+            extract_node_data<T>(std::move(ops[0]), name_, codename_);
 
         blaze::DynamicVector<T> result(1, value.scalar());
         return primitive_argument_type{std::move(result)};
@@ -87,11 +87,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_vector<T>(
-            std::move(ops[0]), dims[0], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto v = value.vector();
         blaze::DynamicVector<T> result(v.size());
@@ -107,11 +104,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative2d_noaxis(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_matrix<T>(
-            std::move(ops[0]), dims[0], dims[1], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto m = value.matrix();
         blaze::DynamicVector<T> result(m.rows() * m.columns());
@@ -133,11 +127,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative2d_columns(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_matrix<T>(
-            std::move(ops[0]), dims[0], dims[1], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto m = value.matrix();
         blaze::DynamicMatrix<T> result(m.rows(), m.columns());
@@ -159,11 +150,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative2d_rows(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_matrix<T>(
-            std::move(ops[0]), dims[0], dims[1], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto m = value.matrix();
         blaze::DynamicMatrix<T> result(m.rows(), m.columns());
@@ -217,11 +205,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative3d_noaxis(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_tensor<T>(
-            std::move(ops[0]), dims[0], dims[1], dims[2], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto t = value.tensor();
         blaze::DynamicVector<T> result(t.pages() * t.rows() * t.columns());
@@ -247,11 +232,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative3d_pages(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_tensor<T>(
-            std::move(ops[0]), dims[0], dims[1], dims[2], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto t = value.tensor();
 
@@ -278,11 +260,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative3d_columns(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_tensor<T>(
-            std::move(ops[0]), dims[0], dims[1], dims[2], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto t = value.tensor();
 
@@ -309,11 +288,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumulative<Op, Derived>::cumulative3d_rows(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
-            extract_numeric_value_dimensions(ops[0], name_, codename_);
-
-        ir::node_data<T> value = extract_value_tensor<T>(
-            std::move(ops[0]), dims[0], dims[1], dims[2], name_, codename_);
+        ir::node_data<T> value = extract_node_data<T>(
+            std::move(ops[0]), name_, codename_);
 
         auto t = value.tensor();
 

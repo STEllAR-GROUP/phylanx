@@ -1,5 +1,5 @@
-// Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2019 Stevn R. Brandt
+// Copyright (c) 2019 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,6 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,8 +30,7 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
-        using val_type = double;
-        using arg_type = ir::node_data<val_type>;
+        using arg_type = ir::node_data<double>;
 
     public:
         static match_pattern_type const match_data;

@@ -119,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             auto begin = argname.begin();
             bool result = qi::parse(begin, argname.end(),
-                    '_' >> +qi::digit >> -('_' >> +qi::alnum),
+                    '_' >> +qi::digit >> -('_' >> +(qi::alnum | qi::char_('_'))),
                 names);
 
             if (!result || begin != argname.end())

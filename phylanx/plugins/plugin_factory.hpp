@@ -14,9 +14,9 @@
 #include <hpx/plugins/plugin_registry.hpp>
 #include <hpx/plugins/unique_plugin_name.hpp>
 
-#include <hpx/util/detail/pp/cat.hpp>
-#include <hpx/util/detail/pp/expand.hpp>
-#include <hpx/util/detail/pp/nargs.hpp>
+#include <hpx/preprocessor/cat.hpp>
+#include <hpx/preprocessor/expand.hpp>
+#include <hpx/preprocessor/nargs.hpp>
 
 #include <map>
 #include <memory>

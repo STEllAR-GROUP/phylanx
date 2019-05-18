@@ -11,8 +11,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/config/export_definitions.hpp>
 
-#include <hpx/util/detail/pp/cat.hpp>
-#include <hpx/util/detail/pp/expand.hpp>
+#include <hpx/preprocessor/cat.hpp>
+#include <hpx/preprocessor/expand.hpp>
 
 #include <boost/version.hpp>
 
