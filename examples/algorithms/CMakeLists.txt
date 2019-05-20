@@ -8,6 +8,7 @@ set(subdirs
     lir
     lra
     kmeans
+    nn
    )
 
 foreach(subdir ${subdirs})
