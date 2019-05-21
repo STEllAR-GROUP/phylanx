@@ -1800,6 +1800,233 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::int64_t extract_scalar_positive_integer_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            if (util::get<1>(val).num_dimensions() == 0)
+                if (util::get<1>(val)[0] > 0)
+                    return std::int64_t(util::get<1>(val)[0]);
+            break;
+
+        case 2:    // ir::node_data<std::int64_t>
+            if (util::get<2>(val).num_dimensions() == 0)
+                if (util::get<2>(val)[0] > 0)
+                    return util::get<2>(val)[0];
+            break;
+
+        case 4:    // phylanx::ir::node_data<double>
+            if (util::get<4>(val).num_dimensions() == 0)
+                if (util::get<4>(val)[0] > 0)
+                    return std::int64_t(util::get<4>(val)[0]);
+            break;
+
+        case 6:    // std::vector<ast::expression>
+        {
+            auto const& exprs = util::get<6>(val);
+            if (exprs.size() == 1)
+            {
+                if (ast::detail::is_literal_value(exprs[0]))
+                {
+                    if (to_primitive_int_type(
+                        ast::detail::literal_value(exprs[0]))[0] > 0)
+                    {
+                        return to_primitive_int_type(
+                            ast::detail::literal_value(exprs[0]))[0];
+                    }
+                }
+            }
+        }
+        break;
+
+        case 0:HPX_FALLTHROUGH;    // nil
+        case 3:HPX_FALLTHROUGH;    // string
+        case 5:HPX_FALLTHROUGH;    // primitive
+        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_positive_integer_value",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a positive integer "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    std::int64_t extract_scalar_positive_integer_value(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            if (util::get<1>(val).num_dimensions() == 0)
+                if (util::get<1>(val)[0] > 0)
+                    return std::int64_t(util::get<1>(val)[0]);
+            break;
+
+        case 2:    // ir::node_data<std::int64_t>
+            if (util::get<2>(val).num_dimensions() == 0)
+                if (util::get<2>(val)[0] > 0)
+                    return util::get<2>(val)[0];
+            break;
+
+        case 4:    // phylanx::ir::node_data<double>
+            if (util::get<4>(val).num_dimensions() == 0)
+                if (util::get<4>(val)[0] > 0)
+                    return std::int64_t(util::get<4>(val)[0]);
+            break;
+
+        case 6:    // std::vector<ast::expression>
+        {
+            auto const& exprs = util::get<6>(val);
+            if (exprs.size() == 1)
+            {
+                if (ast::detail::is_literal_value(exprs[0]))
+                {
+                    if (to_primitive_int_type(
+                        ast::detail::literal_value(exprs[0]))[0] > 0)
+                    {
+                        return to_primitive_int_type(
+                            ast::detail::literal_value(exprs[0]))[0];
+                    }
+                }
+            }
+        }
+        break;
+
+        case 0:HPX_FALLTHROUGH;    // nil
+        case 3:HPX_FALLTHROUGH;    // string
+        case 5:HPX_FALLTHROUGH;    // primitive
+        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_positive_integer_value",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a positive integer "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::int64_t extract_scalar_positive_integer_value_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 2:     // ir::node_data<std::int64_t>
+            if (util::get<2>(val).num_dimensions() == 0)
+                if (util::get<2>(val)[0] > 0)
+                    return util::get<2>(val)[0];
+            break;
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto && exprs = util::get<6>(std::move(val));
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        if (to_primitive_int_type(ast::detail::literal_value(
+                                std::move(exprs[0])))[0] > 0)
+                        {
+                            return to_primitive_int_type(
+                                ast::detail::literal_value(
+                                    std::move(exprs[0])))[0];
+                        }
+                    }
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+        case 3: HPX_FALLTHROUGH;    // string
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_positive_integer_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a positive integer "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    std::int64_t extract_scalar_positive_integer_value_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 2:     // ir::node_data<std::int64_t>
+            if (util::get<2>(val).num_dimensions() == 0)
+                if (util::get<2>(val)[0] > 0)
+                    return util::get<2>(val)[0];
+            break;
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto && exprs = util::get<6>(std::move(val));
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        if (to_primitive_int_type(ast::detail::literal_value(
+                                std::move(exprs[0])))[0] > 0)
+                        {
+                            return to_primitive_int_type(
+                                ast::detail::literal_value(
+                                    std::move(exprs[0])))[0];
+                        }
+                    }
+                }
+            }
+            break;
+
+        case 0:HPX_FALLTHROUGH;    // nil
+        case 1:HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+        case 3:HPX_FALLTHROUGH;    // string
+        case 4:HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5:HPX_FALLTHROUGH;    // primitive
+        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_positive_integer_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold an integer "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     ir::node_data<std::uint8_t> extract_boolean_value(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
