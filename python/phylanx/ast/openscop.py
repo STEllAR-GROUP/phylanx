@@ -15,18 +15,17 @@ from .utils import save_to_file
 from .utils import print_python_ast_node
 from .utils import dump_ast as python_ast_format
 # from .utils import dump_ast_v2 as python_ast_format
-'''
-def mycgen(python_ast):
-    import cgen
 
-    aststr = python_ast_format(python_ast)
-    print("mycgen")
-    print(aststr)
-
-    a = cgen.Statement(aststr)
-    print("mycgen")
-    print(a)
-'''
+# def mycgen(python_ast):
+#    import cgen
+#
+#    aststr = python_ast_format(python_ast)
+#    print("mycgen")
+#    print(aststr)
+#
+#    a = cgen.Statement(aststr)
+#    print("mycgen")
+#    print(a)
 
 DEBUG_RAW = 0
 
@@ -34,10 +33,12 @@ DEBUG_RAW = 0
 class Oscop:
     def __init__(self, kwargs):
         """
-        openscope specs
+        Class Oscop.
+        The class of recording SCoP data,
+        and genearte IR code according to OpenScop specification.
         http://icps.u-strasbg.fr/~bastoul/development/openscop/
 
-        elements in openscope
+        what are consist of openscope data:
             global
                 param                        p
                 number of statements
@@ -50,49 +51,53 @@ class Oscop:
             UNDEFINED, CONTEXT, DOMAIN, SCATTERING, READ, WRITE
 
         example
+            # DOMAIN
+              3 7 3 0 0 2
+            # num_rows=3,
+            # num_cols=7,
+            # num_output_dim=3,        i, j, k
+            # num_input_dim=0,
+            # num_local_dim=0,
+            # num_params=2,            M, N
+            # num_cols == num_output_dim + num_input_dim + num_local_dim + num_params + 2
+            # ei i  j  k  M  N  1
+              1 -1  0  0  1  0  0     # -i         + M     >= 0
+              1  0 -1  0  0  1  0     #     -j         + N >= 0
+              1  1  1 -1  0  0  0     #  i + j - k         >= 0
 
-        # DOMAIN
-          3 7 3 0 0 2
+        updating domain appears in these AST node
+            stmt -> For
 
-        # num_rows=3,
-        # num_cols=7,
-        # num_output_dim=3,        i, j, k
-        # num_input_dim=0,
-        # num_local_dim=0,
-        # num_params=2,            M, N
-        # num_cols == num_output_dim + num_input_dim + num_local_dim + num_params + 2
-
-        # ei i  j  k  M  N  1
-          1 -1  0  0  1  0  0     # -i         + M     >= 0
-          1  0 -1  0  0  1  0     #     -j         + N >= 0
-          1  1  1 -1  0  0  0     #  i + j - k         >= 0
-
+        updating scatter appears in these AST node
+            stmt -> For                 self.scatter.append(iterator)
+            stmt -> Assign              self.scatter.append(0), or ++
+            stmt -> AugAssign
         """
 
-        # updating domain appears in:
-        # stmt -> For
         self.domain = []  # domain stack
         self.domain_iter = []  # domain stack, only iterators
         self.all_iterators_set = set()   # all iterators
         self.all_iterators_list = []   # all iterators
 
-        # updating scatter appears in:
-        # stmt -> For                 self.scatter.append(iterator)
-        # stmt -> Assign              self.scatter.append(0), or ++
-        # stmt -> AugAssign
         self.scatter = []  # eg: [0, "i", 1, "j", 0]
 
         self.globalinfo = self.empty_global()  # data for global
         self.statements = []  # data for statements
 
     def empty_global(self):
+        """
+        Return a empty template global data
+        """
         d = dict(
             params=[],
             context=[],
         )
         return d
 
-    def empty_statment(self):
+    def empty_statement(self):
+        """
+        Return a empty template statement data
+        """
         d = dict(
             idx=None,
             num_relations=0,
@@ -111,8 +116,8 @@ class Oscop:
     def fill_params_to_globalinfo(self, expr):
         """
         Filling parameter data into "self.globalinfo".
-        New parameter may exist in any expressions.
-        New parameter constraint may exist in "If" expressions.
+        New parameter may appear in any expressions.
+        New constraints for parameter may appear in "If" expressions.
         """
 
         expr_set = set(expr.keys()) - set(["literals"])
@@ -145,12 +150,14 @@ class Oscop:
             fill_access_to_statement(self)
         """
 
-        self.statements.append(self.empty_statment())
+        self.statements.append(self.empty_statement())
         statement = self.statements[-1]
         statement["idx"] = len(self.statements)
 
     def update_domain(self, op, domaininfo=None, iterator=None):
-        # print("debug update_domain", op, domaininfo, iterator)
+        """
+        Update the domain vector upon the entering/exiting of a domain.
+        """
 
         if (op == "enter"):
             self.domain.append(copy.deepcopy(domaininfo))
@@ -163,9 +170,15 @@ class Oscop:
             raise Exception("Not supported")
 
     def update_scatter(self, op, iterator=None):
+        """
+        Update the scatter vector when
+            entering a new loop
+            encounter a new statement
+            exiting a loop
+        """
         def rindex(lst, value):
             """
-            finding the last index of a value in a list
+            finding the last index of a value in a list.
             """
             for i, v in enumerate(reversed(lst)):
                 if v == value:
@@ -192,15 +205,27 @@ class Oscop:
             raise Exception("Not supported")
 
     def fill_domain_to_statement(self):
+        """
+        Copying global status "domain" into statement record.
+        """
+
         statement = self.statements[-1]
         statement["domain"] = copy.deepcopy(self.domain)
         statement["domain_iter"] = copy.deepcopy(self.domain_iter)
 
     def fill_scatter_to_statement(self):
+        """
+        Copying global status "scatter" into statement record.
+        """
+
         statement = self.statements[-1]
         statement["scatter"] = copy.deepcopy(self.scatter)
 
     def fill_access_to_statement(self, expr, rw, dim):
+        """
+        Filling access data into statement record
+        """
+
         valid_rw = ["assign_lhs", "assign_rhs",\
                     "augassign_lhs", "augassign_rhs"]
         if (rw not in valid_rw):
@@ -221,6 +246,10 @@ class Oscop:
 
     @classmethod
     def generate_context_str(self, rows, output_dim, input_dim, local_dim, params):
+        """
+        Code generation for context string.
+        """
+
         cols = output_dim + input_dim + local_dim + params + 2
         rv = ""
         rv += str(rows) + " "
@@ -232,6 +261,10 @@ class Oscop:
         return rv
 
     def generate_oscop_global(self):
+        """
+        Code generation for global section.
+        """
+
         num_rows = len(self.globalinfo["context"])
         num_output_dim = 0  # always 0 in CONTEXT relation
         num_input_dim = 0   # always 0 in CONTEXT relation
@@ -327,13 +360,9 @@ $num_statements
         return rv
 
     def generate_domain(self, statement):
-        # rv = ""
-        # for key in raw.keys():
-        #     rv += key + ": "
-        #     rv += raw[key] + "\n"
-
-        # print("gen domain", statement)
-        # print("gen domain", statement["domain"])
+        """
+        Code generation for "domain" data of a statement.
+        """
 
         statement["num_relations"] += 1
 
@@ -408,8 +437,9 @@ $num_statements
         return rv
 
     def generate_scatter(self, statement):
-        # print("gen scatter", statement)
-        # print("gen scatter", statement["scatter"])
+        """
+        Code generation for "scatter" data of a statement.
+        """
 
         statement["num_relations"] += 1
 
@@ -490,8 +520,9 @@ $num_statements
         return rv
 
     def generate_access(self, statement):
-        # print("gen access ", statement)
-        # print("gen access ", statement["access"])
+        """
+        Code generation for "access" data of a statement.
+        """
 
         if len(statement["access"]) == 0:
             return ""
@@ -642,8 +673,9 @@ $num_statements
         return rv
 
     def generate_oscop_statement(self, statement):
-        # print("debug generation statement")
-        # print(statement)
+        """
+        Code generation for statements section.
+        """
 
         str_domain = self.generate_domain(statement)
         str_scatter = self.generate_scatter(statement)
@@ -662,6 +694,10 @@ $num_statements
         return rv
 
     def generate(self):
+        """
+        The overall driver for code generation.
+        """
+
         self.all_iterators_list = list(self.all_iterators_set)
         self.all_iterators_list.sort()
 
@@ -671,8 +707,11 @@ $num_statements
             code = code + self.generate_oscop_statement(statement)
         return code
 
-    # help function
     def print1(self):
+        """
+        A Help function that prints all the status of this class.
+        """
+
         print("Oscop.domain: ", self.domain)
         print("Oscop.domain_iter: ", self.domain_iter)
         print("Oscop.scatter: ", self.scatter)
@@ -683,26 +722,43 @@ $num_statements
 
 class OpenSCoP:
     def __init__(self, func, python_ast, kwargs):
+        """
+        Class OpenSCoP.
+        Traverse the python AST, and collect SCoP data.
+        Methods of this class accept 3 parameters: expr, coef, mode.
+
+        expr
+            functionality   passing expression between class methods
+            type            dict
+            r/w             read/write
+            vals            {}, the default
+                            "literals", integer literal, the weight of const "1"
+                            "Para", parameter
+                            "Name", name
+        coef
+            functionality   coefficient for expression
+            type            int
+            r/w             read only
+            vals            1, the default
+                            -1
+        mode
+            functionality   extra denotes on AST traversal
+            type            string
+            r/w             read only
+            vals            "", the default
+                            "assign_lhs", this expression is on LHS of assign
+                            "assign_rhs", this expression is on RHS of assign
+                            "augassign_lhs", this expr is on LHS of augassign
+                            "augassign_rhs", this expr is on RHS of augassign
+                            "address", this expression is a memory address
+        """
+
         self.oscop = Oscop(kwargs)
 
         self.default_expr = {}
         self.default_coef = 1
         self.default_mode = ""
         self.expr = copy.deepcopy(self.default_expr)
-        """
-        expr    dict    read/write
-            {}              default
-            "literals"      integer literal, the weight of const "1"
-            "Para"          parameter "Para"
-            "Name"          name "Name"
-        coef    int     readonly
-            1               default
-            -1
-        mode    str     readonly
-           ""               default
-           "write"          for "_Assign node"
-           "read"           for "_Assign node"
-        """
 
         kernel = python_ast.body[0].body
         for node in kernel:
@@ -715,8 +771,11 @@ class OpenSCoP:
         self.__src__ = self.oscop.generate()
         save_to_file(self.__src__, "ooo_openscop.txt", True)
 
-    # help function
     def print1(self, node, coef, mode):
+        """
+        A Help function that prints the current AST node and global status.
+        """
+
         if True:
             print("############################")
             self.oscop.print1()
@@ -733,9 +792,9 @@ class OpenSCoP:
 
     def visit(self, node, coef, mode):
         """
-        Calls the corresponding rule, based on the name of the node.
-        eg:
-            Add -> self._Add
+        A wrapper for AST travesal.
+        It gets the name of the node and call corresponding method.
+        Eg: node "Add" calls "self._Add"
         """
 
         if not isinstance(node, ast.AST):
@@ -754,6 +813,7 @@ class OpenSCoP:
 
     def _Assign(self, node, coef, mode):
         """
+        Visit AST node "Assign".
         stmt -> Assign(expr* targets, expr value)
         """
 
@@ -780,6 +840,7 @@ class OpenSCoP:
 
     def _AugAssign(self, node, expr, coef):
         """
+        Visit AST node "AugAssign".
         stmt -> AugAssign(expr target, operator op, expr value)
         """
 
@@ -800,6 +861,7 @@ class OpenSCoP:
 
     def _For(self, node, coef, mode):
         """
+        Visit AST node "For".
         stmt -> For(expr target, expr iter, stmt* body, stmt* orelse)
         """
 
@@ -860,6 +922,10 @@ class OpenSCoP:
         #
 
         def _For_exception(self):
+            """
+            An utility function for method "_For".
+            stmt -> For(expr target, expr iter, stmt* body, stmt* orelse)
+            """
             raise Exception("Only support FOR loop in format\
                     for i in range(N)\
                     for i in range(M, N)\
@@ -921,6 +987,7 @@ class OpenSCoP:
 
     def _If(self, node, coef, mode):
         """
+        Visit AST node "If".
         stmt -> If(expr test, stmt* body, stmt* orelse)
         """
 
@@ -959,6 +1026,7 @@ class OpenSCoP:
     @classmethod
     def _Pass(self, node, coef, mode):
         """
+        Visit AST node "Pass".
         stmt -> Pass
         """
 
@@ -970,6 +1038,7 @@ class OpenSCoP:
 
     def _BinOp(self, node, coef, mode):
         """
+        Visit AST node "Pass".
         expr -> BinOp(expr left, operator op, expr right)
         """
 
@@ -1006,6 +1075,7 @@ class OpenSCoP:
 
     def _UnaryOp(self, node, coef, mode):
         """
+        Visit AST node "UnaryOp".
         expr -> UnaryOp(unaryop op, expr operand)
         """
 
@@ -1017,6 +1087,7 @@ class OpenSCoP:
 
     def _Compare(self, node, coef, mode):
         """
+        Visit AST node "Compare".
         expr -> Compare(expr left, cmpop* ops, expr* comparators)
         """
 
@@ -1043,6 +1114,7 @@ class OpenSCoP:
     @classmethod
     def _Call(self, node, coef, mode):
         """
+        Visit AST node "Call".
         expr -> Call(expr func, expr* args, keyword* keywords)
         """
         raise Exception("Does not support \"Call\"")
@@ -1050,6 +1122,7 @@ class OpenSCoP:
 
     def _Num(self, node, coef, mode):
         """
+        Visit AST node "Num".
         expr -> Num(object n)
         """
 
@@ -1062,6 +1135,7 @@ class OpenSCoP:
 
     def _Subscript(self, node, coef, mode):
         """
+        Visit AST node "Subscript".
         expr -> Subscript(expr value, slice slice, expr_context ctx)
         """
 
@@ -1142,6 +1216,7 @@ class OpenSCoP:
 
     def _Name(self, node, coef, mode):
         """
+        Visit AST node "Name".
         expr -> Name(identifier id, expr_context ctx)
         """
         if node.id in self.expr:
@@ -1157,6 +1232,7 @@ class OpenSCoP:
 
     def _Index(self, node, coef, mode):
         """
+        Visit AST node "Index".
         slice -> Index(expr value)
         """
         self.visit(node.value, coef, mode)
@@ -1164,5 +1240,9 @@ class OpenSCoP:
 
     @classmethod
     def _Slice(self, node, coef, mode):
+        """
+        Visit AST node "Slice".
+        slice -> Index(expr value)
+        """
         raise Exception("Not supported")
         return
