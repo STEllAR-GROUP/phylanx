@@ -37,3 +37,4 @@ examples, and document the components of the system.
    :maxdepth: 2
 
    manual/about
+   manual/software_stack

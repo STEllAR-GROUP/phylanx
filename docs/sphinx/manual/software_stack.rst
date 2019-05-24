@@ -12,13 +12,7 @@ Software Stack
 The |phylanx| framework is made up of several distinct 
 layers as illustrated in Figure 1.
 
-.. image:: images/phylanx_overview.png
-    :width: 200px
-    :align: center
-    :height: 100px
-    :alt: alternate text
-
-.. figure:: stars.jpg
+.. figure:: images/phylanx_overview.png
     :width: 200px
     :align: center
     :height: 100px
@@ -26,7 +20,6 @@ layers as illustrated in Figure 1.
     :figclass: align-center
 
     Figure 1. Overview of the |phylanx| toolkit.
-        import image
 
 In this portion of the manuel we discuss 
 the external libraries |phylanx| depends on
@@ -47,7 +40,7 @@ which schedules tasks created by |phylanx| and
 manages the required task synchronization both 
 locally and in a distributed setting. To learn more 
 about HPX, please refer to the 
-'HPX Documentation <https://stellar-group.github.io/hpx/docs/sphinx/branches/master/html/index.html>'_.
+`HPX Documentation <https://stellar-group.github.io/hpx/docs/sphinx/branches/master/html/index.html>`_.
 
 ^^^^^^^
 Blaze
@@ -58,7 +51,7 @@ leverages meta-programing techniques to
 transform matrix arithmetic into highly efficient 
 operations. More information about the library 
 can be found on the 
-'Blaze project page <https://bitbucket.org/blaze-lib/blaze/src/master/>'_
+`Blaze project page <https://bitbucket.org/blaze-lib/blaze/src/master/>`_
 
 ^^^^^^^
 APEX
@@ -72,7 +65,7 @@ our team uses APEX as a platform to gather performance
 information and use that information to drive 
 a policy engine. To learn more about the project,
 please refer to the 
-'APEX repository <https://github.com/khuck/xpress-apex>'_
+`APEX repository <https://github.com/khuck/xpress-apex>`_
 
 -------
 Frontend
@@ -124,7 +117,7 @@ other kernels.
 
 2. **Data Management** - Phylanx's data structures rely on 
 the high-performance open-source C++ library 
-'Blaze <https://bitbucket.org/blaze-lib/blaze/src/master/>'_. 
+`Blaze <https://bitbucket.org/blaze-lib/blaze/src/master/>`_. 
 Blaze already supports HPX as a parallelization 
 library backend and it perfectly maps its data to Python data
 structures. Each Python list is mapped to a C++ *vector* 
@@ -217,23 +210,19 @@ analysis within the runtime provides a
 way to determine where performance bottlenecks 
 are occurring and to gain insight 
 into the resource management within the machines. 
-We show an example of
-Phylanx's visualization capabilities in Figure ????. 
-This tree shows the execution tree from a 
-test run of the factorial algorithm,
-implemented in Python. In the tree, nodes are 
+In the tree produced by the tool, nodes are 
 Phylanx primitives and edges show
 parent/child relationships regarding how the 
 child was called. The nodes are
 colored purple for the *inclusive time*, the total 
 time spent executing that primitive and its children. 
-A switch in the toolbox in the upper left
-corner allows for the user to switch from inclusive 
+A switch provided in the toolbox 
+allows for the user to switch from inclusive 
 time to *exclusive time*, the time spent executing 
 only that primitive. This allows for
 identification of hotspots in the tree. Each primitive 
 can be executed asynchronously or synchronously 
-in the parent thread. This distinction is shown
+in the parent thread. This distinction is expressed
 in dotted versus solid circles for nodes in the tree. 
 The tree is interactive, allowing users to drill 
 down and focus by expanding or collapsing tree nodes and
