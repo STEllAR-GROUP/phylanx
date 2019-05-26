@@ -66,10 +66,10 @@ define(kmeans, points, k, iterations, block(
 define(program, iterations, block(
     define(points, vstack(
         list(
-			apply(vstack, list(fmap(lambda(x, random(2) * .75), range(150)))) + [1., 0.],
-			apply(vstack, list(fmap(lambda(x, random(2) * .25), range(50)))) + [-.5, .5],
-			apply(vstack, list(fmap(lambda(x, random(2) * .5), range(50)))) + [-.5, -.5]
-		)
+            apply(vstack, list(fmap(lambda(x, random(2) * .75), range(150)))) + [1., 0.],
+            apply(vstack, list(fmap(lambda(x, random(2) * .25), range(50)))) + [-.5, .5],
+            apply(vstack, list(fmap(lambda(x, random(2) * .5), range(50)))) + [-.5, -.5]
+        )
     )),
     define(k, 3),
     kmeans(points, k, iterations)

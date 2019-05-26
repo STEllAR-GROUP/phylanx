@@ -10,10 +10,11 @@
 from numpy import floor, argsort, sum, sqrt
 from numpy import float64, int64, zeros
 from numpy import argmax, inf, genfromtxt
-from numpy import vstack, iinfo, finfo, unique
+from numpy import vstack, unique
 from numpy.random import randint, rand
 
 from phylanx import Phylanx
+
 
 def test_split(idx, val, dataset):
     left, right = list(), list()
@@ -235,6 +236,8 @@ if __name__ == "__main__":
         sample_size,
         n_trees[1]
     )
-    #print('predict')
-    #predict = predict(trees, dataset[train:, :])
+    #
+    # print('predict')
+    # predict = predict(trees, dataset[train:, :])
+    #
     print(predict)

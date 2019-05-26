@@ -175,6 +175,7 @@ def bagging_predict(trees, row, classes):
             return k
     return inf
 
+
 @Phylanx
 def random_forest(train, max_depth, min_sz, sample_sz, n_trees):
     cls = unique(train[:, -1])
@@ -237,6 +238,7 @@ if __name__ == "__main__":
         sample_size,
         n_trees[1]
     )
+
     print('predict')
     predict = predict(trees, dataset[train:, :])
     print(predict)

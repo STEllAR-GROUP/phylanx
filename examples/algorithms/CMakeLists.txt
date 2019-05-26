@@ -9,6 +9,7 @@ set(subdirs
     lra
     kmeans
     randomforest
+    nn
    )
 
 foreach(subdir ${subdirs})
