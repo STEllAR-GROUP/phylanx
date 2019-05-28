@@ -100,7 +100,10 @@ set(SPHINX_DOCS_OUTPUT_DIR "${CMAKE_BINARY_DIR}/share/phylanx/docs/html")
 
 add_custom_target(docs
   DEPENDS ${SPHINX_DOCS_OUTPUT_DIR})
-add_dependencies(docs core examples python_setup)
+add_phylanx_pseudo_dependencies(docs core examples python_setup)
+
+set_target_properties(docs
+    PROPERTIES FOLDER "Documentation/")
 
 #generate rst from helpstring
 configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/generate_rst.py.in"
