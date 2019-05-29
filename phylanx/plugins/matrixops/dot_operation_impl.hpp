@@ -397,13 +397,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
-        auto t = lhs.tensor();
-        blaze::DynamicMatrix<T> result(t.pages(), t.rows());
 
-        for (std::size_t i = 0; i != t.pages(); ++i)
-            blaze::row(blaze::submatrix(result, i, 0, 1, t.rows()), 0) =
-                blaze::trans(blaze::pageslice(t, i) * rhs.vector());
-
+        blaze::DynamicMatrix<T> result = lhs.tensor() * rhs.vector();
         return primitive_argument_type{std::move(result)};
     }
 
