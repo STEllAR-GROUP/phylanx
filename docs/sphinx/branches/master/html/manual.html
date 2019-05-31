@@ -92,6 +92,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Manual</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="manual/about.html">About <em>Phylanx</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/software_stack.html">Software Stack</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">References</a></li>
@@ -167,11 +168,36 @@
             
   <div class="section" id="manual">
 <span id="id1"></span><h1>Manual<a class="headerlink" href="#manual" title="Permalink to this headline">¶</a></h1>
-<p>The manual is your comprehensive guide to <em>Phylanx</em>. It contains detailed
-information on how to build and use <em>Phylanx</em> in different scenarios.</p>
+<p>A major challenge facing computer scientists in research and
+industry today is the automatic analysis and pattern recognition
+in large sets of data. To address this issue, a new field
+known as machine learning has developed and produced
+techniques and algorithms that enable machines to sort, categorize,
+and make predictions based on provided datasets.</p>
+<p>As machine learning tools have matured, so have the sizes of
+data sets that scientist wish to analyze. To address the issue
+researchers have turned to solutions provided by the
+High Performance Computing (HPC) community to distribute
+the execution of these applications to multiple nodes.
+These techniques however require users be intimately familiar
+with HPC in order to effectively make use of distributed
+resources. In order to address this significant barrier
+to domain scientist, our team has developed <em>Phylanx</em>,
+a machine learning platform which exposes a high level
+Python API but provides HPC level performance.</p>
+<p>In this document we describe <em>Phylanx</em>, provide use case
+examples, and document the components of the system.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="manual/about.html">About <em>Phylanx</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/software_stack.html">Software Stack</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/software_stack.html#external-libraries">External Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/software_stack.html#frontend">Frontend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/software_stack.html#execution-tree">Execution Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/software_stack.html#instrumentation">Instrumentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/software_stack.html#viusualization-tools">Viusualization Tools</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -205,7 +231,7 @@ information on how to build and use <em>Phylanx</em> in different scenarios.</p>
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on May 22, 2019.
+        Last updated on May 31, 2019.
       </span>
 
     </p>

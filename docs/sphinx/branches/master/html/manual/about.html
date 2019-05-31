@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="References" href="../reference.html" />
+    <link rel="next" title="Software Stack" href="software_stack.html" />
     <link rel="prev" title="Manual" href="../manual.html" /> 
 </head>
 
@@ -92,6 +92,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../manual.html">Manual</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">About <em>Phylanx</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="software_stack.html">Software Stack</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">References</a></li>
@@ -169,8 +170,25 @@
             
   <div class="section" id="about-phylanx">
 <h1>About <em>Phylanx</em><a class="headerlink" href="#about-phylanx" title="Permalink to this headline">¶</a></h1>
-<p>Phylanx is a platform that takes a step toward providing a general purpose system for computations on distributed arrays for applied statistics on commodity cloud systems. Phylanx builds upon Spartan, Theano, and Tensorflow in an effort to generalize array operations specifically to support distributed computing. The system will decompose array computations into a predefined set of parallel operations and employ algorithms which optimize execution and data layout from of a user provided expression graph. Using hints from the user and the optimization step the expression graph will be passed to the HPX runtime which schedules work and infers the data layout on each compute locale arguments.</p>
-<p>Phylanx improves upon previous solutions by adding more sophisticated algorithms to optimize data layout, distribution, and tiling on HPC systems, and by using cache-oblivious data layouts to improve the overall performance and scalability of the provided expression evaluations.</p>
+<p>Phylanx is a distribured Machine Learning platform
+that aims to provide users a high level, Python interface
+which delivers HPC performance. At its core Phylanx is
+a general purpose system for computing large distributed
+arrays often used on applied statistics problems.
+Phylanx builds upon other solutions such as Spartan,
+Theano, and Tensorflow in an effort to generalize array operations
+specifically to support distributed computing. The system will
+decompose array computations into a predefined set of parallel
+operations and employ algorithms which optimize execution and data
+layout from of a user provided expression graph. Using hints from
+the user as well as applicaiton logic an expression graph is
+created which is then passed to HPX, a distributed C++
+runtime system used to schedule and execute the work on
+commodity systems.</p>
+<p>Phylanx improves upon previous solutions by adding more sophisticated
+algorithms to optimize data layout, distribution, and tiling on
+HPC systems, and by using cache-oblivious data layouts to improve the
+overall performance and scalability of the provided expression evaluations.</p>
 </div>
 
 
@@ -188,7 +206,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../reference.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="software_stack.html" class="btn btn-neutral float-right" title="Software Stack" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../manual.html" class="btn btn-neutral float-left" title="Manual" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -202,7 +220,7 @@
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on May 22, 2019.
+        Last updated on May 31, 2019.
       </span>
 
     </p>

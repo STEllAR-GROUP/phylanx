@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Software Stack &mdash; Phylanx master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="References" href="../reference.html" />
+    <link rel="prev" title="About Phylanx" href="about.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Phylanx
+          
+
+          
+            
+            <img src="../_static/PHYLANX_STELLAR.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../manual.html">Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="about.html">About <em>Phylanx</em></a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Software Stack</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#external-libraries">External Libraries</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hpx">HPX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blaze">Blaze</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apex">APEX</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#frontend">Frontend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#execution-tree">Execution Tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#instrumentation">Instrumentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#viusualization-tools">Viusualization Tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">References</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Phylanx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../manual.html">Manual</a> &raquo;</li>
+        
+      <li>Software Stack</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/STEllAR-GROUP/phylanx/blob/master/docs/sphinx/manual/software_stack.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="software-stack">
+<h1>Software Stack<a class="headerlink" href="#software-stack" title="Permalink to this headline">¶</a></h1>
+<p>The <em>Phylanx</em> framework is made up of several distinct
+layers as illustrated in Figure 1.</p>
+<div class="align-center figure" id="id2">
+<a class="reference internal image-reference" href="../_images/phylanx_overview.png"><img alt="alternate text" src="../_images/phylanx_overview.png" style="width: 200px; height: 100px;" /></a>
+<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Figure 1. Overview of the <em>Phylanx</em> toolkit.</span></p>
+</div>
+<p>In this portion of the manuel we discuss
+the external libraries <em>Phylanx</em> depends on
+and the layers of the software stack.</p>
+<div class="section" id="external-libraries">
+<h2>External Libraries<a class="headerlink" href="#external-libraries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="hpx">
+<h3>HPX<a class="headerlink" href="#hpx" title="Permalink to this headline">¶</a></h3>
+<p>HPX is an asynchronous many-task runtime system capable of
+running scientific applications both on a single process as
+well as in a distributed setting on thousands of nodes.
+In this project, we use HPX as an execution engine
+which schedules tasks created by <em>Phylanx</em> and
+manages the required task synchronization both
+locally and in a distributed setting. To learn more
+about HPX, please refer to the
+<a class="reference external" href="https://stellar-group.github.io/hpx/docs/sphinx/branches/master/html/index.html">HPX Documentation</a>.</p>
+</div>
+<div class="section" id="blaze">
+<h3>Blaze<a class="headerlink" href="#blaze" title="Permalink to this headline">¶</a></h3>
+<p>Blaze is a high performance C++ math library which
+leverages meta-programing techniques to
+transform matrix arithmetic into highly efficient
+operations. More information about the library
+can be found on the
+<a class="reference external" href="https://bitbucket.org/blaze-lib/blaze/src/master/">Blaze project page</a></p>
+</div>
+<div class="section" id="apex">
+<h3>APEX<a class="headerlink" href="#apex" title="Permalink to this headline">¶</a></h3>
+<p>APEX is an introspection and runtime adaptation library
+which is developed in coordination with <em>Phylanx</em>.
+The library supports tools such as TAU, PAPI,
+ActiveHarmony, and OTF2. In the <em>Phylanx</em> project
+our team uses APEX as a platform to gather performance
+information and use that information to drive
+a policy engine. To learn more about the project,
+please refer to the
+<a class="reference external" href="https://github.com/khuck/xpress-apex">APEX repository</a></p>
+</div>
+</div>
+<div class="section" id="frontend">
+<h2>Frontend<a class="headerlink" href="#frontend" title="Permalink to this headline">¶</a></h2>
+<p>The Phylanx frontend provides two essential functionalities:</p>
+<ul class="simple">
+<li>Transform the python code into a Phylanx internal representation called
+PhySL (Phylanx Specification Language).</li>
+<li>Copy-free handling of data objects between Python and Phylanx executor
+(in C++).</li>
+</ul>
+<p>In addition, the frontend exposes two main functionalities of
+Phylanx that are implemented in C++ and required for
+generation and evaluation of the execution
+tree in Python. These functions are the <em>compile</em> and
+<em>eval</em> methods.</p>
+<p>1. <strong>Code Transformation</strong> - Performance benefits of many-task
+runtime systems,
+like HPX, are more prominent when the compute loads
+of the system exceeds the available resources. Therefore,
+using these runtimes for sections of a program which
+are not computationally intensive may result in little
+performance benefit. Moreover, the overhead of code
+transformation and inherent extraneous work
+imposed by runtime systems may even cause performance
+degradation. Therefore, we have opted to limit our
+optimizations to performance critical parts of the code
+which we call computational <em>kernels</em>. The Phylanx frontend
+provides a decorator <em>&#64;Phylanx</em> to trigger transformation
+of kernels into the
+execution tree.</p>
+<p>We have developed a custom internal representation of Python AST in order to
+facilitate the analysis of static optimizations and streamline the generation of the
+execution tree. The human-readable version of the AST, aka PhySL, is
+automatically generated and compiled into the execution tree by the frontend.
+More details on this compilation process can be found in~ref{subsec:exe_tree}.
+The benefit of
+using PhySL as the intermediate representation is twofold: (1) it closely
+reflects the nodes of the execution tree as each PhySL node represents a
+function that will be run by an HPX task during evaluation, and (2) it can be
+used for debugging and analyzing purposes for developers interested in custom
+optimizations.</p>
+<p>The compiled kernel is cached and can be be invoked directly in Python or in
+other kernels.</p>
+<p>2. <strong>Data Management</strong> - Phylanx’s data structures rely on
+the high-performance open-source C++ library
+<a class="reference external" href="https://bitbucket.org/blaze-lib/blaze/src/master/">Blaze</a>.
+Blaze already supports HPX as a parallelization
+library backend and it perfectly maps its data to Python data
+structures. Each Python list is mapped to a C++ <em>vector</em>
+and 1-D and 2-D NumPy arrays are mapped to a
+Blaze vector and Blaze matrix respectively. To
+avoid data copies between Python and C++, we
+take advantage of Python buffer protocol through
+the pybind11 library. Figure~ref{fig:phylanxarch} shows how
+Phylanx manages interactions with external libraries.</p>
+</div>
+<div class="section" id="execution-tree">
+<h2>Execution Tree<a class="headerlink" href="#execution-tree" title="Permalink to this headline">¶</a></h2>
+<p>After the transformation phase, the frontend passes
+the generated AST to the Phylanx compiler to construct
+the execution tree where nodes are <em>primitives</em> and
+edges represent dependencies between parents and
+children pairs.</p>
+<p>Primitives are the cornerstones of the Phylanx toolkit
+and building blocks of the Phylanx execution tree.
+Primitives are C++ objects which contain a single execute
+function. This function is wrapped in a <em>dataflow</em> and can
+be as simple as a single instruction or as complex as a
+sophisticated algorithm. We have implemented and
+optimized most Python constructs as well as many
+NumPy methods as primitives. Futurization and asynchronous
+execution of tasks are enabled through these constructs.
+One can consider primitives as lightweight tasks that
+are mapped to HPX threads. Each primitive accepts a
+list of futures as its arguments and returns the
+result of its wrapped function as a future.
+In this way, the primitive can accept both constant
+values known at compile time as well as the results
+of previous primitives known only after being computed.</p>
+<p>Upon the invocation of a kernel, Phylanx triggers
+the evaluation function of the root node. This node
+represents the primitive corresponding to the
+result of the kernel. In the evaluation function,
+the root node will call the evaluation function of
+all of its children and those primitives will call the
+evaluation functions of their children. This process
+will continue until the the leaf nodes have been
+reached where the primitives evaluation functions
+do not depend on other primitives to be resolved
+(e.g. a primitive which is a constant, a primitive
+which reads from a file, etc.). It is important to note
+that it does not matter where each primitive is
+placed in a distributed system as HPX will resolve
+its location and properly call its eval function as well as
+return the primitive’s result to the caller.</p>
+<p>As the leaf primitives are reached and their values,
+held in futures, are returned to their parents,
+the tree will unravel at the speed of the
+critical path through the tree. The results from
+each primitive satisfy one of the inputs of its
+parent node. After the root primitive finishes
+its execution, the result of the entire tree
+is then ready to be consumed by the calling
+function.</p>
+</div>
+<div class="section" id="instrumentation">
+<h2>Instrumentation<a class="headerlink" href="#instrumentation" title="Permalink to this headline">¶</a></h2>
+<p>Application performance analysis is a critical part
+of developing a parallel application. Phylanx
+enables performance analysis by providing performance
+counters to provide insight into its intrinsics.
+<em>Time</em> performance counters show the amount of
+time that is spent executing code in each subtree of
+the execution tree, and <em>count</em> performance counters
+show how many times an execution tree node is
+executed. This data aides in identifying performance
+hotspots and bottlenecks, which can either be
+directly used by the users or fed
+into APEX for adaptive load balancing. The data can also
+be used by the visualization tools described in the next section.</p>
+</div>
+<div class="section" id="viusualization-tools">
+<h2>Viusualization Tools<a class="headerlink" href="#viusualization-tools" title="Permalink to this headline">¶</a></h2>
+<p>Embedding annotations and measurements for
+visualizations and performance
+analysis within the runtime provides a
+way to determine where performance bottlenecks
+are occurring and to gain insight
+into the resource management within the machines.
+In the tree produced by the tool, nodes are
+Phylanx primitives and edges show
+parent/child relationships regarding how the
+child was called. The nodes are
+colored purple for the <em>inclusive time</em>, the total
+time spent executing that primitive and its children.
+A switch provided in the toolbox
+allows for the user to switch from inclusive
+time to <em>exclusive time</em>, the time spent executing
+only that primitive. This allows for
+identification of hotspots in the tree. Each primitive
+can be executed asynchronously or synchronously
+in the parent thread. This distinction is expressed
+in dotted versus solid circles for nodes in the tree.
+The tree is interactive, allowing users to drill
+down and focus by expanding or collapsing tree nodes and
+hover for more details. The visualization is linked
+with a code view showing the Python source code
+(the corresponding PhySL is shown as well). Hovering
+over a node or line in one will highlight the
+corresponding line or node in the other.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <!-- Copyright (c) 2018 Mikael Simberg
+     Copyright (c) 2018 Bibek Wagle
+
+     Distributed under the Boost Software License, Version 1.0. (See accompanying
+     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<!-- Make Phylanx inspect tool happy: phylanx-no-inspect -->
+
+<footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../reference.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="about.html" class="btn btn-neutral float-left" title="About Phylanx" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017-2019, The STE||AR-Group.
+      <span class="lastupdated">
+        Last updated on May 31, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+ 
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying file
+LICENSE_1_0.txt or copy at
+<a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)
+
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
