@@ -18,11 +18,17 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <set>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#ifdef HPX_HAVE_APEX
+#include <phylanx/util/apex_task_inlining_policy.hpp>
+#include "apex_api.hpp"
+#endif
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -309,6 +315,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return ec_threshold;
     }
 
+#if defined(PHYLANX_HAVE_TASK_INLINING_POLICY) && defined(HPX_HAVE_APEX)
+    std::int64_t primitive_component_base::get_exec_threshold() const
+    {
+#if defined(__POWERPC__) && defined(__clang_version__)
+        exec_threshold_ = 0;
+#endif
+        return exec_threshold_;
+    }
+
+    std::int64_t primitive_component_base::get_exec_hysteresis() const
+    {
+#if defined(__POWERPC__) && defined(__clang_version__)
+        exec_hysteresis_ = 0;
+#endif
+        return exec_hysteresis_;
+    }
+
+#endif
+
     // get execution time upper threshold from command line
     std::int64_t primitive_component_base::get_exec_upper_threshold()
     {
@@ -336,6 +361,168 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "phylanx.exec_time_lower_threshold", "350000"));
         return exec_lower_threshold;
     }
+
+#if defined(PHYLANX_HAVE_TASK_INLINING_POLICY) && defined(HPX_HAVE_APEX)
+
+    hpx::launch
+    primitive_component_base::select_direct_eval_policy_exec_directly(
+        hpx::launch policy)
+    {
+        // always run this on an HPX thread
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::launch::async;
+        }
+
+        // always execute synchronously, if requested
+        if (get_sync_execution())
+        {
+            return hpx::launch::sync;
+        }
+
+        if (eval_count_ > 5 && policy_initialized_ == false)
+        {
+            inlining_policy_instance =
+                std::make_unique<phylanx::util::apex_inlining_policy>(name_,
+                    eval_count_, eval_duration_, exec_threshold_,
+                    execute_directly_);
+            policy_initialized_ = true;
+            enable_measurements();
+
+            apex::custom_event(
+                inlining_policy_instance->return_apex_inlining_event(), nullptr);
+        }
+
+        if (eval_count_ > 100)
+        {
+            if (!apex::has_session_converged(
+                    inlining_policy_instance->tuning_session_handle))
+            {
+                apex::custom_event(
+                    inlining_policy_instance->return_apex_inlining_event(),
+                    nullptr);
+
+                eval_count_ = 0;
+                eval_duration_ = 0;
+            }
+            else if (measurements_enabled_)
+            {
+                measurements_enabled_ = false;
+            }
+        }
+
+        if ((eval_count_ > get_ec_threshold()) &&
+            (policy_initialized_ == false))
+        {
+            // check whether execution status needs to be changed (with some
+            // hysteresis)
+            std::int64_t exec_time = (eval_duration_ / eval_count_);
+
+            if (exec_time > (get_exec_threshold() + get_exec_hysteresis()))
+            {
+                execute_directly_ = 0;
+            }
+            else if (exec_time < (get_exec_threshold() - get_exec_hysteresis()))
+            {
+                execute_directly_ = 1;
+            }
+            else
+            {
+                execute_directly_ = -1;
+            }
+        }
+
+        if (execute_directly_ == 1)
+        {
+            return hpx::launch::sync;
+        }
+        else if (execute_directly_ == 0)
+        {
+            return hpx::launch::async;
+        }
+
+        return policy;
+    }
+
+    hpx::launch primitive_component_base::select_direct_eval_policy_thres(
+        hpx::launch policy)
+    {
+        // always run this on an HPX thread
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::launch::async;
+        }
+
+        // always execute synchronously, if requested
+        if (get_sync_execution())
+        {
+            return hpx::launch::sync;
+        }
+
+        if (eval_count_ > 5 && policy_initialized_ == false)
+        {
+            inlining_policy_instance =
+                std::make_unique<phylanx::util::apex_inlining_policy>(name_,
+                    eval_count_, eval_duration_, exec_threshold_,
+                    execute_directly_);
+            policy_initialized_ = true;
+            enable_measurements();
+        }
+
+        if (eval_count_ > 50)
+        {
+            if (!apex::has_session_converged(
+                    inlining_policy_instance->tuning_session_handle))
+            {
+                apex::custom_event(
+                    inlining_policy_instance->return_apex_inlining_event(),
+                    nullptr);
+
+                eval_count_ = 0;
+                eval_duration_ = 0;
+            }
+            else if (measurements_enabled_)
+            {
+                measurements_enabled_ = false;
+#ifdef PHYLANX_DEBUG
+                std::cout << name_ << " threshold: " << get_exec_threshold()
+                          << std::endl;
+#endif
+            }
+        }
+
+        if (eval_count_ > get_ec_threshold())
+        {
+            // check whether execution status needs to be changed (with some
+            // hysteresis)
+            std::int64_t exec_time = (eval_duration_ / eval_count_);
+
+            if (exec_time > (get_exec_threshold() + get_exec_hysteresis()))
+            {
+                execute_directly_ = 0;
+            }
+            else if (exec_time < (get_exec_threshold() - get_exec_hysteresis()))
+            {
+                execute_directly_ = 1;
+            }
+            else
+            {
+                execute_directly_ = -1;
+            }
+        }
+
+        if (execute_directly_ == 1)
+        {
+            return hpx::launch::sync;
+        }
+        else if (execute_directly_ == 0)
+        {
+            return hpx::launch::async;
+        }
+
+        return policy;
+    }
+#endif
 
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
