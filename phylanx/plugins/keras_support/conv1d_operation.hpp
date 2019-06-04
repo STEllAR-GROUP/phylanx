@@ -48,8 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
-        template <typename Vector1, typename Vector2>
-        static double convolve_step(Vector1 const& v1, Vector2 const& v2);
+        template <typename Tensor, typename Matrix>
+        double convolve_step(Tensor const& t, Matrix const& m);
         template <typename Vector1, typename Vector2>
         static double convolve_step(Vector1 const& v1, Vector2 const& v2,
             std::int64_t dilation_rate, std::size_t kernel_size,
@@ -63,21 +63,21 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             std::int64_t dilation_rate) const;
 
-        primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
-            ir::node_data<double>&& kernel) const;
-        primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
-            ir::node_data<double>&& kernel, std::int64_t strides) const;
-        primitive_argument_type conv1d_same_dilation(
-            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-            std::int64_t dilation_rate) const;
+        //primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
+        //    ir::node_data<double>&& kernel) const;
+        //primitive_argument_type conv1d_same(ir::node_data<double>&& arg,
+        //    ir::node_data<double>&& kernel, std::int64_t strides) const;
+        //primitive_argument_type conv1d_same_dilation(
+        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        //    std::int64_t dilation_rate) const;
 
-        primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
-            ir::node_data<double>&& kernel) const;
-        primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
-            ir::node_data<double>&& kernel, std::int64_t strides) const;
-        primitive_argument_type conv1d_causal_dilation(
-            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-            std::int64_t dilation_rate) const;
+        //primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
+        //    ir::node_data<double>&& kernel) const;
+        //primitive_argument_type conv1d_causal(ir::node_data<double>&& arg,
+        //    ir::node_data<double>&& kernel, std::int64_t strides) const;
+        //primitive_argument_type conv1d_causal_dilation(
+        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        //    std::int64_t dilation_rate) const;
 
         primitive_argument_type conv1d_any_pad(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel, std::string&& padding) const;
