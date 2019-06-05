@@ -21,7 +21,11 @@ print("=========================",file=f)
 print("Primitives ", file=f)
 print("=========================",file=f)
 
-p = sub.Popen(["@CMAKE_BINARY_DIR@/bin/physl","--docs"],stdout=sub.PIPE)
+if sys.platform == "win32" or sys.platform == "win64":
+    p = sub.Popen(["@CMAKE_BINARY_DIR@/@CMAKE_BUILD_TYPE@/bin/physl.exe","--docs"],stdout=sub.PIPE)
+else:
+    p = sub.Popen(["@CMAKE_BINARY_DIR@/bin/physl","--docs"],stdout=sub.PIPE)
+
 for bline in p.stdout.readlines():
     line = str(bline,'ASCII').strip()
     g = re.match(r'pattern:\s*(\w+)',line)
