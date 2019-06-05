@@ -236,7 +236,7 @@ if __name__ == "__main__":
         sample_size,
         n_trees[1]
     )
-    #
+
     # print('predict')
     # predict = predict(trees, dataset[train:, :])
     #
