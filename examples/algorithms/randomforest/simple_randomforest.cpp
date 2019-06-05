@@ -11,6 +11,7 @@
 
 #include <utility>
 #include <cmath>
+#include <cstdint>
 
 #include <blaze/Math.h>
 
@@ -26,7 +27,8 @@ char const* const randomforest_test_code = R"(block(
             define(min_size, 1),
             define(sample_size, 1.0),
             define(n_trees, 10),
-            define(model, randomforest_fit(train_data, train_labels, mx_depth, min_size, sample_size, n_trees)),
+            define(model, randomforest_fit(train_data, train_labels
+                        , mx_depth, min_size, sample_size, n_trees)),
             block(
                 store(test_labels, randomforest_predict(model, test_data)),
                 cout(test_data)
@@ -59,7 +61,8 @@ int hpx_main(boost::program_options::variables_map& vm)
         {1.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 5.0, 0.0},
         {1.0, 0.0, 0.0, 2.0, 0.0}};
 
-    blaze::DynamicVector<double> labels { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
+    blaze::DynamicVector<double> labels { 0.0, 0.0, 0.0, 0.0, 0.0
+        , 0.0, 1.0, 1.0, 1.0, 1.0 };
 
     // evaluate generated execution tree
     auto ntrees = vm["trees"].as<std::uint64_t>();
@@ -69,7 +72,8 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto const& code = phylanx::execution_tree::compile(randomforest_test_code, snippets);
+    auto const& code = phylanx::execution_tree::compile(randomforest_test_code
+        , snippets);
     auto randomforest_test = code.run();
 
     // evaluate generated execution tree
@@ -83,7 +87,9 @@ int hpx_main(boost::program_options::variables_map& vm)
 
 int main(int argc, char* argv[])
 {
-  boost::program_options::options_description desc("usage: simple_randomforest [options]");
+  boost::program_options::options_description desc(
+      "usage: simple_randomforest [options]");
+
   desc.add_options()("trees,t",
     boost::program_options::value<std::uint64_t>()->default_value(5),
     "number of trees (default: 5)")("samples,s",
