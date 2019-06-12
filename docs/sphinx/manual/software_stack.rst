@@ -5,17 +5,17 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-=======
+==============
 Software Stack
-=======
+==============
 
 The |phylanx| framework is made up of several distinct 
 layers as illustrated in Figure 1.
 
 .. figure:: images/phylanx_overview.png
-    :width: 200px
+    :width: 315px
     :align: center
-    :height: 100px
+    :height: 264px
     :alt: alternate text
     :figclass: align-center
 
@@ -25,9 +25,9 @@ In this portion of the manuel we discuss
 the external libraries |phylanx| depends on
 and the layers of the software stack.
 
--------
+------------------
 External Libraries
--------
+------------------
 
 ^^^^^^^
 HPX
@@ -67,9 +67,9 @@ a policy engine. To learn more about the project,
 please refer to the 
 `APEX repository <https://github.com/khuck/xpress-apex>`_
 
--------
+--------
 Frontend
--------
+--------
 
 The Phylanx frontend provides two essential functionalities:
 
@@ -128,9 +128,9 @@ take advantage of Python buffer protocol through
 the pybind11 library. Figure~\ref{fig:phylanxarch} shows how
 Phylanx manages interactions with external libraries.
 
--------
+--------------
 Execution Tree
--------
+--------------
 
 After the transformation phase, the frontend passes 
 the generated AST to the Phylanx compiler to construct 
@@ -182,9 +182,9 @@ its execution, the result of the entire tree
 is then ready to be consumed by the calling
 function.
 
--------
+---------------
 Instrumentation 
--------
+---------------
 
 Application performance analysis is a critical part 
 of developing a parallel application. Phylanx 
@@ -200,9 +200,9 @@ directly used by the users or fed
 into APEX for adaptive load balancing. The data can also
 be used by the visualization tools described in the next section.
 
--------
+--------------------
 Viusualization Tools
--------
+--------------------
 
 Embedding annotations and measurements for 
 visualizations and performance
