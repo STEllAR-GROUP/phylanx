@@ -21,7 +21,7 @@ layers as illustrated in Figure 1.
 
     Figure 1. Overview of the |phylanx| toolkit.
 
-In this portion of the manuel we discuss 
+In this portion of the manual we discuss 
 the external libraries |phylanx| depends on
 and the layers of the software stack.
 
@@ -112,7 +112,7 @@ function that will be run by an HPX task during evaluation, and (2) it can be
 used for debugging and analyzing purposes for developers interested in custom
 optimizations.
 
-The compiled kernel is cached and can be be invoked directly in Python or in
+The compiled kernel is cached and can be invoked directly in Python or in
 other kernels.
 
 2. **Data Management** - Phylanx's data structures rely on 
@@ -162,7 +162,7 @@ result of the kernel. In the evaluation function,
 the root node will call the evaluation function of 
 all of its children and those primitives will call the
 evaluation functions of their children. This process 
-will continue until the the leaf nodes have been 
+will continue until the leaf nodes have been 
 reached where the primitives evaluation functions
 do not depend on other primitives to be resolved 
 (e.g. a primitive which is a constant, a primitive 
@@ -201,7 +201,7 @@ into APEX for adaptive load balancing. The data can also
 be used by the visualization tools described in the next section.
 
 --------------------
-Viusualization Tools
+Visualization Tools
 --------------------
 
 Embedding annotations and measurements for 

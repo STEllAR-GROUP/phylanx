@@ -7,6 +7,8 @@
 
 .. _manual:
 
+.. Note: You can find rst replacement definitions in cmake/templates/conf.py.in
+
 =======
 Manual
 =======
