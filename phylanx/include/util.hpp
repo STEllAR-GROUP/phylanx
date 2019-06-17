@@ -7,6 +7,7 @@
 #define PHYLANX_UTIL_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/util/distributed_object.hpp>
 #include <phylanx/util/hashed_string.hpp>
 #include <phylanx/util/none_manip.hpp>
 #include <phylanx/util/performance_data.hpp>
