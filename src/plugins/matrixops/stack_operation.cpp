@@ -2103,8 +2103,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() ||
-            (mode_ == stacking_mode_axis && operands.size() > 3) ||
+        if (operands.empty())
+        {
+            return empty_helper<double>();
+        }
+
+        if ((mode_ == stacking_mode_axis && operands.size() > 3) ||
             (mode_ != stacking_mode_axis && operands.size() > 2))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -2112,11 +2116,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     "the stack_operation primitive requires to be "
                         "invoked with one or two arguments"));
-        }
-
-        if (operands.empty())
-        {
-            return empty_helper<double>();
         }
 
         if (!valid(operands[0]))
@@ -2131,7 +2130,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_), args = args, ctx](
+            [this_ = std::move(this_), args = args, ctx = ctx](
                     primitive_arguments_type&& ops) mutable
             -> primitive_argument_type
             {
@@ -2146,7 +2145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(ops), std::move(args), std::move(ctx));
                 }
             }),
-            detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            detail::map_operands(operands, functional::value_operand{},
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

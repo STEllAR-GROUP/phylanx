@@ -22,6 +22,7 @@
 #include <hpx/util/assert.hpp>
 #include <hpx/util/internal_allocator.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -107,6 +108,15 @@ namespace phylanx { namespace execution_tree
         {
         }
 
+        inline std::size_t size() const noexcept
+        {
+            return variables_.size();
+        }
+        inline bool empty() const noexcept
+        {
+            return variables_.empty();
+        }
+
         inline primitive_argument_type* get_var(
             util::hashed_string const& name) noexcept;
         inline primitive_argument_type const* get_var(
@@ -147,7 +157,7 @@ namespace phylanx { namespace execution_tree
         }
 
         explicit eval_context(eval_mode mode = eval_default)
-            : mode_(mode)
+          : mode_(mode)
           , variables_(std::allocate_shared<variable_frame>(alloc_))
         {}
 
@@ -185,8 +195,11 @@ namespace phylanx { namespace execution_tree
 
         eval_context& add_frame()
         {
-            variables_ = std::allocate_shared<variable_frame>(
-                alloc_, std::move(variables_));
+            if (variables_ && !variables_->empty())
+            {
+                variables_ = std::allocate_shared<variable_frame>(
+                    alloc_, std::move(variables_));
+            }
             return *this;
         }
 
@@ -214,40 +227,47 @@ namespace phylanx { namespace execution_tree
     inline eval_context set_mode(eval_context const& ctx, eval_mode mode)
     {
         eval_context newctx = ctx;
-        return std::move(newctx.set_mode(mode));
+        newctx.set_mode(mode);
+        return newctx;
     }
     inline eval_context set_mode(eval_context && ctx, eval_mode mode) noexcept
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.set_mode(mode));
+        newctx.set_mode(mode);
+        return newctx;
     }
 
     inline eval_context add_mode(eval_context const& ctx, eval_mode mode)
     {
         eval_context newctx = ctx;
-        return std::move(newctx.add_mode(mode));
+        newctx.add_mode(mode);
+        return newctx;
     }
     inline eval_context add_mode(eval_context && ctx, eval_mode mode) noexcept
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.add_mode(mode));
+        newctx.add_mode(mode);
+        return newctx;
     }
 
     inline eval_context remove_mode(eval_context const& ctx, eval_mode mode)
     {
         eval_context newctx = ctx;
-        return std::move(newctx.remove_mode(mode));
+        newctx.remove_mode(mode);
+        return newctx;
     }
     inline eval_context remove_mode(eval_context && ctx, eval_mode mode) noexcept
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.remove_mode(mode));
+        newctx.remove_mode(mode);
+        return newctx;
     }
 
     inline eval_context add_frame(eval_context && ctx)
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.add_frame());
+        newctx.add_frame();
+        return newctx;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -265,10 +285,12 @@ namespace phylanx { namespace execution_tree
         primitive(hpx::id_type && id)
           : base_type(std::move(id))
         {
+            initialize_ptr();
         }
         primitive(hpx::future<hpx::id_type> && fid)
           : base_type(std::move(fid))
         {
+            initialize_ptr();
         }
 
         PHYLANX_EXPORT primitive(hpx::future<hpx::id_type>&& fid,
@@ -304,10 +326,6 @@ namespace phylanx { namespace execution_tree
             primitive_arguments_type const& args,
             eval_context ctx = eval_context{}) const;
 
-        PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type&&,
-            primitive_arguments_type&&, eval_context ctx = eval_context{});
-        PHYLANX_EXPORT hpx::future<void> store(primitive_arguments_type&&,
-            primitive_arguments_type&&, eval_context ctx = eval_context{});
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
             primitive_argument_type&&, primitive_arguments_type&&,
             eval_context ctx = eval_context{});
@@ -334,6 +352,17 @@ namespace phylanx { namespace execution_tree
 
     public:
         static bool enable_tracing;
+
+    private:
+        bool has_ptr() const
+        {
+            return bool(ptr_);
+        }
+
+        PHYLANX_EXPORT bool execute_eval_synchronously() const;
+        PHYLANX_EXPORT void initialize_ptr();
+
+        std::shared_ptr<primitives::primitive_component> ptr_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

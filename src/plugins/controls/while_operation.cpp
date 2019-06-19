@@ -52,7 +52,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::shared_ptr<while_operation const> that, eval_context ctx)
           : that_(that), args_(args), ctx_(std::move(ctx))
         {
-            this->args_ = args;
             if (that_->operands_.size() != 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -126,11 +125,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (this->no_operands())
         {
             return std::make_shared<iteration>(
-                noargs, shared_from_this(), std::move(ctx))
-                ->loop();
+                noargs, shared_from_this(), std::move(ctx))->loop();
         }
         return std::make_shared<iteration>(
-            args, shared_from_this(), std::move(ctx))
-            ->loop();
+            args, shared_from_this(), std::move(ctx))->loop();
     }
 }}}

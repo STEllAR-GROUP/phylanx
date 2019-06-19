@@ -94,26 +94,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "arguments given by the operands array are valid"));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& lhs,
-                    primitive_argument_type&& rhs) -> primitive_argument_type
-                {
-                    if (is_list_operand_strict(rhs))
-                    {
-                        return this_->handle_list_operands(
-                            std::move(rhs), std::move(lhs));
-                    }
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& lhs,
+                    hpx::future<primitive_argument_type>&& rhs)
+            -> primitive_argument_type
+            {
+                auto&& rhs_data = rhs.get();
 
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "prepend_operation::eval",
-                        this_->generate_error_message(
-                            "prepend_operation accepts a list "
-                            "value as its second operand only"));
-                }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx));
+                if (is_list_operand_strict(rhs_data))
+                {
+                    return this_->handle_list_operands(
+                        std::move(rhs_data), lhs.get());
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                        "prepend_operation::eval",
+                    this_->generate_error_message(
+                        "prepend_operation accepts a list "
+                        "value as its second operand only"));
+            },
+            std::move(op0),
+            value_operand(operands[1], args, name_, codename_, std::move(ctx)));
     }
 }}}

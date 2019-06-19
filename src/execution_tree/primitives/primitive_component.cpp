@@ -124,7 +124,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component::eval_single(
-        primitive_argument_type && param, eval_context ctx) const
+        primitive_argument_type&& param, eval_context ctx) const
     {
         if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty())
@@ -186,6 +186,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void primitive_component::enable_measurements()
     {
         primitive_->enable_measurements();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::launch primitive_component::select_direct_eval_execution(
+        hpx::launch policy) const
+    {
+        return primitive_->select_direct_eval_execution(policy);
     }
 
     hpx::launch primitive_component::select_direct_execution(

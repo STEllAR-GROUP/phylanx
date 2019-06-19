@@ -66,7 +66,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 for (auto const& arg : args)
                 {
-                    hpx::consolestream << arg;
+                    if (valid(arg) || is_explicit_nil(arg))
+                    {
+                        hpx::consolestream << arg;
+                    }
                 }
                 hpx::consolestream << std::endl << hpx::flush;
 

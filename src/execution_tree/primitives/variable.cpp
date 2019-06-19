@@ -115,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> variable::eval(
-        primitive_argument_type && arg, eval_context ctx) const
+        primitive_argument_type&& arg, eval_context ctx) const
     {
         if (!value_set_ && !valid(bound_value_))
         {

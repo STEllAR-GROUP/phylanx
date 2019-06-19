@@ -19,7 +19,8 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives {
+namespace phylanx { namespace execution_tree { namespace primitives
+{
     class argsort
       : public primitive_component_base
       , public std::enable_shared_from_this<argsort>

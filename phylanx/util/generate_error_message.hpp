@@ -7,7 +7,7 @@
 #define PHYLANX_UTIL_GENERATE_ERROR_MESSAGE_JUL_20_2018_0102PM
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 
 #include <string>
 

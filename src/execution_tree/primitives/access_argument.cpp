@@ -83,7 +83,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
-            target = extract_ref_value(params[argnum_], name_, codename_);
+            target = extract_copy_value(params[argnum_], name_, codename_);
         }
         else
         {
@@ -123,31 +123,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (operands_.size() == 4)
                 {
                     // handle row/column-slicing
-                    auto op1 = value_operand(
+                    auto&& op1 = value_operand(
                         operands_[2], params, name_, codename_, ctx);
+
                     return hpx::dataflow(
                         hpx::launch::sync,
                         [this_ = std::move(this_), target = std::move(target)](
-                                hpx::future<primitive_argument_type>&& rows,
-                                hpx::future<primitive_argument_type>&& cols)
-                        ->  primitive_argument_type
+                            hpx::future<primitive_argument_type>&& rows,
+                            hpx::future<primitive_argument_type>&& cols)
+                        -> primitive_argument_type
                         {
                             return slice(target, rows.get(), cols.get(),
                                 this_->name_, this_->codename_);
                         },
-                        op1,
-                        value_operand(operands_[3], params, name_, codename_,
-                            std::move(ctx)));
+                        std::move(op1),
+                        value_operand(operands_[3], params, name_,
+                            codename_, std::move(ctx)));
                 }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 if (operands_.size() > 4)
                 {
                     // handle page/row/column-slicing
-                    auto op1 = value_operand(
+                    auto&& op1 = value_operand(
                         operands_[2], params, name_, codename_, ctx);
-                    auto op2 = value_operand(
+                    auto&& op2 = value_operand(
                         operands_[3], params, name_, codename_, ctx);
+
                     return hpx::dataflow(
                         hpx::launch::sync,
                         [this_ = std::move(this_), target = std::move(target)](
@@ -156,17 +158,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 hpx::future<primitive_argument_type>&& cols)
                         ->  primitive_argument_type
                         {
-                            return slice(target, pages.get(), rows.get(), cols.get(),
-                                this_->name_, this_->codename_);
+                            return slice(target, pages.get(), rows.get(),
+                                cols.get(), this_->name_, this_->codename_);
                         },
-                        op1, op2,
-                        value_operand(operands_[4], params, name_, codename_,
-                            std::move(ctx)));
+                        std::move(op1), std::move(op2),
+                        value_operand(operands_[4], params,
+                            name_, codename_, std::move(ctx)));
                 }
 #endif
                 // handle row-slicing
-                return value_operand(
-                        operands_[2], params, name_, codename_, std::move(ctx))
+                return value_operand(operands_[2], params, name_, codename_,
+                        std::move(ctx))
                     .then(hpx::launch::sync,
                         [this_ = std::move(this_), target = std::move(target)](
                             hpx::future<primitive_argument_type>&& rows)
@@ -216,7 +218,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
-            target = std::move(params[argnum_]);
+            target = extract_copy_value(params[argnum_], name_, codename_);
         }
         else
         {
@@ -259,17 +261,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 3:
                 slice(std::move(target),
                     value_operand_sync(std::move(operands_[2]),
-                        std::move(params), name_, codename_),
+                        std::move(params), name_, codename_, std::move(ctx)),
                     std::move(data[0]), name_, codename_);
                 return;
 
             case 4:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
+
                     slice(std::move(target), std::move(data1),
-                        value_operand_sync(
-                            operands_[3], std::move(params), name_, codename_),
+                        value_operand_sync(operands_[3], std::move(params),
+                            name_, codename_, std::move(ctx)),
                         std::move(data[0]), name_, codename_);
                 }
                 return;
@@ -278,13 +281,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 5:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
                     auto data2 = value_operand_sync(
-                        operands_[3], params, name_, codename_);
-                    slice(std::move(target),
-                        std::move(data1), std::move(data2),
-                        value_operand_sync(
-                            operands_[4], std::move(params), name_, codename_),
+                        operands_[3], params, name_, codename_, ctx);
+
+                    slice(std::move(target), std::move(data1), std::move(data2),
+                        value_operand_sync(operands_[4], std::move(params),
+                            name_, codename_, std::move(ctx)),
                         std::move(data[0]), name_, codename_);
                 }
                 return;
@@ -323,7 +326,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
-            target = std::move(params[argnum_]);
+            target = extract_copy_value(params[argnum_], name_, codename_);
         }
         else
         {
@@ -381,17 +384,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 3:
                 slice(std::move(target),
                     value_operand_sync(std::move(operands_[2]),
-                        std::move(params), name_, codename_),
+                        std::move(params), name_, codename_, std::move(ctx)),
                     std::move(data), name_, codename_);
                 return;
 
             case 4:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
+
                     slice(std::move(target), std::move(data1),
                         value_operand_sync(operands_[3], std::move(params),
-                            name_, codename_),
+                            name_, codename_, std::move(ctx)),
                         std::move(data), name_, codename_);
                 }
                 return;
@@ -400,13 +404,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 5:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
                     auto data2 = value_operand_sync(
-                        operands_[3], params, name_, codename_);
+                        operands_[3], params, name_, codename_, ctx);
+
                     slice(std::move(target),
                         std::move(data1), std::move(data2),
                         value_operand_sync(operands_[4], std::move(params),
-                            name_, codename_),
+                            name_, codename_, std::move(ctx)),
                         std::move(data), name_, codename_);
                 }
                 return;

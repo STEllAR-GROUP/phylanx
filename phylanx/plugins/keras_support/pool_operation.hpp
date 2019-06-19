@@ -42,6 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
     protected:
         using val_type = std::int64_t;
+
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,

@@ -55,8 +55,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(primitive_argument_type{});
         }
 
-//         ctx.remove_mode(eval_dont_wrap_functions);
-
         hpx::future<primitive_argument_type> f;
 
         std::size_t size = operands_.size();

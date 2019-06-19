@@ -151,17 +151,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](operands_type&& ops)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& op)
             -> primitive_argument_type
             {
                 return primitive_argument_type(
                     util::visit(visit_unary_not{*this_},
-                        std::move(ops[0].variant())));
+                        std::move(op.get().variant())));
 
-            }),
-            detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            },
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

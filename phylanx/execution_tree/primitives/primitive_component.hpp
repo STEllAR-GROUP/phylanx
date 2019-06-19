@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const;
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval_single(
-            primitive_argument_type && param, eval_context ctx) const;
+            primitive_argument_type&& param, eval_context ctx) const;
 
         // store_action
         PHYLANX_EXPORT void store(primitive_arguments_type&&,
@@ -103,6 +103,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT std::int64_t get_direct_execution(bool reset) const;
 
         PHYLANX_EXPORT void enable_measurements();
+
+        PHYLANX_EXPORT hpx::launch select_direct_eval_execution(
+            hpx::launch policy) const;
 
         // decide whether to execute eval directly
         PHYLANX_EXPORT static hpx::launch select_direct_execution(

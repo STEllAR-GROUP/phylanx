@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/plugins/listops/car_cdr_operation.hpp>
 
 #include <phylanx/ir/ranges.hpp>
@@ -181,11 +181,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](ir::range&& list)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](hpx::future<ir::range>&& list)
             -> primitive_argument_type
             {
-                primitive_argument_type result{std::move(list)};
+                primitive_argument_type result{list.get()};
 
                 // handle operation code for the given list
                 for (char op : this_->operation_)
@@ -204,7 +204,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 return result;
-            }),
-            list_operand(operands_[0], args, name_, codename_, std::move(ctx)));
+            },
+            list_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

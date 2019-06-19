@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Evaluate condition of while statement
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_arguments_type && ops)
+            [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
                 return ops.back();

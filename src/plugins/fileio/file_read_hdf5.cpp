@@ -79,8 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         std::string filename =
             string_operand_sync(operands[0], args, name_, codename_, ctx);
-        std::string datasetName =
-            string_operand_sync(operands[1], args, name_, codename_, ctx);
+        std::string datasetName = string_operand_sync(
+            operands[1], args, name_, codename_, std::move(ctx));
 
         HighFive::File infile(filename, HighFive::File::ReadOnly);
         HighFive::DataSet dataSet = infile.getDataSet(datasetName);

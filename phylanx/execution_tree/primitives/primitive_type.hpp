@@ -1,10 +1,10 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Steven R. Brandt
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_PHYNAME_FEB_26_2019_1510PM)
-#define PHYLANX_PRIMITIVES_PHYNAME_FEB_26_2019_1510PM
+#if !defined(PHYLANX_PRIMITIVES_PRIMITIVE_TYPE_FEB_26_2019_1510PM)
+#define PHYLANX_PRIMITIVES_PRIMITIVE_TYPE_FEB_26_2019_1510PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -18,16 +18,16 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class phyname
+    class primitive_type
       : public primitive_component_base
-      , public std::enable_shared_from_this<phyname>
+      , public std::enable_shared_from_this<primitive_type>
     {
     public:
         static match_pattern_type const match_data;
 
-        phyname() = default;
+        primitive_type() = default;
 
-        phyname(primitive_arguments_type&& operands,
+        primitive_type(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
     private:
@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
     };
 
-    PHYLANX_EXPORT primitive create_phyname(hpx::id_type const& locality,
+    PHYLANX_EXPORT primitive create_primitive_type(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}

@@ -82,8 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "count_nonzero_operation::count_nonzero0d",
-            util::generate_error_message(
-                "unsupported operand type", name_, codename_));
+            generate_error_message("unsupported operand type"));
     }
 
     namespace detail
@@ -118,8 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "count_nonzero_operation::count_nonzero1d",
-            util::generate_error_message(
-                "unsupported operand type", name_, codename_));
+            generate_error_message("unsupported operand type"));
     }
 
     namespace detail
@@ -154,8 +152,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "count_nonzero_operation::count_nonzero2d",
-            util::generate_error_message(
-                "unsupported operand type", name_, codename_));
+            generate_error_message("unsupported operand type"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -167,28 +164,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "count_nonzero_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the count_nonzero_operation primitive requires"
-                        "exactly one operand",
-                        name_, codename_));
+                        "exactly one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "count_nonzero_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the count_nonzero_operation primitive requires that "
                         "the arguments given by the operands array "
-                        "is valid",
-                    name_, codename_));
+                        "is valid"));
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& arg)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f)
             -> primitive_argument_type
             {
+                auto&& arg = f.get();
+
                 switch (extract_numeric_value_dimension(
                     arg, this_->name_, this_->codename_))
                 {
@@ -204,12 +202,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "count_nonzero_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
-            }),
+            },
             value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

@@ -10,7 +10,6 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/lcos/future.hpp>
 

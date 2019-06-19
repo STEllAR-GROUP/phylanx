@@ -615,7 +615,11 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     bool operator==(range const& lhs, range const& rhs)
     {
-        return lhs.data_ == rhs.data_;
+        if (lhs.size() != rhs.size())
+        {
+            return false;
+        }
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
 
     bool operator!=(range const& lhs, range const& rhs)

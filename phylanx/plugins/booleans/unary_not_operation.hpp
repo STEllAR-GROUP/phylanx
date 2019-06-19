@@ -27,7 +27,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using operand_type = ir::node_data<std::uint8_t>;
-        using operands_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,

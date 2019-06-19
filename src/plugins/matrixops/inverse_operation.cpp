@@ -229,10 +229,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& op)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f)
             -> primitive_argument_type
             {
+                auto&& op = f.get();
+
                 switch (extract_numeric_value_dimension(
                     op, this_->name_, this_->codename_))
                 {
@@ -254,8 +257,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "left hand side operand has unsupported "
                                 "number of dimensions"));
                 }
-            }),
-            value_operand(operands[0], args,
-                name_, codename_, std::move(ctx)));
+            },
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

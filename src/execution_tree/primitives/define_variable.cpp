@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
@@ -81,64 +81,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message("the define_variable primitive requires "
                     "exactly one operand"));
         }
-
-        // try to bind to the factory object locally
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            hpx::error_code ec(hpx::lightweight);
-            target_ = hpx::get_ptr<primitive_component>(
-                hpx::launch::sync, p->get_id(), ec);
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> define_variable::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         ctx.remove_mode(eval_dont_wrap_functions);
 
-        if (target_)
-        {
-            // create a new instance of this variable
-            auto var = target_->eval(args, ctx);
-
-            auto this_ = this->shared_from_this();
-            return var.then(hpx::launch::sync,
-                [this_ = std::move(this_), ctx = std::move(ctx), args = args](
-                        hpx::future<primitive_argument_type> && fvar) mutable
-                -> primitive_argument_type
-                {
-                    auto && var = fvar.get();
-
-                    // evaluate the expression bound to this name and store the
-                    // value in the newly created variable
-                    primitive* p = util::get_if<primitive>(&var);
-                    if (p != nullptr)
-                    {
-                        p->bind(std::move(args), ctx);
-                    }
-
-                    // store the variable in the evaluation context
-                    auto& result = ctx.set_var(
-                        this_->target_name_, std::move(var));
-
-                    // return a reference to this variable
-                    return extract_ref_value(result, this_->name_,
-                        this_->codename_);
-                });
-        }
 
         // create a new instance of this variable
-        auto var =
-            value_operand_sync(operands_[0], args, name_, codename_, ctx);
+        auto var = value_operand_sync(
+            operands_[0], params, name_, codename_, ctx);
 
         // evaluate the expression bound to this name and store the value in
         // the newly created variable
         primitive* p = util::get_if<primitive>(&var);
         if (p != nullptr)
         {
-            p->bind(args, ctx);
+            p->bind(params, ctx);
         }
 
         // store the variable in the evaluation context

@@ -106,7 +106,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "arguments given by the operands array are valid"));
         }
 
-        if (!operands.empty() && !valid(operands[0]))
+        if (operands.empty() ||
+            (operands.size() == 1 && is_implicit_nil(operands[0])))
+        {
+            return hpx::make_ready_future(
+                primitive_argument_type{ir::dictionary{}});
+        }
+
+        if (!valid(operands[0]) && is_explicit_nil(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dict_operation::eval",
@@ -115,23 +122,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "argument given by the operand is a valid list"));
         }
 
-        if (operands.empty())
-        {
-            return hpx::make_ready_future(
-                primitive_argument_type{ir::dictionary{}});
-        }
+        using range_list =
+            std::vector<ir::range, arguments_allocator<ir::range>>;
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    std::vector<ir::range, arguments_allocator<ir::range>>&& args)
-                -> primitive_argument_type
-                {
-                    return this_->generate_dict(std::move(args));
-                }),
-            detail::map_operands(
-                operands, functional::list_operand{}, args,
-                name_, codename_, std::move(ctx)));
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](
+                std::vector<ir::range, arguments_allocator<ir::range>>&& args)
+            -> primitive_argument_type
+            {
+                return this_->generate_dict(std::move(args));
+            }),
+            detail::map_operands(operands, functional::list_operand{},
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>

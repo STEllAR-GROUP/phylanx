@@ -72,21 +72,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             fargs.push_back(extract_ref_value(*it, name_, codename_));
         }
 
+        auto&& op1 = value_operand(operands_[0], params, name_, codename_,
+            add_mode(ctx, eval_mode(eval_dont_wrap_functions |
+                eval_dont_evaluate_partials | eval_dont_evaluate_lambdas)));
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_), ctx](
-                        primitive_argument_type&& func,
-                        primitive_arguments_type&& args) mutable
-                ->  primitive_argument_type
-                {
-                    return value_operand_sync(std::move(func),
-                        std::move(args), this_->name_, this_->codename_,
-                        set_mode(std::move(ctx), eval_default));
-                }),
-            value_operand(operands_[0], params, name_, codename_,
-                add_mode(ctx, eval_mode(eval_dont_wrap_functions |
-                    eval_dont_evaluate_partials |
-                    eval_dont_evaluate_lambdas))),
+            [this_ = std::move(this_), ctx](
+                    primitive_argument_type&& func,
+                    primitive_arguments_type&& args) mutable
+            ->  primitive_argument_type
+            {
+                return value_operand_sync(std::move(func),
+                    std::move(args), this_->name_, this_->codename_,
+                    set_mode(std::move(ctx), eval_default));
+            }),
+            std::move(op1),
             detail::map_operands(std::move(fargs), functional::value_operand{},
                 params, name_, codename_,
                 add_mode(ctx, eval_dont_evaluate_partials)));

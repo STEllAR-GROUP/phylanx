@@ -61,7 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](args_type && args)
+            [this_ = std::move(this_)](args_type&& args)
             -> primitive_argument_type
             {
                 if (args.empty())
@@ -72,7 +72,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::stringstream strm;
                 for (auto const& arg : args)
                 {
-                    strm << arg;
+                    if (valid(arg) || is_explicit_nil(arg))
+                    {
+                        strm << arg;
+                    }
                 }
 
                 return primitive_argument_type(strm.str());

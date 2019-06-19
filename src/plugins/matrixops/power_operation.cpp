@@ -264,12 +264,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "array are valid"));
         }
 
+        auto&& op0 = value_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_)](
-                    primitive_argument_type&& op1, primitive_argument_type&& op2)
+                    hpx::future<primitive_argument_type>&& f1,
+                    hpx::future<primitive_argument_type>&& f2)
             ->  primitive_argument_type
             {
+                auto&& op1 = f1.get();
+                auto&& op2 = f2.get();
+
                 if (extract_numeric_value_dimension(
                         op2, this_->name_, this_->codename_) != 0)
                 {
@@ -302,8 +308,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "left hand side operand has unsupported "
                                 "number of dimensions"));
                 }
-            }),
-            value_operand(operands[0], args, name_, codename_, ctx),
-            value_operand(operands[1], args, name_, codename_, ctx));
+            },
+            std::move(op0),
+            value_operand(operands[1], args, name_, codename_, std::move(ctx)));
     }
 }}}

@@ -230,6 +230,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
+        auto&& op0 = value_operand(operands[0], args, name_,
+            codename_, add_mode(ctx, eval_dont_evaluate_lambdas));
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), ctx](
@@ -299,9 +302,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the second argument to fmap must be an iterable "
                             "object (a list or a numeric type)"));
             },
-            value_operand(operands[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
-            value_operand(operands[1], args, name_, codename_, ctx));
+            std::move(op0),
+            value_operand(operands[1], args, name_, codename_, std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -516,6 +518,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::copy(operands.begin() + 1, operands.end(),
             std::back_inserter(lists));
 
+        auto&& op0 = value_operand(operands[0], args, name_,
+            codename_, add_mode(ctx, eval_dont_evaluate_lambdas));
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_ = std::move(this_), ctx](
@@ -570,11 +575,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "compatible iterable objects (all lists or all "
                             "numeric)"));
             }),
-            value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            std::move(op0),
             detail::map_operands(
-                lists, functional::value_operand{}, args,
-                name_, codename_, ctx));
+                std::move(lists), functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 
     hpx::future<primitive_argument_type> fmap_operation::eval(

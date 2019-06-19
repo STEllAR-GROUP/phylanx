@@ -484,7 +484,7 @@ namespace phylanx { namespace bindings
                     args.emplace_back(value_operand_sync(
                         p, primitive_arguments_type{}, "dtype", "<unknown>"));
 
-                    primitive type = primitives::create_phytype(
+                    primitive type = primitives::create_primitive_type(
                         hpx::find_here(), std::move(args), "dtype", "<unknown>");
 
                     primitive_argument_type id = type.eval(hpx::launch::sync);

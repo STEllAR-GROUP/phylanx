@@ -644,9 +644,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t ndim = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
 
-                if (ndim !=
-                        extract_numeric_value_dimension(
-                            args[1], this_->name_, this_->codename_) ||
+                if (ndim != extract_numeric_value_dimension(
+                        args[1], this_->name_, this_->codename_) ||
                     ndim != 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -660,7 +659,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() > 2)
                 {
                     padding = extract_string_value(
-                        args[2], this_->name_, this_->codename_);
+                        std::move(args[2]), this_->name_, this_->codename_);
 
                     if (padding != "valid" && padding != "same" &&
                         padding != "causal")

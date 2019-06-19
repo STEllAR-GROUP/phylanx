@@ -165,6 +165,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return std::make_shared<iteration_for>(
                 shared_from_this(), std::move(ctx))->init(args, noargs);
         }
+
         return std::make_shared<iteration_for>(
             shared_from_this(), std::move(ctx))->init(operands_, args);
     }

@@ -360,23 +360,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            -> primitive_argument_type
+            {
                 //TODO: "order" is not implemented, "kind" is ignored
                 std::int64_t axis = -1;
                 std::string kind = "quicksort";
                 if (args.size() > 2)
+                {
                     kind = extract_string_value(
                         std::move(args[2]), this_->name_, this_->codename_);
+                }
 
-                if ((kind != "quicksort" && kind != "mergesort") &&
-                    (kind != "heapsort" && kind != "stable"))
+                if (kind != "quicksort" && kind != "mergesort" &&
+                    kind != "heapsort" && kind != "stable")
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sort::eval",
                         this_->generate_error_message(
                             "sort algorithm not supported"));
+                }
+
                 if (args.size() > 1)
                 {
                     if (!valid(args[1]))

@@ -39,8 +39,7 @@ namespace phylanx {namespace execution_tree { namespace primitives
     };
 
     PHYLANX_EXPORT primitive create_store_operation(
-        hpx::id_type const& locality,
-        primitive_arguments_type&& operands,
+        hpx::id_type const& locality, primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}
 
