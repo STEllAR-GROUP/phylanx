@@ -15,9 +15,13 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(avg_pool_operation_plugin,
     phylanx::execution_tree::primitives::pool_operation::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(batch_dot_operation_plugin,
     phylanx::execution_tree::primitives::batch_dot_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(bin_cross_operation_plugin,
+    phylanx::execution_tree::primitives::bin_cross_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(cat_cross_operation_plugin,
+    phylanx::execution_tree::primitives::cat_cross_operation::match_data);
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 PHYLANX_REGISTER_PLUGIN_FACTORY(conv1d_operation_plugin,
     phylanx::execution_tree::primitives::conv1d_operation::match_data);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 PHYLANX_REGISTER_PLUGIN_FACTORY(ctc_decode_operation_plugin,
     phylanx::execution_tree::primitives::ctc_decode_operation::match_data);
 #endif
@@ -39,10 +43,6 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(sigmoid_operation_plugin,
     phylanx::execution_tree::primitives::sigmoid_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softmax_operation_plugin,
     phylanx::execution_tree::primitives::softmax_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(cat_cross_operation_plugin,
-    phylanx::execution_tree::primitives::cat_cross_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(bin_cross_operation_plugin,
-    phylanx::execution_tree::primitives::bin_cross_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softplus_operation_plugin,
     phylanx::execution_tree::primitives::softplus_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softsign_operation_plugin,
