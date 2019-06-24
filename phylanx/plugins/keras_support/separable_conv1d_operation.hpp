@@ -55,16 +55,25 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type sep_conv1d_valid(ir::node_data<double>&& arg,
             ir::node_data<double>&& depth_kernel,
             ir::node_data<double>&& point_kernel) const;
+        primitive_argument_type sep_conv1d_valid(ir::node_data<double>&& arg,
+            ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel, std::int64_t strides) const;
+        primitive_argument_type sep_conv1d_valid_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel,
+            std::int64_t dilation_rate) const;
 
         primitive_argument_type sep_conv1d_any_pad(ir::node_data<double>&& arg,
             ir::node_data<double>&& depth_kernel,
             ir::node_data<double>&& point_kernel, std::string&& padding) const;
-        //primitive_argument_type conv1d_any_pad(ir::node_data<double>&& arg,
-        //    ir::node_data<double>&& kernel, std::string&& padding,
-        //    std::int64_t strides) const;
-        //primitive_argument_type conv1d_any_pad_dilation(
-        //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        //    std::string&& padding, std::int64_t dilation_rate) const;
+        primitive_argument_type sep_conv1d_any_pad(ir::node_data<double>&& arg,
+            ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel, std::string&& padding,
+            std::int64_t strides) const;
+        primitive_argument_type sep_conv1d_any_pad_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel, std::string&& padding,
+            std::int64_t dilation_rate) const;
     };
 
     inline primitive create_separable_conv1d_operation(
