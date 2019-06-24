@@ -63,6 +63,17 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<double>&& point_kernel,
             std::int64_t dilation_rate) const;
 
+        primitive_argument_type sep_conv1d_same(ir::node_data<double>&& arg,
+            ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel) const;
+        primitive_argument_type sep_conv1d_same(ir::node_data<double>&& arg,
+            ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel, std::int64_t strides) const;
+        primitive_argument_type sep_conv1d_same_dilation(
+            ir::node_data<double>&& arg, ir::node_data<double>&& depth_kernel,
+            ir::node_data<double>&& point_kernel,
+            std::int64_t dilation_rate) const;
+
         primitive_argument_type sep_conv1d_any_pad(ir::node_data<double>&& arg,
             ir::node_data<double>&& depth_kernel,
             ir::node_data<double>&& point_kernel, std::string&& padding) const;

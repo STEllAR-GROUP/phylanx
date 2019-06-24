@@ -7,6 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
 #include <phylanx/plugins/keras_support/separable_conv1d_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -187,6 +188,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type separable_conv1d_operation::sep_conv1d_same(
+        ir::node_data<double>&& arg,
+        ir::node_data<double>&& depth_kernel,
+        ir::node_data<double>&& point_kernel) const
+    {
+        auto a = arg.tensor();
+        auto dk = depth_kernel.tensor();
+        auto pk = point_kernel.tensor();
+
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t dk_length = dk.pages();
+        std::size_t dk_out_channels = dk.columns();
+        std::size_t pk_out_channels = pk.columns();
+        std::size_t data_length = a.rows();
+        std::int64_t pad_left = (dk_length - 1) / 2;
+
+        blaze::DynamicTensor<double> result(
+            batch, data_length, pk_out_channels, 0);
+
+        for (std::size_t i = 0; i != in_channels; ++i)
+        {
+            for (std::size_t j = 0; j != data_length; ++j)
+            {
+                auto sub = get_subsizes(
+                    data_length, dk_length, i - pad_left);
+                blaze::rowslice(result, j) +=
+                    blaze::trans(blaze::submatrix(blaze::columnslice(a, i), 0,
+                                     sub.image_beg_, batch, sub.size_) *
+                        blaze::trans(blaze::submatrix(blaze::rowslice(dk, i),
+                            0, sub.kernel_beg_, dk_out_channels, sub.size_)) *
+                        blaze::submatrix(blaze::pageslice(pk, 0),
+                            dk_out_channels * i, 0, dk_out_channels,
+                            pk_out_channels));
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type separable_conv1d_operation::sep_conv1d_any_pad(
         ir::node_data<double>&& arg, ir::node_data<double>&& depth_kernel,
             ir::node_data<double>&& point_kernel,
@@ -197,7 +238,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(point_kernel));
 
         // padding == "same"
-        //return conv1d_same(std::move(arg), std::move(kernel));
+        return sep_conv1d_same(std::move(arg), std::move(depth_kernel),
+                std::move(point_kernel));
     }
 
     primitive_argument_type separable_conv1d_operation::sep_conv1d_any_pad(
