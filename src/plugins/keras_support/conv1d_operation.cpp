@@ -565,17 +565,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 std::string padding = "valid";
-                padding = extract_string_value_strict(
-                    args[2], this_->name_, this_->codename_);
-
-                if (padding != "valid" && padding != "same" &&
-                    padding != "causal")
+                if (args.size() > 2)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "conv1d_operation::eval",
-                        this_->generate_error_message(
-                            "invalid padding. Padding can be either "
-                            "'valid', 'same', or 'causal'"));
+                    padding = extract_string_value_strict(
+                        args[2], this_->name_, this_->codename_);
+
+                    if (padding != "valid" && padding != "same" &&
+                        padding != "causal")
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "conv1d_operation::eval",
+                            this_->generate_error_message(
+                                "invalid padding. Padding can be either "
+                                "'valid', 'same', or 'causal'"));
+                    }
                 }
 
 
@@ -595,55 +598,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 std::int64_t strides = 1;
-                if (is_list_operand_strict(args[3]))
+                if (args.size() > 3)
                 {
-                    ir::range s = extract_list_value(
-                        args[3], this_->name_, this_->codename_);
-                    if (s.size() == 1)
+                    if (is_list_operand_strict(args[3]))
                     {
-                        strides = extract_scalar_positive_integer_value_strict(
-                            *s.begin());
+                        ir::range s = extract_list_value(
+                            args[3], this_->name_, this_->codename_);
+                        if (s.size() == 1)
+                        {
+                            strides =
+                                extract_scalar_positive_integer_value_strict(
+                                    *s.begin());
+                        }
+                        else
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "conv1d_operation::eval",
+                                this_->generate_error_message(
+                                    "conv1d_operation requires the strides to "
+                                    "be of rank 1"));
+                        }
                     }
                     else
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "conv1d_operation requires the strides to "
-                                "be of rank 1"));
+                        strides = extract_scalar_positive_integer_value_strict(
+                            args[3], this_->name_, this_->codename_);
                     }
-                }
-                else
-                {
-                    strides = extract_scalar_positive_integer_value_strict(
-                        args[3], this_->name_, this_->codename_);
                 }
 
                 std::int64_t dilation_rate = 1;
-                if (is_list_operand_strict(args[4]))
+                if (args.size() > 4)
                 {
-                    ir::range d = extract_list_value(
-                        args[4], this_->name_, this_->codename_);
-                    if (d.size() == 1)
+                    if (is_list_operand_strict(args[4]))
                     {
-                        dilation_rate =
-                            extract_scalar_positive_integer_value_strict(
-                                *d.begin());
+                        ir::range d = extract_list_value(
+                            args[4], this_->name_, this_->codename_);
+                        if (d.size() == 1)
+                        {
+                            dilation_rate =
+                                extract_scalar_positive_integer_value_strict(
+                                    *d.begin());
+                        }
+                        else
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "conv1d_operation::eval",
+                                this_->generate_error_message(
+                                    "conv1d_operation requires the "
+                                    "dilation_rate to be of rank 1"));
+                        }
                     }
                     else
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "conv1d_operation requires the "
-                                "dilation_rate to be of rank 1"));
+                        dilation_rate =
+                            extract_scalar_positive_integer_value_strict(
+                                args[4], this_->name_, this_->codename_);
                     }
-                }
-                else
-                {
-                    dilation_rate =
-                        extract_scalar_positive_integer_value_strict(
-                            args[4], this_->name_, this_->codename_);
                 }
 
                 if (strides != 1 && dilation_rate != 1)
