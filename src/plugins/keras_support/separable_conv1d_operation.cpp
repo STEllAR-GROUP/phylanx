@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t result_length = a.rows() - dk_length + 1;
 
         blaze::DynamicTensor<double> result(
-            batch, result_length, pk_out_channels, 0);
+            batch, result_length, pk_out_channels, 0.);
 
         for (std::size_t i = 0; i != in_channels; ++i)
         {
@@ -125,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             static_cast<double>(a.rows() - dk_length + 1) / strides);
 
         blaze::DynamicTensor<double> result(
-            batch, result_length, pk_out_channels, 0);
+            batch, result_length, pk_out_channels, 0.);
 
         for (std::size_t i = 0; i != in_channels; ++i)
         {
@@ -169,7 +169,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "result_length where padding is valid"));
 
         blaze::DynamicTensor<double> result(
-            batch, result_length, pk_out_channels, 0);
+            batch, result_length, pk_out_channels, 0.);
 
         for (std::size_t i = 0; i != in_channels; ++i)
         {
@@ -197,31 +197,127 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto dk = depth_kernel.tensor();
         auto pk = point_kernel.tensor();
 
+        auto dk_length = static_cast<std::int64_t>(dk.pages());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
-        std::size_t dk_length = dk.pages();
         std::size_t dk_out_channels = dk.columns();
         std::size_t pk_out_channels = pk.columns();
-        std::size_t data_length = a.rows();
         std::int64_t pad_left = (dk_length - 1) / 2;
 
         blaze::DynamicTensor<double> result(
-            batch, data_length, pk_out_channels, 0);
+            batch, data_length, pk_out_channels, 0.);
 
         for (std::size_t i = 0; i != in_channels; ++i)
         {
             for (std::size_t j = 0; j != data_length; ++j)
             {
                 auto sub = get_subsizes(
-                    data_length, dk_length, i - pad_left);
+                    data_length, dk_length, j - pad_left);
                 blaze::rowslice(result, j) +=
                     blaze::trans(blaze::submatrix(blaze::columnslice(a, i), 0,
                                      sub.image_beg_, batch, sub.size_) *
-                        blaze::trans(blaze::submatrix(blaze::rowslice(dk, i),
-                            0, sub.kernel_beg_, dk_out_channels, sub.size_)) *
+                        blaze::trans(blaze::submatrix(blaze::rowslice(dk, i), 0,
+                            sub.kernel_beg_, dk_out_channels, sub.size_)) *
                         blaze::submatrix(blaze::pageslice(pk, 0),
                             dk_out_channels * i, 0, dk_out_channels,
                             pk_out_channels));
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type separable_conv1d_operation::sep_conv1d_same(
+        ir::node_data<double>&& arg, ir::node_data<double>&& depth_kernel,
+        ir::node_data<double>&& point_kernel, std::int64_t strides) const
+    {
+        auto a = arg.tensor();
+        auto dk = depth_kernel.tensor();
+        auto pk = point_kernel.tensor();
+
+        auto dk_length = static_cast<std::int64_t>(dk.pages());
+        auto data_length = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t dk_out_channels = dk.columns();
+        std::size_t pk_out_channels = pk.columns();
+        std::int64_t pad_width;
+
+        if (data_length % strides == 0)
+        {
+            pad_width =
+                (blaze::max)(dk_length - strides, static_cast<std::int64_t>(0));
+        }
+        else
+        {
+            pad_width = (blaze::max)(dk_length - (data_length % strides),
+                static_cast<std::int64_t>(0));
+        }
+
+        std::size_t result_length = blaze::ceil(
+            static_cast<double>(data_length + pad_width - dk_length + 1) /
+            strides);
+
+        blaze::DynamicTensor<double> result(
+            batch, result_length, pk_out_channels, 0.);
+        std::size_t pad_left = pad_width / 2;
+
+        for (std::size_t i = 0; i != in_channels; ++i)
+        {
+            for (std::size_t j = 0; j != result_length; ++j)
+            {
+                auto sub = get_subsizes(
+                    data_length, dk_length, j * strides - pad_left);
+                blaze::rowslice(result, j) +=
+                    blaze::trans(blaze::submatrix(blaze::columnslice(a, i), 0,
+                                     sub.image_beg_, batch, sub.size_) *
+                        blaze::trans(blaze::submatrix(blaze::rowslice(dk, i), 0,
+                            sub.kernel_beg_, dk_out_channels, sub.size_)) *
+                        blaze::submatrix(blaze::pageslice(pk, 0),
+                            dk_out_channels * i, 0, dk_out_channels,
+                            pk_out_channels));
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type separable_conv1d_operation::sep_conv1d_same_dilation(
+        ir::node_data<double>&& arg, ir::node_data<double>&& depth_kernel,
+        ir::node_data<double>&& point_kernel, std::int64_t dilation_rate) const
+    {
+        auto a = arg.tensor();
+        auto dk = depth_kernel.tensor();
+        auto pk = point_kernel.tensor();
+
+        auto dk_length = static_cast<std::int64_t>(dk.pages());
+        auto data_length = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t dk_out_channels = dk.columns();
+        std::size_t pk_out_channels = pk.columns();
+        std::int64_t pad_left = (dilation_rate * (dk_length - 1) ) / 2;
+
+        blaze::DynamicTensor<double> result(
+            batch, data_length, pk_out_channels, 0.);
+
+        for (std::size_t i = 0; i != in_channels; ++i)
+        {
+            for (std::size_t j = 0; j != data_length; ++j)
+            {
+                auto sub = get_subsizes_dilated(
+                    data_length, dk_length, j - pad_left, dilation_rate);
+
+                if (sub.size_ == 0)
+                    continue;
+
+                blaze::rowslice(result, j) += blaze::trans(
+                    blaze::dilatedsubmatrix(blaze::columnslice(a, i), 0,
+                        sub.image_beg_, batch, sub.size_, 1, dilation_rate) *
+                    blaze::trans(blaze::submatrix(blaze::rowslice(dk, i), 0,
+                        sub.kernel_beg_, dk_out_channels, sub.size_)) *
+                    blaze::submatrix(blaze::pageslice(pk, 0),
+                        dk_out_channels * i, 0, dk_out_channels,
+                        pk_out_channels));
             }
         }
         return primitive_argument_type{std::move(result)};
@@ -251,8 +347,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return sep_conv1d_valid(std::move(arg), std::move(depth_kernel),
                 std::move(point_kernel), strides);
 
-            //return conv1d_same(std::move(arg), std::move(kernel), strides);
-
+        // padding == "same"
+        return sep_conv1d_same(std::move(arg), std::move(depth_kernel),
+            std::move(point_kernel), strides);
     }
 
     primitive_argument_type
@@ -266,9 +363,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(depth_kernel), std::move(point_kernel),
                 dilation_rate);
 
-            //return conv1d_same_dilation(
-            //    std::move(arg), std::move(kernel), dilation_rate);
-
+         //padding == "same"
+        return sep_conv1d_same_dilation(std::move(arg), std::move(depth_kernel),
+            std::move(point_kernel), dilation_rate);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -326,15 +423,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 std::string padding = "valid";
-                padding = extract_string_value(
-                    args[3], this_->name_, this_->codename_);
+                if (args.size() > 3)
+                {
+                    padding = extract_string_value(
+                        args[3], this_->name_, this_->codename_);
 
-                if (padding != "valid" && padding != "same")
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "separable_conv1d_operation::eval",
-                        this_->generate_error_message(
-                            "invalid padding. Padding can be either valid, "
-                            "or same"));
+                    if (padding != "valid" && padding != "same")
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "separable_conv1d_operation::eval",
+                            this_->generate_error_message(
+                                "invalid padding. Padding can be either "
+                                "`valid`, or `same`"));
+                }
 
                 if (padding == "valid")
                 {
@@ -351,57 +451,63 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 std::int64_t strides = 1;
-                if (is_list_operand_strict(args[4]))
+                if (args.size() > 4)
                 {
-                    ir::range s = extract_list_value(
-                        args[4], this_->name_, this_->codename_);
-                    if (s.size() == 1)
+                    if (is_list_operand_strict(args[4]))
                     {
-                        strides =
-                            extract_scalar_positive_integer_value_strict(*s.begin());
+                        ir::range s = extract_list_value(
+                            args[4], this_->name_, this_->codename_);
+                        if (s.size() == 1)
+                        {
+                            strides =
+                                extract_scalar_positive_integer_value_strict(
+                                    *s.begin());
+                        }
+                        else
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "separable_conv1d_operation::eval",
+                                this_->generate_error_message(
+                                    "separable_conv1d requires the strides to "
+                                    "be of rank 1"));
+                        }
                     }
                     else
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "separable_conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "separable_conv1d requires the strides to "
-                                "be of rank 1"));
+                        strides = extract_scalar_positive_integer_value_strict(
+                            args[4], this_->name_, this_->codename_);
                     }
                 }
-                else
-                {
-                    strides = extract_scalar_positive_integer_value_strict(
-                        args[4], this_->name_, this_->codename_);
-                }
-
 
                 std::int64_t dilation_rate = 1;
-                if (is_list_operand_strict(args[5]))
+                if (args.size() > 5)
                 {
-                    ir::range d = extract_list_value(
-                        args[5], this_->name_, this_->codename_);
-                    if (d.size() == 1)
+                    if (is_list_operand_strict(args[5]))
+                    {
+                        ir::range d = extract_list_value(
+                            args[5], this_->name_, this_->codename_);
+                        if (d.size() == 1)
+                        {
+                            dilation_rate =
+                                extract_scalar_positive_integer_value_strict(
+                                    *d.begin());
+                        }
+                        else
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "separable_conv1d_operation::eval",
+                                this_->generate_error_message(
+                                    "separable_conv1d requires the "
+                                    "dilation_rate to be of rank 1"));
+                        }
+                    }
+                    else
                     {
                         dilation_rate =
                             extract_scalar_positive_integer_value_strict(
-                                *d.begin());
-                    }
-                    else
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "separable_conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "separable_conv1d requires the "
-                                "dilation_rate to be of rank 1"));
+                                args[5], this_->name_, this_->codename_);
                     }
                 }
-                else
-                {
-                    dilation_rate = extract_scalar_positive_integer_value_strict(
-                        args[5], this_->name_, this_->codename_);
-                }
-
 
                 if (strides != 1 && dilation_rate != 1)
                 {
