@@ -27,6 +27,10 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(l2_normalize_operation_plugin,
     phylanx::execution_tree::primitives::l2_normalize_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(max_pool2d_operation_plugin,
     phylanx::execution_tree::primitives::max_pool2d_operation::match_data);
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+PHYLANX_REGISTER_PLUGIN_FACTORY(max_pool3d_operation_plugin,
+    phylanx::execution_tree::primitives::max_pool3d_operation::match_data);
+#endif
 PHYLANX_REGISTER_PLUGIN_FACTORY(one_hot_operation_plugin,
     phylanx::execution_tree::primitives::one_hot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(relu_operation_plugin,

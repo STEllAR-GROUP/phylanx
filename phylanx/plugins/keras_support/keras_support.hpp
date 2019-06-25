@@ -13,6 +13,7 @@
 #include <phylanx/plugins/keras_support/hard_sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/l2_normalize_operation.hpp>
 #include <phylanx/plugins/keras_support/max_pool2d_operation.hpp>
+#include <phylanx/plugins/keras_support/max_pool3d_operation.hpp>
 #include <phylanx/plugins/keras_support/one_hot_operation.hpp>
 #include <phylanx/plugins/keras_support/relu_operation.hpp>
 #include <phylanx/plugins/keras_support/resize_operation.hpp>

@@ -11,8 +11,9 @@ set(tests
     elu_operation
     hard_sigmoid_operation
     l2_normalize_operation
+    max_pool2d_operation
+    max_pool3d_operation
     one_hot_operation
-    pool_operation
     relu_operation
     resize_operation
     sigmoid_operation
