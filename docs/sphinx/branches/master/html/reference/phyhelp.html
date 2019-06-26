@@ -1127,16 +1127,18 @@ uninitialized.</p>
 <dt>conv1d (x, kernel, padding, strides, dilation_rate)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p>x (array) : a vector
-kernel (array) : a vector
-padding (optional, string) : padding mode, <cite>valid</cite> by default. It</p>
-<blockquote>
-<div>can be either <cite>valid</cite>, <cite>same</cite> or <cite>causal</cite>. <cite>vaild</cite> means no
+<div><dl class="docutils">
+<dt>x (array) <span class="classifier-delimiter">:</span> <span class="classifier">a 3d array consiting of batch, in_length and</span></dt>
+<dd>in_channels dimensions.</dd>
+<dt>kernel (array) <span class="classifier-delimiter">:</span> <span class="classifier">a 3d array consisting of filter_length,</span></dt>
+<dd>in_channels and out_channels dimension. Note that the
+in_channels should be the same in kernel and original array.</dd>
+<dt>padding (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">padding mode, <cite>valid</cite> by default. It</span></dt>
+<dd>can be either <cite>valid</cite>, <cite>same</cite> or <cite>causal</cite>. <cite>vaild</cite> means no
 padding. <cite>same</cite> results the output with the same shape as
 original array in case of unit strides. <cite>causal</cite> zero pads the
 array in a way that no output element depend on the input
-elements of its future</div></blockquote>
-<dl class="docutils">
+elements of its future.</dd>
 <dt>strides (optional, integer) <span class="classifier-delimiter">:</span> <span class="classifier">the step to apply convolution over</span></dt>
 <dd>array. It sets to 1 by default.</dd>
 <dt>dilation_rate (optional, integer) <span class="classifier-delimiter">:</span> <span class="classifier">indicates the dilation rate,</span></dt>
@@ -2915,7 +2917,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Jun 17, 2019.
+        Last updated on Jun 26, 2019.
       </span>
 
     </p>
