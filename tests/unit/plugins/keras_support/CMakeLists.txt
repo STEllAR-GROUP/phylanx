@@ -5,6 +5,8 @@
 
 set(tests
 
+    avg_pool2d_operation
+    avg_pool3d_operation
     batch_dot_operation
     conv1d_operation
     ctc_decode_operation

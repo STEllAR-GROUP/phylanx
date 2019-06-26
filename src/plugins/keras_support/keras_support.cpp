@@ -11,6 +11,12 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(avg_pool2d_operation_plugin,
+    phylanx::execution_tree::primitives::avg_pool2d_operation::match_data);
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+PHYLANX_REGISTER_PLUGIN_FACTORY(avg_pool3d_operation_plugin,
+    phylanx::execution_tree::primitives::avg_pool3d_operation::match_data);
+#endif
 PHYLANX_REGISTER_PLUGIN_FACTORY(batch_dot_operation_plugin,
     phylanx::execution_tree::primitives::batch_dot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(conv1d_operation_plugin,

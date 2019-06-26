@@ -7,7 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/keras_support/max_pool2d_operation.hpp>
+#include <phylanx/plugins/keras_support/avg_pool2d_operation.hpp>
 #include <phylanx/plugins/keras_support/pool_indices_helper.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -30,14 +30,14 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const max_pool2d_operation::match_data =
+    match_pattern_type const avg_pool2d_operation::match_data =
     {
-        hpx::util::make_tuple("max_pool2d",
+        hpx::util::make_tuple("avg_pool2d",
         std::vector<std::string>{R"(
-            max_pool2d(_1,_2_pool_size,
+            avg_pool2d(_1,_2_pool_size,
             __arg(_3_padding, "valid"),
             __arg(_4_strides, list(1,1))))"},
-        &create_max_pool2d_operation, &create_primitive<max_pool2d_operation>,
+        &create_avg_pool2d_operation, &create_primitive<avg_pool2d_operation>,
         R"(x, pool_size, padding, strides
         Args:
 
@@ -51,16 +51,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         Returns:
 
-        The result of 2d max pooling with `pool_size` filters)")};
+        The result of 2d avg pooling with `pool_size` filters)")};
 
     ///////////////////////////////////////////////////////////////////////////
-    max_pool2d_operation::max_pool2d_operation(primitive_arguments_type&& operands,
+    avg_pool2d_operation::avg_pool2d_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type max_pool2d_operation::max_pool2d(
+    primitive_argument_type avg_pool2d_operation::avg_pool2d(
         ir::node_data<double>&& arg, std::size_t filter_height,
         std::size_t filter_width) const
     {
@@ -75,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             for (std::size_t c = 0; c != result_width; ++c)
             {
-                result(r, c) = (blaze::max)(
+                result(r, c) = blaze::mean(
                     blaze::submatrix(m, r, c, filter_height, filter_width));
             }
         }
@@ -83,7 +83,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type max_pool2d_operation::max_pool2d(
+    primitive_argument_type avg_pool2d_operation::avg_pool2d(
         ir::node_data<double>&& arg, std::size_t filter_height,
         std::size_t filter_width, std::size_t stride_height,
         std::size_t stride_width) const
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (std::size_t c = 0; c != result_width; ++c)
             {
                 result(r, c) =
-                    (blaze::max)(blaze::submatrix(m, r * stride_height,
+                    blaze::mean(blaze::submatrix(m, r * stride_height,
                         c * stride_width, filter_height, filter_width));
             }
         }
@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type max_pool2d_operation::max_pool2d_same(
+    primitive_argument_type avg_pool2d_operation::avg_pool2d_same(
         ir::node_data<double>&& arg,
          std::size_t filter_height, std::size_t filter_width) const
     {
@@ -135,14 +135,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     get_subsizes(ncolumns, filter_width, c - pad_left);
 
                 result(r, c) =
-                    (blaze::max)(blaze::submatrix(m, sub_row.image_beg_,
+                    blaze::mean(blaze::submatrix(m, sub_row.image_beg_,
                     sub_column.image_beg_, sub_row.size_, sub_column.size_));
             }
         }
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type max_pool2d_operation::max_pool2d_same(
+    primitive_argument_type avg_pool2d_operation::avg_pool2d_same(
         ir::node_data<double>&& arg, std::size_t filter_height,
         std::size_t filter_width, std::size_t stride_height,
         std::size_t stride_width) const
@@ -191,7 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ncolumns, filter_width, c * stride_width - pad_left);
 
                 result(r, c) =
-                    (blaze::max)(blaze::submatrix(m, sub_row.image_beg_,
+                    blaze::mean(blaze::submatrix(m, sub_row.image_beg_,
                     sub_column.image_beg_, sub_row.size_, sub_column.size_));
             }
         }
@@ -200,41 +200,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type max_pool2d_operation::max_pool_any_pad(
+    primitive_argument_type avg_pool2d_operation::avg_pool_any_pad(
         ir::node_data<double>&& arg, std::size_t filter_height,
         std::size_t filter_width, std::string&& padding) const
     {
         if (padding == "valid")
-            return max_pool2d(std::move(arg), filter_height, filter_width);
+            return avg_pool2d(std::move(arg), filter_height, filter_width);
 
         // padding == "same"
-        return max_pool2d_same(std::move(arg), filter_height, filter_width);
+        return avg_pool2d_same(std::move(arg), filter_height, filter_width);
     }
 
-    primitive_argument_type max_pool2d_operation::max_pool_any_pad(
+    primitive_argument_type avg_pool2d_operation::avg_pool_any_pad(
         ir::node_data<double>&& arg, std::size_t filter_height,
         std::size_t filter_width, std::string&& padding,
         std::size_t stride_height, std::size_t stride_width) const
     {
         if (padding == "valid")
-            return max_pool2d(std::move(arg), filter_height, filter_width,
+            return avg_pool2d(std::move(arg), filter_height, filter_width,
                 stride_height, stride_width);
 
         // padding == "same"
-        return max_pool2d_same(std::move(arg), filter_height, filter_width,
+        return avg_pool2d_same(std::move(arg), filter_height, filter_width,
             stride_height, stride_width);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> max_pool2d_operation::eval(
+    hpx::future<primitive_argument_type> avg_pool2d_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() < 2 || operands.size() > 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "max_pool2d_operation::eval",
-                generate_error_message("the max_pool2d_operation primitive "
+                "avg_pool2d_operation::eval",
+                generate_error_message("the avg_pool2d_operation primitive "
                                        "requires between 2 and 4 operands"));
         }
 
@@ -242,9 +242,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (!valid(i))
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "max_pool2d_operation::eval",
+                    "avg_pool2d_operation::eval",
                     generate_error_message(
-                        "the max_pool2d_operation primitive requires that the "
+                        "the avg_pool2d_operation primitive requires that the "
                         "arguments given by the operands array are valid"));
         }
 
@@ -263,7 +263,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (pool_size.size() != ndim || ndim != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "max_pool2d_operation::eval",
+                        "avg_pool2d_operation::eval",
                         this_->generate_error_message(
                             "the length of pool_size should be same as array "
                             "dimensions. pool2d operates on matrices and "
@@ -284,7 +284,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     if (padding != "valid" && padding != "same")
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "max_pool2d_operation::eval",
+                            "avg_pool2d_operation::eval",
                             this_->generate_error_message(
                                 "invalid padding. Padding can be either "
                                 "`valid` or `same`"));
@@ -298,7 +298,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (filter_height > dims[0] || filter_width > dims[1])
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "max_pool2d_operation::eval",
+                            "avg_pool2d_operation::eval",
                             this_->generate_error_message(
                                 "at least one of the filter sizes is greater "
                                 "than the array size in the corresponding "
@@ -316,7 +316,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (strides.size() != 2)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "max_pool2d_operation::eval",
+                            "avg_pool2d_operation::eval",
                             this_->generate_error_message(
                                 "pool2d requires strides to be a tuple of 2 "
                                 "integers"));
@@ -336,14 +336,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (strides.empty()) // strides contain only 1s
                 {
-                    return this_->max_pool_any_pad(
+                    return this_->avg_pool_any_pad(
                         extract_numeric_value(
                             std::move(args[0]), this_->name_, this_->codename_),
                         filter_height, filter_width, std::move(padding));
                 }
 
                 // non-default strides
-                return this_->max_pool_any_pad(
+                return this_->avg_pool_any_pad(
                     extract_numeric_value(
                         std::move(args[0]), this_->name_, this_->codename_),
                     filter_height, filter_width, std::move(padding),
