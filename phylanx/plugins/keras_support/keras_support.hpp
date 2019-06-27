@@ -7,6 +7,8 @@
 #define PHYLANX_PLUGINS_KERAS_SUPPORT_MAR_11_2019_0441PM
 
 #include <phylanx/plugins/keras_support/batch_dot_operation.hpp>
+#include <phylanx/plugins/keras_support/binary_crossentropy_operation.hpp>
+#include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/conv1d_operation.hpp>
 #include <phylanx/plugins/keras_support/ctc_decode_operation.hpp>
 #include <phylanx/plugins/keras_support/elu_operation.hpp>
@@ -16,10 +18,9 @@
 #include <phylanx/plugins/keras_support/pool_operation.hpp>
 #include <phylanx/plugins/keras_support/relu_operation.hpp>
 #include <phylanx/plugins/keras_support/resize_operation.hpp>
+#include <phylanx/plugins/keras_support/separable_conv1d_operation.hpp>
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
-#include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
-#include <phylanx/plugins/keras_support/binary_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/softplus_operation.hpp>
 #include <phylanx/plugins/keras_support/softsign_operation.hpp>
 #include <phylanx/plugins/keras_support/switch_operation.hpp>
