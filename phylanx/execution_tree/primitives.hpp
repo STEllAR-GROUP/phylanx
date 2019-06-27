@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/access_function.hpp>
 #include <phylanx/execution_tree/primitives/access_variable.hpp>
+#include <phylanx/execution_tree/primitives/annotate_primitive.hpp>
 #include <phylanx/execution_tree/primitives/assert_condition.hpp>
 #include <phylanx/execution_tree/primitives/call_function.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>

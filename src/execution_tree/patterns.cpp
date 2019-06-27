@@ -140,6 +140,7 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(assert_condition),
 
                 // special purpose primitives
+                PHYLANX_MATCH_DATA(annotate_primitive),
                 PHYLANX_MATCH_DATA(store_operation),
                 PHYLANX_MATCH_DATA(phytype),
                 PHYLANX_MATCH_DATA(phyname),
@@ -148,6 +149,7 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(access_argument),
                 PHYLANX_MATCH_DATA(call_function),
                 PHYLANX_MATCH_DATA(target_reference),
+
 
                 PHYLANX_MATCH_DATA(access_function),
                 PHYLANX_MATCH_DATA(access_variable),
@@ -165,8 +167,10 @@ namespace phylanx { namespace execution_tree
                 patterns.push_back(pattern{p.name_, p.pattern_data_});
             }
 
-            patterns.push_back(
-                pattern{"locality", primitives::locality_match_data});
+            patterns.push_back(pattern{
+                "locality", primitives::locality_match_data});
+            patterns.push_back(pattern{
+                "num_localities", primitives::num_localities_match_data});
 
             return patterns;
         }

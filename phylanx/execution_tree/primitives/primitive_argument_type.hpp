@@ -8,11 +8,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/util/hashed_string.hpp>
-#include <phylanx/util/variant.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/ir/dictionary.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
+#include <phylanx/util/hashed_string.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/assertion.hpp>
@@ -47,6 +47,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     class primitive;
     struct primitive_argument_type;
+    struct annotation;
 
     ///////////////////////////////////////////////////////////////////////////
     struct topology
@@ -369,94 +370,197 @@ namespace phylanx { namespace execution_tree
             dictionary_index = 8
         };
 
+        using annotation_ptr = std::shared_ptr<execution_tree::annotation>;
+
         primitive_argument_type() = default;
 
+        // nil
         primitive_argument_type(ast::nil val)
           : argument_value_type{val}
         {}
+        primitive_argument_type(ast::nil val, annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
 
+        // std::uint8_t
         explicit primitive_argument_type(bool val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
         {}
         explicit primitive_argument_type(std::uint8_t val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
         {}
         explicit primitive_argument_type(
                 blaze::DynamicVector<std::uint8_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicVector<std::uint8_t>&& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
+          : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
         {}
         explicit primitive_argument_type(
                 blaze::DynamicMatrix<std::uint8_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicMatrix<std::uint8_t>&& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
+          : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
         {}
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit primitive_argument_type(
                 blaze::DynamicTensor<std::uint8_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicTensor<std::uint8_t>&& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
+          : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
         {}
 #endif
 
-        primitive_argument_type(phylanx::ir::node_data<std::uint8_t> const& val)
+        primitive_argument_type(bool val, annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(std::uint8_t val, annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicVector<std::uint8_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicVector<std::uint8_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicMatrix<std::uint8_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicMatrix<std::uint8_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
+          , annotation_(ann)
+        {}
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type(blaze::DynamicTensor<std::uint8_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicTensor<std::uint8_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
+          , annotation_(ann)
+        {}
+#endif
+
+        primitive_argument_type(ir::node_data<std::uint8_t> const& val)
           : argument_value_type{val}
         {}
-        primitive_argument_type(phylanx::ir::node_data<std::uint8_t>&& val)
+        primitive_argument_type(ir::node_data<std::uint8_t>&& val)
           : argument_value_type{std::move(val)}
         {}
+        primitive_argument_type(ir::node_data<std::uint8_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(ir::node_data<std::uint8_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
 
+        // std::int64_t
         explicit primitive_argument_type(std::int64_t val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
-        {
-        }
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+        {}
         explicit primitive_argument_type(
                 blaze::DynamicVector<std::int64_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
-        {
-        }
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+        {}
         explicit primitive_argument_type(
                 blaze::DynamicVector<std::int64_t>&& val)
           : argument_value_type{
-                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
-        {
-        }
+                ir::node_data<std::int64_t>{std::move(val)}}
+        {}
         explicit primitive_argument_type(
                 blaze::DynamicMatrix<std::int64_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
-        {
-        }
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+        {}
         explicit primitive_argument_type(
                 blaze::DynamicMatrix<std::int64_t>&& val)
           : argument_value_type{
-                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
-        {
-        }
+                ir::node_data<std::int64_t>{std::move(val)}}
+        {}
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit primitive_argument_type(
                 blaze::DynamicTensor<std::int64_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicTensor<std::int64_t>&& val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{std::move(val)}}
+          : argument_value_type{ir::node_data<std::int64_t>{std::move(val)}}
+        {}
+#endif
+        primitive_argument_type(std::int64_t val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicVector<std::int64_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicVector<std::int64_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{
+                ir::node_data<std::int64_t>{std::move(val)}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicMatrix<std::int64_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicMatrix<std::int64_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{
+                ir::node_data<std::int64_t>{std::move(val)}}
+          , annotation_(ann)
+        {}
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type(blaze::DynamicTensor<std::int64_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::int64_t>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicTensor<std::int64_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<std::int64_t>{std::move(val)}}
+          , annotation_(ann)
         {}
 #endif
 
-        primitive_argument_type(phylanx::ir::node_data<std::int64_t> const& val)
+        primitive_argument_type(ir::node_data<std::int64_t> const& val)
           : argument_value_type{val}
-        {
-        }
-        primitive_argument_type(phylanx::ir::node_data<std::int64_t>&& val)
+        {}
+        primitive_argument_type(ir::node_data<std::int64_t>&& val)
           : argument_value_type{std::move(val)}
-        {
-        }
+        {}
+        primitive_argument_type(ir::node_data<std::int64_t> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(ir::node_data<std::int64_t>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
 
+        // string
         primitive_argument_type(char const* val)
           : argument_value_type{std::string(val)}
         {}
@@ -466,82 +570,201 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type(std::string && val)
           : argument_value_type{std::move(val)}
         {}
+        primitive_argument_type(char const* val, annotation_ptr const& ann)
+          : argument_value_type{std::string(val)}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(std::string const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(std::string && val, annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
 
+        // double
         explicit primitive_argument_type(double val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
+          : argument_value_type{ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicVector<double> const& val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
+          : argument_value_type{ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicVector<double>&& val)
-          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
+          : argument_value_type{ir::node_data<double>{std::move(val)}}
         {}
         explicit primitive_argument_type(blaze::DynamicMatrix<double> const& val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
+          : argument_value_type{ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicMatrix<double>&& val)
-          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
+          : argument_value_type{ir::node_data<double>{std::move(val)}}
         {}
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit primitive_argument_type(blaze::DynamicTensor<double> const& val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
+          : argument_value_type{ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicTensor<double>&& val)
-          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
+          : argument_value_type{ir::node_data<double>{std::move(val)}}
+        {}
+#endif
+        primitive_argument_type(double val, annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicVector<double> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicVector<double>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{std::move(val)}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicMatrix<double> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicMatrix<double>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{std::move(val)}}
+          , annotation_(ann)
+        {}
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type(blaze::DynamicTensor<double> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{val}}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(blaze::DynamicTensor<double>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::node_data<double>{std::move(val)}}
+          , annotation_(ann)
         {}
 #endif
 
-        primitive_argument_type(phylanx::ir::node_data<double> const& val)
+        primitive_argument_type(ir::node_data<double> const& val)
           : argument_value_type{val}
         {}
-        primitive_argument_type(phylanx::ir::node_data<double>&& val)
+        primitive_argument_type(ir::node_data<double>&& val)
           : argument_value_type{std::move(val)}
         {}
+        primitive_argument_type(ir::node_data<double> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(ir::node_data<double>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
 
-        primitive_argument_type(primitive const& val)
+        // primitive
+        explicit primitive_argument_type(primitive const& val)
           : argument_value_type{val}
         {}
-        primitive_argument_type(primitive && val)
+        explicit primitive_argument_type(primitive && val)
           : argument_value_type{std::move(val)}
         {}
+        primitive_argument_type(primitive const& val, annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(primitive && val, annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
 
-        primitive_argument_type(std::vector<ast::expression> const& val)
+        // std::vector<ast::expression>
+        explicit primitive_argument_type(std::vector<ast::expression> const& val)
           : argument_value_type{val}
         {}
-        primitive_argument_type(std::vector<ast::expression>&& val)
+        explicit primitive_argument_type(std::vector<ast::expression>&& val)
           : argument_value_type{std::move(val)}
         {}
+        primitive_argument_type(std::vector<ast::expression> const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(std::vector<ast::expression>&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
 
-        explicit primitive_argument_type(
-            primitive_arguments_type const& val)
+        // primitive_arguments_type
+        explicit primitive_argument_type(primitive_arguments_type const& val)
           : argument_value_type{ir::range{val}}
         {}
-
-        explicit primitive_argument_type(
-            primitive_arguments_type&& val)
+        explicit primitive_argument_type(primitive_arguments_type&& val)
           : argument_value_type{ir::range{std::move(val)}}
         {}
-
-        primitive_argument_type(ir::range const& val)
-          : argument_value_type{val}
+        primitive_argument_type(primitive_arguments_type const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::range{val}}
+          , annotation_(ann)
         {}
-        primitive_argument_type(ir::range&& val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        primitive_argument_type(ir::dictionary const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(ir::dictionary&& val)
-          : argument_value_type{std::move(val)}
+        primitive_argument_type(primitive_arguments_type&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{ir::range{std::move(val)}}
+          , annotation_(ann)
         {}
 
-        primitive_argument_type(argument_value_type const& val)
+        // ir::range
+        explicit primitive_argument_type(ir::range const& val)
           : argument_value_type{val}
         {}
-        primitive_argument_type(argument_value_type&& val)
+        explicit primitive_argument_type(ir::range&& val)
           : argument_value_type{std::move(val)}
         {}
+        primitive_argument_type(ir::range const& val, annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(ir::range&& val, annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
+
+        // ir::dictionary
+        explicit primitive_argument_type(ir::dictionary const& val)
+          : argument_value_type{val}
+        {}
+        explicit primitive_argument_type(ir::dictionary&& val)
+          : argument_value_type{std::move(val)}
+        {}
+        primitive_argument_type(ir::dictionary const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(ir::dictionary&& val, annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
+
+        // argument_value_type
+        explicit primitive_argument_type(argument_value_type const& val)
+          : argument_value_type{val}
+        {}
+        explicit primitive_argument_type(argument_value_type&& val)
+          : argument_value_type{std::move(val)}
+        {}
+        primitive_argument_type(argument_value_type const& val,
+                annotation_ptr const& ann)
+          : argument_value_type{val}
+          , annotation_(ann)
+        {}
+        primitive_argument_type(argument_value_type&& val,
+                annotation_ptr const& ann)
+          : argument_value_type{std::move(val)}
+          , annotation_(ann)
+        {}
+
 
         inline primitive_argument_type run(
             eval_context ctx = eval_context{}) const;
@@ -623,6 +846,28 @@ namespace phylanx { namespace execution_tree
         argument_value_type& variant() noexcept { return *this; }
         argument_value_type const& variant() const noexcept { return *this; }
 
+        // support arbitrary annotations
+        bool has_annotation() const
+        {
+            return !!annotation_;
+        }
+
+        annotation_ptr const& annotation() const
+        {
+            return annotation_;
+        }
+
+        PHYLANX_EXPORT void set_annotation(ir::range&& ann,
+            std::string const& name, std::string const& codename);
+        PHYLANX_EXPORT void set_annotation(execution_tree::annotation&& ann,
+            std::string const& name, std::string const& codename);
+        PHYLANX_EXPORT std::string get_annotation_type(std::string const& name,
+            std::string const& codename) const;
+        PHYLANX_EXPORT ir::range get_annotation_data() const;
+        PHYLANX_EXPORT bool find_annotation(std::string const& key,
+            execution_tree::annotation& ann, std::string const& name,
+            std::string const& codename) const;
+
     private:
         friend class hpx::serialization::access;
 
@@ -630,6 +875,9 @@ namespace phylanx { namespace execution_tree
             unsigned);
         PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
             unsigned);
+
+    private:
+        annotation_ptr annotation_;
     };
 
     // a argument is valid of its not nil{}

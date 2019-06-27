@@ -53,6 +53,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         phylanx::execution_tree::primitive_arguments_type const&,
         phylanx::execution_tree::primitive_arguments_type const&,
         std::string const&, std::string const&, eval_context);
+
+    ///////////////////////////////////////////////////////////////////////////
+    extern match_pattern_type const num_localities_match_data;
+
+    hpx::future<primitive_argument_type> get_num_localities(
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context);
 }}}
 
 #endif

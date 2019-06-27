@@ -265,6 +265,24 @@ namespace phylanx { namespace ir
         using range_type =
             util::variant<int_range_type, wrapped_args_type, arg_pair_type>;
 
+    private:
+        template <typename... Ts>
+        static execution_tree::primitive_arguments_type
+            convert_span(std::string key, Ts&&... ts)
+        {
+            execution_tree::primitive_arguments_type ann_data;
+            ann_data.reserve(sizeof...(Ts) + 1);
+
+            ann_data.emplace_back(std::move(key));
+
+            int dummy[] = {
+                0, (ann_data.emplace_back(std::forward<Ts>(ts)), 0)...
+            };
+            (void)dummy;
+
+            return ann_data;
+        }
+
     public:
         ///////////////////////////////////////////////////////////////////////
         range_iterator begin() const;
@@ -340,6 +358,19 @@ namespace phylanx { namespace ir
 
         range(std::int64_t start, bool single_value)
           : data_(int_range_type{start, single_value})
+        {
+        }
+
+        // construct an annotation
+        template <typename... Ts>
+        range(char const* key, Ts&& ... ts)
+          : data_(convert_span(std::string(key), std::forward<Ts>(ts)...))
+        {
+        }
+
+        template <typename... Ts>
+        range(std::string const& key, Ts&& ... ts)
+          : data_(convert_span(key, std::forward<Ts>(ts)...))
         {
         }
 

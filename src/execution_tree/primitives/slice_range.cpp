@@ -185,8 +185,6 @@ namespace phylanx { namespace execution_tree
         // handle case of consecutive elements to modify
         if (indices.step() == 1)
         {
-            primitive_arguments_type result;
-
             if (list.is_ref())
             {
                 primitive_arguments_type result;
@@ -270,7 +268,7 @@ namespace phylanx { namespace execution_tree
 
             void operator()(primitive_argument_type& value) const
             {
-                value = rhs_;
+                value = primitive_argument_type{rhs_};
             }
 
             template <typename Iterator>
@@ -289,7 +287,7 @@ namespace phylanx { namespace execution_tree
 
             void operator()(primitive_argument_type& value) const
             {
-                value = rhs_;
+                value = primitive_argument_type{rhs_};
             }
 
             template <typename Iterator>

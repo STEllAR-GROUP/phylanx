@@ -4,12 +4,15 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
+#include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
+#include <memory>
 
 namespace phylanx { namespace execution_tree
 {
@@ -58,12 +61,75 @@ namespace phylanx { namespace execution_tree
     void primitive_argument_type::serialize(
         hpx::serialization::output_archive& ar, unsigned)
     {
-        ar & variant();
+        ar & variant() & annotation_;
     }
 
     void primitive_argument_type::serialize(
         hpx::serialization::input_archive& ar, unsigned)
     {
-        ar & variant();
+        ar & variant() & annotation_;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // general annotation support
+    void primitive_argument_type::set_annotation(ir::range&& ann,
+        std::string const& name, std::string const& codename)
+    {
+        if (ann.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "primitive_argument_type::set_annotation",
+                util::generate_error_message(
+                    "the annotation data should hold at least the annotation "
+                    "type", name, codename));
+        }
+        annotation_ =
+            std::make_shared<execution_tree::annotation>(std::move(ann));
+    }
+
+    void primitive_argument_type::set_annotation(
+        execution_tree::annotation&& ann, std::string const& name,
+        std::string const& codename)
+    {
+        if (ann.get_range().empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "primitive_argument_type::set_annotation",
+                util::generate_error_message(
+                    "the annotation data should hold at least the annotation "
+                    "type", name, codename));
+        }
+        annotation_ =
+            std::make_shared<execution_tree::annotation>(std::move(ann));
+    }
+
+    std::string primitive_argument_type::get_annotation_type(
+        std::string const& name, std::string const& codename) const
+    {
+        if (!annotation_)
+        {
+            return "<no annotation>";
+        }
+        return annotation_->get_type(name, codename);
+    }
+
+    ir::range primitive_argument_type::get_annotation_data() const
+    {
+        if (!annotation_)
+        {
+            return ir::range{};
+        }
+        return annotation_->get_data();
+    }
+
+    bool primitive_argument_type::find_annotation(std::string const& key,
+        execution_tree::annotation& ann, std::string const& name,
+        std::string const& codename) const
+    {
+        if (!annotation_)
+        {
+            return false;
+        }
+        return annotation_->find(key, ann, name, codename);
     }
 }}

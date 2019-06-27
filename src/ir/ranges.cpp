@@ -274,9 +274,6 @@ namespace phylanx { namespace ir
 
     reverse_range_iterator range::rbegin() const
     {
-        using args_iterator_type = std::vector<
-            execution_tree::primitive_argument_type>::reverse_iterator;
-
         switch (data_.index())
         {
         case 0:    // int_range_type
@@ -313,9 +310,6 @@ namespace phylanx { namespace ir
 
     reverse_range_iterator range::rend() const
     {
-        using args_iterator_type = std::vector<
-            execution_tree::primitive_argument_type>::reverse_iterator;
-
         switch (data_.index())
         {
         case 0:    // int_range_type

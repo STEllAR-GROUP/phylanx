@@ -95,84 +95,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type outer3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 #endif
-        primitive_argument_type dot0d(
-            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
-        primitive_argument_type dot1d(
-            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
-        primitive_argument_type dot2d(
-            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
 
         primitive_argument_type dot_nd(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
-
-        template <typename T>
-        primitive_argument_type dot0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot0d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot0d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot0d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-
-        template <typename T>
-        primitive_argument_type dot1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot1d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot1d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot1d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-
-        template <typename T>
-        primitive_argument_type dot2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot2d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot2d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename Matrix1, typename Matrix2>
-        primitive_argument_type dot2d2d(Matrix1&& lhs, Matrix2&& rhs) const;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        template <typename T>
-        primitive_argument_type dot0d3d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot1d3d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot2d3d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-
-        template <typename T>
-        primitive_argument_type dot3d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot3d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot3d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot3d3d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-
-        primitive_argument_type dot3d(
-            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
-        template <typename T>
-        primitive_argument_type dot3d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
 
         primitive_argument_type contraction2d(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;

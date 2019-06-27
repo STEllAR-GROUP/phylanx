@@ -6,6 +6,7 @@
 set(tests
     advanced_boolean_slicing
     advanced_integer_slicing
+    annotate
     assert_condition
     broadcast
     define_operation
