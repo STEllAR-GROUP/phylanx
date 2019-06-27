@@ -530,21 +530,40 @@ astype (x, dtype)
             Copy of the array, cast to a specified type.
 
 
-avg_pool
+avg_pool2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-avg_pool (x, pool_size, padding, strides)
+avg_pool2d (x, pool_size, padding, strides)
         Args:
 
-            x (array) : a matrix or a tensor
-            pool_size (a tuple of integers) : the size of pooling oevr each
+            x (array) : a matrix
+            pool_size (a tuple of integers) : the size of pooling over each
                 dimension
-            padding (string) : padding mode, it can be either `same` or `valid`
-            strides (a tuple of integers) : the step to apply pooling oevr each
-                dimension
+            padding (optional, string) : padding mode, it can be either `same`
+                or `valid`. `valid` by default.
+            strides (optional, a tuple of 2 integers) : the step to apply
+                pooling over each dimension. `(1, 1)` by default.
 
         Returns:
 
-        The result of average pooling with `pool_size` filters
+        The result of 2d avg pooling with `pool_size` filters
+
+
+avg_pool3d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+avg_pool3d (x, pool_size, padding, strides)
+        Args:
+
+            x (array) : a tensor
+            pool_size (a tuple of 3 integers) : the size of pooling over each
+                dimension
+            padding (optional, string) : padding mode, it can be either `same`
+                or `valid`. Padding is `valid` by default.
+            strides (optional, a tuple of 3 integers) : the step to apply
+                pooling over each dimension. `(1, 1, 1)` by default.
+
+        Returns:
+
+        The result of 3d avg pooling with `pool_size` filters
 
 
 batch_dot
@@ -1601,21 +1620,40 @@ make_list (args)
     
 
 
-max_pool
+max_pool2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-max_pool (x, pool_size, padding, strides)
+max_pool2d (x, pool_size, padding, strides)
         Args:
 
-            x (array) : a matrix or a tensor
+            x (array) : a matrix
             pool_size (a tuple of integers) : the size of pooling over each
                 dimension
-            padding (string) : padding mode, it can be either `same` or `valid`
-            strides (a tuple of integers) : the step to apply pooling over each
-                dimension
+            padding (optional, string) : padding mode, it can be either `same`
+                or `valid`. `valid` by default.
+            strides (optional, a tuple of 2 integers) : the step to apply
+                pooling over each dimension. `(1, 1)` by default.
 
         Returns:
 
-        The result of max pooling with `pool_size` filters
+        The result of 2d max pooling with `pool_size` filters
+
+
+max_pool3d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+max_pool3d (x, pool_size, padding, strides)
+        Args:
+
+            x (array) : a tensor
+            pool_size (a tuple of 3 integers) : the size of pooling over each
+                dimension
+            padding (optional, string) : padding mode, it can be either `same`
+                or `valid`. Padding is `valid` by default.
+            strides (optional, a tuple of 3 integers) : the step to apply
+                pooling over each dimension. `(1, 1, 1)` by default.
+
+        Returns:
+
+        The result of 3d max pooling with `pool_size` filters
 
 
 maximum

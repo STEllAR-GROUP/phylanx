@@ -128,7 +128,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#argsort">argsort</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#astype">astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#avg-pool">avg_pool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#avg-pool2d">avg_pool2d</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#avg-pool3d">avg_pool3d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#batch-dot">batch_dot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#binary-crossentropy">binary_crossentropy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
@@ -196,7 +197,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#logsumexp">logsumexp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#lra">lra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#make-list">make_list</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#max-pool">max_pool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#max-pool2d">max_pool2d</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#max-pool3d">max_pool3d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#maximum">maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean">mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimum">minimum</a></li>
@@ -909,23 +911,47 @@ dtype : the data-type to which the array is cast</div></blockquote>
 </dd>
 </dl>
 </div>
-<div class="section" id="avg-pool">
-<h2>avg_pool<a class="headerlink" href="#avg-pool" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="avg-pool2d">
+<h2>avg_pool2d<a class="headerlink" href="#avg-pool2d" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>avg_pool (x, pool_size, padding, strides)</dt>
+<dt>avg_pool2d (x, pool_size, padding, strides)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p>x (array) : a matrix or a tensor
-pool_size (a tuple of integers) : the size of pooling oevr each</p>
+<div><p>x (array) : a matrix
+pool_size (a tuple of integers) : the size of pooling over each</p>
 <blockquote>
 <div>dimension</div></blockquote>
-<p>padding (string) : padding mode, it can be either <cite>same</cite> or <cite>valid</cite>
-strides (a tuple of integers) : the step to apply pooling oevr each</p>
-<blockquote>
-<div>dimension</div></blockquote>
+<dl class="docutils">
+<dt>padding (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">padding mode, it can be either <cite>same</cite></span></dt>
+<dd>or <cite>valid</cite>. <cite>valid</cite> by default.</dd>
+<dt>strides (optional, a tuple of 2 integers) <span class="classifier-delimiter">:</span> <span class="classifier">the step to apply</span></dt>
+<dd>pooling over each dimension. <cite>(1, 1)</cite> by default.</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
-<p class="last">The result of average pooling with <cite>pool_size</cite> filters</p>
+<p class="last">The result of 2d avg pooling with <cite>pool_size</cite> filters</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="avg-pool3d">
+<h2>avg_pool3d<a class="headerlink" href="#avg-pool3d" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>avg_pool3d (x, pool_size, padding, strides)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>x (array) : a tensor
+pool_size (a tuple of 3 integers) : the size of pooling over each</p>
+<blockquote>
+<div>dimension</div></blockquote>
+<dl class="docutils">
+<dt>padding (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">padding mode, it can be either <cite>same</cite></span></dt>
+<dd>or <cite>valid</cite>. Padding is <cite>valid</cite> by default.</dd>
+<dt>strides (optional, a tuple of 3 integers) <span class="classifier-delimiter">:</span> <span class="classifier">the step to apply</span></dt>
+<dd>pooling over each dimension. <cite>(1, 1, 1)</cite> by default.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The result of 3d avg pooling with <cite>pool_size</cite> filters</p>
 </dd>
 </dl>
 </div>
@@ -2066,23 +2092,47 @@ enable_output (optional, boolean): If enabled, prints out the step</dd>
 </dd>
 </dl>
 </div>
-<div class="section" id="max-pool">
-<h2>max_pool<a class="headerlink" href="#max-pool" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="max-pool2d">
+<h2>max_pool2d<a class="headerlink" href="#max-pool2d" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>max_pool (x, pool_size, padding, strides)</dt>
+<dt>max_pool2d (x, pool_size, padding, strides)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p>x (array) : a matrix or a tensor
+<div><p>x (array) : a matrix
 pool_size (a tuple of integers) : the size of pooling over each</p>
 <blockquote>
 <div>dimension</div></blockquote>
-<p>padding (string) : padding mode, it can be either <cite>same</cite> or <cite>valid</cite>
-strides (a tuple of integers) : the step to apply pooling over each</p>
-<blockquote>
-<div>dimension</div></blockquote>
+<dl class="docutils">
+<dt>padding (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">padding mode, it can be either <cite>same</cite></span></dt>
+<dd>or <cite>valid</cite>. <cite>valid</cite> by default.</dd>
+<dt>strides (optional, a tuple of 2 integers) <span class="classifier-delimiter">:</span> <span class="classifier">the step to apply</span></dt>
+<dd>pooling over each dimension. <cite>(1, 1)</cite> by default.</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
-<p class="last">The result of max pooling with <cite>pool_size</cite> filters</p>
+<p class="last">The result of 2d max pooling with <cite>pool_size</cite> filters</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="max-pool3d">
+<h2>max_pool3d<a class="headerlink" href="#max-pool3d" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>max_pool3d (x, pool_size, padding, strides)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>x (array) : a tensor
+pool_size (a tuple of 3 integers) : the size of pooling over each</p>
+<blockquote>
+<div>dimension</div></blockquote>
+<dl class="docutils">
+<dt>padding (optional, string) <span class="classifier-delimiter">:</span> <span class="classifier">padding mode, it can be either <cite>same</cite></span></dt>
+<dd>or <cite>valid</cite>. Padding is <cite>valid</cite> by default.</dd>
+<dt>strides (optional, a tuple of 3 integers) <span class="classifier-delimiter">:</span> <span class="classifier">the step to apply</span></dt>
+<dd>pooling over each dimension. <cite>(1, 1, 1)</cite> by default.</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The result of 3d max pooling with <cite>pool_size</cite> filters</p>
 </dd>
 </dl>
 </div>
