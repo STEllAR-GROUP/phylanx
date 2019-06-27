@@ -8,6 +8,7 @@
 #define PHYLANX_PRIMITIVES_TRANSPOSE_OPERATION_OCT_09_2017_0146PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
@@ -45,7 +46,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         bool validate_axes(std::size_t a_dims,
             ir::node_data<std::int64_t>&& axes) const;
 
-        execution_tree::primitive_argument_type transpose0d1d(
+        execution_tree::primitive_argument_type transpose1d(
             execution_tree::primitive_argument_type&& arg) const;
         execution_tree::primitive_argument_type transpose2d(
             execution_tree::primitive_argument_type&& arg) const;
@@ -55,10 +56,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         template <typename T>
         execution_tree::primitive_argument_type transpose2d(
-            ir::node_data<T>&& arg) const;
+            ir::node_data<T>&& arg, execution_tree::annotation&& meta) const;
         template <typename T>
         execution_tree::primitive_argument_type transpose2d(
-            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes) const;
+            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
+            execution_tree::annotation&& meta) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         execution_tree::primitive_argument_type transpose3d(
@@ -68,23 +70,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             ir::node_data<std::int64_t>&& axes) const;
 
         template <typename T>
-        execution_tree::primitive_argument_type transpose3d_axes102(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        execution_tree::primitive_argument_type transpose3d_axes021(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        execution_tree::primitive_argument_type transpose3d_axes120(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        execution_tree::primitive_argument_type transpose3d_axes201(
-            ir::node_data<T>&& arg) const;
+        execution_tree::primitive_argument_type transpose3d(
+            ir::node_data<T>&& arg, execution_tree::annotation&& meta) const;
         template <typename T>
         execution_tree::primitive_argument_type transpose3d(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        execution_tree::primitive_argument_type transpose3d(
-            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes) const;
+            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
+            execution_tree::annotation&& meta) const;
 #endif
     };
 

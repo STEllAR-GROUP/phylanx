@@ -31,12 +31,26 @@ namespace phylanx { namespace dist_matrixops
     ////////////////////////////////////////////////////////////////////////////
     struct tiling_annotations_1d
     {
+        enum tile1d_type
+        {
+            columns = 0,
+            rows = 1
+        };
+
+        static char const* tile1d_typename(tile1d_type t)
+        {
+            return t == columns ? "columns" : "rows";
+        }
+
         tiling_annotations_1d(execution_tree::annotation const& ann,
             std::string const& name, std::string const& codename);
 
         execution_tree::annotation as_annotation() const;
 
-        tiling_span column_span_;
+        void transpose();
+
+        tile1d_type type_;    // column or row span
+        tiling_span span_;
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -46,6 +60,8 @@ namespace phylanx { namespace dist_matrixops
             std::string const& name, std::string const& codename);
 
         execution_tree::annotation as_annotation() const;
+
+        void transpose();
 
         tiling_span row_span_;
         tiling_span column_span_;

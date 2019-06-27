@@ -85,7 +85,9 @@ namespace phylanx { namespace execution_tree
                 std::vector<annotation> && data = f.get();
 
                 primitive_arguments_type result;
-                result.reserve(data.size());
+                result.reserve(data.size() + 1);
+
+                result.emplace_back("localities");
 
                 for(auto&& d : data)
                 {

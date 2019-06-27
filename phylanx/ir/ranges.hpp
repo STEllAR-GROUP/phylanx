@@ -374,10 +374,10 @@ namespace phylanx { namespace ir
         {
         }
 
-    private:
         friend PHYLANX_EXPORT bool operator==(range const&, range const&);
         friend PHYLANX_EXPORT bool operator!=(range const&, range const&);
 
+    private:
         friend class hpx::serialization::access;
         void serialize(hpx::serialization::output_archive& ar, unsigned);
         void serialize(hpx::serialization::input_archive& ar, unsigned);

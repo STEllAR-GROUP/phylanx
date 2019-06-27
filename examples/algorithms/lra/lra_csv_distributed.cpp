@@ -36,7 +36,7 @@ char const* const read_x_code = R"(block(
         annotate(
             slice(file_read_csv(filepath),
                 list(row_start, row_stop), list(col_start, col_stop)),
-            list("meta",
+            list(format("meta_{}", locality()),
                 list("locality", locality(), num_localities()),
                 list("tile",
                     list("rows", row_start, row_stop),
@@ -56,7 +56,7 @@ char const* const read_y_code = R"(block(
         annotate(
             slice(file_read_csv(filepath),
                 list(row_start , row_stop), col_stop),
-            list("meta",
+            list(format("meta_{}", locality()),
                 list("locality", locality(), num_localities()),
                 list("tile",
                     list("rows", row_start, row_stop),
@@ -78,19 +78,19 @@ char const* const lra_code = R"(block(
     //
     define(lra, x, y, alpha, iterations, enable_output,
         block(
-            define(weights, constant(0.0, shape(x, 1))),        // weights: [M]
-            define(transx, transpose_d(x)),                     // transx:  [M, N]
-            define(pred, constant(0.0, shape(x, 0))),           // weights: [N]
-            define(error, constant(0.0, shape(x, 0))),          // weights: [N]
-            define(gradient, constant(0.0, shape(x, 1))),       // weights: [M]
+            define(transx, transpose_d(x)),                     // transx:   [M, N]
+            define(weights, constant(0.0, shape(x, 1))),        // weights:  [M]
+            define(pred, constant(0.0, shape(x, 0))),           // pred:     [N]
+            define(error, constant(0.0, shape(x, 0))),          // error:    [N]
+            define(gradient, constant(0.0, shape(x, 1))),       // gradient: [M]
             define(step, 0),
             while(
                 step < iterations,
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
                     // exp(-dot(x, weights)): [N]
-                    store(pred, sigmoid(dot_d(x, weights))),    // pred: [N]
-                    store(error, pred - y),                     // error: [N]
+                    store(pred, sigmoid(dot_d(x, weights))),    // pred:     [N]
+                    store(error, pred - y),                     // error:    [N]
                     store(gradient, dot_d(transx, error)),      // gradient: [M]
                     parallel_block(
                         store(weights, weights - (alpha * gradient)),

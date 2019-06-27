@@ -122,6 +122,18 @@ namespace phylanx { namespace execution_tree
         return annotation_->get_data();
     }
 
+    bool primitive_argument_type::get_annotation_if(std::string const& key,
+        execution_tree::annotation& ann, std::string const& name,
+        std::string const& codename) const
+    {
+        if (!annotation_ || annotation_->get_type() != key)
+        {
+            return false;
+        }
+        ann = annotation_->get_range_ref();
+        return true;
+    }
+
     bool primitive_argument_type::find_annotation(std::string const& key,
         execution_tree::annotation& ann, std::string const& name,
         std::string const& codename) const

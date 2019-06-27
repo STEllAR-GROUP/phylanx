@@ -47,7 +47,6 @@ namespace phylanx { namespace execution_tree
             return *this;
         }
 
-
         ////////////////////////////////////////////////////////////////////////
         PHYLANX_EXPORT std::string get_type(std::string const& name = "",
             std::string const& codename = "<unknown>") const;
@@ -61,6 +60,10 @@ namespace phylanx { namespace execution_tree
         {
             return data_;
         }
+        ir::range get_range_ref() const
+        {
+            return data_.ref();
+        }
 
         PHYLANX_EXPORT bool find(std::string const& key, annotation& ann,
             std::string const& name = "",
@@ -72,6 +75,24 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void add_annotation(std::string const& key,
             ir::range&& data, std::string const& name,
             std::string const& codename);
+        PHYLANX_EXPORT void add_annotation(annotation&& data,
+            std::string const& name, std::string const& codename);
+
+        PHYLANX_EXPORT void replace_annotation(annotation&& data,
+            std::string const& name, std::string const& codename);
+        PHYLANX_EXPORT void replace_annotation(std::string const& key,
+            annotation&& data, std::string const& name,
+            std::string const& codename);
+
+        friend bool operator==(annotation const& lhs, annotation const& rhs)
+        {
+            return lhs.data_ == rhs.data_;
+        }
+
+        friend bool operator!=(annotation const& lhs, annotation const& rhs)
+        {
+            return !(lhs == rhs);
+        }
 
     private:
         ir::range data_;

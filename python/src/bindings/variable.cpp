@@ -73,9 +73,7 @@ namespace phylanx { namespace execution_tree
             char const* name, pybind11::object constraint)
       : dtype_(std::move(dtype))
       , name_(hpx::util::format("{}_{}", name, ++variable_count))
-      , value_(is_primitive_operand(value) ?
-              primitive_operand(std::move(value)) :
-              create_variable(std::move(value), name_))
+      , value_(std::move(value))
       , constraint_(std::move(constraint))
     {}
 
@@ -104,7 +102,7 @@ namespace phylanx { namespace execution_tree
     {
         if (dtype_.is_none())
         {
-            return bindings::extract_dtype(value_);
+            return bindings::extract_dtype(primitive_argument_type{value_});
         }
         return dtype_;
     }
@@ -203,8 +201,8 @@ namespace phylanx { namespace execution_tree
             }
         }
 
-        primitive_argument_type result =
-            value_operand_sync(value_, std::move(fargs));
+        primitive_argument_type result = value_operand_sync(
+            primitive_argument_type{value_}, std::move(fargs));
 
         // re-acquire GIL
         pybind11::gil_scoped_acquire acquire;
@@ -277,7 +275,7 @@ namespace phylanx { namespace execution_tree
         using namespace phylanx::execution_tree;                               \
         primitive_arguments_type args;                                         \
         args.reserve(2);                                                       \
-        args.emplace_back(lhs.value());                                        \
+        args.emplace_back(primitive_argument_type{lhs.value()});               \
         args.emplace_back(rhs);                                                \
         return phylanx::execution_tree::variable{                              \
             primitives::create_##op##_operation(                               \
@@ -289,7 +287,7 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::variable const& lhs,                          \
         phylanx::execution_tree::variable const& rhs)                          \
     {                                                                          \
-        return op##_variables_gen(lhs, rhs.value());                           \
+        return op##_variables_gen(lhs, primitive_argument_type{rhs.value()});  \
     }                                                                          \
                                                                                \
     /* reverse operation */                                                    \
@@ -301,7 +299,7 @@ namespace phylanx { namespace execution_tree
         primitive_arguments_type args;                                         \
         args.reserve(2);                                                       \
         args.emplace_back(lhs);                                                \
-        args.emplace_back(rhs.value());                                        \
+        args.emplace_back(primitive_argument_type{rhs.value()});               \
         return phylanx::execution_tree::variable{                              \
             primitives::create_##op##_operation(                               \
                 hpx::find_here(), std::move(args)),                            \
@@ -320,7 +318,7 @@ namespace phylanx { namespace execution_tree
         /* create operation */                                                 \
         primitive_arguments_type args;                                         \
         args.reserve(2);                                                       \
-        args.emplace_back(lhs.value());                                        \
+        args.emplace_back(primitive_argument_type{lhs.value()});               \
         args.emplace_back(rhs);                                                \
         primitive op = primitives::create_##op##_operation(                    \
             hpx::find_here(), std::move(args));                                \
@@ -337,7 +335,8 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::variable& lhs,                                \
         phylanx::execution_tree::variable const& rhs)                          \
     {                                                                          \
-        return i##op##_variables_gen(lhs, rhs.value());                        \
+        return i##op##_variables_gen(                                          \
+            lhs, primitive_argument_type{rhs.value()});                        \
     }                                                                          \
     /**/
 
@@ -420,6 +419,7 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::variable const& value,
         phylanx::execution_tree::primitive_argument_type const& momentum)
     {
-        return moving_average_variables_gen(var, value.value(), momentum);
+        return moving_average_variables_gen(
+            var, primitive_argument_type{value.value()}, momentum);
     }
 }}

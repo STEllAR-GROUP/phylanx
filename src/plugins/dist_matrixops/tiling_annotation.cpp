@@ -59,8 +59,9 @@ namespace phylanx { namespace dist_matrixops
 
     ////////////////////////////////////////////////////////////////////////////
     tiling_annotations_1d::tiling_annotations_1d(
-        execution_tree::annotation const& ann, std::string const& name,
-        std::string const& codename)
+            execution_tree::annotation const& ann, std::string const& name,
+            std::string const& codename)
+      : type_(ann.has_key("columns", name, codename) ? columns : rows)
     {
         if (ann.get_type(name, codename) != "tile")
         {
@@ -69,14 +70,18 @@ namespace phylanx { namespace dist_matrixops
                 util::generate_error_message(
                     "unexpected annotation type", name, codename));
         }
-
-        column_span_ = detail::extract_span(ann, "columns", name, codename);
+        span_ = detail::extract_span(ann, tile1d_typename(type_), name, codename);
     }
 
     execution_tree::annotation tiling_annotations_1d::as_annotation() const
     {
         return execution_tree::annotation{ir::range("tile",
-            ir::range("columns", column_span_.start_, column_span_.stop_))};
+            ir::range(tile1d_typename(type_), span_.start_, span_.stop_))};
+    }
+
+    void tiling_annotations_1d::transpose()
+    {
+        type_ = (type_ == columns) ? rows : columns;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -101,6 +106,11 @@ namespace phylanx { namespace dist_matrixops
         return execution_tree::annotation{ir::range("tile",
             ir::range("rows", row_span_.start_, row_span_.stop_),
             ir::range("columns", column_span_.start_, column_span_.stop_))};
+    }
+
+    void tiling_annotations_2d::transpose()
+    {
+        std::swap(column_span_, row_span_);
     }
 
     ////////////////////////////////////////////////////////////////////////////

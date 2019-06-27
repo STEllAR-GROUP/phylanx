@@ -49,6 +49,9 @@ namespace phylanx { namespace execution_tree
     struct primitive_argument_type;
     struct annotation;
 
+    bool operator==(annotation const& lhs, annotation const& rhs);
+    bool operator!=(annotation const& lhs, annotation const& rhs);
+
     ///////////////////////////////////////////////////////////////////////////
     struct topology
     {
@@ -663,10 +666,10 @@ namespace phylanx { namespace execution_tree
         {}
 
         // primitive
-        explicit primitive_argument_type(primitive const& val)
+        primitive_argument_type(primitive const& val)
           : argument_value_type{val}
         {}
-        explicit primitive_argument_type(primitive && val)
+        primitive_argument_type(primitive && val)
           : argument_value_type{std::move(val)}
         {}
         primitive_argument_type(primitive const& val, annotation_ptr const& ann)
@@ -864,7 +867,11 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT std::string get_annotation_type(std::string const& name,
             std::string const& codename) const;
         PHYLANX_EXPORT ir::range get_annotation_data() const;
+
         PHYLANX_EXPORT bool find_annotation(std::string const& key,
+            execution_tree::annotation& ann, std::string const& name,
+            std::string const& codename) const;
+        PHYLANX_EXPORT bool get_annotation_if(std::string const& key,
             execution_tree::annotation& ann, std::string const& name,
             std::string const& codename) const;
 
@@ -912,8 +919,21 @@ namespace phylanx { namespace execution_tree
     inline bool operator==(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs)
     {
-        return lhs.variant() == rhs.variant();
+        if (lhs.variant() == rhs.variant())
+        {
+            if (!!lhs.annotation() && !!rhs.annotation())
+            {
+                return *lhs.annotation() == *rhs.annotation();
+            }
+            else if (!!lhs.annotation() || !!rhs.annotation())
+            {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
+
     inline bool operator!=(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs)
     {

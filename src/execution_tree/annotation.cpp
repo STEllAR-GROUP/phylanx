@@ -90,15 +90,98 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
+        if (data_.is_ref())
+        {
+            primitive_arguments_type newdata;
+            newdata.reserve(data_.size() + 1);
+            for (auto&& val : data_)
+            {
+                newdata.emplace_back(std::move(val));
+            }
+            newdata.emplace_back(ir::range(key, data.copy()));
+
+            data_ = std::move(newdata);
+        }
+        else
+        {
+            data_.args().emplace_back(ir::range(key, data.copy()));
+        }
+    }
+
+    void annotation::add_annotation(annotation&& data,
+        std::string const& name, std::string const& codename)
+    {
+        if (has_key(data.get_type(), name, codename))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "annotation::add_annotation",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "duplicated annotation type: {}", data.get_type()),
+                    name, codename));
+        }
+
+        if (data_.is_ref())
+        {
+            primitive_arguments_type newdata;
+            newdata.reserve(data_.size() + 1);
+            for (auto&& val : data_)
+            {
+                newdata.emplace_back(std::move(val));
+            }
+            newdata.emplace_back(data.get_range());
+
+            data_ = std::move(newdata);
+        }
+        else
+        {
+            data_.args().emplace_back(data.get_range());
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    void annotation::replace_annotation(std::string const& key,
+        annotation&& data, std::string const& name, std::string const& codename)
+    {
+        if (!has_key(key, name, codename))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "annotation::add_annotation",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "attempt to replace non-existing annotation type: {}",
+                        data.get_type()),
+                    name, codename));
+        }
+
         primitive_arguments_type newdata;
         newdata.reserve(data_.size() + 1);
-        for (auto&& val : data_)
+
+        newdata.emplace_back(get_type());
+
+        for (auto&& val : get_data())
         {
-            newdata.emplace_back(std::move(val));
+            auto&& list = execution_tree::extract_list_value_strict(
+                val, name, codename);
+
+            if (extract_string_value(*list.begin(), name, codename) == key)
+            {
+                newdata.emplace_back(data.get_range());
+            }
+            else
+            {
+                newdata.emplace_back(std::move(val));
+            }
         }
-        newdata.emplace_back(ir::range(key, data.copy()));
 
         data_ = std::move(newdata);
+    }
+
+    void annotation::replace_annotation(annotation&& data,
+        std::string const& name, std::string const& codename)
+    {
+        std::string key = data.get_type();
+        replace_annotation(key, std::move(data), name, codename);
     }
 
     ////////////////////////////////////////////////////////////////////////////

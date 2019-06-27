@@ -10,6 +10,8 @@ set(example_programs
     lra_csv_instrumented
    )
 
+set(lra_csv_distributed_PARAMETERS LOCALITIES 2)
+
 foreach(example_program ${example_programs})
 
   set(${example_program}_FLAGS DEPENDENCIES iostreams_component)
