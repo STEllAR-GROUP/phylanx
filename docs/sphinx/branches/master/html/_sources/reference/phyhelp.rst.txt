@@ -1915,6 +1915,33 @@ resize_images (a)
             using the specified interpolation .
 
 
+separable_conv1d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+separable_conv1d (x, depthwise_kernel, pointwise_kernel, padding, strides,)
+            dilation_rate
+        Args:
+
+            x (array) : a stream of 3d data: batch, input_length, in_channels
+            depthwise_kernel (array) : a 3d filter which dimensions are:
+                filter_length, depth_in_channels, depth_out_channels
+            pointwise_kernel (array) : a 3d filter which dimensions are: 1,
+                point_in_channels, point_out_channels. point_in_channels should
+                be depth_in_channels * depth_out_channels
+            padding (optional, string) : padding mode, `valid` by default. It
+                can be either `valid` or `same`. `vaild` means no padding.
+                `same` results the output with the same shape as original array
+                 in case of unit strides.
+            strides (optional, integer) : the step to apply convolution over
+                array. It sets to 1 by default.
+            dilation_rate (optional, integer) : indicates the dilation rate,
+                the rate to sample the array in each step of convolution, 1
+                by default.
+
+        Returns:
+
+        1D convolution with separable filters
+
+
 set_seed_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 set_seed_action (seed)
