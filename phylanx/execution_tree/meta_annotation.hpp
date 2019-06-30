@@ -22,6 +22,9 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT annotation meta_annotation(hpx::launch::sync_policy,
         annotation const& locality_ann, annotation&& ann,
         std::string const& name, std::string const& codename);
+
+    PHYLANX_EXPORT annotation localities_annotation(annotation& locality_ann,
+        annotation&& ann, std::string const& name, std::string const& codename);
 }}
 
 #endif

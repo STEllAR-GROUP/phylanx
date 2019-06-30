@@ -4510,34 +4510,34 @@ namespace phylanx { namespace execution_tree
         {
         case 0:     // nil
             ast::detail::to_string{os}(util::get<0>(val));
-            return os;
+            break;
 
         case 1:    // ir::node_data<std::uint8_t>
             ast::detail::to_string{os}(util::get<1>(val));
-            return os;
+            break;
 
         case 2:     // ir::node_data<std::int64_t>
             ast::detail::to_string{os}(util::get<2>(val));
-            return os;
+            break;
 
         case 3:     // std::string
             ast::detail::to_string{os}(util::get<3>(val));
-            return os;
+            break;
 
         case 4:     // ir::node_data<double>
             ast::detail::to_string{os}(util::get<4>(val));
-            return os;
+            break;
 
         case 5:
             ast::detail::to_string{os}(util::get<5>(val));
-            return os;
+            break;
 
         case 6:     // std::vector<ast::expression>
             for (auto const& ast : util::get<6>(val))
             {
                 ast::detail::to_string{os}(ast);
             }
-            return os;
+            break;
 
         case 7:     // phylanx::ir::range
             {
@@ -4554,33 +4554,38 @@ namespace phylanx { namespace execution_tree
                 }
                 os << ")";
             }
-            return os;
+            break;
 
         case 8:     // phylanx::ir::dictionary
-        {
-            os << "dict{";
-            bool first = true;
-            for (auto const& elem : util::get<8>(val))
             {
-                if (!first)
+                os << "dict{";
+                bool first = true;
+                for (auto const& elem : util::get<8>(val))
                 {
-                    os << ", ";
+                    if (!first)
+                    {
+                        os << ", ";
+                    }
+                    first = false;
+                    ast::detail::to_string{os}(elem.first);
+                    os << ": ";
+                    ast::detail::to_string{os}(elem.second);
                 }
-                first = false;
-                ast::detail::to_string{os}(elem.first);
-                os << ": ";
-                ast::detail::to_string{os}(elem.second);
+                os << "}";
             }
-            os << "}";
-        }
-            return os;
+            break;
+
         default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::operator<<(primitive_argument_type)",
+                "primitive_argument_type does not hold a value type");
             break;
         }
 
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::operator<<(primitive_argument_type)",
-            "primitive_argument_type does not hold a value type");
+        if (!!val.annotation())
+        {
+            os << ", " << *val.annotation();
+        }
 
         return os;
     }

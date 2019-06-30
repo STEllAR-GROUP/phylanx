@@ -12,10 +12,20 @@
 
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
 
+#include <iosfwd>
 #include <string>
 
 namespace phylanx { namespace execution_tree
 {
+    ////////////////////////////////////////////////////////////////////////////
+    struct annotation;
+
+    PHYLANX_EXPORT primitive_argument_type as_primitive_argument_type(
+        annotation&& ann);
+    PHYLANX_EXPORT primitive_argument_type as_primitive_argument_type(
+        annotation const& ann);
+
+    ////////////////////////////////////////////////////////////////////////////
     struct annotation
     {
     public:
@@ -32,7 +42,12 @@ namespace phylanx { namespace execution_tree
 
         template <typename... Ts>
         annotation(char const* key, Ts&& ... ts)
-          : data_(key, std::forward<Ts>(ts)...)
+          : data_(key, as_primitive_argument_type(std::forward<Ts>(ts))...)
+        {
+        }
+        template <typename... Ts>
+        annotation(std::string const& key, Ts&& ... ts)
+          : data_(key, as_primitive_argument_type(std::forward<Ts>(ts))...)
         {
         }
 
@@ -104,6 +119,10 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
             unsigned);
     };
+
+    ////////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& os, annotation const& ann);
 }}
 
 #endif

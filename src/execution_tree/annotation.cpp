@@ -4,8 +4,10 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
@@ -13,8 +15,28 @@
 #include <hpx/runtime/serialization/serialize.hpp>
 #include <hpx/util/format.hpp>
 
+#include <iosfwd>
+#include <string>
+
 namespace phylanx { namespace execution_tree
 {
+    ////////////////////////////////////////////////////////////////////////////
+    primitive_argument_type as_primitive_argument_type(annotation&& ann)
+    {
+        auto&& r = ann.get_range();
+        if (r.is_ref())
+        {
+            return primitive_argument_type{r.copy()};
+        }
+        return primitive_argument_type{std::move(r.args())};
+    }
+
+    primitive_argument_type as_primitive_argument_type(annotation const& ann)
+    {
+        return primitive_argument_type{ann.get_range_ref().copy()};
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     std::string annotation::get_type(
         std::string const& name, std::string const& codename) const
     {
@@ -193,6 +215,24 @@ namespace phylanx { namespace execution_tree
     void annotation::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
         ar >> data_;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::ostream& operator<<(std::ostream& os, annotation const& ann)
+    {
+        os << "annotation(";
+        bool first = true;
+        for (auto const& elem : ann.get_range_ref())
+        {
+            if (!first)
+            {
+                os << ", ";
+            }
+            first = false;
+            ast::detail::to_string{os}(elem);
+        }
+        os << ")";
+        return os;
     }
 }}
 

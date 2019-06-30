@@ -1002,6 +1002,25 @@ namespace phylanx { namespace execution_tree
         }
         return it->second;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type as_primitive_argument_type(T&& t)
+    {
+        return primitive_argument_type{std::forward<T>(t)};
+    }
+
+    inline primitive_argument_type const& as_primitive_argument_type(
+        primitive_argument_type const& t)
+    {
+        return t;
+    }
+
+    inline primitive_argument_type&& as_primitive_argument_type(
+        primitive_argument_type&& t)
+    {
+        return std::move(t);
+    }
 }}
 
 #endif

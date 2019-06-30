@@ -33,15 +33,12 @@ char const* const read_x_code = R"(block(
     // Read X-data from given CSV file
     //
     define(read_x, filepath, row_start, row_stop, col_start, col_stop,
-        annotate(
+        annotate_d(
             slice(file_read_csv(filepath),
                 list(row_start, row_stop), list(col_start, col_stop)),
-            list(format("meta_{}", locality()),
-                list("locality", locality(), num_localities()),
-                list("tile",
-                    list("rows", row_start, row_stop),
-                    list("columns", col_start, col_stop)
-                )
+            list("tile",
+                list("rows", row_start, row_stop),
+                list("columns", col_start, col_stop)
             )
         )
     ),
@@ -53,15 +50,12 @@ char const* const read_y_code = R"(block(
     // Read Y-data from given CSV file
     //
     define(read_y, filepath, row_start, row_stop, col_stop,
-        annotate(
+        annotate_d(
             slice(file_read_csv(filepath),
                 list(row_start , row_stop), col_stop),
-            list(format("meta_{}", locality()),
-                list("locality", locality(), num_localities()),
-                list("tile",
-                    list("rows", row_start, row_stop),
-                    list("columns", col_stop, col_stop+1)
-                )
+            list("tile",
+                list("rows", row_start, row_stop),
+                list("columns", col_stop, col_stop+1)
             )
         )
     ),

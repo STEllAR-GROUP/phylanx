@@ -56,11 +56,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         template <typename T>
         execution_tree::primitive_argument_type transpose2d(
-            ir::node_data<T>&& arg, execution_tree::annotation&& meta) const;
-        template <typename T>
-        execution_tree::primitive_argument_type transpose2d(
-            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
-            execution_tree::annotation&& meta) const;
+            ir::node_data<T>&& arg, execution_tree::annotation&& meta,
+            execution_tree::annotation&& locality_ann) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         execution_tree::primitive_argument_type transpose3d(
@@ -71,11 +68,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         template <typename T>
         execution_tree::primitive_argument_type transpose3d(
-            ir::node_data<T>&& arg, execution_tree::annotation&& meta) const;
+            ir::node_data<T>&& arg, execution_tree::annotation&& meta,
+            execution_tree::annotation&& locality_ann) const;
         template <typename T>
         execution_tree::primitive_argument_type transpose3d(
             ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
-            execution_tree::annotation&& meta) const;
+            execution_tree::annotation&& meta,
+            execution_tree::annotation&& locality_ann) const;
 #endif
     };
 

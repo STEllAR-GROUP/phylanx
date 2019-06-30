@@ -7,6 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/locality_annotation.hpp>
 #include <phylanx/execution_tree/meta_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/common/transpose_operation_nd.hpp>
@@ -133,7 +134,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         execution_tree::annotation locality_ann;
-        if (!meta.find("locality", locality_ann, name_, codename_))
+        if (!arg.find_annotation("locality", locality_ann, name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_transpose_operation::transpose1d",
@@ -154,12 +155,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         tiling_annotations_1d tile_info(tile_ann, name_, codename_);
         tile_info.transpose();
 
-        meta.replace_annotation(
-            "tile", tile_info.as_annotation(), name_, codename_);
-
         arg.set_annotation(
-            meta_annotation(hpx::launch::sync, locality_ann,
-                std::move(meta), name_, codename_),
+            execution_tree::localities_annotation(
+                locality_ann, tile_info.as_annotation(), name_, codename_),
             name_, codename_);
 
         return std::move(arg);
@@ -168,18 +166,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type
-    dist_transpose_operation::transpose2d(
-        ir::node_data<T>&& arg, execution_tree::annotation&& meta) const
+    dist_transpose_operation::transpose2d(ir::node_data<T>&& arg,
+        execution_tree::annotation&& meta,
+        execution_tree::annotation&& locality_ann) const
     {
-        execution_tree::annotation locality_ann;
-        if (!meta.find("locality", locality_ann, name_, codename_))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_transpose_operation::transpose2d",
-                generate_error_message(
-                    "meta annotation does not hold any locality annotation"));
-        }
-
         execution_tree::annotation tile_ann;
         if (!meta.find("tile", tile_ann, name_, codename_))
         {
@@ -196,13 +186,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         tiling_annotations_2d tile_info(tile_ann, name_, codename_);
         tile_info.transpose();
 
-        meta.replace_annotation(
-            "tile", tile_info.as_annotation(), name_, codename_);
-
         execution_tree::primitive_argument_type result{std::move(arg)};
         result.set_annotation(
-            meta_annotation(hpx::launch::sync, locality_ann,
-                std::move(meta), name_, codename_),
+            execution_tree::localities_annotation(
+                locality_ann, tile_info.as_annotation(), name_, codename_),
             name_, codename_);
 
         return result;
@@ -224,23 +211,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return common::transpose2d(std::move(arg), name_, codename_);
         }
 
+        execution_tree::annotation locality_ann;
+        if (!arg.find_annotation("locality", locality_ann, name_, codename_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_transpose_operation::transpose2d",
+                generate_error_message(
+                    "meta annotation does not hold any locality annotation"));
+        }
+
         switch (extract_common_type(arg))
         {
         case node_data_type_bool:
             return transpose2d(
                 extract_boolean_value_strict(std::move(arg), name_, codename_),
-                std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         case node_data_type_int64:
             return transpose2d(
                 extract_integer_value_strict(std::move(arg), name_, codename_),
-                std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return transpose2d(
                 extract_numeric_value(std::move(arg), name_, codename_),
-                std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         default:
             break;
@@ -253,12 +249,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "be numeric data type"));
     }
 
-    template <typename T>
     execution_tree::primitive_argument_type
-    dist_transpose_operation::transpose2d(ir::node_data<T>&& arg,
-        ir::node_data<std::int64_t>&& axes,
-        execution_tree::annotation&& meta) const
+    dist_transpose_operation::transpose2d(
+        execution_tree::primitive_argument_type&& arg,
+        ir::node_data<std::int64_t>&& axes) const
     {
+        using namespace execution_tree;
+
         auto v = axes.vector();
         for (auto& axis : v)
         {
@@ -268,33 +265,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         if (v[0] == 0 && v[1] == 1)
         {
-            execution_tree::annotation locality_ann;
-            if (!meta.find("locality", locality_ann, name_, codename_))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_transpose_operation::transpose2d",
-                    generate_error_message(
-                        "meta annotation does not hold any locality annotation"));
-            }
-
-            execution_tree::primitive_argument_type result{std::move(arg)};
-            result.set_annotation(
-                meta_annotation(hpx::launch::sync, locality_ann,
-                    std::move(meta), name_, codename_),
-                name_, codename_);
-
-            return result;
+            return std::move(arg);    // no-op
         }
-
-        return transpose2d(std::move(arg), std::move(meta));
-    }
-
-    execution_tree::primitive_argument_type
-    dist_transpose_operation::transpose2d(
-        execution_tree::primitive_argument_type&& arg,
-        ir::node_data<std::int64_t>&& axes) const
-    {
-        using namespace execution_tree;
 
         std::string meta_tag =
             hpx::util::format("meta_{}", hpx::get_locality_id());
@@ -307,23 +279,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(arg), std::move(axes), name_, codename_);
         }
 
+        execution_tree::annotation locality_ann;
+        if (!arg.find_annotation("locality", locality_ann, name_, codename_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_transpose_operation::transpose2d",
+                generate_error_message(
+                    "meta annotation does not hold any locality annotation"));
+        }
+
         switch (extract_common_type(arg))
         {
         case node_data_type_bool:
             return transpose2d(
                 extract_boolean_value_strict(std::move(arg), name_, codename_),
-                std::move(axes), std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         case node_data_type_int64:
             return transpose2d(
                 extract_integer_value_strict(std::move(arg), name_, codename_),
-                std::move(axes), std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return transpose2d(
                 extract_numeric_value(std::move(arg), name_, codename_),
-                std::move(axes), std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         default:
             break;
@@ -341,10 +322,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type
     dist_transpose_operation::transpose3d(
-        ir::node_data<T>&& arg, execution_tree::annotation&& meta) const
+        ir::node_data<T>&& arg, execution_tree::annotation&& meta,
+        execution_tree::annotation&& locality_ann) const
     {
+        execution_tree::annotation tile_ann;
+        if (!meta.find("tile", tile_ann, name_, codename_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_transpose_operation::transpose2d",
+                generate_error_message(
+                    "meta annotation does not hold any tiling annotation"));
+        }
+
+        // perform actual operation
         arg = blaze::trans(arg.tensor(), {2, 1, 0});
-        return execution_tree::primitive_argument_type{std::move(arg)};
+
+        // construct new tiling annotation
+        tiling_annotations_3d tile_info(tile_ann, name_, codename_);
+        tile_info.transpose({2, 1, 0});
+
+        execution_tree::primitive_argument_type result{std::move(arg)};
+        result.set_annotation(
+            execution_tree::localities_annotation(
+                locality_ann, tile_info.as_annotation(), name_, codename_),
+            name_, codename_);
+
+        return result;
     }
 
     execution_tree::primitive_argument_type
@@ -363,23 +366,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return common::transpose3d(std::move(arg), name_, codename_);
         }
 
+        execution_tree::annotation locality_ann;
+        if (!arg.find_annotation("locality", locality_ann, name_, codename_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_transpose_operation::transpose2d",
+                generate_error_message(
+                    "meta annotation does not hold any locality annotation"));
+        }
+
         switch (extract_common_type(arg))
         {
         case node_data_type_bool:
             return transpose3d(
                 extract_boolean_value_strict(std::move(arg), name_, codename_),
-                std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         case node_data_type_int64:
             return transpose3d(
                 extract_integer_value_strict(std::move(arg), name_, codename_),
-                std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return transpose3d(
                 extract_numeric_value(std::move(arg), name_, codename_),
-                std::move(meta));
+                std::move(meta), std::move(locality_ann));
 
         default:
             break;
@@ -396,8 +408,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type
     dist_transpose_operation::transpose3d(ir::node_data<T>&& arg,
         ir::node_data<std::int64_t>&& axes,
-        execution_tree::annotation&& meta) const
+        execution_tree::annotation&& meta,
+        execution_tree::annotation&& locality_ann) const
     {
+        execution_tree::annotation tile_ann;
+        if (!meta.find("tile", tile_ann, name_, codename_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_transpose_operation::transpose2d",
+                generate_error_message(
+                    "meta annotation does not hold any tiling annotation"));
+        }
+
+        // perform actual operation
         auto v = axes.vector();
         for (auto& axis : v)
         {
@@ -406,7 +429,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         arg = blaze::trans(arg.tensor(), v.data(), v.size());
-        return execution_tree::primitive_argument_type{std::move(arg)};
+
+        // construct new tiling annotation
+        tiling_annotations_3d tile_info(tile_ann, name_, codename_);
+        tile_info.transpose(v.data(), v.size());
+
+        execution_tree::primitive_argument_type result{std::move(arg)};
+        result.set_annotation(
+            execution_tree::localities_annotation(
+                locality_ann, tile_info.as_annotation(), name_, codename_),
+            name_, codename_);
+
+        return result;
     }
 
     execution_tree::primitive_argument_type
@@ -427,23 +461,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(arg), std::move(axes), name_, codename_);
         }
 
+        execution_tree::annotation locality_ann;
+        if (!arg.find_annotation("locality", locality_ann, name_, codename_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_transpose_operation::transpose2d",
+                generate_error_message(
+                    "meta annotation does not hold any locality annotation"));
+        }
+
         switch (extract_common_type(arg))
         {
         case node_data_type_bool:
             return transpose3d(
                 extract_boolean_value_strict(std::move(arg), name_, codename_),
-                std::move(axes), std::move(meta));
+                std::move(axes), std::move(meta), std::move(locality_ann));
 
         case node_data_type_int64:
             return transpose3d(
                 extract_integer_value_strict(std::move(arg), name_, codename_),
-                std::move(axes), std::move(meta));
+                std::move(axes), std::move(meta), std::move(locality_ann));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return transpose3d(
                 extract_numeric_value(std::move(arg), name_, codename_),
-                std::move(axes), std::move(meta));
+                std::move(axes), std::move(meta), std::move(locality_ann));
 
         default:
             break;

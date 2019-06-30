@@ -11,7 +11,9 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/ranges.hpp>
 
+#include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <string>
 
 namespace phylanx { namespace dist_matrixops
@@ -75,8 +77,13 @@ namespace phylanx { namespace dist_matrixops
 
         execution_tree::annotation as_annotation() const;
 
-        tiling_span page_span_;
-        tiling_span row_span_;
+        void transpose(std::int64_t const* data, std::size_t count);
+        void transpose(std::initializer_list<std::int64_t> data)
+        {
+            transpose(data.begin(), data.size());
+        }
+
+        tiling_span spans_[3];
         tiling_span column_span_;
     };
 }}

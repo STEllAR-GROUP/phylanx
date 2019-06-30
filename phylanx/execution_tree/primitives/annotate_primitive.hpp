@@ -24,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<annotate_primitive>
     {
     public:
-        static match_pattern_type const match_data;
+        static match_pattern_type const match_data_annotate;
+        static match_pattern_type const match_data_annotate_d;
 
         annotate_primitive() = default;
 
@@ -35,6 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+
+    protected:
+        primitive_argument_type annotate(primitive_argument_type&& target,
+            ir::range&& args) const;
+        primitive_argument_type annotate_d(primitive_argument_type&& target,
+            ir::range&& args) const;
+
+    private:
+        std::string func_name_;
     };
 
     PHYLANX_EXPORT primitive create_annotate(hpx::id_type const& locality,

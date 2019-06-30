@@ -17,67 +17,57 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
-    std::string const& codestr)
+    std::string const& name, std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    auto const& code =
+        phylanx::execution_tree::compile(name, codestr, snippets, env);
     return code.run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_transpose_operation(std::string const& code,
+void test_transpose_operation(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
-    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+    HPX_TEST_EQ(
+        compile_and_run(name, code), compile_and_run(name, expected_str));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void test_transpose_1d()
 {
     // transposing a vector results in the same vector with transposed annotations
-    test_transpose_operation(
+    test_transpose_operation("test1d_1",
         R"(
             transpose_d(
-                annotate(
+                annotate_d(
                     [1, 2, 3],
-                    list(format("meta_{}", locality()),
-                        list("locality", locality(), num_localities()),
-                        list("tile", list("rows", 0, 3))
-                    )
+                    list("tile", list("rows", 0, 3))
                 )
             )
         )",
         R"(
-            annotate(
+            annotate_d(
                 [1, 2, 3],
-                list(format("meta_{}", locality()),
-                    list("locality", locality(), num_localities()),
+                list("tile", list("columns", 0, 3))
+            )
+        )");
+    test_transpose_operation("test1d_2",
+        R"(
+            transpose_d(
+                annotate_d(
+                    [1, 2, 3],
                     list("tile", list("columns", 0, 3))
                 )
             )
-        )");
-    test_transpose_operation(
-        R"(
-            transpose_d(
-                annotate(
-                    [1, 2, 3],
-                    list(format("meta_{}", locality()),
-                        list("locality", locality(), num_localities()),
-                        list("tile", list("columns", 0, 3))
-                    )
-                )
-            )
         )",
         R"(
-            annotate(
+            annotate_d(
                 [1, 2, 3],
-                list(format("meta_{}", locality()),
-                    list("locality", locality(), num_localities()),
-                    list("tile", list("rows", 0, 3))
-                )
+                list("tile", list("rows", 0, 3))
             )
         )");
 }
@@ -85,73 +75,55 @@ void test_transpose_1d()
 ////////////////////////////////////////////////////////////////////////////////
 void test_transpose_2d()
 {
-    test_transpose_operation(
+    test_transpose_operation("test2d_1",
         R"(
             transpose_d(
-                annotate(
+                annotate_d(
                     [[1, 2, 3], [3, 4, 1]],
-                    list(format("meta_{}", locality()),
-                        list("locality", locality(), num_localities()),
-                        list("tile", list("columns", 0, 3), list("rows", 0, 2))
-                    )
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))
                 )
             )
         )",
         R"(
-            annotate(
+            annotate_d(
                 [[1, 3], [2, 4], [3, 1]],
-                list(format("meta_{}", locality()),
-                    list("locality", locality(), num_localities()),
-                    list("tile", list("rows", 0, 3), list("columns", 0, 2))
-                )
+                list("tile", list("rows", 0, 3), list("columns", 0, 2))
             )
         )");
 
     // 2d transposition with axis [0, 1] results in a no-op
-    test_transpose_operation(
+    test_transpose_operation("test2d_2",
         R"(
             transpose_d(
-                annotate(
+                annotate_d(
                     [[1, 2, 3], [3, 4, 1]],
-                    list(format("meta_{}", locality()),
-                        list("locality", locality(), num_localities()),
-                        list("tile", list("columns", 0, 3), list("rows", 0, 2))
-                    )
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))
                 ),
                 [0, 1]
             )
         )",
         R"(
-            annotate(
+            annotate_d(
                 [[1, 2, 3], [3, 4, 1]],
-                list(format("meta_{}", locality()),
-                    list("locality", locality(), num_localities()),
-                    list("tile", list("columns", 0, 3), list("rows", 0, 2))
-                )
+                list("tile", list("columns", 0, 3), list("rows", 0, 2))
             )
         )");
 
     // 2d transposition with axes [1, 0] is equivalent to default transpose
-    test_transpose_operation(
+    test_transpose_operation("test2d_3",
         R"(
             transpose_d(
-                annotate(
+                annotate_d(
                     [[1, 2, 3], [3, 4, 1]],
-                    list(format("meta_{}", locality()),
-                        list("locality", locality(), num_localities()),
-                        list("tile", list("columns", 0, 3), list("rows", 0, 2))
-                    )
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))
                 ),
                 [1, 0]
             )
         )",
         R"(
-            annotate(
+            annotate_d(
                 [[1, 3], [2, 4], [3, 1]],
-                list(format("meta_{}", locality()),
-                    list("locality", locality(), num_localities()),
-                    list("tile", list("rows", 0, 3), list("columns", 0, 2))
-                )
+                list("tile", list("rows", 0, 3), list("columns", 0, 2))
             )
         )");
 }
@@ -160,7 +132,7 @@ void test_transpose_2d()
 int main(int argc, char* argv[])
 {
     // transposing a scalar is a no-op
-    test_transpose_operation("transpose_d(5.0)", "5.0");
+    test_transpose_operation("test0d", "transpose_d(5.0)", "5.0");
 
     test_transpose_1d();
     test_transpose_2d();

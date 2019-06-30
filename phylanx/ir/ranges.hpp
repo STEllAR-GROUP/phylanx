@@ -270,17 +270,17 @@ namespace phylanx { namespace ir
         static execution_tree::primitive_arguments_type
             convert_span(std::string key, Ts&&... ts)
         {
-            execution_tree::primitive_arguments_type ann_data;
-            ann_data.reserve(sizeof...(Ts) + 1);
+            execution_tree::primitive_arguments_type data;
+            data.reserve(sizeof...(Ts) + 1);
 
-            ann_data.emplace_back(std::move(key));
+            data.emplace_back(std::move(key));
 
             int dummy[] = {
-                0, (ann_data.emplace_back(std::forward<Ts>(ts)), 0)...
+                0, (data.emplace_back(std::forward<Ts>(ts)), 0)...
             };
             (void)dummy;
 
-            return ann_data;
+            return data;
         }
 
     public:

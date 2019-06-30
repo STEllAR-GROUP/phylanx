@@ -126,17 +126,29 @@ namespace phylanx { namespace dist_matrixops
                     "unexpected annotation type", name, codename));
         }
 
-        page_span_ = detail::extract_span(ann, "pages", name, codename);
-        row_span_ = detail::extract_span(ann, "rows", name, codename);
-        column_span_ = detail::extract_span(ann, "columns", name, codename);
+        spans_[2] = detail::extract_span(ann, "pages", name, codename);
+        spans_[1] = detail::extract_span(ann, "rows", name, codename);
+        spans_[0] = detail::extract_span(ann, "columns", name, codename);
     }
 
     execution_tree::annotation tiling_annotations_3d::as_annotation() const
     {
         return execution_tree::annotation{ir::range("tile",
-            ir::range("pages", page_span_.start_, page_span_.stop_),
-            ir::range("rows", row_span_.start_, row_span_.stop_),
-            ir::range("columns", column_span_.start_, column_span_.stop_))};
+            ir::range("pages", spans_[2].start_, spans_[2].stop_),
+            ir::range("rows", spans_[1].start_, spans_[1].stop_),
+            ir::range("columns", spans_[0].start_, spans_[0].stop_))};
+    }
+
+    void tiling_annotations_3d::transpose(
+        std::int64_t const* data, std::size_t count)
+    {
+        HPX_ASSERT(count == 3);
+        tiling_span spans[3] = {
+            spans_[data[0]], spans_[data[1]], spans_[data[2]]};
+
+        spans_[0] = spans[0];
+        spans_[1] = spans[1];
+        spans_[2] = spans[2];
     }
 }}
 

@@ -5,11 +5,13 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/locality_annotation.hpp>
 #include <phylanx/execution_tree/meta_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/include/components.hpp>
+#include <hpx/include/util.hpp>
 #include <hpx/collectives.hpp>
 
 #include <cstdint>
@@ -23,57 +25,11 @@ HPX_REGISTER_ALLTOALL(
 namespace phylanx { namespace execution_tree
 {
     ////////////////////////////////////////////////////////////////////////////
-    struct locality_information
-    {
-        locality_information(ir::range const& data, std::string const& name,
-            std::string const& codename)
-        {
-            if (data.size() != 2)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "locality_information::locality_information",
-                    util::generate_error_message(
-                        "unexpected number of 'locality' annotation data elements",
-                        name, codename));
-            }
-
-            using execution_tree::extract_scalar_integer_value;
-
-            auto it = data.begin();
-            locality_id_ = static_cast<std::uint32_t>(
-                extract_scalar_integer_value(*it, name, codename));
-            num_localities_ = static_cast<std::uint32_t>(
-                extract_scalar_integer_value(*++it, name, codename));
-        }
-
-        std::uint32_t locality_id_;
-        std::uint32_t num_localities_;
-    };
-
-    namespace detail
-    {
-        locality_information extract_locality_information(
-            execution_tree::annotation const& ann, std::string const& name,
-            std::string const& codename)
-        {
-            if (ann.get_type() != "locality")
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "detail::extract_locality_information",
-                    util::generate_error_message(
-                        "'locality' annotation type not given",
-                        name, codename));
-            }
-            return locality_information(ann.get_data(), name, codename);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     hpx::future<annotation> meta_annotation(annotation const& locality_ann,
         annotation&& ann, std::string const& name, std::string const& codename)
     {
         locality_information locality_info =
-            detail::extract_locality_information(locality_ann, name, codename);
+            extract_locality_information(locality_ann, name, codename);
 
         hpx::future<std::vector<annotation>> f = hpx::all_to_all(name.c_str(),
             std::move(ann), locality_info.num_localities_, std::size_t(-1),
@@ -104,6 +60,65 @@ namespace phylanx { namespace execution_tree
     {
         return meta_annotation(locality_ann, std::move(ann), name, codename)
             .get();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Distributed annotations are expected to have a certain structure. This
+    // structure is (mostly) created here.
+    //
+    // The overall structure is (assuming N localities, M is calling locality):
+    //
+    //      ("localities",
+    //          ("locality", M, N)
+    //          ("meta_0",
+    //              (... supplied by the user on locality 0 ...)
+    //          ),
+    //          ("meta_1",
+    //              (... supplied by the user on locality 1 ...)
+    //          ),
+    //          ...
+    //          ("meta_<N-1>",
+    //              (... supplied by the user on locality N-1 ...)
+    //          )
+    //      )
+    //
+    annotation localities_annotation(annotation& locality_ann,
+        annotation&& ann, std::string const& name, std::string const& codename)
+    {
+        // defaults to locality_id and num_localities
+        execution_tree::locality_information loc;
+
+        // If the annotation contains information related to the
+        // locality of the data we should perform an all_to_all
+        // operation to collect the information about all connected
+        // objects.
+        if (ann.find("locality", locality_ann, name, codename))
+        {
+            loc = execution_tree::extract_locality_information(
+                locality_ann, name, codename);
+        }
+        else
+        {
+            locality_ann = annotation{"locality",
+                static_cast<std::int64_t>(loc.locality_id_),
+                static_cast<std::int64_t>(loc.num_localities_)};
+        }
+
+        // wrap the user-supplied annotation into a meta-tag
+        auto meta_locality_ann =
+            annotation{
+                hpx::util::format("meta_{}", loc.locality_id_),
+                std::move(ann)
+            };
+
+        // communicate with all other localities to generate set of all meta
+        // entries
+        auto localities_ann = meta_annotation(hpx::launch::sync, locality_ann,
+            std::move(meta_locality_ann), name, codename);
+
+        // now generate the overall annotation
+        localities_ann.add_annotation(std::move(locality_ann), name, codename);
+        return localities_ann;
     }
 }}
 
