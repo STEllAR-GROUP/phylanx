@@ -38,10 +38,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
     protected:
+        hpx::future<primitive_argument_type> eval_annotate(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
+        hpx::future<primitive_argument_type> eval_annotate_d(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
+
+    protected:
         primitive_argument_type annotate(primitive_argument_type&& target,
             ir::range&& args) const;
         primitive_argument_type annotate_d(primitive_argument_type&& target,
-            ir::range&& args) const;
+            std::string&& name, ir::range&& args) const;
 
     private:
         std::string func_name_;

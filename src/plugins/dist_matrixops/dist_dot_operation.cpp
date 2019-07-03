@@ -8,6 +8,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
+#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -109,23 +110,31 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(lhs), std::move(rhs), name_, codename_);
         }
 
+        localities_information lhs_localities =
+            extract_localities_information(lhs, name_, codename_);
+        localities_information rhs_localities =
+            extract_localities_information(rhs, name_, codename_);
+
         switch (extract_common_type(lhs, rhs))
         {
         case node_data_type_bool:
             return dot1d(
                 extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
+                extract_boolean_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         case node_data_type_int64:
             return dot1d(
                 extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
+                extract_integer_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return dot1d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
+                extract_numeric_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         default:
             break;
@@ -150,23 +159,31 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(lhs), std::move(rhs), name_, codename_);
         }
 
+        localities_information lhs_localities =
+            extract_localities_information(lhs, name_, codename_);
+        localities_information rhs_localities =
+            extract_localities_information(rhs, name_, codename_);
+
         switch (extract_common_type(lhs, rhs))
         {
         case node_data_type_bool:
             return dot2d(
                 extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
+                extract_boolean_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         case node_data_type_int64:
             return dot2d(
                 extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
+                extract_integer_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return dot2d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
+                extract_numeric_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         default:
             break;
@@ -192,23 +209,31 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(lhs), std::move(rhs), name_, codename_);
         }
 
+        localities_information lhs_localities =
+            extract_localities_information(lhs, name_, codename_);
+        localities_information rhs_localities =
+            extract_localities_information(rhs, name_, codename_);
+
         switch (extract_common_type(lhs, rhs))
         {
         case node_data_type_bool:
             return dot3d(
                 extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
+                extract_boolean_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         case node_data_type_int64:
             return dot3d(
                 extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
+                extract_integer_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return dot3d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
+                extract_numeric_value(std::move(rhs), name_, codename_),
+                lhs_localities, rhs_localities);
 
         default:
             break;

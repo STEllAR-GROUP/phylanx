@@ -17,14 +17,17 @@ namespace phylanx { namespace execution_tree
 {
     PHYLANX_EXPORT hpx::future<annotation> meta_annotation(
         annotation const& locality_ann, annotation&& ann,
-        std::string const& name, std::string const& codename);
+        std::string const& ann_name, std::string const& name,
+        std::string const& codename);
 
     PHYLANX_EXPORT annotation meta_annotation(hpx::launch::sync_policy,
         annotation const& locality_ann, annotation&& ann,
-        std::string const& name, std::string const& codename);
+        std::string const& ann_name, std::string const& name,
+        std::string const& codename);
 
     PHYLANX_EXPORT annotation localities_annotation(annotation& locality_ann,
-        annotation&& ann, std::string const& name, std::string const& codename);
+        annotation&& ann, annotation_information const& ann_info,
+        std::string const& name, std::string const& codename);
 }}
 
 #endif

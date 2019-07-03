@@ -36,6 +36,7 @@ char const* const read_x_code = R"(block(
         annotate_d(
             slice(file_read_csv(filepath),
                 list(row_start, row_stop), list(col_start, col_stop)),
+            "read_x",
             list("tile",
                 list("rows", row_start, row_stop),
                 list("columns", col_start, col_stop)
@@ -53,6 +54,7 @@ char const* const read_y_code = R"(block(
         annotate_d(
             slice(file_read_csv(filepath),
                 list(row_start , row_stop), col_stop),
+            "read_y",
             list("tile",
                 list("rows", row_start, row_stop),
                 list("columns", col_stop, col_stop+1)

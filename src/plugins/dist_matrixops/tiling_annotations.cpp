@@ -8,9 +8,11 @@
 #include <phylanx/plugins/dist_matrixops/tiling_annotations.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/format.hpp>
 
+#include <array>
 #include <cstdint>
 #include <string>
 
@@ -44,7 +46,8 @@ namespace phylanx { namespace dist_matrixops
             std::string const& codename)
         {
             execution_tree::annotation key_ann;
-            if (!ann.find(key, key_ann, name, codename))
+            if (!ann.get_if(key, key_ann, name, codename) &&
+                !ann.find(key, key_ann, name, codename))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "tiling_annotations_1d::tiling_annotations_1d",
@@ -58,72 +61,170 @@ namespace phylanx { namespace dist_matrixops
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    tiling_annotations_1d::tiling_annotations_1d(
+    tiling_information::tiling_information(execution_tree::annotation const& ann,
+        std::string const& name, std::string const& codename)
+    {
+        auto&& key = ann.get_type(name, codename);
+        if (key != "tile")
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tiling_annotations::tiling_annotations",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "unexpected annotation type ({})", key),
+                    name, codename));
+        }
+
+        for (std::size_t i = 0; i != 3; ++i)
+        {
+            execution_tree::annotation tile_ann;
+            if (!ann.find(get_span_name(i), tile_ann, name, codename))
+            {
+                spans_.emplace_back();
+            }
+            else
+            {
+                spans_.push_back(detail::extract_span(
+                    tile_ann, get_span_name(i), name, codename));
+            }
+        }
+    }
+
+    tiling_information::tiling_information(std::size_t dim,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
+    {
+        spans_.reserve(dim);
+        for (std::size_t d : dims)
+        {
+            spans_.emplace_back(0, d);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    tiling_information_1d::tiling_information_1d(
             execution_tree::annotation const& ann, std::string const& name,
             std::string const& codename)
       : type_(ann.has_key("columns", name, codename) ? columns : rows)
     {
-        if (ann.get_type(name, codename) != "tile")
+        auto&& key = ann.get_type(name, codename);
+        if (key != "tile" && key != "tile1d")
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "tiling_annotations_1d::tiling_annotations_1d",
+                "tiling_annotation_1d::tiling_annotations",
                 util::generate_error_message(
-                    "unexpected annotation type", name, codename));
+                    hpx::util::format("unexpected annotation type ({})", key),
+                    name, codename));
         }
         span_ = detail::extract_span(ann, tile1d_typename(type_), name, codename);
     }
 
-    execution_tree::annotation tiling_annotations_1d::as_annotation() const
+    tiling_information_1d::tiling_information_1d(
+            tiling_information const& tile, std::string const& name,
+            std::string const& codename)
+      : type_(columns)
+    {
+        if (tile.spans_.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tiling_annotation_1d::tiling_annotations",
+                util::generate_error_message(
+                    hpx::util::format("unexpected annotation type"),
+                    name, codename));
+        }
+
+        if (tile.spans_[0].is_valid())
+        {
+            span_ = tile.spans_[0];
+        }
+        else if (tile.spans_.size() >= 2 && tile.spans_[1].is_valid())
+        {
+            type_ = rows;
+            span_ = tile.spans_[1];
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tiling_annotation_1d::tiling_annotations",
+                util::generate_error_message(
+                    hpx::util::format("unexpected annotation type"),
+                    name, codename));
+        }
+    }
+
+    execution_tree::annotation tiling_information_1d::as_annotation(
+        std::string const& name, std::string const& codename) const
     {
         return execution_tree::annotation{ir::range("tile",
             ir::range(tile1d_typename(type_), span_.start_, span_.stop_))};
     }
 
-    void tiling_annotations_1d::transpose()
+    void tiling_information_1d::transpose()
     {
         type_ = (type_ == columns) ? rows : columns;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    tiling_annotations_2d::tiling_annotations_2d(
+    tiling_information_2d::tiling_information_2d(
         execution_tree::annotation const& ann, std::string const& name,
         std::string const& codename)
     {
-        if (ann.get_type(name, codename) != "tile")
+        auto&& key = ann.get_type(name, codename);
+        if (key != "tile" && key != "tile2d")
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "tiling_annotations_2d::tiling_annotations_1d",
+                "tiling_annotation_2d::tiling_annotations",
                 util::generate_error_message(
-                    "unexpected annotation type", name, codename));
+                    hpx::util::format("unexpected annotation type ({})", key),
+                    name, codename));
         }
 
-        row_span_ = detail::extract_span(ann, "rows", name, codename);
-        column_span_ = detail::extract_span(ann, "columns", name, codename);
+        spans_[1] = detail::extract_span(ann, "rows", name, codename);
+        spans_[0] = detail::extract_span(ann, "columns", name, codename);
     }
 
-    execution_tree::annotation tiling_annotations_2d::as_annotation() const
+    tiling_information_2d::tiling_information_2d(
+        tiling_information const& tile, std::string const& name,
+        std::string const& codename)
+    {
+        if (tile.spans_.size() < 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tiling_annotation_2d::tiling_annotations",
+                util::generate_error_message(
+                    hpx::util::format("unexpected annotation type"),
+                    name, codename));
+        }
+
+        spans_[1] = tile.spans_[1];
+        spans_[0] = tile.spans_[0];
+    }
+
+    execution_tree::annotation tiling_information_2d::as_annotation(
+        std::string const& name, std::string const& codename) const
     {
         return execution_tree::annotation{ir::range("tile",
-            ir::range("rows", row_span_.start_, row_span_.stop_),
-            ir::range("columns", column_span_.start_, column_span_.stop_))};
+            ir::range("rows", spans_[1].start_, spans_[1].stop_),
+            ir::range("columns", spans_[0].start_, spans_[0].stop_))};
     }
 
-    void tiling_annotations_2d::transpose()
+    void tiling_information_2d::transpose()
     {
-        std::swap(column_span_, row_span_);
+        std::swap(spans_[0], spans_[1]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    tiling_annotations_3d::tiling_annotations_3d(
+    tiling_information_3d::tiling_information_3d(
         execution_tree::annotation const& ann, std::string const& name,
         std::string const& codename)
     {
-        if (ann.get_type(name, codename) != "tile")
+        auto&& key = ann.get_type(name, codename);
+        if (key != "tile" && key != "tile3d")
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "tiling_annotations_3d::tiling_annotations_1d",
+                "tiling_annotation_3d::tiling_annotations",
                 util::generate_error_message(
-                    "unexpected annotation type", name, codename));
+                    hpx::util::format("unexpected annotation type ({})", key),
+                    name, codename));
         }
 
         spans_[2] = detail::extract_span(ann, "pages", name, codename);
@@ -131,7 +232,26 @@ namespace phylanx { namespace dist_matrixops
         spans_[0] = detail::extract_span(ann, "columns", name, codename);
     }
 
-    execution_tree::annotation tiling_annotations_3d::as_annotation() const
+    tiling_information_3d::tiling_information_3d(
+        tiling_information const& tile, std::string const& name,
+        std::string const& codename)
+    {
+        if (tile.spans_.size() < 3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tiling_annotation_3d::tiling_annotations",
+                util::generate_error_message(
+                    hpx::util::format("unexpected annotation type"),
+                    name, codename));
+        }
+
+        spans_[2] = tile.spans_[2];
+        spans_[1] = tile.spans_[1];
+        spans_[0] = tile.spans_[0];
+    }
+
+    execution_tree::annotation tiling_information_3d::as_annotation(
+        std::string const& name, std::string const& codename) const
     {
         return execution_tree::annotation{ir::range("tile",
             ir::range("pages", spans_[2].start_, spans_[2].stop_),
@@ -139,7 +259,7 @@ namespace phylanx { namespace dist_matrixops
             ir::range("columns", spans_[0].start_, spans_[0].stop_))};
     }
 
-    void tiling_annotations_3d::transpose(
+    void tiling_information_3d::transpose(
         std::int64_t const* data, std::size_t count)
     {
         HPX_ASSERT(count == 3);

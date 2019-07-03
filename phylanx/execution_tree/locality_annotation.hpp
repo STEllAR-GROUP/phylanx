@@ -21,8 +21,17 @@ namespace phylanx { namespace execution_tree
     struct locality_information
     {
         PHYLANX_EXPORT locality_information();
+
+        locality_information(
+                std::uint32_t locality_id, std::uint32_t num_localities)
+          : locality_id_(locality_id)
+          , num_localities_(num_localities)
+        {}
+
         PHYLANX_EXPORT locality_information(ir::range const& data,
             std::string const& name, std::string const& codename);
+
+        PHYLANX_EXPORT execution_tree::annotation as_annotation() const;
 
         std::uint32_t locality_id_;
         std::uint32_t num_localities_;

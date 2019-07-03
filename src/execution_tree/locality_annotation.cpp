@@ -44,19 +44,29 @@ namespace phylanx { namespace execution_tree
             extract_scalar_integer_value(*++it, name, codename));
     }
 
-    locality_information extract_locality_information(
-        execution_tree::annotation const& ann, std::string const& name,
-        std::string const& codename)
+    execution_tree::annotation locality_information::as_annotation() const
     {
-        if (ann.get_type() != "locality")
+        return execution_tree::annotation(
+            "locality", static_cast<std::int64_t>(locality_id_),
+            static_cast<std::int64_t>(num_localities_));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    locality_information
+        extract_locality_information(execution_tree::annotation const& ann,
+            std::string const& name, std::string const& codename)
+    {
+        execution_tree::annotation locality;
+        if (!ann.get_if("locality", locality, name, codename) &&
+            !ann.find("locality", locality, name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "detail::extract_locality_information",
+                "execution_tree::extract_locality_information",
                 util::generate_error_message(
                     "'locality' annotation type not given",
                     name, codename));
         }
-        return locality_information(ann.get_data(), name, codename);
+        return locality_information(locality.get_data(), name, codename);
     }
 }}
 

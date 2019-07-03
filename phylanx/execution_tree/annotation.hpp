@@ -12,6 +12,7 @@
 
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
 
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 
@@ -99,6 +100,10 @@ namespace phylanx { namespace execution_tree
             annotation&& data, std::string const& name,
             std::string const& codename);
 
+        PHYLANX_EXPORT bool get_if(std::string const& key,
+            execution_tree::annotation& ann, std::string const& name = "",
+            std::string const& codename = "<unknown>") const;
+
         friend bool operator==(annotation const& lhs, annotation const& rhs)
         {
             return lhs.data_ == rhs.data_;
@@ -123,6 +128,33 @@ namespace phylanx { namespace execution_tree
     ////////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& os, annotation const& ann);
+
+    ////////////////////////////////////////////////////////////////////////////
+    struct annotation_information
+    {
+        annotation_information() = default;
+
+        PHYLANX_EXPORT annotation_information(
+            std::string name, std::int64_t generation);
+
+        PHYLANX_EXPORT annotation_information(
+            annotation const& ann, std::string const& name,
+            std::string const& codename);
+
+        PHYLANX_EXPORT std::string generate_name() const;
+        PHYLANX_EXPORT annotation as_annotation() const;
+
+    private:
+        void extract_from_name();
+
+    public:
+        std::string name_;
+        std::int64_t generation_ = 0;
+    };
+
+    PHYLANX_EXPORT annotation_information extract_annotation_information(
+        annotation const& ann, std::string const& name,
+        std::string const& codename);
 }}
 
 #endif

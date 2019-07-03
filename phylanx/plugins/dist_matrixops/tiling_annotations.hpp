@@ -9,11 +9,13 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
+#include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <initializer_list>
 #include <string>
 
 namespace phylanx { namespace dist_matrixops
@@ -25,13 +27,76 @@ namespace phylanx { namespace dist_matrixops
 
         tiling_span(ir::range const& rhs, std::string const& name,
             std::string const& codename);
+        tiling_span(std::int64_t start, std::int64_t stop)
+          : start_(start), stop_(stop)
+        {}
+
+        bool is_valid() const { return start_ < stop_; }
 
         std::int64_t start_ = 0;
         std::int64_t stop_ = 0;
     };
 
+    // find intersection of two spans
+    inline bool intersect(
+        tiling_span const& lhs, tiling_span const& rhs, tiling_span& result)
+    {
+        if (lhs.start_ < rhs.stop_ && lhs.stop_ > rhs.start_)
+        {
+            result.start_ = (std::max)(lhs.start_, rhs.start_);
+            result.stop_ = (std::min)(lhs.stop_, rhs.stop_);
+            return true;
+        }
+        return false;
+    }
+
+    namespace detail
+    {
+        tiling_span extract_span(execution_tree::annotation const& ann,
+            char const* key, std::string const& name,
+            std::string const& codename);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
-    struct tiling_annotations_1d
+    struct tiling_information
+    {
+        static char const* get_span_name(std::size_t i)
+        {
+            static const char* const names[] = {"columns", "rows", "pages"};
+            return names[i];
+        }
+
+        tiling_information(execution_tree::annotation const& ann,
+            std::string const& name, std::string const& codename);
+
+        tiling_information(std::size_t dim,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims);
+
+        execution_tree::annotation as_annotation(
+            std::string const& name, std::string const& codename) const
+        {
+            execution_tree::annotation ann("tile");
+            for (std::size_t i = 0; i != spans_.size(); ++i)
+            {
+                ann.add_annotation(get_span_name(i),
+                    ir::range(spans_[i].start_, spans_[i].stop_), name,
+                    codename);
+            }
+            return ann;
+        }
+
+        // the number of annotations corresponds to the dimensionality of the
+        // described data
+        std::size_t dimensions() const
+        {
+            return spans_.size();
+        }
+
+        std::vector<tiling_span> spans_;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    struct tiling_information_1d
     {
         enum tile1d_type
         {
@@ -44,10 +109,14 @@ namespace phylanx { namespace dist_matrixops
             return t == columns ? "columns" : "rows";
         }
 
-        tiling_annotations_1d(execution_tree::annotation const& ann,
+        tiling_information_1d(execution_tree::annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        execution_tree::annotation as_annotation() const;
+        tiling_information_1d(tiling_information const& info,
+            std::string const& name, std::string const& codename);
+
+        execution_tree::annotation as_annotation(
+            std::string const& name, std::string const& codename) const;
 
         void transpose();
 
@@ -56,35 +125,37 @@ namespace phylanx { namespace dist_matrixops
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    struct tiling_annotations_2d
+    struct tiling_information_2d
     {
-        tiling_annotations_2d(execution_tree::annotation const& ann,
+        tiling_information_2d(execution_tree::annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        execution_tree::annotation as_annotation() const;
+        tiling_information_2d(tiling_information const& tile,
+            std::string const& name, std::string const& codename);
+
+        execution_tree::annotation as_annotation(
+            std::string const& name, std::string const& codename) const;
 
         void transpose();
 
-        tiling_span row_span_;
-        tiling_span column_span_;
+        tiling_span spans_[2];
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    struct tiling_annotations_3d
+    struct tiling_information_3d
     {
-        tiling_annotations_3d(execution_tree::annotation const& ann,
+        tiling_information_3d(execution_tree::annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        execution_tree::annotation as_annotation() const;
+        tiling_information_3d(tiling_information const& tile,
+            std::string const& name, std::string const& codename);
+
+        execution_tree::annotation as_annotation(
+            std::string const& name, std::string const& codename) const;
 
         void transpose(std::int64_t const* data, std::size_t count);
-        void transpose(std::initializer_list<std::int64_t> data)
-        {
-            transpose(data.begin(), data.size());
-        }
 
         tiling_span spans_[3];
-        tiling_span column_span_;
     };
 }}
 

@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 
 #include <hpx/lcos/future.hpp>
 
@@ -51,7 +52,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         template <typename T>
         execution_tree::primitive_argument_type dot1d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            localities_information const& lhs_localities,
+            localities_information const& rhs_localities) const;
         template <typename T>
         execution_tree::primitive_argument_type dot1d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -62,7 +65,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 #endif
         template <typename T>
         execution_tree::primitive_argument_type dot1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            localities_information const& lhs_localities,
+            localities_information const& rhs_localities) const;
         execution_tree::primitive_argument_type dot1d(
             execution_tree::primitive_argument_type&&,
             execution_tree::primitive_argument_type&&) const;
@@ -80,7 +85,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 #endif
         template <typename T>
         execution_tree::primitive_argument_type dot2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            localities_information const& lhs_localities,
+            localities_information const& rhs_localities) const;
         execution_tree::primitive_argument_type dot2d(
             execution_tree::primitive_argument_type&&,
             execution_tree::primitive_argument_type&&) const;
@@ -97,7 +104,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
         execution_tree::primitive_argument_type dot3d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            localities_information const& lhs_localities,
+            localities_information const& rhs_localities) const;
         execution_tree::primitive_argument_type dot3d(
             execution_tree::primitive_argument_type&&,
             execution_tree::primitive_argument_type&&) const;

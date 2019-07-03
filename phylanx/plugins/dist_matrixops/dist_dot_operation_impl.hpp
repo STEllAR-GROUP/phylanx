@@ -11,15 +11,19 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
+#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
+#include <phylanx/util/distributed_vector.hpp>
 
+#include <hpx/collectives/all_reduce.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -29,6 +33,17 @@
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
 #endif
+
+using std_int64_t = std::int64_t;
+using std_uint8_t = std::uint8_t;
+
+REGISTER_DISTRIBUTED_VECTOR_DECLARATION(double);
+REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_int64_t);
+REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_uint8_t);
+
+HPX_REGISTER_ALLREDUCE_DECLARATION(double);
+HPX_REGISTER_ALLREDUCE_DECLARATION(std_int64_t);
+HPX_REGISTER_ALLREDUCE_DECLARATION(std_uint8_t);
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives
@@ -67,21 +82,111 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot1d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const
     {
-        if (lhs.size() != rhs.size())
+        if (lhs_localities.dimensions() < 1 || rhs_localities.dimensions() < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d1d",
                 generate_error_message(
-                    "the operands have incompatible number of dimensions"));
+                    "the operands have incompatible dimensionalities"));
         }
 
-        // lhs.dimension(0) == rhs.dimension(0)
-        lhs = T(blaze::dot(lhs.vector(), rhs.vector()));
+        if (lhs_localities.size() != rhs_localities.size())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_dot_operation::dot1d1d",
+                generate_error_message(
+                    "the operands have incompatible size"));
+        }
+
+        // construct a distributed vector object for the rhs
+        util::distributed_vector<T> rhs_data(
+            rhs_localities.annotation_.name_, rhs.vector(),
+            rhs_localities.locality_.num_localities_,
+            rhs_localities.locality_.locality_id_);
+
+        // use the local tile of lhs and calculate the dot product with all
+        // corresponding tiles of rhs
+        std::size_t lhs_span_index = 0;
+        if (!lhs_localities.has_span(0))
+        {
+            HPX_ASSERT(lhs_localities.has_span(1));
+            lhs_span_index = 1;
+        }
+
+        tiling_span const& lhs_span = lhs_localities.get_span(lhs_span_index);
+
+        // go over all tiles of rhs vector
+        T dot_result = T{0};
+
+        std::uint32_t loc = 0;
+        for (auto const& rhs_tile : rhs_localities.tiles_)
+        {
+            std::size_t rhs_span_index = 0;
+            if (!rhs_tile.spans_[0].is_valid())
+            {
+                HPX_ASSERT(rhs_tile.spans_[1].is_valid());
+                rhs_span_index = 1;
+            }
+
+            tiling_span const& rhs_span = rhs_tile.spans_[rhs_span_index];
+
+            tiling_span intersection;
+            if (!intersect(lhs_span, rhs_span, intersection))
+            {
+                ++loc;
+                continue;
+            }
+
+            // project global coordinates onto local ones
+            tiling_span lhs_intersection = lhs_localities.project_coords(
+                lhs_localities.locality_.locality_id_, lhs_span_index,
+                intersection);
+            tiling_span rhs_intersection =
+                rhs_localities.project_coords(loc, rhs_span_index, intersection);
+
+            if (rhs_localities.locality_.locality_id_ == loc)
+            {
+                // calculate the dot product with local tile
+                dot_result += T{blaze::dot(
+                    blaze::subvector(lhs.vector(), lhs_intersection.start_,
+                        lhs_intersection.stop_ - lhs_intersection.start_),
+                    blaze::subvector(*rhs_data, rhs_intersection.start_,
+                        rhs_intersection.stop_ - rhs_intersection.start_))};
+            }
+            else
+            {
+                // calculate the dot product with remote tile
+                dot_result += T{blaze::dot(
+                    blaze::subvector(lhs.vector(), lhs_intersection.start_,
+                        lhs_intersection.stop_ - lhs_intersection.start_),
+                    rhs_data.fetch(loc, rhs_intersection.start_,
+                            rhs_intersection.stop_).get())};
+            }
+            ++loc;
+        }
+
+        // collect overall result if left hand side vector is distributed
+        if (lhs_localities.locality_.num_localities_ > 1)
+        {
+            lhs = hpx::all_reduce(
+                ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
+                dot_result, std::plus<T>{},
+                lhs_localities.locality_.num_localities_, std::size_t(-1),
+                lhs_localities.locality_.locality_id_)
+                      .get();
+        }
+        else
+        {
+            lhs = dot_result;
+        }
+
         return execution_tree::primitive_argument_type{std::move(lhs)};
     }
 
@@ -131,7 +236,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     // Case 3: Inner product of a matrix (tensor slice)
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
         {
@@ -141,7 +248,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         case 1:
             // If is_vector(lhs) && is_vector(rhs)
-            return dot1d1d(std::move(lhs), std::move(rhs));
+            return dot1d1d(
+                std::move(lhs), std::move(rhs), lhs_localities, rhs_localities);
 
         case 2:
             // If is_vector(lhs) && is_matrix(rhs)
@@ -226,7 +334,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     // Regular matrix multiplication
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
         {
@@ -324,7 +434,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     // lhs_num_dims == 3
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
         {

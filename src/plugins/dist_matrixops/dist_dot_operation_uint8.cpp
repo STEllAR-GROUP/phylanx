@@ -9,6 +9,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation_impl.hpp>
+#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 
 #include <cstdint>
 
@@ -22,13 +23,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&) const;
 
     template execution_tree::primitive_argument_type dist_dot_operation::dot1d(
-        ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&) const;
+        ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const;
 
     template execution_tree::primitive_argument_type dist_dot_operation::dot2d(
-        ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&) const;
+        ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template execution_tree::primitive_argument_type dist_dot_operation::dot3d(
-        ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&) const;
+        ir::node_data<std::uint8_t>&&, ir::node_data<std::uint8_t>&&,
+        localities_information const& lhs_localities,
+        localities_information const& rhs_localities) const;
 #endif
 }}}

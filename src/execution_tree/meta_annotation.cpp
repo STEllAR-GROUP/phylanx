@@ -26,14 +26,16 @@ namespace phylanx { namespace execution_tree
 {
     ////////////////////////////////////////////////////////////////////////////
     hpx::future<annotation> meta_annotation(annotation const& locality_ann,
-        annotation&& ann, std::string const& name, std::string const& codename)
+        annotation&& ann, std::string const& ann_name,
+        std::string const& name, std::string const& codename)
     {
         locality_information locality_info =
             extract_locality_information(locality_ann, name, codename);
 
-        hpx::future<std::vector<annotation>> f = hpx::all_to_all(name.c_str(),
-            std::move(ann), locality_info.num_localities_, std::size_t(-1),
-            locality_info.locality_id_);
+        hpx::future<std::vector<annotation>> f =
+            hpx::all_to_all(("all_to_all_" + ann_name).c_str(), std::move(ann),
+                locality_info.num_localities_, std::size_t(-1),
+                locality_info.locality_id_);
 
         return f.then(hpx::launch::sync,
             [](hpx::future<std::vector<annotation>>&& f) -> annotation
@@ -56,10 +58,11 @@ namespace phylanx { namespace execution_tree
 
     annotation meta_annotation(hpx::launch::sync_policy,
         annotation const& locality_ann, annotation&& ann,
-        std::string const& name, std::string const& codename)
+        std::string const& ann_name, std::string const& name,
+        std::string const& codename)
     {
-        return meta_annotation(locality_ann, std::move(ann), name, codename)
-            .get();
+        return meta_annotation(
+            locality_ann, std::move(ann), ann_name, name, codename).get();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -83,7 +86,8 @@ namespace phylanx { namespace execution_tree
     //      )
     //
     annotation localities_annotation(annotation& locality_ann,
-        annotation&& ann, std::string const& name, std::string const& codename)
+        annotation&& ann, annotation_information const& ann_info,
+        std::string const& name, std::string const& codename)
     {
         // defaults to locality_id and num_localities
         execution_tree::locality_information loc;
@@ -92,7 +96,7 @@ namespace phylanx { namespace execution_tree
         // locality of the data we should perform an all_to_all
         // operation to collect the information about all connected
         // objects.
-        if (ann.find("locality", locality_ann, name, codename))
+        if (locality_ann.get_type() == "locality")
         {
             loc = execution_tree::extract_locality_information(
                 locality_ann, name, codename);
@@ -114,10 +118,15 @@ namespace phylanx { namespace execution_tree
         // communicate with all other localities to generate set of all meta
         // entries
         auto localities_ann = meta_annotation(hpx::launch::sync, locality_ann,
-            std::move(meta_locality_ann), name, codename);
+            std::move(meta_locality_ann), ann_info.generate_name(), name,
+            codename);
 
         // now generate the overall annotation
         localities_ann.add_annotation(std::move(locality_ann), name, codename);
+
+        // attach globally unique name to returned annotation
+        localities_ann.add_annotation(ann_info.as_annotation(), name, codename);
+
         return localities_ann;
     }
 }}
