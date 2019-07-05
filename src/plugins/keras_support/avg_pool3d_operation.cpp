@@ -151,14 +151,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t p = 0; p != npages; ++p)
         {
-            auto sub_page = get_subsizes(npages, filter_depth, p - pad_front);
+            auto sub_page =
+                pool_indices::get_subsizes(npages, filter_depth, p - pad_front);
             for (std::size_t r = 0; r != nrows; ++r)
             {
-                auto sub_row = get_subsizes(nrows, filter_height, r - pad_top);
+                auto sub_row = pool_indices::get_subsizes(
+                    nrows, filter_height, r - pad_top);
                 for (std::size_t c = 0; c != ncolumns; ++c)
                 {
-                    auto sub_column =
-                        get_subsizes(ncolumns, filter_width, c - pad_left);
+                    auto sub_column = pool_indices::get_subsizes(
+                        ncolumns, filter_width, c - pad_left);
 
                     result(p, r, c) =
                         mean(blaze::subtensor(t, sub_page.image_beg_,
@@ -227,15 +229,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t p = 0; p != result_depth; ++p)
         {
-            auto sub_page = get_subsizes(
+            auto sub_page = pool_indices::get_subsizes(
                 npages, filter_depth, p * stride_depth - pad_front);
             for (std::size_t r = 0; r != result_height; ++r)
             {
-                auto sub_row = get_subsizes(
+                auto sub_row = pool_indices::get_subsizes(
                     nrows, filter_height, r * stride_height - pad_top);
                 for (std::size_t c = 0; c != result_width; ++c)
                 {
-                    auto sub_column = get_subsizes(
+                    auto sub_column = pool_indices::get_subsizes(
                         ncolumns, filter_width, c * stride_width - pad_left);
 
                     result(p, r, c) =
