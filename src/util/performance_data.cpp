@@ -9,12 +9,12 @@
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/util/performance_data.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/include/agas.hpp>
 #include <hpx/include/future.hpp>
+#include <hpx/include/lcos.hpp>
 #include <hpx/include/performance_counters.hpp>
 #include <hpx/include/runtime.hpp>
-#include <hpx/include/lcos.hpp>
-#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <cstddef>

@@ -13,7 +13,7 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/util/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/util/detail/pack.hpp>
 #include <hpx/util/invoke.hpp>
 #include <hpx/util/tuple.hpp>

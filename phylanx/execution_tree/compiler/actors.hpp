@@ -9,10 +9,10 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/util/assert.hpp>
 
 #include <array>
 #include <cstddef>
