@@ -15,11 +15,10 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/variant.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/runtime.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/util/assert.hpp>
 #include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>

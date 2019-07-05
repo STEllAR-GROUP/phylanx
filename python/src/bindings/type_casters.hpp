@@ -10,7 +10,7 @@
 
 #include <phylanx/phylanx.hpp>
 
-#include <hpx/util/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/util/tuple.hpp>
 
 #include <pybind11/numpy.h>
