@@ -26,6 +26,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef HPX_HAVE_APEX
+#include <phylanx/util/apex_task_inlining_policy.hpp>
+#endif
+
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -139,6 +143,23 @@ namespace phylanx { namespace execution_tree
 
 #if defined(HPX_HAVE_APEX)
             std::string eval_name_;
+#ifdef PHYLANX_HAVE_TASK_INLINING_POLICY
+            std::int64_t get_exec_threshold() const;
+            std::int64_t get_exec_hysteresis() const;
+            std::int64_t exec_threshold_ = 425000;
+            std::int64_t exec_hysteresis_ = 75000;
+
+            bool policy_initialized_ = false;
+
+            hpx::launch select_direct_eval_policy_exec_directly(
+            hpx::launch policy);
+
+            hpx::launch select_direct_eval_policy_thres(
+            hpx::launch policy);
+
+            std::unique_ptr<phylanx::util::apex_inlining_policy>
+            inlining_policy_instance;
+#endif
 #endif
         };
     }
