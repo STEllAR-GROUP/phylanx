@@ -212,7 +212,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             for (std::size_t j = 0; j != data_length; ++j)
             {
-                auto sub = get_subsizes(
+                auto sub = conv_indices::get_subsizes(
                     data_length, dk_length, j - pad_left);
                 blaze::rowslice(result, j) +=
                     blaze::trans(blaze::submatrix(blaze::columnslice(a, i), 0,
@@ -266,7 +266,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             for (std::size_t j = 0; j != result_length; ++j)
             {
-                auto sub = get_subsizes(
+                auto sub = conv_indices::get_subsizes(
                     data_length, dk_length, j * strides - pad_left);
                 blaze::rowslice(result, j) +=
                     blaze::trans(blaze::submatrix(blaze::columnslice(a, i), 0,
@@ -304,7 +304,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             for (std::size_t j = 0; j != data_length; ++j)
             {
-                auto sub = get_subsizes_dilated(
+                auto sub = conv_indices::get_subsizes_dilated(
                     data_length, dk_length, j - pad_left, dilation_rate);
 
                 if (sub.size_ == 0)

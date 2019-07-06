@@ -128,11 +128,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t r = 0; r != nrows; ++r)
         {
-            auto sub_row = get_subsizes(nrows, filter_height, r - pad_top);
+            auto sub_row =
+                pool_indices::get_subsizes(nrows, filter_height, r - pad_top);
             for (std::size_t c = 0; c != ncolumns; ++c)
             {
-                auto sub_column =
-                    get_subsizes(ncolumns, filter_width, c - pad_left);
+                auto sub_column = pool_indices::get_subsizes(
+                    ncolumns, filter_width, c - pad_left);
 
                 result(r, c) =
                     (blaze::max)(blaze::submatrix(m, sub_row.image_beg_,
@@ -183,11 +184,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t r = 0; r != result_height; ++r)
         {
-            auto sub_row = get_subsizes(
+            auto sub_row = pool_indices::get_subsizes(
                 nrows, filter_height, r * stride_height - pad_top);
             for (std::size_t c = 0; c != result_width; ++c)
             {
-                auto sub_column = get_subsizes(
+                auto sub_column = pool_indices::get_subsizes(
                     ncolumns, filter_width, c * stride_width - pad_left);
 
                 result(r, c) =
