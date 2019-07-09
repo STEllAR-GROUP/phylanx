@@ -94,9 +94,13 @@ namespace phylanx { namespace dist_matrixops
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
     {
         spans_.reserve(dim);
-        for (std::size_t d : dims)
+        for (std::size_t i = dim; i != 0; --i)
         {
-            spans_.emplace_back(0, d);
+            spans_.emplace_back(0, dims[i - 1]);
+        }
+        for (std::size_t i = dim; i != 3; ++i)
+        {
+            spans_.emplace_back(0, 0);
         }
     }
 

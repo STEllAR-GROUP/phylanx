@@ -41,41 +41,25 @@ void test_dot_1d_0()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_dot_operation("test1d_0",
-            R"(
-                dot_d(
-                    annotate_d(
-                        [1, 2, 3],
-                        "test1d_0_1",
-                        list("tile", list("columns", 0, 3))
-                    ),
-                    annotate_d(
-                        [4, 5, 6],
-                        "test1d_0_2",
-                        list("tile", list("columns", 3, 6))
-                    )
-                )
-            )",
-            "91");
+        test_dot_operation("test1d_0", R"(
+            dot_d(
+                annotate_d([1, 2, 3], "test1d_0_1",
+                    list("tile", list("columns", 0, 3))),
+                annotate_d([4, 5, 6], "test1d_0_2",
+                    list("tile", list("columns", 3, 6)))
+            )
+        )", "91");
     }
     else
     {
-        test_dot_operation("test1d_0",
-            R"(
-                dot_d(
-                    annotate_d(
-                        [4, 5, 6],
-                        "test1d_0_1",
-                        list("tile", list("columns", 3, 6))
-                    ),
-                    annotate_d(
-                        [1, 2, 3],
-                        "test1d_0_2",
-                        list("tile", list("columns", 0, 3))
-                    )
-                )
-            )",
-            "91");
+        test_dot_operation("test1d_0", R"(
+            dot_d(
+                annotate_d([4, 5, 6], "test1d_0_1",
+                    list("tile", list("columns", 3, 6))),
+                annotate_d([1, 2, 3], "test1d_0_2",
+                    list("tile", list("columns", 0, 3)))
+            )
+        )", "91");
     }
 }
 
@@ -83,33 +67,23 @@ void test_dot_1d_1()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_dot_operation("test1d_1",
-            R"(
-                dot_d(
-                    annotate_d(
-                        [1, 2, 3],
-                        "test1d_1_1",
-                        list("tile", list("columns", 0, 3))
-                    ),
-                    [1, 2, 3, 4, 5, 6]
-                )
-            )",
-            "91");
+        test_dot_operation("test1d_1", R"(
+            dot_d(
+                annotate_d([1, 2, 3], "test1d_1_1",
+                    list("tile", list("columns", 0, 3))),
+                [1, 2, 3, 4, 5, 6]
+            )
+        )", "91");
     }
     else
     {
-        test_dot_operation("test1d_1",
-            R"(
-                dot_d(
-                    annotate_d(
-                        [4, 5, 6],
-                        "test1d_1_1",
-                        list("tile", list("columns", 3, 6))
-                    ),
-                    [1, 2, 3, 4, 5, 6]
-                )
-            )",
-            "91");
+        test_dot_operation("test1d_1", R"(
+            dot_d(
+                annotate_d([4, 5, 6], "test1d_1_1",
+                    list("tile", list("columns", 3, 6))),
+                [1, 2, 3, 4, 5, 6]
+            )
+        )", "91");
     }
 }
 
@@ -117,33 +91,98 @@ void test_dot_1d_2()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_dot_operation("test1d_2",
-            R"(
-                dot_d(
-                    [1, 2, 3, 4, 5, 6],
-                    annotate_d(
-                        [1, 2, 3],
-                        "test1d_2_1",
-                        list("tile", list("columns", 0, 3))
-                    )
-                )
-            )",
-            "91");
+        test_dot_operation("test1d_2", R"(
+            dot_d(
+                [1, 2, 3, 4, 5, 6],
+                annotate_d([1, 2, 3], "test1d_2_1",
+                    list("tile", list("columns", 0, 3)))
+            )
+        )", "91");
     }
     else
     {
-        test_dot_operation("test1d_2",
-            R"(
-                dot_d(
-                    [1, 2, 3, 4, 5, 6],
-                    annotate_d(
-                        [4, 5, 6],
-                        "test1d_2_1",
-                        list("tile", list("columns", 3, 6))
-                    )
-                )
-            )",
-            "91");
+        test_dot_operation("test1d_2", R"(
+            dot_d(
+                [1, 2, 3, 4, 5, 6],
+                annotate_d([4, 5, 6], "test1d_2_1",
+                    list("tile", list("columns", 3, 6)))
+            )
+        )", "91");
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void test_dot_2d1d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test2d1d_0", R"(
+            dot_d(
+                annotate_d([[1, 2, 3], [1, 2, 3]], "test2d1d_0_1",
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))),
+                annotate_d([4, 5, 6], "test2d1d_0_2",
+                    list("tile", list("columns", 3, 6)))
+            )
+        )", "[91, 91]");
+    }
+    else
+    {
+        test_dot_operation("test2d1d_0", R"(
+            dot_d(
+                annotate_d([[4, 5, 6], [4, 5, 6]], "test2d1d_0_1",
+                    list("tile", list("columns", 3, 6), list("rows", 0, 2))),
+                annotate_d([1, 2, 3], "test2d1d_0_2",
+                    list("tile", list("columns", 0, 3)))
+            )
+        )", "[91, 91]");
+    }
+}
+
+void test_dot_2d1d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test2d1d_1", R"(
+            dot_d(
+                annotate_d([[1, 2, 3], [1, 2, 3]], "test2d1d_1_1",
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))),
+                [1, 2, 3, 4, 5, 6]
+            )
+        )", "[91, 91]");
+    }
+    else
+    {
+        test_dot_operation("test2d1d_1", R"(
+            dot_d(
+                annotate_d([[4, 5, 6], [4, 5, 6]], "test2d1d_1_1",
+                    list("tile", list("columns", 3, 6), list("rows", 0, 2))),
+                [1, 2, 3, 4, 5, 6]
+            )
+        )", "[91, 91]");
+    }
+}
+
+void test_dot_2d1d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test2d1d_2", R"(
+            dot_d(
+                [[1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 6]],
+                annotate_d([4, 5, 6], "test2d1d_2_2",
+                    list("tile", list("columns", 3, 6)))
+            )
+        )", "[91, 91]");
+    }
+    else
+    {
+        test_dot_operation("test2d1d_2", R"(
+            dot_d(
+                [[1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 6]],
+                annotate_d([1, 2, 3], "test2d1d_2_2",
+                    list("tile", list("columns", 0, 3)))
+            )
+        )", "[91, 91]");
     }
 }
 
@@ -153,6 +192,10 @@ int hpx_main(int argc, char* argv[])
     test_dot_1d_0();
     test_dot_1d_1();
     test_dot_1d_2();
+
+    test_dot_2d1d_0();
+    test_dot_2d1d_1();
+    test_dot_2d1d_2();
 
     return hpx::finalize();
 }
