@@ -164,8 +164,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     namespace detail
     {
         execution_tree::annotation tiling_2d_annotation(
-            localities_information&& localities, bool transpose, std::string const& name,
-            std::string const& codename)
+            localities_information&& localities, bool transpose,
+            std::string const& name, std::string const& codename)
         {
             tiling_information_2d tile_info(
                 localities.tiles_[localities.locality_.locality_id_],

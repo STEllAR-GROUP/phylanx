@@ -33,6 +33,11 @@ namespace phylanx { namespace dist_matrixops
 
         bool is_valid() const { return start_ < stop_; }
 
+        std::int64_t size() const
+        {
+            return stop_ - start_;
+        }
+
         std::int64_t start_ = 0;
         std::int64_t stop_ = 0;
     };
@@ -87,9 +92,17 @@ namespace phylanx { namespace dist_matrixops
 
         // the number of annotations corresponds to the dimensionality of the
         // described data
-        std::size_t dimensions() const
+        std::size_t dimension() const
         {
-            return spans_.size();
+            std::size_t dim = 0;
+            for (auto const& span : spans_)
+            {
+                if (span.is_valid())
+                {
+                    ++dim;
+                }
+            }
+            return dim;
         }
 
         std::vector<tiling_span> spans_;
@@ -108,6 +121,11 @@ namespace phylanx { namespace dist_matrixops
         {
             return t == columns ? "columns" : "rows";
         }
+
+        tiling_information_1d(tile1d_type type, tiling_span const& span)
+          : type_(type)
+          , span_(span)
+        {}
 
         tiling_information_1d(execution_tree::annotation const& ann,
             std::string const& name, std::string const& codename);

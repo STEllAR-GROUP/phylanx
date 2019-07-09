@@ -29,7 +29,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     template execution_tree::primitive_argument_type dist_dot_operation::dot2d(
         ir::node_data<std::int64_t>&&, ir::node_data<std::int64_t>&&,
-        localities_information const& lhs_localities,
+        localities_information&& lhs_localities,
         localities_information const& rhs_localities) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)

@@ -29,6 +29,7 @@ namespace phylanx { namespace dist_matrixops
         localities_information() = default;
 
         localities_information(
+            execution_tree::primitive_argument_type const& arg,
             execution_tree::annotation const& ann, std::string const& name,
             std::string const& codename);
 
@@ -36,7 +37,9 @@ namespace phylanx { namespace dist_matrixops
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims);
 
         // extract dimensionality and sizes
-        std::size_t dimensions() const;
+        std::size_t dimension() const;
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dimensions(
+            std::string const& name, std::string const& codename) const;
 
         std::size_t size() const;
 

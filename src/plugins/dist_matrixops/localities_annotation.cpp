@@ -26,6 +26,7 @@ namespace phylanx { namespace dist_matrixops
 {
     ////////////////////////////////////////////////////////////////////////////
     localities_information::localities_information(
+        execution_tree::primitive_argument_type const& arg,
         execution_tree::annotation const& ann, std::string const& name,
         std::string const& codename)
     {
@@ -87,7 +88,7 @@ namespace phylanx { namespace dist_matrixops
             tiles_.emplace_back(std::move(tile), name, codename);
         }
 
-        // make sure that all tiles have the same dimensionality
+        // we should have found the information for at least one tile
         if (tiles_.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -97,21 +98,39 @@ namespace phylanx { namespace dist_matrixops
                     name, codename));
         }
 
-        std::size_t dims = tiles_[0].dimensions();
-        auto it = std::find_if(
-            tiles_.begin(), tiles_.end(),
-            [&](tiling_information const& v)
+        std::size_t dim = tiles_[0].dimension();
+        for (std::size_t i = 0; i != tiles_.size(); ++i)
+        {
+            // make sure that all tiles have the same dimensionality
+            if (tiles_[i].dimension() != dim)
             {
-                return v.dimensions() != dims;
-            });
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "localities_information::localities_information",
+                    util::generate_error_message(
+                        "inconsistent dimensionalities in tiles",
+                        name, codename));
+            }
+        }
 
-        if (it != tiles_.end())
+        // make sure the tile information matches the dimensions of the given
+        // array
+        if (extract_numeric_value_dimension(arg, name, codename) != dim)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::localities_information",
                 util::generate_error_message(
-                    "inconsistent dimensionalities in tiles",
-                    name, codename));
+                    "inconsistent dimensionalities between data and "
+                    "tile information", name, codename));
+        }
+
+        if (extract_numeric_value_dimensions(arg, name, codename) !=
+            dimensions(name, codename))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "localities_information::localities_information",
+                util::generate_error_message(
+                    "inconsistent dimensionalities between data and "
+                    "tile information", name, codename));
         }
     }
 
@@ -144,14 +163,66 @@ namespace phylanx { namespace dist_matrixops
 
             return localities_information(dim, dims);
         }
-        return localities_information(localities, name, codename);
+        return localities_information(arg, localities, name, codename);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    std::size_t localities_information::dimensions() const
+    std::size_t localities_information::dimension() const
     {
         HPX_ASSERT(tiles_.size() == locality_.num_localities_);
-        return tiles_[locality_.locality_id_].dimensions();
+        return tiles_[locality_.locality_id_].dimension();
+    }
+
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    localities_information::dimensions(
+        std::string const& name, std::string const& codename) const
+    {
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};
+        auto const& local_tile = tiles_[locality_.locality_id_];
+        switch (local_tile.dimension())
+        {
+        case 0:
+            {
+                if (local_tile.spans_[0].is_valid())
+                {
+                    result[0] = local_tile.spans_[0].size();
+                }
+                else
+                {
+                    HPX_ASSERT(local_tile.spans_[1].is_valid());
+                    result[0] = local_tile.spans_[1].size();
+                }
+            }
+            break;
+
+        case 1:
+            result[0] = local_tile.spans_[0].size();
+            break;
+
+        case 2:
+            result[1] = local_tile.spans_[0].size();
+            result[0] = local_tile.spans_[1].size();
+            break;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            result[2] = local_tile.spans_[0].size();
+            result[1] = local_tile.spans_[1].size();
+            result[0] = local_tile.spans_[2].size();
+            break;
+#endif
+
+        default:
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "localities_information::dimensions",
+                    util::generate_error_message(
+                        "unexpected number of dimensions", name, codename));
+            }
+            break;
+        }
+
+        return result;
     }
 
     namespace detail
@@ -202,7 +273,7 @@ namespace phylanx { namespace dist_matrixops
     bool localities_information::has_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(dim < dimensions());
+        HPX_ASSERT(dim < dimension());
 
         return tiles_[locality_.locality_id_].spans_[dim].is_valid();
     }
@@ -210,7 +281,7 @@ namespace phylanx { namespace dist_matrixops
     tiling_span localities_information::get_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(dim < dimensions());
+        HPX_ASSERT(dim < dimension());
 
         return tiles_[locality_.locality_id_].spans_[dim];
     }
@@ -220,7 +291,7 @@ namespace phylanx { namespace dist_matrixops
         std::uint32_t loc, std::size_t dim, tiling_span const& span) const
     {
         HPX_ASSERT(loc < tiles_.size());
-        HPX_ASSERT(dim < dimensions());
+        HPX_ASSERT(dim < dimension());
 
         auto const& gspan = tiles_[loc].spans_[dim];
         tiling_span result{

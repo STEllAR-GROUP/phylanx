@@ -9,6 +9,9 @@
 #define PHYLANX_DIST_MATRIXOPS_TENSORDOT_IMPL_JUN_17_2019_0828AM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/locality_annotation.hpp>
+#include <phylanx/execution_tree/meta_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
@@ -99,7 +102,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         localities_information const& lhs_localities,
         localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimensions() < 1 || rhs_localities.dimensions() < 1)
+        if (lhs_localities.dimension() < 1 || rhs_localities.dimension() < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d1d",
@@ -166,16 +169,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 // calculate the dot product with local tile
                 dot_result += T{blaze::dot(
                     blaze::subvector(lhs.vector(), lhs_intersection.start_,
-                        lhs_intersection.stop_ - lhs_intersection.start_),
+                        lhs_intersection.size()),
                     blaze::subvector(*rhs_data, rhs_intersection.start_,
-                        rhs_intersection.stop_ - rhs_intersection.start_))};
+                        rhs_intersection.size()))};
             }
             else
             {
                 // calculate the dot product with remote tile
                 dot_result += T{blaze::dot(
                     blaze::subvector(lhs.vector(), lhs_intersection.start_,
-                        lhs_intersection.stop_ - lhs_intersection.start_),
+                        lhs_intersection.size()),
                     rhs_data.fetch(loc, rhs_intersection.start_,
                             rhs_intersection.stop_).get())};
             }
@@ -283,10 +286,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot2d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information const& lhs_localities,
+        localities_information&& lhs_localities,
         localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimensions() < 2 || rhs_localities.dimensions() < 1)
+        if (lhs_localities.dimension() < 2 || rhs_localities.dimension() < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d1d",
@@ -312,8 +315,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         // corresponding tiles of rhs
         tiling_span const& lhs_span = lhs_localities.get_span(0);
 
-        // go over all tiles of rhs vector
-        blaze::DynamicVector<T> dot_result(lhs_localities.rows(), T{0});
+        // go over all tiles of rhs vector, the result size is determined by the
+        // number of rows of the lhs tile
+        blaze::DynamicVector<T> dot_result(lhs.dimension(0), T{0});
 
         std::uint32_t loc = 0;
         for (auto const& rhs_tile : rhs_localities.tiles_)
@@ -345,18 +349,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 // calculate the dot product with local tile
                 dot_result +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
-                        lhs.dimension(0),
-                        lhs_intersection.stop_ - lhs_intersection.start_) *
+                        lhs.dimension(0), lhs_intersection.size()) *
                     blaze::subvector(*rhs_data, rhs_intersection.start_,
-                        rhs_intersection.stop_ - rhs_intersection.start_);
+                        rhs_intersection.size());
             }
             else
             {
                 // calculate the dot product with remote tile
                 dot_result +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
-                        lhs.dimension(0),
-                        lhs_intersection.stop_ - lhs_intersection.start_) *
+                        lhs.dimension(0), lhs_intersection.size()) *
                     rhs_data.fetch(loc, rhs_intersection.start_,
                         rhs_intersection.stop_).get();
             }
@@ -364,21 +366,46 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         // collect overall result if left hand side vector is distributed
+        execution_tree::primitive_argument_type result;
         if (lhs_localities.locality_.num_localities_ > 1)
         {
-            lhs = hpx::all_reduce(
-                ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
-                dot_result, blaze::Add{},
-                lhs_localities.locality_.num_localities_, std::size_t(-1),
-                lhs_localities.locality_.locality_id_)
-                      .get();
+            if (lhs.dimension(1) == lhs_localities.columns())
+            {
+                // If the lhs number of columns is equal to the overall number
+                // of columns we don't have to all_reduce the result. Instead,
+                // the overall result is a tiled vector.
+                result = execution_tree::primitive_argument_type{
+                    std::move(dot_result)};
+
+                // Generate new tiling annotation for the result vector
+                tiling_information_1d tile_info(tiling_information_1d::columns,
+                    lhs_localities.get_span(1));
+
+                ++lhs_localities.annotation_.generation_;
+
+                result.set_annotation(
+                    execution_tree::localities_annotation(
+                        lhs_localities.locality_.as_annotation(),
+                        tile_info.as_annotation(name_, codename_),
+                        lhs_localities.annotation_, name_, codename_),
+                    name_, codename_);
+            }
+            else
+            {
+                result = execution_tree::primitive_argument_type{hpx::all_reduce(
+                    ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
+                    dot_result, blaze::Add{},
+                    lhs_localities.locality_.num_localities_, std::size_t(-1),
+                    lhs_localities.locality_.locality_id_)
+                          .get()};
+            }
         }
         else
         {
-            lhs = std::move(dot_result);
+            result =
+                execution_tree::primitive_argument_type{std::move(dot_result)};
         }
-
-        return execution_tree::primitive_argument_type{std::move(lhs)};
+        return result;
     }
 
     template <typename Matrix1, typename Matrix2>
@@ -430,7 +457,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information const& lhs_localities,
+        localities_information&& lhs_localities,
         localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
@@ -442,7 +469,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         case 1:
             // If is_matrix(lhs) && is_vector(rhs)
             return dot2d1d(std::move(lhs), std::move(rhs),
-                lhs_localities, rhs_localities);
+                std::move(lhs_localities), rhs_localities);
 
         case 2:
             // If is_matrix(lhs) && is_matrix(rhs)
