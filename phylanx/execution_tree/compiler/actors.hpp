@@ -12,7 +12,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/util/assert.hpp>
+#include <hpx/assertion.hpp>
 
 #include <array>
 #include <cstddef>

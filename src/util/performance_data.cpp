@@ -14,7 +14,7 @@
 #include <hpx/include/performance_counters.hpp>
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/lcos.hpp>
-#include <hpx/util/assert.hpp>
+#include <hpx/assertion.hpp>
 
 #include <algorithm>
 #include <cstddef>

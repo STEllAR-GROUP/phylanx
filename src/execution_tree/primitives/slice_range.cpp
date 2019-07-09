@@ -11,7 +11,7 @@
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/exception.hpp>
-#include <hpx/util/assert.hpp>
+#include <hpx/assertion.hpp>
 
 #include <algorithm>
 #include <cstddef>
