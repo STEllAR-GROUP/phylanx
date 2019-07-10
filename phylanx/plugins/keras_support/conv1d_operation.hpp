@@ -23,8 +23,8 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives {
 /// \brief returns 1D convoltion
-/// \param x              a vector
-/// \param kernel         a vector, the filter
+/// \param x              a tensor
+/// \param kernel         a tensor, the filter
 /// \param padding        Padding mode, either `valid`, `same` or `causal`
 /// \param strides        The step to apply convolution
 /// \param dilation_rate  The rate to sample x in each step
@@ -48,13 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
-        template <typename Vector1, typename Vector2>
-        static double convolve_step(Vector1 const& v1, Vector2 const& v2);
-        template <typename Vector1, typename Vector2>
-        static double convolve_step(Vector1 const& v1, Vector2 const& v2,
-            std::int64_t dilation_rate, std::size_t kernel_size,
-            std::size_t offset = 0);
-
         primitive_argument_type conv1d_valid(ir::node_data<double>&& arg,
             ir::node_data<double>&& kernel) const;
         primitive_argument_type conv1d_valid(ir::node_data<double>&& arg,

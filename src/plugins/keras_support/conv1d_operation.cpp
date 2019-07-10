@@ -8,6 +8,7 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/keras_support/conv1d_operation.hpp>
+#include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -23,6 +24,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -41,14 +43,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         R"(x, kernel, padding, strides, dilation_rate
         Args:
 
-            x (array) : a vector
-            kernel (array) : a vector
+            x (array) : a 3d array consiting of batch, in_length and
+                in_channels dimensions.
+            kernel (array) : a 3d array consisting of filter_length,
+                in_channels and out_channels dimension. Note that the
+                in_channels should be the same in kernel and original array.
             padding (optional, string) : padding mode, `valid` by default. It
                 can be either `valid`, `same` or `causal`. `vaild` means no
                 padding. `same` results the output with the same shape as
                 original array in case of unit strides. `causal` zero pads the
                 array in a way that no output element depend on the input
-                elements of its future
+                elements of its future.
             strides (optional, integer) : the step to apply convolution over
                 array. It sets to 1 by default.
             dilation_rate (optional, integer) : indicates the dilation rate,
@@ -67,37 +72,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Vector1, typename Vector2>
-    double conv1d_operation::convolve_step(Vector1 const& v1, Vector2 const& v2)
-    {
-        return blaze::sum(v1 * v2);
-    }
-
-    template <typename Vector1, typename Vector2>
-    double conv1d_operation::convolve_step(Vector1 const& v1, Vector2 const& v2,
-        std::int64_t dilation_rate, std::size_t kernel_size, std::size_t offset)
-    {
-        auto dilated_v1 = blaze::elements(v1,
-            [dilation_rate, offset](std::size_t i) {
-                return i * dilation_rate + offset;
-            },
-            kernel_size);
-        return blaze::sum(dilated_v1 * v2);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type conv1d_operation::conv1d_valid(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        std::size_t k_size = kernel.size();
-        std::size_t result_size = arg.size() - k_size + 1;
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        std::size_t batch = a.pages();
+        std::size_t filter_length = k.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
+        std::size_t result_length = a.rows() - filter_length + 1;
 
-        blaze::DynamicVector<double> result(result_size);
-        for (std::size_t i = 0; i != result_size; ++i)
+        blaze::DynamicTensor<double> result(batch, result_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            result[i] = convolve_step(blaze::subvector(v, i, k_size), k);
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != result_length; ++i)
+            {
+                auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
+                                         filter_length, in_channels) %
+                    kslice;
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -106,17 +107,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::int64_t strides) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        std::size_t k_size = kernel.size();
-        std::size_t result_size =
-            blaze::ceil(static_cast<double>(arg.size() - k_size + 1) / strides);
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        std::size_t batch = a.pages();
+        std::size_t filter_length = k.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
+        std::size_t result_length = blaze::ceil(
+            static_cast<double>(a.rows() - filter_length + 1) / strides);
 
-        blaze::DynamicVector<double> result(result_size);
-        for (std::size_t i = 0; i != result_size; ++i)
+        blaze::DynamicTensor<double> result(batch, result_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            result[i] =
-                convolve_step(blaze::subvector(v, i * strides, k_size), k);
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != result_length; ++i)
+            {
+                auto schur_product = blaze::subtensor(a, 0, i * strides, 0,
+                                         batch, filter_length, in_channels) %
+                    kslice;
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -125,287 +140,77 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::int64_t dilation_rate) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
-        std::int64_t dilated_k_size = dilation_rate * (k_size - 1) + 1;
-        std::int64_t result_size = (blaze::max)(
-            v_size - dilated_k_size + 1, static_cast<std::int64_t>(0));
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
 
-        blaze::DynamicVector<double> result(result_size);
-        for (std::size_t i = 0; i != result_size; ++i)
+        std::int64_t result_length =
+            data_length - dilation_rate * (filter_length - 1);
+
+        if(result_length <= 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "conv1d_operation::eval",
+                generate_error_message("this dilation_rate causes non-positive "
+                                       "result_length where padding is valid"));
+
+        blaze::DynamicTensor<double> result(batch, result_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            result[i] = convolve_step(blaze::subvector(v, i, dilated_k_size), k,
-                dilation_rate, k_size);
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != result_length; ++i)
+            {
+                auto schur_product =
+                    blaze::dilatedsubtensor(a, 0, i, 0, batch, filter_length,
+                        in_channels, 1, dilation_rate, 1) %
+                    kslice;
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        ///////////////////////////////////////////////////////////////////////
-        struct sizes
-        {
-            std::int64_t position_;
-            std::int64_t size_;
-            std::int64_t offset_ = 0;
-        };
-
-        ///////////////////////////////////////////////////////////////////////
-        inline sizes image_subsizes_helper(std::int64_t image_size,
-            std::int64_t kernel_size, std::int64_t relative_position)
-        {
-            if (relative_position < 0)
-            {
-                return sizes{0, kernel_size + relative_position};
-            }
-
-            if (relative_position > image_size - kernel_size)
-            {
-                return sizes{relative_position, image_size - relative_position};
-            }
-
-            return sizes{relative_position, kernel_size};
-        }
-
-        inline sizes image_subsizes(std::int64_t position,
-            std::int64_t image_size, std::int64_t kernel_size,
-            std::int64_t pad_left)
-        {
-            return image_subsizes_helper(
-                image_size, kernel_size, position - pad_left);
-        }
-
-        inline sizes image_subsizes_strided(std::int64_t position,
-            std::int64_t image_size, std::int64_t kernel_size,
-            std::int64_t pad_left, std::int64_t stride)
-        {
-            return image_subsizes_helper(
-                image_size, kernel_size, position * stride - pad_left);
-        }
-
-        inline sizes image_subsizes_dilated(std::int64_t position,
-            std::int64_t image_size, std::int64_t dilated_kernel_size,
-            std::int64_t pad_left)
-        {
-            std::int64_t relative_position = position - pad_left;
-
-            if (relative_position < 0)
-            {
-                return sizes{0, (blaze::min)(
-                    image_size, relative_position + dilated_kernel_size)};
-            }
-
-            if (relative_position > image_size - dilated_kernel_size)
-            {
-                return sizes{relative_position, image_size - relative_position};
-            }
-
-            return sizes{relative_position, dilated_kernel_size};
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-        inline sizes image_subsizes_causal_helper(std::int64_t kernel_size,
-            std::int64_t relative_position)
-        {
-            if (relative_position < 0)
-            {
-                return sizes{0, kernel_size + relative_position};
-            }
-
-            return sizes{relative_position, kernel_size};
-        }
-
-        inline sizes image_subsizes_causal(std::int64_t position,
-            std::int64_t kernel_size, std::int64_t pad_left)
-        {
-            return image_subsizes_causal_helper(
-                kernel_size, position - pad_left);
-        }
-
-        inline sizes image_subsizes_causal_strided(std::int64_t position,
-            std::int64_t kernel_size, std::int64_t pad_left,
-            std::int64_t strides)
-        {
-            return image_subsizes_causal_helper(
-                kernel_size, position * strides - pad_left);
-        }
-
-        inline sizes image_subsizes_causal_dilated(std::int64_t position,
-            std::int64_t image_size, std::int64_t kernel_size,
-            std::int64_t pad_left, std::int64_t dilated_kernel_size,
-            std::int64_t dilation_rate)
-        {
-            std::int64_t relative_position = position - pad_left;
-
-            if (relative_position < 0)
-            {
-                return sizes{0, (blaze::min)(
-                    image_size, relative_position + dilated_kernel_size)};
-            }
-
-            return sizes{relative_position, dilated_kernel_size};
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-        sizes kernel_subsizes_helper(std::int64_t image_size,
-            std::int64_t kernel_size, std::int64_t relative_position)
-        {
-            if (relative_position < 0)
-            {
-                return sizes{
-                    -relative_position, kernel_size + relative_position};
-            }
-
-            if (relative_position > image_size - kernel_size)
-            {
-                return sizes{0, image_size - relative_position};
-            }
-
-            return sizes{0, kernel_size};
-        }
-
-        sizes kernel_subsizes(std::int64_t position, std::int64_t image_size,
-            std::int64_t kernel_size, std::int64_t pad_left)
-        {
-            return kernel_subsizes_helper(
-                image_size, kernel_size, position - pad_left);
-        }
-
-        sizes kernel_subsizes_strided(std::int64_t position,
-            std::int64_t image_size, std::int64_t kernel_size,
-            std::int64_t pad_left, std::int64_t stride)
-        {
-            return kernel_subsizes_helper(
-                image_size, kernel_size, position * stride - pad_left);
-        }
-
-        sizes kernel_subsizes_dilated(std::int64_t position,
-            std::int64_t image_size, std::int64_t kernel_size,
-            std::int64_t pad_left, std::int64_t dilated_kernel_size,
-            std::int64_t dilation_rate)
-        {
-            std::int64_t relative_position = position - pad_left;
-            if (relative_position < 0)
-            {
-                std::int64_t remainder = (-relative_position) % dilation_rate;
-
-                std::int64_t corrected_position = blaze::ceil(
-                    static_cast<double>(-relative_position) / dilation_rate);
-                std::int64_t corrected_kernel_size = 0;
-
-                if (dilated_kernel_size + relative_position > image_size)
-                {
-                    corrected_kernel_size = blaze::ceil(
-                        static_cast<double>(image_size - remainder) /
-                        dilation_rate);
-                }
-                else
-                {
-                    corrected_kernel_size = blaze::ceil(
-                        static_cast<double>(
-                            dilated_kernel_size + relative_position) /
-                        dilation_rate);
-                }
-
-                if (remainder == 0)
-                {
-                    return sizes{corrected_position, corrected_kernel_size};
-                }
-
-                return sizes{corrected_position, corrected_kernel_size,
-                    dilation_rate - remainder};
-            }
-
-            if (relative_position > image_size - dilated_kernel_size)
-            {
-                std::int64_t corrected_kernel_size = blaze::ceil(
-                    static_cast<double>(image_size - relative_position) /
-                    dilation_rate);
-
-                return sizes{0, corrected_kernel_size};
-            }
-
-            return sizes{0, kernel_size};
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-        sizes kernel_subsizes_causal_helper(std::int64_t kernel_size,
-            std::int64_t relative_position)
-        {
-            if (relative_position < 0)
-            {
-                return sizes{
-                    -relative_position, kernel_size + relative_position};
-            }
-            return sizes{0, kernel_size};
-        }
-
-        sizes kernel_subsizes_causal(std::int64_t position,
-            std::int64_t kernel_size, std::int64_t pad_left)
-        {
-            return kernel_subsizes_causal_helper(
-                kernel_size, position - pad_left);
-        }
-
-        sizes kernel_subsizes_causal_strided(std::int64_t position,
-            std::int64_t kernel_size, std::int64_t pad_left,
-            std::int64_t strides)
-        {
-            return kernel_subsizes_causal_helper(
-                kernel_size, position *strides - pad_left);
-        }
-
-        inline sizes kernel_subsizes_causal_dilated(std::int64_t position,
-            std::int64_t kernel_size, std::int64_t pad_left,
-            std::int64_t dilated_kernel_size, std::int64_t dilation_rate)
-        {
-            std::int64_t relative_position = position - pad_left;
-
-            if (relative_position < 0)
-            {
-                std::int64_t corrected_kernel_size = blaze::ceil(
-                    static_cast<double>(
-                        dilated_kernel_size + relative_position) /
-                    dilation_rate);
-                std::int64_t corrected_position = blaze::ceil(
-                    static_cast<double>(-relative_position) / dilation_rate);
-
-                std::int64_t remainder = (-relative_position) % dilation_rate;
-                if (remainder == 0)
-                {
-                    return sizes{corrected_position, corrected_kernel_size};
-                }
-
-                return sizes{corrected_position, corrected_kernel_size,
-                    dilation_rate - remainder};
-            }
-
-            return sizes{0, kernel_size};
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
     primitive_argument_type conv1d_operation::conv1d_same(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
-        std::int64_t pad_left = (k_size - 1) / 2;
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length   = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
 
-        blaze::DynamicVector<double> result(v_size);
-        for (std::size_t i = 0; i != v_size; ++i)
+        std::int64_t pad_left = (filter_length - 1) / 2;
+
+        blaze::DynamicTensor<double> result(batch, data_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            auto v_pos = detail::image_subsizes(i, v_size, k_size, pad_left);
-            auto k_pos = detail::kernel_subsizes(i, v_size, k_size, pad_left);
-
-            result[i] = convolve_step(
-                blaze::subvector(v, v_pos.position_, v_pos.size_),
-                blaze::subvector(k, k_pos.position_, k_pos.size_));
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != data_length; ++i)
+            {
+                auto sub = conv_indices::get_subsizes(
+                    data_length, filter_length, i - pad_left);
+                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
+                                         batch, sub.size_, in_channels) %
+                    blaze::submatrix(
+                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -414,38 +219,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::int64_t strides) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length   = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
         std::int64_t pad_width;
 
-        if (v_size % strides == 0)
+        if (data_length % strides == 0)
         {
-            pad_width =
-                (blaze::max)(k_size - strides, static_cast<std::int64_t>(0));
+            pad_width = (blaze::max)(
+                filter_length - strides, static_cast<std::int64_t>(0));
         }
         else
         {
-            pad_width = (blaze::max)(
-                k_size - (v_size % strides), static_cast<std::int64_t>(0));
+            pad_width = (blaze::max)(filter_length - (data_length % strides),
+                static_cast<std::int64_t>(0));
         }
 
-        std::size_t result_size = blaze::ceil(
-            static_cast<double>(v_size + pad_width - k_size + 1) / strides);
+        std::size_t result_length = blaze::ceil(
+            static_cast<double>(data_length + pad_width - filter_length + 1) /
+            strides);
 
-        blaze::DynamicVector<double> result(result_size);
+        blaze::DynamicTensor<double> result(batch, result_length, out_channels);
         std::size_t pad_left = pad_width / 2;
-        for (std::size_t i = 0; i != result_size; ++i)
-        {
-            auto v_pos = detail::image_subsizes_strided(
-                i, v_size, k_size, pad_left, strides);
-            auto k_pos = detail::kernel_subsizes_strided(
-                i, v_size, k_size, pad_left, strides);
 
-            result[i] = convolve_step(
-                blaze::subvector(v, v_pos.position_, v_pos.size_),
-                blaze::subvector(k, k_pos.position_, k_pos.size_));
+        for (std::size_t c = 0; c != out_channels; ++c)
+        {
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != result_length; ++i)
+            {
+                auto sub = conv_indices::get_subsizes(
+                    data_length, filter_length, i * strides - pad_left);
+                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
+                                         batch, sub.size_, in_channels) %
+                    blaze::submatrix(
+                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -454,49 +271,114 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::int64_t dilation_rate) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
-        std::int64_t dilated_k_size = dilation_rate * (k_size - 1) + 1;
-        std::int64_t pad_left = (dilated_k_size - 1) / 2;
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length   = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
+        std::int64_t pad_left = (dilation_rate * (filter_length - 1) ) / 2;
 
-        blaze::DynamicVector<double> result(v_size);
-        for (std::size_t i = 0; i != v_size; ++i)
+        blaze::DynamicTensor<double> result(batch, data_length, out_channels, 0.);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            auto v_pos = detail::image_subsizes_dilated(
-                i, v_size, dilated_k_size, pad_left);
-            auto k_pos = detail::kernel_subsizes_dilated(
-                i, v_size, k_size, pad_left, dilated_k_size, dilation_rate);
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != data_length; ++i)
+            {
+                auto sub = conv_indices::get_subsizes_dilated(
+                    data_length, filter_length, i - pad_left, dilation_rate);
 
-            result[i] = convolve_step(
-                blaze::subvector(v, v_pos.position_, v_pos.size_),
-                blaze::subvector(k, k_pos.position_, k_pos.size_),
-                dilation_rate, k_pos.size_, k_pos.offset_);
+                if (sub.size_ == 0)
+                    continue;
+
+                auto schur_product =
+                    blaze::dilatedsubtensor(a, 0, sub.image_beg_, 0, batch,
+                        sub.size_, in_channels, 1, dilation_rate, 1) %
+                    blaze::submatrix(
+                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        using sizes = conv_indices::sizes;
+        inline sizes get_subsizes_causal(std::int64_t image_size,
+            std::int64_t kernel_size, std::int64_t relative_position)
+        {
+            if (relative_position < 0)
+            {
+                return sizes{
+                    0, -relative_position, kernel_size + relative_position};
+            }
+
+            return sizes{relative_position, 0, kernel_size};
+        }
+
+        inline sizes get_subsizes_causal_dilated(std::int64_t image_size,
+            std::int64_t kernel_size, std::int64_t relative_position,
+            std::int64_t dilation_rate)
+        {
+            if (relative_position < 0)
+            {
+                std::int64_t remainder = relative_position % dilation_rate;
+                remainder =
+                    remainder >= 0 ? remainder : dilation_rate + remainder;
+                std::int64_t corrected_kernel_size = kernel_size +
+                    blaze::floor(
+                        static_cast<double>(relative_position) / dilation_rate);
+
+                std::int64_t kernel_beg_ = blaze::ceil(
+                    static_cast<double>(-relative_position) / dilation_rate);
+                return sizes{remainder, kernel_beg_, corrected_kernel_size};
+            }
+
+            return sizes{relative_position, 0, kernel_size};
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
     primitive_argument_type conv1d_operation::conv1d_causal(
         ir::node_data<double>&& arg,
         ir::node_data<double>&& kernel) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
-        std::int64_t pad_left = k_size - 1; // no pad_right
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length   = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
+        std::int64_t pad_left = filter_length - 1; // no pad_right
 
-        blaze::DynamicVector<double> result(v_size);
-        for (std::size_t i = 0; i != v_size; ++i)
+        blaze::DynamicTensor<double> result(batch, data_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            auto v_pos = detail::image_subsizes_causal(i, k_size, pad_left);
-            auto k_pos = detail::kernel_subsizes_causal(i, k_size, pad_left);
-
-            result[i] = convolve_step(
-                blaze::subvector(v, v_pos.position_, v_pos.size_),
-                blaze::subvector(k, k_pos.position_, k_pos.size_));
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != data_length; ++i)
+            {
+                auto sub = detail::get_subsizes_causal(
+                    data_length, filter_length, i - pad_left);
+                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
+                                         batch, sub.size_, in_channels) %
+                    blaze::submatrix(
+                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -505,26 +387,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::int64_t strides) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
-        std::int64_t pad_left = k_size - 1; // no pad_right, stride has no effect
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length   = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
+        std::int64_t pad_left = filter_length - 1; // no pad_right
 
-        std::size_t result_size = blaze::ceil(
-            static_cast<double>(v_size + pad_left - k_size + 1) / strides);
+        std::size_t result_length =
+            blaze::ceil(static_cast<double>(data_length) / strides);
 
-        blaze::DynamicVector<double> result(result_size);
-        for (std::size_t i = 0; i != result_size; ++i)
+        blaze::DynamicTensor<double> result(batch, result_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            auto v_pos = detail::image_subsizes_causal_strided(
-                i, k_size, pad_left, strides);
-            auto k_pos = detail::kernel_subsizes_causal_strided(
-                i, k_size, pad_left, strides);
-
-            result[i] = convolve_step(
-                blaze::subvector(v, v_pos.position_, v_pos.size_),
-                blaze::subvector(k, k_pos.position_, k_pos.size_));
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != result_length; ++i)
+            {
+                auto sub = detail::get_subsizes_causal(
+                    data_length, filter_length, i * strides - pad_left);
+                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
+                                         batch, sub.size_, in_channels) %
+                    blaze::submatrix(
+                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -533,25 +426,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::int64_t dilation_rate) const
     {
-        auto v = arg.vector();
-        auto k = kernel.vector();
-        auto k_size = static_cast<std::int64_t>(kernel.size());
-        auto v_size = static_cast<std::int64_t>(arg.size());
-        std::int64_t dilated_k_size = dilation_rate * (k_size - 1) + 1;
-        std::int64_t pad_left = dilated_k_size - 1; // no pad_right
+        auto a = arg.tensor();
+        auto k = kernel.tensor();
+        auto filter_length = static_cast<std::int64_t>(k.pages());
+        auto data_length   = static_cast<std::int64_t>(a.rows());
+        std::size_t batch = a.pages();
+        std::size_t in_channels = a.columns();
+        std::size_t out_channels = k.columns();
+        std::int64_t pad_left =
+            dilation_rate * (filter_length - 1);    // no pad_right
 
-        blaze::DynamicVector<double> result(v_size);
-        for (std::size_t i = 0; i != v_size; ++i)
+        blaze::DynamicTensor<double> result(batch, data_length, out_channels);
+
+        for (std::size_t c = 0; c != out_channels; ++c)
         {
-            auto v_pos = detail::image_subsizes_causal_dilated(
-                i, v_size, k_size, pad_left, dilated_k_size, dilation_rate);
-            auto k_pos = detail::kernel_subsizes_causal_dilated(
-                i, k_size, pad_left, dilated_k_size, dilation_rate);
+            auto kslice = blaze::columnslice(k, c);
+            for (std::size_t i = 0; i != data_length; ++i)
+            {
+                auto sub = detail::get_subsizes_causal_dilated(
+                    data_length, filter_length, i - pad_left, dilation_rate);
 
-            result[i] = convolve_step(
-                blaze::subvector(v, v_pos.position_, v_pos.size_),
-                blaze::subvector(k, k_pos.position_, k_pos.size_),
-                dilation_rate, k_pos.size_, k_pos.offset_);
+                if (sub.size_ == 0)
+                    continue;
+
+                auto schur_product =
+                    blaze::dilatedsubtensor(a, 0, sub.image_beg_, 0, batch,
+                        sub.size_, in_channels, 1, dilation_rate, 1) %
+                    blaze::submatrix(
+                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                for (std::size_t p = 0; p != batch; ++p)
+                {
+                    auto pslice = blaze::pageslice(schur_product, p);
+                    result(p, i, c) = blaze::sum(pslice);
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -647,19 +555,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (ndim !=
                         extract_numeric_value_dimension(
                             args[1], this_->name_, this_->codename_) ||
-                    ndim != 1)
+                    ndim != 3)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "conv1d_operation::eval",
                         this_->generate_error_message(
                             "conv1d operation requires for x and kernel to be "
-                            "vectors"));
+                            "tensors"));
                 }
 
                 std::string padding = "valid";
                 if (args.size() > 2)
                 {
-                    padding = extract_string_value(
+                    padding = extract_string_value_strict(
                         args[2], this_->name_, this_->codename_);
 
                     if (padding != "valid" && padding != "same" &&
@@ -673,12 +581,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
+
                 if (padding == "valid")
                 {
-                    if (extract_numeric_value_dimension(
-                            args[0], this_->name_, this_->codename_) <
-                        extract_numeric_value_dimension(
-                            args[1], this_->name_, this_->codename_))
+                    if (extract_numeric_value_dimensions(
+                            args[0], this_->name_, this_->codename_)[1] <
+                        extract_numeric_value_dimensions(
+                            args[1], this_->name_, this_->codename_)[0])
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "conv1d_operation::eval",
@@ -698,7 +607,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         if (s.size() == 1)
                         {
                             strides =
-                                extract_scalar_integer_value_strict(*s.begin());
+                                extract_scalar_positive_integer_value_strict(
+                                    *s.begin());
                         }
                         else
                         {
@@ -711,16 +621,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     else
                     {
-                        strides = extract_scalar_integer_value_strict(
+                        strides = extract_scalar_positive_integer_value_strict(
                             args[3], this_->name_, this_->codename_);
-                    }
-
-                    if (strides <= 0)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "invalid strides. Strides must be positive"));
                     }
                 }
 
@@ -734,7 +636,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         if (d.size() == 1)
                         {
                             dilation_rate =
-                                extract_scalar_integer_value_strict(*d.begin());
+                                extract_scalar_positive_integer_value_strict(
+                                    *d.begin());
                         }
                         else
                         {
@@ -747,26 +650,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     else
                     {
-                        dilation_rate = extract_scalar_integer_value_strict(
-                            args[4], this_->name_, this_->codename_);
+                        dilation_rate =
+                            extract_scalar_positive_integer_value_strict(
+                                args[4], this_->name_, this_->codename_);
                     }
+                }
 
-                    if (dilation_rate <= 0)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "dilation_rate must be positive"));
-                    }
-
-                    if (strides != 1 && dilation_rate != 1)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "conv1d_operation::eval",
-                            this_->generate_error_message(
-                                "strides > 1 not supported in conjunction with "
-                                "dilation_rate > 1"));
-                    }
+                if (strides != 1 && dilation_rate != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv1d_operation::eval",
+                        this_->generate_error_message(
+                            "strides > 1 not supported in conjunction with "
+                            "dilation_rate > 1"));
                 }
 
                 if (strides == 1 && dilation_rate == 1)
@@ -778,7 +674,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[1]), this_->name_, this_->codename_),
                         std::move(padding));
                 }
-                if (dilation_rate == 1)
+                if (dilation_rate == 1) // strides > 1
                 {
                     return this_->conv1d_any_pad(
                         extract_numeric_value(

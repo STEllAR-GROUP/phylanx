@@ -193,7 +193,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::naming::address_type lva)
     {
         auto this_ = hpx::get_lva<primitive_component>::call(lva);
+#if defined(PHYLANX_HAVE_TASK_INLINING_POLICY) && defined(HPX_HAVE_APEX)
+        return this_->primitive_->select_direct_eval_policy_thres(policy);
+#else
         return this_->primitive_->select_direct_eval_execution(policy);
+#endif
     }
 
     hpx::launch primitive_component::select_direct_execution(
@@ -201,7 +205,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::naming::address_type lva)
     {
         auto this_ = hpx::get_lva<primitive_component>::call(lva);
+#if defined(PHYLANX_HAVE_TASK_INLINING_POLICY) && defined(HPX_HAVE_APEX)
+        return this_->primitive_
+            ->select_direct_eval_policy_thres(policy);
+#else
         return this_->primitive_->select_direct_eval_execution(policy);
+#endif
     }
 }}}
 
