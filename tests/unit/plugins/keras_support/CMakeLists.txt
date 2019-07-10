@@ -5,16 +5,20 @@
 
 set(tests
 
+    avg_pool2d_operation
+    avg_pool3d_operation
     batch_dot_operation
     conv1d_operation
     ctc_decode_operation
     elu_operation
     hard_sigmoid_operation
     l2_normalize_operation
+    max_pool2d_operation
+    max_pool3d_operation
     one_hot_operation
-    pool_operation
     relu_operation
     resize_operation
+    separable_conv1d_operation
     sigmoid_operation
     softmax_operation
     softplus_operation

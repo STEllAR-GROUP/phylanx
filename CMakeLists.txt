@@ -76,6 +76,15 @@ phylanx_detect_cpp_dialect()
 
 ################################################################################
 # Build options
+phylanx_option(
+  PHYLANX_WITH_TASK_INLINING_POLICY BOOL
+  "Enable or disable the adaptive task inlining policy"
+  OFF ADVANCED CATEGORY "Build")
+
+if(PHYLANX_WITH_TASK_INLINING_POLICY)
+  phylanx_add_config_define(PHYLANX_HAVE_TASK_INLINING_POLICY)
+  message("Adaptive task inlining policy enabled.")
+endif()
 
 phylanx_option(
   PHYLANX_WITH_TESTS_BENCHMARKS BOOL

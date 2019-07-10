@@ -1,13 +1,16 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2019 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    distributed_object
     matrix_iterators
     performance_data
     serialization_variant
    )
+
+set(distributed_object_PARAMETERS LOCALITIES 2)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
