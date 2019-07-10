@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>About Phylanx &mdash; Phylanx master documentation</title>
+  <title>LRA Example &mdash; Phylanx master documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Software Stack" href="software_stack.html" />
-    <link rel="prev" title="Manual" href="../manual.html" /> 
+    <link rel="next" title="References" href="../reference.html" />
+    <link rel="prev" title="Software Stack" href="software_stack.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -91,9 +91,13 @@
               <p class="caption"><span class="caption-text">User documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../manual.html">Manual</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">About <em>Phylanx</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html">About <em>Phylanx</em></a></li>
 <li class="toctree-l2"><a class="reference internal" href="software_stack.html">Software Stack</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lra_example.html">LRA Example</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">LRA Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-phylanx-with-the-python-frontend">Using <em>Phylanx</em> with the Python Frontend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-phylanx-with-physl">Using <em>Phylanx</em> with PhySL</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">References</a></li>
@@ -148,14 +152,14 @@
         
           <li><a href="../manual.html">Manual</a> &raquo;</li>
         
-      <li>About <em>Phylanx</em></li>
+      <li>LRA Example</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/STEllAR-GROUP/phylanx/blob/master/docs/sphinx/manual/about.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/STEllAR-GROUP/phylanx/blob/master/docs/sphinx/manual/lra_example.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -169,27 +173,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="about-phylanx">
-<h1>About <em>Phylanx</em><a class="headerlink" href="#about-phylanx" title="Permalink to this headline">¶</a></h1>
-<p>Phylanx is a distributed Machine Learning platform
-that aims to provide users a high level, Python interface
-which delivers HPC performance. At its core Phylanx is
-a general purpose system for computing large distributed
-arrays often used on applied statistics problems.
-Phylanx builds upon other solutions such as Spartan,
-Theano, and Tensorflow in an effort to generalize array operations
-specifically to support distributed computing. The system will
-decompose array computations into a predefined set of parallel
-operations and employ algorithms which optimize execution and data
-layout from of a user provided expression graph. Using hints from
-the user as well as application logic an expression graph is
-created which is then passed to HPX, a distributed C++
-runtime system used to schedule and execute the work on
-commodity systems.</p>
-<p>Phylanx improves upon previous solutions by adding more sophisticated
-algorithms to optimize data layout, distribution, and tiling on
-HPC systems, and by using cache-oblivious data layouts to improve the
-overall performance and scalability of the provided expression evaluations.</p>
+  <div class="section" id="lra-example">
+<h1>LRA Example<a class="headerlink" href="#lra-example" title="Permalink to this headline">¶</a></h1>
+<p>In this section we demonstrate using <em>Phylanx</em> with the Python frontend.
+In addition, power users can also interface with <em>Phylanx</em> by writing
+PhySL code or C++ directly. We will describe these interfaces in
+following sections.</p>
+<div class="section" id="using-phylanx-with-the-python-frontend">
+<h2>Using <em>Phylanx</em> with the Python Frontend<a class="headerlink" href="#using-phylanx-with-the-python-frontend" title="Permalink to this headline">¶</a></h2>
+<p>In order to take advantage of <em>Phylanx</em>, users can decorate their
+Python code with Python decorators which will interpret and execute the
+code block in <em>Phylanx</em>. An example of this technique can be found
+in the LRA (Linear Regression Algorithm) example below.</p>
+<p>As shown in the example above, users import <em>Phylanx</em> and
+encapsulate their code in a &#64;Phylanx decorator. The NumPy
+commands will additionally be converted into <em>Phylanx</em> primitives
+when placed in a <em>Phylanx</em> decorator.
+When encapsulated, the code will be transformed into AST which
+represents the operations to be performed.</p>
+</div>
+<div class="section" id="using-phylanx-with-physl">
+<h2>Using <em>Phylanx</em> with PhySL<a class="headerlink" href="#using-phylanx-with-physl" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This section is for power users. We encourage
+our users to take advantage of the user friendly Python
+Frontend. All functionality made available through this
+interface is as available in our Python Frontend.</p>
+</div>
+<p>The <em>Phylanx</em> AST can be directly constructed using PhySL,
+or <strong>Phy</strong>lanx <strong>S</strong>pecification <strong>L</strong>anguage. This small language
+allows users to compile a raw string which produces
+an AST when it is compiled.</p>
+<p>An example of using this interface can be found below:</p>
+</div>
 </div>
 
 
@@ -207,10 +224,10 @@ overall performance and scalability of the provided expression evaluations.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="software_stack.html" class="btn btn-neutral float-right" title="Software Stack" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../reference.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../manual.html" class="btn btn-neutral float-left" title="Manual" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="software_stack.html" class="btn btn-neutral float-left" title="Software Stack" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

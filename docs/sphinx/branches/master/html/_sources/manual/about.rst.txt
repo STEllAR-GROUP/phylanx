@@ -11,7 +11,7 @@
 About |phylanx|
 ============================
 
-Phylanx is a distribured Machine Learning platform
+Phylanx is a distributed Machine Learning platform
 that aims to provide users a high level, Python interface
 which delivers HPC performance. At its core Phylanx is
 a general purpose system for computing large distributed
@@ -22,7 +22,7 @@ specifically to support distributed computing. The system will
 decompose array computations into a predefined set of parallel
 operations and employ algorithms which optimize execution and data
 layout from of a user provided expression graph. Using hints from
-the user as well as applicaiton logic an expression graph is
+the user as well as application logic an expression graph is
 created which is then passed to HPX, a distributed C++
 runtime system used to schedule and execute the work on
 commodity systems.

@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="References" href="../reference.html" />
+    <link rel="next" title="LRA Example" href="lra_example.html" />
     <link rel="prev" title="About Phylanx" href="about.html" /> 
 </head>
 
@@ -102,9 +102,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#frontend">Frontend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#execution-tree">Execution Tree</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#instrumentation">Instrumentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#viusualization-tools">Viusualization Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualization-tools">Visualization Tools</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="lra_example.html">LRA Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">References</a></li>
@@ -185,10 +186,10 @@
 <p>The <em>Phylanx</em> framework is made up of several distinct
 layers as illustrated in Figure 1.</p>
 <div class="align-center figure" id="id2">
-<a class="reference internal image-reference" href="../_images/phylanx_overview.png"><img alt="alternate text" src="../_images/phylanx_overview.png" style="width: 200px; height: 100px;" /></a>
+<a class="reference internal image-reference" href="../_images/phylanx_overview.png"><img alt="alternate text" src="../_images/phylanx_overview.png" style="width: 315px; height: 264px;" /></a>
 <p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Figure 1. Overview of the <em>Phylanx</em> toolkit.</span></p>
 </div>
-<p>In this portion of the manuel we discuss
+<p>In this portion of the manual we discuss
 the external libraries <em>Phylanx</em> depends on
 and the layers of the software stack.</p>
 <div class="section" id="external-libraries">
@@ -267,7 +268,7 @@ reflects the nodes of the execution tree as each PhySL node represents a
 function that will be run by an HPX task during evaluation, and (2) it can be
 used for debugging and analyzing purposes for developers interested in custom
 optimizations.</p>
-<p>The compiled kernel is cached and can be be invoked directly in Python or in
+<p>The compiled kernel is cached and can be invoked directly in Python or in
 other kernels.</p>
 <p>2. <strong>Data Management</strong> - Phylanx’s data structures rely on
 the high-performance open-source C++ library
@@ -312,7 +313,7 @@ result of the kernel. In the evaluation function,
 the root node will call the evaluation function of
 all of its children and those primitives will call the
 evaluation functions of their children. This process
-will continue until the the leaf nodes have been
+will continue until the leaf nodes have been
 reached where the primitives evaluation functions
 do not depend on other primitives to be resolved
 (e.g. a primitive which is a constant, a primitive
@@ -347,8 +348,8 @@ directly used by the users or fed
 into APEX for adaptive load balancing. The data can also
 be used by the visualization tools described in the next section.</p>
 </div>
-<div class="section" id="viusualization-tools">
-<h2>Viusualization Tools<a class="headerlink" href="#viusualization-tools" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="visualization-tools">
+<h2>Visualization Tools<a class="headerlink" href="#visualization-tools" title="Permalink to this headline">¶</a></h2>
 <p>Embedding annotations and measurements for
 visualizations and performance
 analysis within the runtime provides a
@@ -394,7 +395,7 @@ corresponding line or node in the other.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../reference.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="lra_example.html" class="btn btn-neutral float-right" title="LRA Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="about.html" class="btn btn-neutral float-left" title="About Phylanx" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -408,7 +409,7 @@ corresponding line or node in the other.</p>
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Jul 06, 2019.
+        Last updated on Jul 10, 2019.
       </span>
 
     </p>
