@@ -10,13 +10,13 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/locality_annotation.hpp>
 #include <phylanx/execution_tree/meta_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
-#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 
 #include <hpx/collectives/all_reduce.hpp>
@@ -99,8 +99,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot1d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information const& lhs_localities,
-        localities_information const& rhs_localities) const
+        execution_tree::localities_information const& lhs_localities,
+        execution_tree::localities_information const& rhs_localities) const
     {
         if (lhs_localities.dimension() < 1 || rhs_localities.dimension() < 1)
         {
@@ -133,7 +133,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             lhs_span_index = 1;
         }
 
-        tiling_span const& lhs_span = lhs_localities.get_span(lhs_span_index);
+        execution_tree::tiling_span const& lhs_span =
+            lhs_localities.get_span(lhs_span_index);
 
         // go over all tiles of rhs vector
         T dot_result = T{0};
@@ -148,9 +149,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 rhs_span_index = 1;
             }
 
-            tiling_span const& rhs_span = rhs_tile.spans_[rhs_span_index];
+            execution_tree::tiling_span const& rhs_span =
+                rhs_tile.spans_[rhs_span_index];
 
-            tiling_span intersection;
+            execution_tree::tiling_span intersection;
             if (!intersect(lhs_span, rhs_span, intersection))
             {
                 ++loc;
@@ -158,11 +160,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             }
 
             // project global coordinates onto local ones
-            tiling_span lhs_intersection = lhs_localities.project_coords(
-                lhs_localities.locality_.locality_id_, lhs_span_index,
-                intersection);
-            tiling_span rhs_intersection =
-                rhs_localities.project_coords(loc, rhs_span_index, intersection);
+            execution_tree::tiling_span lhs_intersection =
+                lhs_localities.project_coords(
+                    lhs_localities.locality_.locality_id_, lhs_span_index,
+                    intersection);
+            execution_tree::tiling_span rhs_intersection =
+                rhs_localities.project_coords(
+                    loc, rhs_span_index, intersection);
 
             if (rhs_localities.locality_.locality_id_ == loc)
             {
@@ -250,8 +254,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information const& lhs_localities,
-        localities_information const& rhs_localities) const
+        execution_tree::localities_information const& lhs_localities,
+        execution_tree::localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
         {
@@ -286,8 +290,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot2d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information&& lhs_localities,
-        localities_information const& rhs_localities) const
+        execution_tree::localities_information&& lhs_localities,
+        execution_tree::localities_information const& rhs_localities) const
     {
         if (lhs_localities.dimension() < 2 || rhs_localities.dimension() < 1)
         {
@@ -313,7 +317,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs
-        tiling_span const& lhs_span = lhs_localities.get_span(0);
+        execution_tree::tiling_span const& lhs_span =
+            lhs_localities.get_span(0);
 
         // go over all tiles of rhs vector, the result size is determined by the
         // number of rows of the lhs tile
@@ -329,9 +334,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 rhs_span_index = 1;
             }
 
-            tiling_span const& rhs_span = rhs_tile.spans_[rhs_span_index];
+            execution_tree::tiling_span const& rhs_span =
+                rhs_tile.spans_[rhs_span_index];
 
-            tiling_span intersection;
+            execution_tree::tiling_span intersection;
             if (!intersect(lhs_span, rhs_span, intersection))
             {
                 ++loc;
@@ -339,10 +345,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             }
 
             // project global coordinates onto local ones
-            tiling_span lhs_intersection = lhs_localities.project_coords(
-                lhs_localities.locality_.locality_id_, 0, intersection);
-            tiling_span rhs_intersection =
-                rhs_localities.project_coords(loc, rhs_span_index, intersection);
+            execution_tree::tiling_span lhs_intersection =
+                lhs_localities.project_coords(
+                    lhs_localities.locality_.locality_id_, 0, intersection);
+            execution_tree::tiling_span rhs_intersection =
+                rhs_localities.project_coords(
+                    loc, rhs_span_index, intersection);
 
             if (rhs_localities.locality_.locality_id_ == loc)
             {
@@ -378,7 +386,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     std::move(dot_result)};
 
                 // Generate new tiling annotation for the result vector
-                tiling_information_1d tile_info(tiling_information_1d::columns,
+                execution_tree::tiling_information_1d tile_info(
+                    execution_tree::tiling_information_1d::columns,
                     lhs_localities.get_span(1));
 
                 ++lhs_localities.annotation_.generation_;
@@ -402,8 +411,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
         else
         {
+            // the result is completely local, no need to all_reduce it
             result =
                 execution_tree::primitive_argument_type{std::move(dot_result)};
+
+            // if the rhs is distributed we should synchronize with all
+            // connected localities however to avoid for the distributed vector
+            // going out of scope
+            if (rhs_localities.locality_.num_localities_ > 1)
+            {
+                hpx::lcos::barrier b(
+                    "barrier_" + rhs_localities.annotation_.name_,
+                    rhs_localities.locality_.num_localities_,
+                    rhs_localities.locality_.locality_id_);
+                b.wait();
+            }
         }
         return result;
     }
@@ -457,8 +479,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information&& lhs_localities,
-        localities_information const& rhs_localities) const
+        execution_tree::localities_information&& lhs_localities,
+        execution_tree::localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
         {
@@ -558,8 +580,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
-        localities_information const& lhs_localities,
-        localities_information const& rhs_localities) const
+        execution_tree::localities_information const& lhs_localities,
+        execution_tree::localities_information const& rhs_localities) const
     {
         switch (rhs.num_dimensions())
         {

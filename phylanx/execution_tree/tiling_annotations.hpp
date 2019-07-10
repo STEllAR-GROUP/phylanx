@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <string>
 
-namespace phylanx { namespace dist_matrixops
+namespace phylanx { namespace execution_tree
 {
     ////////////////////////////////////////////////////////////////////////////
     struct tiling_span
@@ -57,9 +57,8 @@ namespace phylanx { namespace dist_matrixops
 
     namespace detail
     {
-        tiling_span extract_span(execution_tree::annotation const& ann,
-            char const* key, std::string const& name,
-            std::string const& codename);
+        tiling_span extract_span(annotation const& ann, char const* key,
+            std::string const& name, std::string const& codename);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,16 +70,16 @@ namespace phylanx { namespace dist_matrixops
             return names[i];
         }
 
-        tiling_information(execution_tree::annotation const& ann,
+        PHYLANX_EXPORT tiling_information(annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        tiling_information(std::size_t dim,
+        PHYLANX_EXPORT tiling_information(std::size_t dim,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims);
 
-        execution_tree::annotation as_annotation(
+        annotation as_annotation(
             std::string const& name, std::string const& codename) const
         {
-            execution_tree::annotation ann("tile");
+            annotation ann("tile");
             for (std::size_t i = 0; i != spans_.size(); ++i)
             {
                 ann.add_annotation(get_span_name(i),
@@ -127,16 +126,16 @@ namespace phylanx { namespace dist_matrixops
           , span_(span)
         {}
 
-        tiling_information_1d(execution_tree::annotation const& ann,
+        PHYLANX_EXPORT tiling_information_1d(annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        tiling_information_1d(tiling_information const& info,
+        PHYLANX_EXPORT tiling_information_1d(tiling_information const& info,
             std::string const& name, std::string const& codename);
 
-        execution_tree::annotation as_annotation(
+        PHYLANX_EXPORT annotation as_annotation(
             std::string const& name, std::string const& codename) const;
 
-        void transpose();
+        PHYLANX_EXPORT void transpose();
 
         tile1d_type type_;    // column or row span
         tiling_span span_;
@@ -145,16 +144,16 @@ namespace phylanx { namespace dist_matrixops
     ////////////////////////////////////////////////////////////////////////////
     struct tiling_information_2d
     {
-        tiling_information_2d(execution_tree::annotation const& ann,
+        PHYLANX_EXPORT tiling_information_2d(annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        tiling_information_2d(tiling_information const& tile,
+        PHYLANX_EXPORT tiling_information_2d(tiling_information const& tile,
             std::string const& name, std::string const& codename);
 
-        execution_tree::annotation as_annotation(
+        PHYLANX_EXPORT annotation as_annotation(
             std::string const& name, std::string const& codename) const;
 
-        void transpose();
+        PHYLANX_EXPORT void transpose();
 
         tiling_span spans_[2];
     };
@@ -162,16 +161,17 @@ namespace phylanx { namespace dist_matrixops
     ////////////////////////////////////////////////////////////////////////////
     struct tiling_information_3d
     {
-        tiling_information_3d(execution_tree::annotation const& ann,
+        PHYLANX_EXPORT tiling_information_3d(annotation const& ann,
             std::string const& name, std::string const& codename);
 
-        tiling_information_3d(tiling_information const& tile,
+        PHYLANX_EXPORT tiling_information_3d(tiling_information const& tile,
             std::string const& name, std::string const& codename);
 
-        execution_tree::annotation as_annotation(
+        PHYLANX_EXPORT annotation as_annotation(
             std::string const& name, std::string const& codename) const;
 
-        void transpose(std::int64_t const* data, std::size_t count);
+        PHYLANX_EXPORT void transpose(
+            std::int64_t const* data, std::size_t count);
 
         tiling_span spans_[3];
     };

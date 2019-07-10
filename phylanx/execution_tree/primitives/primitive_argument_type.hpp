@@ -864,6 +864,7 @@ namespace phylanx { namespace execution_tree
             std::string const& name, std::string const& codename);
         PHYLANX_EXPORT void set_annotation(execution_tree::annotation&& ann,
             std::string const& name, std::string const& codename);
+        PHYLANX_EXPORT void set_annotation(annotation_ptr ann);
         PHYLANX_EXPORT std::string get_annotation_type(std::string const& name,
             std::string const& codename) const;
         PHYLANX_EXPORT ir::range get_annotation_data() const;

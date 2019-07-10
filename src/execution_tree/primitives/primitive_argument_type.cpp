@@ -103,6 +103,11 @@ namespace phylanx { namespace execution_tree
             std::make_shared<execution_tree::annotation>(std::move(ann));
     }
 
+    void primitive_argument_type::set_annotation(annotation_ptr ann)
+    {
+        annotation_ = std::move(ann);
+    }
+
     std::string primitive_argument_type::get_annotation_type(
         std::string const& name, std::string const& codename) const
     {

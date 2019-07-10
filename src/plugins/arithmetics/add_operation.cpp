@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/add_operation.hpp>
@@ -169,13 +170,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 -> primitive_argument_type
                 {
                     auto && lhs_val = lhs.get();
+                    auto && rhs_val = rhs.get();
+
+                    annotation_wrapper wrap(lhs_val, rhs_val);
+
                     if (is_list_operand_strict(lhs_val))
                     {
-                        return this_->handle_list_operands(
-                            std::move(lhs_val), rhs.get());
+                        return wrap.propagate(this_->handle_list_operands(
+                            std::move(lhs_val), std::move(rhs_val)));
                     }
-                    return this_->handle_numeric_operands(
-                        std::move(lhs_val), rhs.get());
+
+                    return wrap.propagate(this_->handle_numeric_operands(
+                        std::move(lhs_val), std::move(rhs_val)));
                 },
                 value_operand(operands[0], args, name_, codename_, ctx),
                 value_operand(operands[1], args, name_, codename_, ctx));

@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <memory>
 #include <string>
 
 namespace phylanx { namespace execution_tree
@@ -128,6 +129,18 @@ namespace phylanx { namespace execution_tree
     ////////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& os, annotation const& ann);
+
+    ////////////////////////////////////////////////////////////////////////////
+    struct PHYLANX_EXPORT annotation_wrapper
+    {
+        explicit annotation_wrapper(primitive_argument_type const& op);
+        annotation_wrapper(primitive_argument_type const& op1,
+            primitive_argument_type const& op2);
+
+        primitive_argument_type propagate(primitive_argument_type&& val);
+
+        std::shared_ptr<execution_tree::annotation> ann_;
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     struct annotation_information

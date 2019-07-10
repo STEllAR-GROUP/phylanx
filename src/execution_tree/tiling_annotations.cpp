@@ -5,7 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/plugins/dist_matrixops/tiling_annotations.hpp>
+#include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/assertion.hpp>
@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <string>
 
-namespace phylanx { namespace dist_matrixops
+namespace phylanx { namespace execution_tree
 {
     ////////////////////////////////////////////////////////////////////////////
     tiling_span::tiling_span(ir::range const& data, std::string const& name,
@@ -31,8 +31,6 @@ namespace phylanx { namespace dist_matrixops
                     name, codename));
         }
 
-        using execution_tree::extract_scalar_integer_value;
-
         auto it = data.begin();
         start_ = extract_scalar_integer_value(*it, name, codename);
         stop_ = extract_scalar_integer_value(*++it, name, codename);
@@ -41,11 +39,10 @@ namespace phylanx { namespace dist_matrixops
     ////////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        tiling_span extract_span(execution_tree::annotation const& ann,
-            char const* key, std::string const& name,
-            std::string const& codename)
+        tiling_span extract_span(annotation const& ann, char const* key,
+            std::string const& name, std::string const& codename)
         {
-            execution_tree::annotation key_ann;
+            annotation key_ann;
             if (!ann.get_if(key, key_ann, name, codename) &&
                 !ann.find(key, key_ann, name, codename))
             {
@@ -53,7 +50,7 @@ namespace phylanx { namespace dist_matrixops
                     "tiling_annotations_1d::tiling_annotations_1d",
                     util::generate_error_message(
                         hpx::util::format(
-                            "'{}' annotation type not given", key),
+                            "annotation type not given '{}'", key),
                         name, codename));
             }
             return tiling_span(key_ann.get_data(), name, codename);
@@ -61,7 +58,7 @@ namespace phylanx { namespace dist_matrixops
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    tiling_information::tiling_information(execution_tree::annotation const& ann,
+    tiling_information::tiling_information(annotation const& ann,
         std::string const& name, std::string const& codename)
     {
         auto&& key = ann.get_type(name, codename);
@@ -77,7 +74,7 @@ namespace phylanx { namespace dist_matrixops
 
         for (std::size_t i = 0; i != 3; ++i)
         {
-            execution_tree::annotation tile_ann;
+            annotation tile_ann;
             if (!ann.find(get_span_name(i), tile_ann, name, codename))
             {
                 spans_.emplace_back();
@@ -106,7 +103,7 @@ namespace phylanx { namespace dist_matrixops
 
     ////////////////////////////////////////////////////////////////////////////
     tiling_information_1d::tiling_information_1d(
-            execution_tree::annotation const& ann, std::string const& name,
+            annotation const& ann, std::string const& name,
             std::string const& codename)
       : type_(ann.has_key("columns", name, codename) ? columns : rows)
     {
@@ -155,10 +152,10 @@ namespace phylanx { namespace dist_matrixops
         }
     }
 
-    execution_tree::annotation tiling_information_1d::as_annotation(
+    annotation tiling_information_1d::as_annotation(
         std::string const& name, std::string const& codename) const
     {
-        return execution_tree::annotation{ir::range("tile",
+        return annotation{ir::range("tile",
             ir::range(tile1d_typename(type_), span_.start_, span_.stop_))};
     }
 
@@ -168,9 +165,8 @@ namespace phylanx { namespace dist_matrixops
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    tiling_information_2d::tiling_information_2d(
-        execution_tree::annotation const& ann, std::string const& name,
-        std::string const& codename)
+    tiling_information_2d::tiling_information_2d(annotation const& ann,
+        std::string const& name, std::string const& codename)
     {
         auto&& key = ann.get_type(name, codename);
         if (key != "tile" && key != "tile2d")
@@ -186,9 +182,8 @@ namespace phylanx { namespace dist_matrixops
         spans_[0] = detail::extract_span(ann, "columns", name, codename);
     }
 
-    tiling_information_2d::tiling_information_2d(
-        tiling_information const& tile, std::string const& name,
-        std::string const& codename)
+    tiling_information_2d::tiling_information_2d(tiling_information const& tile,
+        std::string const& name, std::string const& codename)
     {
         if (tile.spans_.size() < 2)
         {
@@ -203,10 +198,10 @@ namespace phylanx { namespace dist_matrixops
         spans_[0] = tile.spans_[0];
     }
 
-    execution_tree::annotation tiling_information_2d::as_annotation(
+    annotation tiling_information_2d::as_annotation(
         std::string const& name, std::string const& codename) const
     {
-        return execution_tree::annotation{ir::range("tile",
+        return annotation{ir::range("tile",
             ir::range("rows", spans_[1].start_, spans_[1].stop_),
             ir::range("columns", spans_[0].start_, spans_[0].stop_))};
     }
@@ -217,9 +212,8 @@ namespace phylanx { namespace dist_matrixops
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    tiling_information_3d::tiling_information_3d(
-        execution_tree::annotation const& ann, std::string const& name,
-        std::string const& codename)
+    tiling_information_3d::tiling_information_3d(annotation const& ann,
+        std::string const& name, std::string const& codename)
     {
         auto&& key = ann.get_type(name, codename);
         if (key != "tile" && key != "tile3d")
@@ -236,9 +230,8 @@ namespace phylanx { namespace dist_matrixops
         spans_[0] = detail::extract_span(ann, "columns", name, codename);
     }
 
-    tiling_information_3d::tiling_information_3d(
-        tiling_information const& tile, std::string const& name,
-        std::string const& codename)
+    tiling_information_3d::tiling_information_3d(tiling_information const& tile,
+        std::string const& name, std::string const& codename)
     {
         if (tile.spans_.size() < 3)
         {
@@ -254,10 +247,10 @@ namespace phylanx { namespace dist_matrixops
         spans_[0] = tile.spans_[0];
     }
 
-    execution_tree::annotation tiling_information_3d::as_annotation(
+    annotation tiling_information_3d::as_annotation(
         std::string const& name, std::string const& codename) const
     {
-        return execution_tree::annotation{ir::range("tile",
+        return annotation{ir::range("tile",
             ir::range("pages", spans_[2].start_, spans_[2].stop_),
             ir::range("rows", spans_[1].start_, spans_[1].stop_),
             ir::range("columns", spans_[0].start_, spans_[0].stop_))};

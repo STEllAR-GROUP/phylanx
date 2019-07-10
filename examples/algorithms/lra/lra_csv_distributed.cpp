@@ -53,7 +53,7 @@ char const* const read_y_code = R"(block(
     define(read_y, filepath, row_start, row_stop, col_stop,
         annotate_d(
             slice(file_read_csv(filepath),
-                list(row_start , row_stop), col_stop),
+                list(row_start, row_stop), col_stop),
             "read_y",
             list("tile",
                 list("rows", row_start, row_stop),
@@ -75,16 +75,15 @@ char const* const lra_code = R"(block(
     define(lra, x, y, alpha, iterations, enable_output,
         block(
             define(transx, transpose_d(x)),                     // transx:   [M, N]
+            define(error, constant(0.0, shape(x, 0))),          // error:    [N]
             define(weights, constant(0.0, shape(x, 1))),        // weights:  [M]
             define(pred, constant(0.0, shape(x, 0))),           // pred:     [N]
-            define(error, constant(0.0, shape(x, 0))),          // error:    [N]
             define(gradient, constant(0.0, shape(x, 1))),       // gradient: [M]
             define(step, 0),
             while(
                 step < iterations,
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
-                    // exp(-dot(x, weights)): [N]
                     store(pred, sigmoid(dot_d(x, weights))),    // pred:     [N]
                     store(error, pred - y),                     // error:    [N]
                     store(gradient, dot_d(transx, error)),      // gradient: [M]
@@ -111,9 +110,9 @@ void calculate_horizontal_tiling_parameters(std::int64_t& row_start,
 
     if (rows > num_localities)
     {
-        rows = (rows + num_localities) / num_localities - 1;
-        row_start = row_start + this_locality * rows;
-        row_stop = row_start + rows;
+        rows = (rows + num_localities) / num_localities;
+        row_start += this_locality * rows;
+        row_stop = (std::min)(row_stop, row_start + rows);
     }
 }
 
@@ -205,7 +204,7 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     std::cout << "Result: \n"
               << extract_numeric_value(result) << std::endl
-              << "Calculated in :" << elapsed << " seconds" << std::endl;
+              << "Calculated in: " << elapsed << " seconds" << std::endl;
 
     return hpx::finalize();
 }

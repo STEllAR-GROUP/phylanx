@@ -4,11 +4,11 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
-#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -110,9 +110,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(lhs), std::move(rhs), name_, codename_);
         }
 
-        localities_information lhs_localities =
+        execution_tree::localities_information lhs_localities =
             extract_localities_information(lhs, name_, codename_);
-        localities_information rhs_localities =
+        execution_tree::localities_information rhs_localities =
             extract_localities_information(rhs, name_, codename_);
 
         switch (extract_common_type(lhs, rhs))
@@ -159,9 +159,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(lhs), std::move(rhs), name_, codename_);
         }
 
-        localities_information lhs_localities =
+        execution_tree::localities_information lhs_localities =
             extract_localities_information(lhs, name_, codename_);
-        localities_information rhs_localities =
+        execution_tree::localities_information rhs_localities =
             extract_localities_information(rhs, name_, codename_);
 
         switch (extract_common_type(lhs, rhs))
@@ -209,9 +209,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::move(lhs), std::move(rhs), name_, codename_);
         }
 
-        localities_information lhs_localities =
+        execution_tree::localities_information lhs_localities =
             extract_localities_information(lhs, name_, codename_);
-        localities_information rhs_localities =
+        execution_tree::localities_information rhs_localities =
             extract_localities_information(rhs, name_, codename_);
 
         switch (extract_common_type(lhs, rhs))

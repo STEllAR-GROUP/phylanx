@@ -18,6 +18,7 @@
 
 #include <cctype>
 #include <iosfwd>
+#include <memory>
 #include <string>
 
 namespace phylanx { namespace execution_tree
@@ -264,6 +265,42 @@ namespace phylanx { namespace execution_tree
         }
         os << ")";
         return os;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    annotation_wrapper::annotation_wrapper(primitive_argument_type const& op)
+        : ann_(op.annotation())
+    {}
+
+    annotation_wrapper::annotation_wrapper(primitive_argument_type const& op1,
+        primitive_argument_type const& op2)
+    {
+        if (!!op1)
+        {
+            if (!!op2)
+            {
+                // FIXME: merge annotations?
+                ann_ = op1.annotation();
+            }
+            else
+            {
+                ann_ = op1.annotation();
+            }
+        }
+        else if (!!op2)
+        {
+            ann_ = op2.annotation();
+        }
+    }
+
+    primitive_argument_type annotation_wrapper::propagate(
+        primitive_argument_type&& val)
+    {
+        if (!val.has_annotation() && !!ann_)
+        {
+            val.set_annotation(std::move(ann_));
+        }
+        return std::move(val);
     }
 
     ////////////////////////////////////////////////////////////////////////////

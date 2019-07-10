@@ -53,7 +53,7 @@ void test_transpose_1d()
         R"(
             annotate_d(
                 [1, 2, 3],
-                "test1d_1/1",
+                "test1d_1_transposed/1",
                 list("tile", list("columns", 0, 3))
             )
         )");
@@ -70,7 +70,7 @@ void test_transpose_1d()
         R"(
             annotate_d(
                 [1, 2, 3],
-                "test1d_2/1",
+                "test1d_2_transposed/1",
                 list("tile", list("rows", 0, 3))
             )
         )");
@@ -92,7 +92,7 @@ void test_transpose_2d()
         R"(
             annotate_d(
                 [[1, 3], [2, 4], [3, 1]],
-                "test2d_1/1",
+                "test2d_1_transposed/1",
                 list("tile", list("rows", 0, 3), list("columns", 0, 2))
             )
         )");
@@ -112,7 +112,7 @@ void test_transpose_2d()
         R"(
             annotate_d(
                 [[1, 2, 3], [3, 4, 1]],
-                "test2d_2/1",
+                "test2d_2_transposed/1",
                 list("tile", list("rows", 0, 2), list("columns", 0, 3))
             )
         )");
@@ -132,7 +132,7 @@ void test_transpose_2d()
         R"(
             annotate_d(
                 [[1, 3], [2, 4], [3, 1]],
-                "test2d_3/1",
+                "test2d_3_transposed/1",
                 list("tile", list("rows", 0, 3), list("columns", 0, 2))
             )
         )");

@@ -9,9 +9,9 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
-#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 
 #include <hpx/lcos/future.hpp>
 
@@ -57,7 +57,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         template <typename T>
         execution_tree::primitive_argument_type transpose2d(
-            ir::node_data<T>&& arg, localities_information&& localities) const;
+            ir::node_data<T>&& arg,
+            execution_tree::localities_information&& localities) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         execution_tree::primitive_argument_type transpose3d(
@@ -68,11 +69,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         template <typename T>
         execution_tree::primitive_argument_type transpose3d(
-            ir::node_data<T>&& arg, localities_information&& localities) const;
+            ir::node_data<T>&& arg,
+            execution_tree::localities_information&& localities) const;
         template <typename T>
         execution_tree::primitive_argument_type transpose3d(
             ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
-            localities_information&& localities) const;
+            execution_tree::localities_information&& localities) const;
 #endif
     };
 

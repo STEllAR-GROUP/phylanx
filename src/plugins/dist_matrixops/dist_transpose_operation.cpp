@@ -9,11 +9,11 @@
 #include <phylanx/execution_tree/locality_annotation.hpp>
 #include <phylanx/execution_tree/meta_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
+#include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/transpose_operation_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_transpose_operation.hpp>
-#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
-#include <phylanx/plugins/dist_matrixops/tiling_annotations.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -122,14 +122,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        execution_tree::annotation tiling_1d_annotation(
-            localities_information&& localities, std::string const& name,
-            std::string const& codename)
+        execution_tree::annotation transpose_1d_annotation(
+            execution_tree::localities_information&& localities,
+            std::string const& name, std::string const& codename)
         {
-            tiling_information_1d tile_info(
+            execution_tree::tiling_information_1d tile_info(
                 localities.tiles_[localities.locality_.locality_id_],
                 name, codename);
             tile_info.transpose();
+            localities.annotation_.name_ += "_transposed";
             ++localities.annotation_.generation_;
 
             return execution_tree::localities_annotation(
@@ -152,7 +153,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         // construct new tiling annotation
         arg.set_annotation(
-            detail::tiling_1d_annotation(
+            detail::transpose_1d_annotation(
                 extract_localities_information(arg, name_, codename_),
                 name_, codename_),
             name_, codename_);
@@ -163,11 +164,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        execution_tree::annotation tiling_2d_annotation(
-            localities_information&& localities, bool transpose,
+        execution_tree::annotation transpose_2d_annotation(
+            execution_tree::localities_information&& localities, bool transpose,
             std::string const& name, std::string const& codename)
         {
-            tiling_information_2d tile_info(
+            execution_tree::tiling_information_2d tile_info(
                 localities.tiles_[localities.locality_.locality_id_],
                 name, codename);
             if (transpose)
@@ -175,6 +176,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tile_info.transpose();
             }
 
+            localities.annotation_.name_ += "_transposed";
             ++localities.annotation_.generation_;
 
             return execution_tree::localities_annotation(
@@ -187,7 +189,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     template <typename T>
     execution_tree::primitive_argument_type
     dist_transpose_operation::transpose2d(ir::node_data<T>&& arg,
-        localities_information&& localities) const
+        execution_tree::localities_information&& localities) const
     {
         // perform actual operation
         arg = blaze::trans(arg.matrix());
@@ -196,7 +198,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         // construct new tiling annotation
         result.set_annotation(
-            detail::tiling_2d_annotation(
+            detail::transpose_2d_annotation(
                 std::move(localities), true, name_, codename_),
             name_, codename_);
 
@@ -217,7 +219,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         auto localities_info =
-            extract_localities_information(arg, name_, codename_);
+            execution_tree::extract_localities_information(arg, name_, codename_);
 
         switch (extract_common_type(arg))
         {
@@ -275,7 +277,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         if (v[0] == 0 && v[1] == 1)
         {
             arg.set_annotation(
-                detail::tiling_2d_annotation(
+                detail::transpose_2d_annotation(
                     std::move(localities_info), false, name_, codename_),
                 name_, codename_);
             return std::move(arg);    // no-op
@@ -314,15 +316,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     namespace detail
     {
-        execution_tree::annotation tiling_3d_annotation(
-            localities_information&& localities, std::int64_t const* indices,
-            std::size_t count, std::string const& name,
-            std::string const& codename)
+        execution_tree::annotation transpose_3d_annotation(
+            execution_tree::localities_information&& localities,
+            std::int64_t const* indices, std::size_t count,
+            std::string const& name, std::string const& codename)
         {
-            tiling_information_3d tile_info(
+            execution_tree::tiling_information_3d tile_info(
                 localities.tiles_[localities.locality_.locality_id_],
                 name, codename);
             tile_info.transpose(indices, count);
+
+            localities.annotation_.name_ += "_transposed";
             ++localities.annotation_.generation_;
 
             return execution_tree::localities_annotation(
@@ -334,8 +338,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     template <typename T>
     execution_tree::primitive_argument_type
-    dist_transpose_operation::transpose3d(
-        ir::node_data<T>&& arg, localities_information&& localities) const
+    dist_transpose_operation::transpose3d(ir::node_data<T>&& arg,
+        execution_tree::localities_information&& localities) const
     {
         static constexpr std::int64_t indices[] = {2, 1, 0};
 
@@ -346,7 +350,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         // construct new tiling annotation
         result.set_annotation(
-            detail::tiling_3d_annotation(
+            detail::transpose_3d_annotation(
                 std::move(localities), indices, 3, name_, codename_),
             name_, codename_);
 
@@ -402,7 +406,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type
     dist_transpose_operation::transpose3d(ir::node_data<T>&& arg,
         ir::node_data<std::int64_t>&& axes,
-        localities_information&& localities) const
+        execution_tree::localities_information&& localities) const
     {
         // perform actual operation
         auto v = axes.vector();
@@ -418,7 +422,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         // construct new tiling annotation
         result.set_annotation(
-            detail::tiling_3d_annotation(
+            detail::transpose_3d_annotation(
                 std::move(localities), v.data(), v.size(), name_, codename_),
             name_, codename_);
 

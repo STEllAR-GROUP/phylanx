@@ -5,10 +5,10 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/ranges.hpp>
-#include <phylanx/plugins/dist_matrixops/localities_annotation.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/assertion.hpp>
@@ -22,13 +22,12 @@
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace dist_matrixops
+namespace phylanx { namespace execution_tree
 {
     ////////////////////////////////////////////////////////////////////////////
     localities_information::localities_information(
-        execution_tree::primitive_argument_type const& arg,
-        execution_tree::annotation const& ann, std::string const& name,
-        std::string const& codename)
+        primitive_argument_type const& arg, annotation const& ann,
+        std::string const& name, std::string const& codename)
     {
         auto&& key = ann.get_type(name, codename);
         if (key != "localities")
@@ -41,10 +40,10 @@ namespace phylanx { namespace dist_matrixops
         }
 
         locality_ =
-            execution_tree::extract_locality_information(ann, name, codename);
+            extract_locality_information(ann, name, codename);
 
         // extract the globally unique name identifying this object
-        execution_tree::annotation name_ann;
+        annotation name_ann;
         if (!ann.find("name", name_ann, name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -54,7 +53,7 @@ namespace phylanx { namespace dist_matrixops
                     name, codename));
         }
 
-        annotation_ = execution_tree::extract_annotation_information(
+        annotation_ = extract_annotation_information(
             name_ann, name, codename);
 
         // extract all tile information
@@ -62,7 +61,7 @@ namespace phylanx { namespace dist_matrixops
         for (std::size_t i = 0; i != locality_.num_localities_; ++i)
         {
             std::string meta_key = hpx::util::format("meta_{}", i);
-            execution_tree::annotation meta;
+            annotation meta;
             if (!ann.find(meta_key, meta, name, codename))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -74,7 +73,7 @@ namespace phylanx { namespace dist_matrixops
                         name, codename));
             }
 
-            execution_tree::annotation tile;
+            annotation tile;
             if (!meta.find("tile", tile, name, codename))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -139,8 +138,8 @@ namespace phylanx { namespace dist_matrixops
     {
         static std::atomic<std::size_t> count(0);
 
-        locality_ = execution_tree::locality_information(0, 1);
-        annotation_ = execution_tree::annotation_information(
+        locality_ = locality_information(0, 1);
+        annotation_ = annotation_information(
             hpx::util::format(
                 "annotation_{}_{}", hpx::get_locality_id(), ++count),
             0ll);
@@ -149,16 +148,16 @@ namespace phylanx { namespace dist_matrixops
 
     ////////////////////////////////////////////////////////////////////////////
     localities_information extract_localities_information(
-        execution_tree::primitive_argument_type const& arg,
+        primitive_argument_type const& arg,
         std::string const& name, std::string const& codename)
     {
-        execution_tree::annotation localities;
+        annotation localities;
         if (!arg.get_annotation_if("localities", localities, name, codename) &&
             !arg.find_annotation("localities", localities, name, codename))
         {
-            std::size_t dim = execution_tree::extract_numeric_value_dimension(
+            std::size_t dim = extract_numeric_value_dimension(
                 arg, name, codename);
-            auto dims = execution_tree::extract_numeric_value_dimensions(
+            auto dims = extract_numeric_value_dimensions(
                 arg, name, codename);
 
             return localities_information(dim, dims);
@@ -235,6 +234,7 @@ namespace phylanx { namespace dist_matrixops
                 [&](tiling_information const& v, tiling_information const& smallest)
                 {
                     HPX_ASSERT(N < v.spans_.size());
+                    HPX_ASSERT(v.spans_[N].is_valid());
                     return v.spans_[N].start_ < smallest.spans_[N].start_;
                 });
 
@@ -242,6 +242,7 @@ namespace phylanx { namespace dist_matrixops
                 [&](tiling_information const& largest, tiling_information const& v)
                 {
                     HPX_ASSERT(N < v.spans_.size());
+                    HPX_ASSERT(v.spans_[N].is_valid());
                     return largest.spans_[N].stop_ < v.spans_[N].stop_;
                 });
 
@@ -300,10 +301,10 @@ namespace phylanx { namespace dist_matrixops
     }
 
 //     // convert into an annotation
-//     execution_tree::annotation localities_information::as_annotation(
+//     annotation localities_information::as_annotation(
 //         std::string const& name, std::string const& codename) const
 //     {
-//         execution_tree::annotation meta;
+//         annotation meta;
 //         for (std::size_t i = 0; i != locality_.num_localities_; ++i)
 //         {
 //             auto tile_ann = tiles_[i].as_annotation(name, codename);
@@ -311,7 +312,7 @@ namespace phylanx { namespace dist_matrixops
 //                 tile_ann.get_data(), name, codename);
 //         }
 //
-//         return execution_tree::annotation("localities",
+//         return annotation("localities",
 //             locality_.as_annotation(), std::move(meta),
 //             annotation_.as_annotation());
 //     }

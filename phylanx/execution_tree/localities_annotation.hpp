@@ -10,9 +10,9 @@
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/locality_annotation.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
+#include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
-#include <phylanx/plugins/dist_matrixops/tiling_annotations.hpp>
 
 #include <hpx/lcos/future.hpp>
 
@@ -21,16 +21,15 @@
 #include <string>
 #include <vector>
 
-namespace phylanx { namespace dist_matrixops
+namespace phylanx { namespace execution_tree
 {
     ////////////////////////////////////////////////////////////////////////////
-    struct localities_information
+    struct PHYLANX_EXPORT localities_information
     {
         localities_information() = default;
 
-        localities_information(
-            execution_tree::primitive_argument_type const& arg,
-            execution_tree::annotation const& ann, std::string const& name,
+        localities_information(primitive_argument_type const& arg,
+            annotation const& ann, std::string const& name,
             std::string const& codename);
 
         localities_information(std::size_t dim,
@@ -55,16 +54,16 @@ namespace phylanx { namespace dist_matrixops
         tiling_span project_coords(
             std::uint32_t loc, std::size_t dim, tiling_span const& span) const;
 
-//         execution_tree::annotation as_annotation(
+//         annotation as_annotation(
 //             std::string const& name, std::string const& codename) const;
 
-        execution_tree::locality_information locality_;
-        execution_tree::annotation_information annotation_;
+        locality_information locality_;
+        annotation_information annotation_;
         std::vector<tiling_information> tiles_;
     };
 
-    localities_information extract_localities_information(
-        execution_tree::primitive_argument_type const& arg,
+    PHYLANX_EXPORT localities_information extract_localities_information(
+        primitive_argument_type const& arg,
         std::string const& name, std::string const& codename);
 }}
 
