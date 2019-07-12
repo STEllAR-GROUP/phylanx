@@ -392,9 +392,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
                 ++lhs_localities.annotation_.generation_;
 
+                auto locality_ann = lhs_localities.locality_.as_annotation();
                 result.set_annotation(
-                    execution_tree::localities_annotation(
-                        lhs_localities.locality_.as_annotation(),
+                    execution_tree::localities_annotation(locality_ann,
                         tile_info.as_annotation(name_, codename_),
                         lhs_localities.annotation_, name_, codename_),
                     name_, codename_);

@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (axes.num_dimensions() == 1)
             {
                 auto v = axes.vector();
-                for (long long & it : v)
+                for (auto& it : v)
                 {
                     if (it < 0)
                         it += 2;
@@ -92,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (axes.num_dimensions() == 1)
             {
                 auto v = axes.vector();
-                for (long long & it : v)
+                for (auto& it : v)
                 {
                     if (it < 0)
                         it += 3;

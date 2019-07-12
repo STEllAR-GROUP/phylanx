@@ -133,10 +133,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             localities.annotation_.name_ += "_transposed";
             ++localities.annotation_.generation_;
 
-            return execution_tree::localities_annotation(
-                localities.locality_.as_annotation(),
-                tile_info.as_annotation(name, codename),
-                localities.annotation_, name, codename);
+            auto locality_ann = localities.locality_.as_annotation();
+            return execution_tree::localities_annotation(locality_ann,
+                tile_info.as_annotation(name, codename), localities.annotation_,
+                name, codename);
         }
     }
 
@@ -179,10 +179,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             localities.annotation_.name_ += "_transposed";
             ++localities.annotation_.generation_;
 
-            return execution_tree::localities_annotation(
-                localities.locality_.as_annotation(),
-                tile_info.as_annotation(name, codename),
-                localities.annotation_, name, codename);
+            auto locality_ann = localities.locality_.as_annotation();
+            return execution_tree::localities_annotation(locality_ann,
+                tile_info.as_annotation(name, codename), localities.annotation_,
+                name, codename);
         }
     }
 
@@ -329,10 +329,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             localities.annotation_.name_ += "_transposed";
             ++localities.annotation_.generation_;
 
-            return execution_tree::localities_annotation(
-                localities.locality_.as_annotation(),
-                tile_info.as_annotation(name, codename),
-                localities.annotation_, name, codename);
+            auto locality_ann = localities.locality_.as_annotation();
+            return execution_tree::localities_annotation(locality_ann,
+                tile_info.as_annotation(name, codename), localities.annotation_,
+                name, codename);
         }
     }
 
