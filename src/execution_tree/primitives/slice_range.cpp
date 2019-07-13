@@ -10,8 +10,8 @@
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/exception.hpp>
-#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <cstddef>

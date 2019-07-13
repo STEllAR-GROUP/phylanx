@@ -10,6 +10,7 @@
 
 #include <phylanx/config.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/lcos/local/barrier.hpp>
 #include <hpx/lcos/local/spinlock.hpp>
 #include <hpx/preprocessor/cat.hpp>
@@ -23,7 +24,6 @@
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/assert.hpp>
 #include <hpx/util/bind.hpp>
 #include <hpx/util/unlock_guard.hpp>
 

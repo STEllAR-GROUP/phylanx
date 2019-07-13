@@ -7,10 +7,10 @@
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/slice.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/assert.hpp>
 
 #include <memory>
 #include <string>

@@ -9,10 +9,10 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/runs_in_python.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/runtime/get_lva.hpp>
 #include <hpx/runtime/threads/coroutines/coroutine.hpp>
 #include <hpx/traits/action_decorate_function.hpp>
-#include <hpx/util/assert.hpp>
 #include <hpx/util/bind.hpp>
 #include <hpx/util/bind_front.hpp>
 
