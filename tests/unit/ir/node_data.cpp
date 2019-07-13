@@ -1,5 +1,6 @@
 //  Copyright (c) 2017 Hartmut Kaiser
 //  Copyright (c) 2018 Tianyi Zhang
+//  Copyright (c) 2019 Bita Hasheminezhad
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -193,6 +194,49 @@ int main(int argc, char* argv[])
         HPX_TEST(array_value.dimensions() ==
             phylanx::ir::node_data<std::int64_t>::dimensions_type({
                 t.pages(), t.rows(), t.columns()}));
+
+        test_serialization(array_value);
+    }
+
+    {
+        blaze::Rand<blaze::DynamicArray<4UL, double>> gen{};
+        blaze::DynamicArray<4UL, double> q =
+            gen.generate(13UL, 3UL, 42UL, 101UL);
+
+        phylanx::ir::node_data<double> array_value(q);
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(4UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<double>::dimensions_type({
+                q.quats(), q.pages(), q.rows(), q.columns()}));
+
+        test_serialization(array_value);
+    }
+
+    {
+        blaze::Rand<blaze::DynamicArray<4UL, double>> gen{};
+        blaze::DynamicArray<4UL, double> q =
+            gen.generate(3UL, 13UL, 42UL, 101UL);
+
+        phylanx::ir::node_data<std::uint8_t> array_value(q);
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(4UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type({
+                q.quats(), q.pages(), q.rows(), q.columns()}));
+    }
+
+    {
+        blaze::Rand<blaze::DynamicArray<4UL, double>> gen{};
+        blaze::DynamicArray<4UL, double> q =
+            gen.generate(3UL, 42UL, 33UL, 101UL);
+
+        phylanx::ir::node_data<double> array_value(q);
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(4UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<std::int64_t>::dimensions_type({
+                q.quats(), q.pages(), q.rows(), q.columns()}));
 
         test_serialization(array_value);
     }
