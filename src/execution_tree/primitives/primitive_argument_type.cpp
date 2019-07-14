@@ -13,6 +13,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <utility>
 
 namespace phylanx { namespace execution_tree
 {

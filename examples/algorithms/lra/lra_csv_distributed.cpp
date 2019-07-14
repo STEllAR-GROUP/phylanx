@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <blaze/Math.h>
 #include <boost/program_options.hpp>

@@ -25,6 +25,9 @@
 #include <hpx/util/unlock_guard.hpp>
 
 #include <cstddef>
+#include <map>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include <blaze/Math.h>

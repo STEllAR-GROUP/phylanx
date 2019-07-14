@@ -13,8 +13,10 @@
 #include <hpx/util/format.hpp>
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 
 namespace phylanx { namespace execution_tree
 {

@@ -4,8 +4,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_TRANSPOSE_OPERATION_OCT_09_2017_0146PM)
-#define PHYLANX_PRIMITIVES_TRANSPOSE_OPERATION_OCT_09_2017_0146PM
+#if !defined(PHYLANX_PRIMITIVES_DIST_TRANSPOSE_OPERATION_JUL_15_2019_0439AM)
+#define PHYLANX_PRIMITIVES_DIST_TRANSPOSE_OPERATION_JUL_15_2019_0439AM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>

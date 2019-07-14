@@ -19,6 +19,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/collectives/all_reduce.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -26,6 +27,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>

@@ -16,6 +16,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>

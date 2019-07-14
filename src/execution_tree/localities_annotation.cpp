@@ -18,8 +18,11 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
@@ -181,6 +184,10 @@ namespace phylanx { namespace execution_tree
         switch (local_tile.dimension())
         {
         case 0:
+            result[0] = 1;
+            break;
+
+        case 1:
             {
                 if (local_tile.spans_[0].is_valid())
                 {
@@ -192,10 +199,6 @@ namespace phylanx { namespace execution_tree
                     result[0] = local_tile.spans_[1].size();
                 }
             }
-            break;
-
-        case 1:
-            result[0] = local_tile.spans_[0].size();
             break;
 
         case 2:

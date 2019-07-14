@@ -14,9 +14,12 @@
 #include <hpx/include/util.hpp>
 #include <hpx/collectives.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <mutex>
 #include <string>
+#include <vector>
+#include <utility>
 
 HPX_REGISTER_ALLTOALL(
     phylanx::execution_tree::annotation, meta_annotation_all_to_all);

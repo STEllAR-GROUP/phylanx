@@ -12,7 +12,9 @@
 #include <phylanx/plugins/common/dot_operation_nd_impl.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
+#include <cstdint>
 #include <string>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 // explicitly instantiate the required functions

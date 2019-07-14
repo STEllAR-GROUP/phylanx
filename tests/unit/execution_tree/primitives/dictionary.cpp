@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <sstream>
 #include <string>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -93,7 +94,7 @@ void test_dict_print_function()
     u[key_2] = val_2;
 
     std::ostringstream stream;
-    stream << u;
+    stream << phylanx::execution_tree::primitive_argument_type{std::move(u)};
     const std::string str = stream.str();
 
     auto fail = std::string::npos;

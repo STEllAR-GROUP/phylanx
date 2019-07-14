@@ -14,7 +14,9 @@
 
 #include <hpx/throw_exception.hpp>
 
+#include <cstdint>
 #include <string>
+#include <utility>
 
 #include <blaze/Math.h>
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
