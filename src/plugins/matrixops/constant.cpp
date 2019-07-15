@@ -44,20 +44,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (shape.size() == 1)
                 {
-                    result[0] = extract_scalar_integer_value(*shape.begin());
+                    result[0] =
+                        extract_scalar_positive_integer_value(*shape.begin());
                 }
                 else if (shape.size() == 2)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_integer_value(*elem_1);
-                    result[1] = extract_scalar_integer_value(*++elem_1);
+                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[1] =
+                        extract_scalar_positive_integer_value(*++elem_1);
                 }
                 else if (shape.size() == 3)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_integer_value(*elem_1);
-                    result[1] = extract_scalar_integer_value(*++elem_1);
-                    result[2] = extract_scalar_integer_value(*++elem_1);
+                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[1] =
+                        extract_scalar_positive_integer_value(*++elem_1);
+                    result[2] =
+                        extract_scalar_positive_integer_value(*++elem_1);
+                }
+                else if (shape.size() == 4)
+                {
+                    auto elem_1 = shape.begin();
+                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[1] =
+                        extract_scalar_positive_integer_value(*++elem_1);
+                    result[2] =
+                        extract_scalar_positive_integer_value(*++elem_1);
+                    result[3] =
+                        extract_scalar_positive_integer_value(*++elem_1);
                 }
             }
             return result;
@@ -333,6 +348,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    ir::node_data<T> constant::constant4d_helper(primitive_argument_type&& op,
+        operand_type::dimensions_type const& dim) const
+    {
+        if (valid(op))
+        {
+            auto a = ir::node_data<T>{
+                blaze::DynamicArray<4UL, T>(blaze::init_from_value,
+                    extract_scalar_data<T>(std::move(op), name_, codename_),
+                    dim[0], dim[1], dim[2], dim[3])};
+            auto b = extract_scalar_data<T>(std::move(op), name_, codename_);
+            return ir::node_data<T>{
+                blaze::DynamicArray<4UL, T>(blaze::init_from_value,
+                    extract_scalar_data<T>(std::move(op), name_, codename_),
+                    dim[0], dim[1], dim[2], dim[3])};
+        }
+
+        // create an empty 4d array
+        return ir::node_data<T>{
+            blaze::DynamicArray<4UL, T>(dim[0], dim[1], dim[2], dim[3])};
+    }
+
+    primitive_argument_type constant::constant4d(primitive_argument_type&& op,
+        operand_type::dimensions_type const& dim, node_data_type dtype) const
+    {
+        if (dtype == node_data_type_unknown)
+        {
+            HPX_ASSERT(implements_like_operations_);
+            dtype = extract_common_type(op);
+        }
+
+        switch (dtype)
+        {
+        case node_data_type_bool:
+            return constant4d_helper<std::uint8_t>(std::move(op), dim);
+
+        case node_data_type_int64:
+            return constant4d_helper<std::int64_t>(std::move(op), dim);
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return constant4d_helper<double>(std::move(op), dim);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "constant::constant4d",
+            generate_error_message(
+                "the constant primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> constant::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -486,6 +557,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 3:
                     return this_->constant3d(std::move(value), dims, dtype);
+
+                case 4:
+                    return this_->constant4d(std::move(value), dims, dtype);
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

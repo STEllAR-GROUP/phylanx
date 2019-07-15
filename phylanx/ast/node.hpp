@@ -341,6 +341,19 @@ namespace phylanx { namespace ast
         {
         }
 
+        template <typename T>
+        primary_expr(
+            std::vector<std::vector<std::vector<std::vector<T>>>> const& val)
+          : expr_node_type(phylanx::ir::node_data<T>{val})
+        {
+        }
+        template <typename T>
+        primary_expr(
+            std::vector<std::vector<std::vector<std::vector<T>>>>&& val)
+          : expr_node_type(phylanx::ir::node_data<T>{std::move(val)})
+        {
+        }
+
         primary_expr(identifier const& val)
           : expr_node_type(val)
         {
