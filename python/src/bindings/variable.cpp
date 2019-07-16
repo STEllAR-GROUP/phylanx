@@ -13,7 +13,7 @@
 #include <bindings/variable.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/util/format.hpp>
+#include <hpx/format.hpp>
 
 #include <cstddef>
 #include <cstdint>
