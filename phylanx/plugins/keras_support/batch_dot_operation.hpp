@@ -73,7 +73,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type batch_dot2d3d_axes12(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs) const;
         template <typename T>
+        primitive_argument_type batch_dot2d4d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot2d4d_axes11(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot2d4d_axes13(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type batch_dot2d3d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
+        template <typename T>
+        primitive_argument_type batch_dot2d4d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, ir::range&& axes) const;
 
         template <typename T>
@@ -101,6 +113,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type batch_dot3d3d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, ir::range&& axes) const;
+
+        template <typename T>
+        primitive_argument_type batch_dot3d4d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d4d_axis1(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d4d_axis2(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d4d_axes12(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot3d4d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, ir::range&& axes) const;
+
         template <typename T>
         primitive_argument_type batch_dot3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;

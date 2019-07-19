@@ -37,13 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             R"(
             x, y, axes
             Args:
-
-                x (array) : a matrix or a tensor
-                y (array) : a matrix or a tensor
+                x (array) : a matrix, a tensor or a quatern
+                y (array) : a matrix, a tensor or a quatern
                 axes (optional, integer or tuple of integers): None by default.
                     Target dimensions to be reduced.
             Returns:
-            The batch dot along specified axes. For more deyail refer to
+            The batch dot along specified axes. For more detail refer to
             https://keras.io/backend/#batch_dot)")};
 
     ///////////////////////////////////////////////////////////////////////////
@@ -63,6 +62,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             axis += 2; return axis;
         case 3:
             axis += 3; return axis;
+        case 4:
+            axis += 4; return axis;
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::positivize_axis",
@@ -77,17 +78,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims_b) const
     {
         if (ndims_a < 2 || ndims_b < 2)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message(
                     "batch_dot_operation requires the inputs of rank 2 "
                     "or more"));
+        }
 
         if (axes.size() > 2)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message(
                     "axes can only be an integer or a tuple of two integers"));
+        }
 
         std::size_t axis_a;
         std::size_t axis_b;
@@ -96,19 +101,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto it = axes.begin();
 
             if (is_list_operand_strict(*it))
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "batch_dot_operation::validate_axes",
                     generate_error_message(
                         "multiple target dimensions are not supported. Axes "
                         "can only be an integer or a tuple of two integers"));
+            }
 
-            axis_a = extract_scalar_integer_value_strict(*it) >= 0 ?
-                extract_scalar_integer_value_strict(*it) :
-                positivize_axis(
-                    extract_scalar_integer_value_strict(*it), ndims_a);
+            std::int64_t a = extract_scalar_integer_value_strict(*it);
+            axis_a = a >= 0 ? a : positivize_axis(a, ndims_a);
 
             if (axes.size() == 1)
+            {
                 axis_b = axis_a;
+            }
             else
             {
                 auto it2 = ++it;
@@ -119,55 +126,71 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "multiple target dimensions are not supported. Axes "
                             "can only be an integer or a tuple of two integers"));
 
-                auto a = extract_scalar_integer_value_strict(*it2);
-                axis_b = extract_scalar_integer_value_strict(*it2) >= 0 ?
-                    extract_scalar_integer_value_strict(*it2) :
-                    positivize_axis(
-                        extract_scalar_integer_value_strict(*it2), ndims_b);
+                std::int64_t b = extract_scalar_integer_value_strict(*it2);
+                axis_b = b >= 0 ? b : positivize_axis(b, ndims_b);
             }
         }
         else
         {
-            //default cases; 2d lhs:(1,1), 3d lhs:(2,1)
-            axis_b = 1;
-            if (ndims_a == 2)
-                axis_a = 1;
-
-            else
-                axis_a = 2;
+            axis_a = ndims_a - 1;
+            switch (ndims_b)
+            {
+            case 2: HPX_FALLTHROUGH;
+            case 3:
+                axis_b = 1;
+                break;
+            case 4:
+                axis_b = 2;
+                break;
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "batch_dot_operation::validate_axes",
+                    generate_error_message("right hand side operand has "
+                                           "unsupported number of dimensions"));
+            }
         }
 
         if (axis_a == 0 || axis_b == 0)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message(
                     "cannot perform batch dot over axis 0"));
+        }
 
         if (axis_a >= ndims_a)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message(
                     "the given axis corresponding to "
                     "the left operand is greater than its dimension"));
+        }
 
         if (axis_b >= ndims_b)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message(
                     "the given axis corresponding to "
                     "the right operand is greater than its dimension"));
+        }
 
-        if(dims_a[0] != dims_b[0])
+        if (dims_a[0] != dims_b[0])
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message("cannot perform batch dot on inputs "
-                                       "with different batch sizes."));
+                    "with different batch sizes."));
+        }
 
         if (dims_a[axis_a] != dims_b[axis_b])
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "batch_dot_operation::validate_axes",
                 generate_error_message(
                     "operands have incompatible number of dimensions"));
+        }
         return true;
     }
 
@@ -225,14 +248,107 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type batch_dot_operation::batch_dot2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, ir::range&& axes) const
     {
-        if (axes.size() == 2)
+        if (axes.size() == 2) // for axes.size() == 1 both axes should be 1
         {
             std::int64_t axis_b =
                 extract_scalar_integer_value_strict(*++axes.begin());
             if (axis_b == 2 || axis_b == -1)
                 return batch_dot2d3d_axes12(std::move(lhs), std::move(rhs));
         }
+        // axes = (1,1)
         return batch_dot2d3d(std::move(lhs), std::move(rhs));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot2d4d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        // axes = (1,2)
+        auto m = lhs.matrix();
+        auto q = rhs.quatern();
+        std::size_t batch = m.rows();
+        std::size_t pages = q.pages();
+
+        blaze::DynamicTensor<T> result(batch, pages, q.columns());
+
+        for (std::size_t i = 0; i != batch; ++i) {
+
+            auto t = quatslice(q, i);
+            for (std::size_t j = 0; j != pages; ++j)
+                blaze::row(blaze::pageslice(result, i), j) =
+                    blaze::row(m, i) * blaze::pageslice(t, j);
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot2d4d_axes11(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        // axes = (1,1)
+        auto m = lhs.matrix();
+        auto q = rhs.quatern();
+        std::size_t batch = m.rows();
+        std::size_t rows = q.rows();
+
+        blaze::DynamicTensor<T> result(batch, rows, q.columns());
+
+        for (std::size_t i = 0; i != batch; ++i) {
+
+            auto t = quatslice(q, i);
+            for (std::size_t j = 0; j != rows; ++j)
+                blaze::row(blaze::pageslice(result, i), j) =
+                blaze::row(m, i) * blaze::trans(blaze::rowslice(t, j));
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot2d4d_axes13(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        // axes = (1,3)
+        auto m = lhs.matrix();
+        auto q = rhs.quatern();
+        std::size_t batch = m.rows();
+        std::size_t pages = q.pages();
+
+        blaze::DynamicTensor<T> result(batch, pages, q.rows());
+
+        for (std::size_t i = 0; i != batch; ++i) {
+
+            auto t = quatslice(q, i);
+            for (std::size_t j = 0; j != pages; ++j)
+                blaze::row(blaze::pageslice(result, i), j) = blaze::trans(
+                    blaze::pageslice(t, j) * blaze::trans(blaze::row(m, i)));
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot2d4d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, ir::range&& axes) const
+    {
+        std::int64_t axis_b;
+        if (axes.size() == 1)
+        {
+            axis_b = extract_scalar_integer_value_strict(*axes.begin());
+        }
+        else // axes.size() == 2
+        {
+            axis_b = extract_scalar_integer_value_strict(*++axes.begin());
+        }
+
+        if (axis_b == 1 || axis_b == -3)
+            return batch_dot2d4d_axes11(std::move(lhs), std::move(rhs));
+        else if (axis_b == 3 || axis_b == -1)
+            return batch_dot2d4d_axes13(std::move(lhs), std::move(rhs));
+        // axes = (1,2)
+        return batch_dot2d4d(std::move(lhs), std::move(rhs));
     }
 
     template <typename T>
@@ -246,6 +362,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return batch_dot2d3d(std::move(lhs), std::move(rhs));
+
+        case 4:
+            return batch_dot2d4d(std::move(lhs), std::move(rhs));
 
         default:
             break;
@@ -267,6 +386,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return batch_dot2d3d(
+                std::move(lhs), std::move(rhs), std::move(axes));
+
+        case 4:
+            return batch_dot2d4d(
                 std::move(lhs), std::move(rhs), std::move(axes));
 
         default:
@@ -325,23 +448,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return batch_dot3d2d_axes11(std::move(lhs), std::move(rhs));
     }
 
-    template <typename T>
-    primitive_argument_type batch_dot_operation::batch_dot3d3d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-    {
-        auto t1 = lhs.tensor();
-        auto t2 = rhs.tensor();
-
-        blaze::DynamicTensor<T> result(t1.pages(), t1.rows(), t2.columns());
-
-        for (std::size_t i = 0; i != t1.pages(); ++i)
-
-            blaze::pageslice(result, i) =
-                blaze::pageslice(t1, i) * blaze::pageslice(t2, i);
-
-        return primitive_argument_type{std::move(result)};
-    }
-
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot3d3d_axis1(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -395,6 +502,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot3d3d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        auto t1 = lhs.tensor();
+        auto t2 = rhs.tensor();
+
+        blaze::DynamicTensor<T> result(t1.pages(), t1.rows(), t2.columns());
+
+        for (std::size_t i = 0; i != t1.pages(); ++i)
+
+            blaze::pageslice(result, i) =
+                blaze::pageslice(t1, i) * blaze::pageslice(t2, i);
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot3d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, ir::range&& axes) const
     {
         if (axes.size() == 1)
@@ -411,10 +535,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t axis_a = extract_scalar_integer_value_strict(*it);
         std::int64_t axis_b = extract_scalar_integer_value_strict(*++it);
 
-        if (axis_a < 0)
-            axis_a += 3;
-        if (axis_b < 0)
-            axis_b += 3;
+        axis_a = axis_a >= 0 ? axis_a : positivize_axis(axis_a, 3);
+        axis_b = axis_b >= 0 ? axis_b : positivize_axis(axis_b, 3);
 
         if (axis_a == 1 && axis_b == 1)
             return batch_dot3d3d_axis1(std::move(lhs), std::move(rhs));
@@ -427,6 +549,66 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type batch_dot_operation::batch_dot3d4d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        // axes = (2,2)
+        auto t = lhs.tensor();
+        auto q = rhs.quatern();
+        std::size_t batch = q.quats();
+        std::size_t pages = q.pages();
+
+        blaze::DynamicArray<4UL, T> result(
+            batch, t.rows(), pages, q.columns());
+
+        for (std::size_t i = 0; i != batch; ++i)
+        {
+            auto q_tensor = quatslice(q, i);
+            auto res_tensor = quatslice(result, i);
+            for (std::size_t j = 0; j != pages; ++j)
+            {
+                blaze::rowslice(res_tensor, j) = blaze::trans(
+                    blaze::pageslice(t, i) * blaze::pageslice(q_tensor, j));
+            }
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    //template <typename T>
+    //primitive_argument_type batch_dot_operation::batch_dot3d4d(
+    //    ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, ir::range&& axes) const
+    //{
+    //    if (axes.size() == 1)
+    //    {
+    //        std::int64_t axis =
+    //            extract_scalar_integer_value_strict(*axes.begin());
+    //        if (axis == 1 || axis == -2)
+    //            return batch_dot3d3d_axis1(std::move(lhs), std::move(rhs));
+    //        if (axis == 2 || axis == -1)
+    //            return batch_dot3d3d_axis2(std::move(lhs), std::move(rhs));
+    //    }
+
+    //    auto it = axes.begin();
+    //    std::int64_t axis_a = extract_scalar_integer_value_strict(*it);
+    //    std::int64_t axis_b = extract_scalar_integer_value_strict(*++it);
+
+    //    axis_a = axis_a >= 0 ? axis_a : positivize_axis(axis_a, 3);
+    //    axis_b = axis_b >= 0 ? axis_b : positivize_axis(axis_b, 3);
+
+    //    if (axis_a == 1 && axis_b == 1)
+    //        return batch_dot3d3d_axis1(std::move(lhs), std::move(rhs));
+    //    if (axis_a == 2 && axis_b == 2)
+    //        return batch_dot3d3d_axis2(std::move(lhs), std::move(rhs));
+    //    if (axis_a == 1 && axis_b == 2)
+    //        return batch_dot3d3d_axes12(std::move(lhs), std::move(rhs));
+    //    //if (axis_a == 2 && axis_b == 1)
+    //    return batch_dot3d3d(std::move(lhs), std::move(rhs));
+
+    //}
+
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -438,6 +620,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return batch_dot3d3d(std::move(lhs), std::move(rhs));
+
+        case 4:
+            return batch_dot3d4d(std::move(lhs), std::move(rhs));
 
         default:
             break;
@@ -461,6 +646,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 3:
             return batch_dot3d3d(
                 std::move(lhs), std::move(rhs), std::move(axes));
+
+        //case 4:
+        //    return batch_dot3d4d(
+        //        std::move(lhs), std::move(rhs), std::move(axes));
 
         default:
             break;
