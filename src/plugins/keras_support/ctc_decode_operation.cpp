@@ -42,11 +42,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             R"(y_pred, input_length, greedy, beam_width, top_paths
             Args:
 
-                y_pred : The scalar, vector, matrix, or tensor to perform ctc_decode over
-                input_length
-                greedy : boolean, if True performs best-path search otherwise beam-search
-                beam_width : Integer, if greedy is False specifies the width of the beam.
-                top_paths : Integer, if greedy is False specifies the number of top paths
+                y_pred (scalar, vector, matrix, or tensor) : The variable to perform ctc_decode over
+                input_length (int) : TODO fill in
+                greedy (bool) : if True performs best-path search otherwise beam-search
+                beam_width (int) : if greedy is False specifies the width of the beam.
+                top_paths (int) : if greedy is False specifies the number of top paths
                             desired.
             Returns:
 

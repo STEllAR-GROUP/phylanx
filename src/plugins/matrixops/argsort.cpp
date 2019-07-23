@@ -41,6 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             R"(
             a, axis, kind, order
             Args:
+
               a (array_like):
                 An array to sort.
 

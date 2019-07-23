@@ -43,10 +43,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Args:
 
-                func : a function that takes two arbitrary arguments
+                func (function) : a function that takes two arbitrary arguments
                        and returns the result of folding the two arguments
-                initial : an initial value
-                data : a list or an array-like object
+                initial (int) : an initial value TODO
+                data (list or array) : the data to operate on
 
             Returns:
 
