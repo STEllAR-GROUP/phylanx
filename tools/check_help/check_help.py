@@ -37,7 +37,7 @@ for p in all:
 
         # We expect a pattern here, e.g. foo(_1, _2)
         # or foo(_1, __arg(_2,...), ...)
-        m = re.sub(r'__arg\((\w+)[^\)]*\)',r'\1',m)
+        m = re.sub(r'__arg\((\w+)[^\)]*\)', r'\1', m)
         g = re.match(r'(.*)\((.*)\)', m)
         if not g:
             continue

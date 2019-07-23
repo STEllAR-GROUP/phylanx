@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 func (function) : a function that takes two arbitrary arguments
                        and returns the result of folding the two arguments
-                initial (int) : an initial value TODO
+                initial (int or None) : an initial value
                 data (list or array) : the data to operate on
 
             Returns:
