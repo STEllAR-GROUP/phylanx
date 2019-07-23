@@ -151,6 +151,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type batch_dot3d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, std::size_t const& axis_a,
             std::size_t const& axis_b) const;
+
+        template <typename T>
+        primitive_argument_type batch_dot4d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, std::size_t const& axis_a,
+            std::size_t const& axis_b) const;
+
+        template <typename T>
+        primitive_argument_type batch_dot4d3d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d3d_axis1(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d3d_axes21(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d3d_axes12(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d3d_axes32(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d3d_axis2(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d3d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, std::size_t const& axis_a,
+            std::size_t const& axis_b) const;
+
+        template <typename T>
+        primitive_argument_type batch_dot4d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type batch_dot4d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, std::size_t const& axis_a,
+            std::size_t const& axis_b) const;
     };
 
     inline primitive create_batch_dot_operation(hpx::id_type const& locality,
