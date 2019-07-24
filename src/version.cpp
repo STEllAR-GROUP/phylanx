@@ -9,7 +9,7 @@
 
 #include <hpx/preprocessor/expand.hpp>
 #include <hpx/preprocessor/stringize.hpp>
-#include <hpx/util/format.hpp>
+#include <hpx/format.hpp>
 
 #include <cstdint>
 #include <cstdlib>
