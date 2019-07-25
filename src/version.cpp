@@ -7,9 +7,9 @@
 #include <phylanx/config/user_main_config.hpp>
 #include <phylanx/version.hpp>
 
+#include <hpx/format.hpp>
 #include <hpx/preprocessor/expand.hpp>
 #include <hpx/preprocessor/stringize.hpp>
-#include <hpx/format.hpp>
 
 #include <cstdint>
 #include <cstdlib>
