@@ -8,7 +8,7 @@
 # https://machinelearningmastery.com/implement-random-forest-scratch-python/
 #
 
-from numpy import floor, argsort, sum, sqrt
+from numpy import floor, argsort, sqrt
 from numpy import float64, int64, zeros
 from numpy import argmax, inf, genfromtxt
 from numpy import vstack, iinfo, finfo, unique
@@ -34,7 +34,7 @@ def test_split(idx, val, dataset):
 
 
 def gini_index(groups, classes):
-    groups_len = list(map(lambda x: len(x), groups))
+    groups_len = list([ len(x) for x in groups ])
     n_instances = float64(sum(groups_len))
     gini = 0.0
 
@@ -53,8 +53,8 @@ def gini_index(groups, classes):
 
 def get_split(dataset, n_features, classes):
     cls_values = zeros(len(classes), dtype=int64)
-    for i in range(len(classes)):
-        cls_values[classes[i]] = i
+    for i, v in enumerate(classes):
+        cls_values[v] = i
 
     b_idx = iinfo(int64).max
     b_val = finfo(float64).max
