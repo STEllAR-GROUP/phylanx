@@ -10,12 +10,12 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/plugins/arithmetics/cumulative.hpp>
 
+#include <hpx/format.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/parallel_scan.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/format.hpp>
 #include <hpx/util/optional.hpp>
 
 #include <array>
