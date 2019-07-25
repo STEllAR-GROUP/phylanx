@@ -6,9 +6,9 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
+#include <hpx/format.hpp>
 #include <hpx/runtime/get_num_localities.hpp>
-#include <hpx/util/format.hpp>
-#include <hpx/util/lightweight_test.hpp>
+#include <hpx/testing.hpp>
 
 #include <cstdint>
 #include <utility>

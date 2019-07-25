@@ -26,7 +26,7 @@
 #include <hpx/lcos/async.hpp>
 #include <hpx/lcos/dataflow.hpp>
 #include <hpx/lcos/when_all.hpp>
-#include <hpx/util/lightweight_test.hpp>
+#include <hpx/testing.hpp>
 
 #include <boost/range/irange.hpp>
 

@@ -12,8 +12,8 @@
 #include <bindings/type_casters.hpp>
 #include <bindings/variable.hpp>
 
-#include <hpx/util/assert.hpp>
-#include <hpx/util/format.hpp>
+#include <hpx/assertion.hpp>
+#include <hpx/format.hpp>
 
 #include <cstddef>
 #include <cstdint>

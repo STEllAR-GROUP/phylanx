@@ -11,11 +11,11 @@
 #include <phylanx/util/blaze_traits.hpp>
 #include <phylanx/util/assign.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/assert.hpp>
 
 #include <cstddef>
 #include <memory>

@@ -12,7 +12,7 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
-#include <hpx/util/assert.hpp>
+#include <hpx/assertion.hpp>
 
 #include <algorithm>
 #include <cstddef>

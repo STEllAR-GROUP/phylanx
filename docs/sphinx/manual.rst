@@ -7,6 +7,8 @@
 
 .. _manual:
 
+.. Note: You can find rst replacement definitions in cmake/templates/conf.py.in
+
 =======
 Manual
 =======
@@ -38,3 +40,4 @@ examples, and document the components of the system.
 
    manual/about
    manual/software_stack
+   manual/lra_example
