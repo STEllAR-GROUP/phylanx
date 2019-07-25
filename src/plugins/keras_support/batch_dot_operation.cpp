@@ -37,6 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             R"(
             x, y, axes
             Args:
+
                 x (array) : a matrix or a tensor
                 y (array) : a matrix or a tensor
                 axes (optional, integer or tuple of integers): None by default.
