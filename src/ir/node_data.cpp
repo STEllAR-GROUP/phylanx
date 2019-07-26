@@ -2245,21 +2245,19 @@ namespace phylanx { namespace ir
         case storage2d:
             return node_data<T>{matrix()};
 
-        case custom_storage0d: HPX_FALLTHROUGH;
-        case custom_storage1d: HPX_FALLTHROUGH;
-        case custom_storage2d:
-            return *this;
-
         case storage3d:
             return node_data<T>{tensor()};
 
         case storage4d:
             return node_data<T>{quatern()};
 
+        case custom_storage0d: HPX_FALLTHROUGH;
+        case custom_storage1d: HPX_FALLTHROUGH;
+        case custom_storage2d: HPX_FALLTHROUGH;
         case custom_storage3d: HPX_FALLTHROUGH;
         case custom_storage4d:
             return *this;
-#endif
+
         default:
             break;
         }
@@ -2283,17 +2281,15 @@ namespace phylanx { namespace ir
         case storage2d:
             return node_data<T>{matrix()};
 
-        case custom_storage0d: HPX_FALLTHROUGH;
-        case custom_storage1d: HPX_FALLTHROUGH;
-        case custom_storage2d:
-            return *this;
-
         case storage3d:
             return node_data<T>{tensor()};
 
         case storage4d:
             return node_data<T>{quatern()};
 
+        case custom_storage0d: HPX_FALLTHROUGH;
+        case custom_storage1d: HPX_FALLTHROUGH;
+        case custom_storage2d: HPX_FALLTHROUGH;
         case custom_storage3d: HPX_FALLTHROUGH;
         case custom_storage4d:
             return *this;
@@ -2331,7 +2327,9 @@ namespace phylanx { namespace ir
         {
         case storage0d: HPX_FALLTHROUGH;
         case storage1d: HPX_FALLTHROUGH;
-        case storage2d:
+        case storage2d: HPX_FALLTHROUGH;
+        case storage3d: HPX_FALLTHROUGH;
+        case storage4d:
             return *this;
 
         case custom_storage0d:
@@ -2343,15 +2341,13 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return node_data<T>{matrix_copy()};
 
-        case storage3d: HPX_FALLTHROUGH;
-        case storage4d:
-            return *this;
-
         case custom_storage3d:
             return node_data<T>{tensor_copy()};
 
         case custom_storage4d:
             return node_data<T>{quatern_copy()};
+
+
         default:
             break;
         }
@@ -2414,15 +2410,9 @@ namespace phylanx { namespace ir
         case custom_storage2d:  HPX_FALLTHROUGH;
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:  HPX_FALLTHROUGH;
-<<<<<<< .mine
         case storage4d:         HPX_FALLTHROUGH;
         case custom_storage4d:  HPX_FALLTHROUGH;
-#endif
-=======
 
-
-
->>>>>>> .theirs
         default:
             break;
         }

@@ -281,17 +281,9 @@ int main(int argc, char* argv[])
     test_empty_operation(
         R"(constant(nil, list(2, 2, 2), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
-<<<<<<< .mine
     test_empty_operation(
         R"(constant(nil, list(2, 3, 4, 5), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 3, 4, 5});
-#endif
-=======
-
-
-
-
->>>>>>> .theirs
 
     // empty_like
     test_empty_operation(

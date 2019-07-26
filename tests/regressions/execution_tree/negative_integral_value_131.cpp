@@ -14,7 +14,7 @@
 
 std::string const code = R"(block(
     define(x, y,
-        slice(y, 0, 569, -1, 0)
+        slice(y, list(0, 569), list(-1, 0))
     ),
     x
 ))";
