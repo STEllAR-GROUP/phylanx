@@ -14,7 +14,7 @@
 #include <cstddef>
 #include <utility>
 
-#include <hpx/include/util.hpp>
+#include <hpx/iterator_support/iterator_facade.hpp>
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>

@@ -10,9 +10,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/allocator_support/internal_allocator.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/util/internal_allocator.hpp>
+#include <hpx/runtime/serialization/serialization_fwd.hpp>
 
 #include <array>
 #include <cstddef>

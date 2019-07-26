@@ -8,8 +8,8 @@
 
 #include <phylanx/config.hpp>
 
+#include <hpx/hashing/jenkins_hash.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/util/jenkins_hash.hpp>
 
 #include <iosfwd>
 #include <string>

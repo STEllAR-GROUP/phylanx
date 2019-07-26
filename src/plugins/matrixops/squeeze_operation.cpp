@@ -10,11 +10,11 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/squeeze_operation.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <algorithm>
 #include <cstddef>

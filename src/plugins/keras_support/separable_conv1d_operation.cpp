@@ -10,11 +10,11 @@
 #include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
 #include <phylanx/plugins/keras_support/separable_conv1d_operation.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <cstddef>
 #include <cstdint>
