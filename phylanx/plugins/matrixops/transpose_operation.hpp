@@ -44,41 +44,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bool validate_axes(std::size_t a_dims,
             ir::node_data<std::int64_t>&& axes) const;
 
-        primitive_argument_type transpose0d1d(primitive_argument_type&& arg) const;
-        primitive_argument_type transpose2d(primitive_argument_type && arg) const;
-        primitive_argument_type transpose2d(primitive_argument_type&& arg,
-            ir::node_data<std::int64_t>&& axes) const;
+        primitive_argument_type transpose_nd(std::size_t a_dim,
+            primitive_argument_type&& arg0) const;
 
-        template <typename T>
-        primitive_argument_type transpose2d(ir::node_data<T>&& arg) const;
-        template <typename T>
-        primitive_argument_type transpose2d(
-            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes) const;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        primitive_argument_type transpose3d(
-            primitive_argument_type&& arg) const;
-        primitive_argument_type transpose3d(primitive_argument_type&& arg,
-            ir::node_data<std::int64_t>&& axes) const;
-
-        template <typename T>
-        primitive_argument_type transpose3d_axes102(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        primitive_argument_type transpose3d_axes021(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        primitive_argument_type transpose3d_axes120(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        primitive_argument_type transpose3d_axes201(
-            ir::node_data<T>&& arg) const;
-        template <typename T>
-        primitive_argument_type transpose3d(ir::node_data<T>&& arg) const;
-        template <typename T>
-        primitive_argument_type transpose3d(
-            ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes) const;
-#endif
+        primitive_argument_type transpose_nd(std::size_t a_dim,
+            primitive_argument_type&& arg0, primitive_argument_type&& arg1) const;
     };
 
     inline primitive create_transpose_operation(hpx::id_type const& locality,

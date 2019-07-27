@@ -11,6 +11,7 @@
 #include <phylanx/plugins/arithmetics/arithmetics.hpp>
 #include <phylanx/plugins/booleans/booleans.hpp>
 #include <phylanx/plugins/controls/controls.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_matrixops.hpp>
 #include <phylanx/plugins/fileio/fileio.hpp>
 #include <phylanx/plugins/keras_support/keras_support.hpp>
 #include <phylanx/plugins/listops/listops.hpp>

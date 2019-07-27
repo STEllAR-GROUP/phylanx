@@ -45,8 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type generate_dict(
-            std::vector<ir::range, arguments_allocator<ir::range>>&& args) const;
+        primitive_argument_type generate_dict(ir::range&& arg) const;
     };
 
     inline primitive create_dict_operation(hpx::id_type const& locality,

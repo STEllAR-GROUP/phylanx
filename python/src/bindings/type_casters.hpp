@@ -1148,7 +1148,7 @@ namespace pybind11 { namespace detail
         auto caster = make_caster<U>();
         if (caster.load(src, convert))
         {
-            value = std::move(cast_op<U>(caster));
+            value = Derived{std::move(cast_op<U>(caster))};
             return true;
         }
         return load_alternative(src, convert, type_list<Us...>{});
@@ -1161,8 +1161,7 @@ namespace pybind11 { namespace detail
     {
         if (src.is_none())
         {
-            value = phylanx::execution_tree::primitive_argument_type(
-                phylanx::ast::nil{true});
+            value = Derived{phylanx::ast::nil{true}};
             return true;
         }
         return load_alternative(src, convert, type_list<Us...>{});
@@ -1176,7 +1175,7 @@ namespace pybind11 { namespace detail
         auto caster = make_caster<U>();
         if (caster.load(src, convert))
         {
-            value = std::move(cast_op<U>(caster));
+            value = Derived{std::move(cast_op<U>(caster))};
             return true;
         }
         return load_alternative(src, convert, type_list<Us...>{});

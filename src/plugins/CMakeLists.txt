@@ -7,7 +7,9 @@ set(subdirs
     algorithms
     arithmetics
     booleans
+    common
     controls
+    dist_matrixops
     fileio
     keras_support
     listops

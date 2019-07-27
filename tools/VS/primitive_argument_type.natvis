@@ -28,6 +28,7 @@
             <Item Name="[expressionlist]" Condition="(var.impl_.index_ == 6)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[range]" Condition="(var.impl_.index_ == 7)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[dict]" Condition="(var.impl_.index_ == 8)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[annotation]">var.annotation_</Item>
         </Expand>
     </Type>
 

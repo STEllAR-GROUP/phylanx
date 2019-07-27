@@ -3,7 +3,7 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-macro(add_phylanx_primitive_plugin name)
+function(add_phylanx_primitive_plugin name)
   # retrieve arguments
   set(options EXCLUDE_FROM_ALL AUTOGLOB PLUGIN STATIC)
   set(one_value_args INI FOLDER SOURCE_ROOT HEADER_ROOT SOURCE_GLOB HEADER_GLOB OUTPUT_SUFFIX)
@@ -93,13 +93,13 @@ macro(add_phylanx_primitive_plugin name)
   else()
     if(${name}_PLUGIN AND NOT PHYLANX_WITH_STATIC_LINKING)
       if(MSVC)
-        set(install_destination bin/phylanx)
+        set(install_destination ${CMAKE_INSTALL_BINDIR}/phylanx)
       else()
-        set(install_destination lib/phylanx)
-  endif()
+        set(install_destination ${CMAKE_INSTALL_LIBDIR}/phylanx)
+      endif()
       set(${name}_OUTPUT_SUFFIX phylanx)
     else()
-      set(install_destination lib)
+      set(install_destination ${CMAKE_INSTALL_LIBDIR})
     endif()
     if(${name}_INSTALL_SUFFIX)
       set(install_destination ${${name}_INSTALL_SUFFIX})
@@ -114,6 +114,9 @@ macro(add_phylanx_primitive_plugin name)
 
   if(${name}_PLUGIN)
     set(_target_flags ${_target_flags} PLUGIN)
+  endif()
+  if(${name}_NONAMEPREFIX)
+    set(_target_flags ${_target_flags} NONAMEPREFIX)
   endif()
 
   if(${${name}_STATIC})
@@ -198,5 +201,5 @@ macro(add_phylanx_primitive_plugin name)
         BlazeTensor::BlazeTensor)
   endif()
 
-endmacro()
+endfunction()
 

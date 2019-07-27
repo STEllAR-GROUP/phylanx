@@ -405,6 +405,27 @@ jobs:
                 path: tests.unit.plugins.controls
             - store_artifacts:
                 path: tests.unit.plugins.controls
+    tests.unit.plugins.dist_matrixops:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - <<: *avoid_cmake_rerun
+            - <<: *justify_building_all
+            - run:
+                name: Justify build
+                command: ninja -n -d explain tests.unit.plugins.dist_matrixops
+            - run:
+                name: Build DistMatrixOps primitive plugin unit tests
+                command: cmake --build . -- -j1 tests.unit.plugins.dist_matrixops
+            - run:
+                name: Run DistMatrixOps primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.dist_matrixops
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.dist_matrixops
+            - store_artifacts:
+                path: tests.unit.plugins.dist_matrixops
     tests.unit.plugins.fileio_solvers:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -654,6 +675,9 @@ workflows:
             - tests.unit.plugins.controls:
                 requires:
                     - build
+            - tests.unit.plugins.dist_matrixops:
+                requires:
+                    - build
             - tests.unit.plugins.fileio_solvers:
                 requires:
                     - build
@@ -688,6 +712,7 @@ workflows:
                     - tests.unit.plugins.arithmetics
                     - tests.unit.plugins.booleans
                     - tests.unit.plugins.controls
+                    - tests.unit.plugins.dist_matrixops
                     - tests.unit.plugins.fileio_solvers
                     - tests.unit.plugins.keras_support
                     - tests.unit.plugins.listops

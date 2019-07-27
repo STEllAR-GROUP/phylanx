@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -265,6 +266,24 @@ namespace phylanx { namespace ir
         using range_type =
             util::variant<int_range_type, wrapped_args_type, arg_pair_type>;
 
+    private:
+        template <typename... Ts>
+        static execution_tree::primitive_arguments_type
+            convert_span(std::string key, Ts&&... ts)
+        {
+            execution_tree::primitive_arguments_type data;
+            data.reserve(sizeof...(Ts) + 1);
+
+            data.emplace_back(std::move(key));
+
+            int dummy[] = {
+                0, (data.emplace_back(std::forward<Ts>(ts)), 0)...
+            };
+            (void)dummy;
+
+            return data;
+        }
+
     public:
         ///////////////////////////////////////////////////////////////////////
         range_iterator begin() const;
@@ -343,10 +362,23 @@ namespace phylanx { namespace ir
         {
         }
 
-    private:
+        // construct an annotation
+        template <typename... Ts>
+        range(char const* key, Ts&& ... ts)
+          : data_(convert_span(std::string(key), std::forward<Ts>(ts)...))
+        {
+        }
+
+        template <typename... Ts>
+        range(std::string const& key, Ts&& ... ts)
+          : data_(convert_span(key, std::forward<Ts>(ts)...))
+        {
+        }
+
         friend PHYLANX_EXPORT bool operator==(range const&, range const&);
         friend PHYLANX_EXPORT bool operator!=(range const&, range const&);
 
+    private:
         friend class hpx::serialization::access;
         void serialize(hpx::serialization::output_archive& ar, unsigned);
         void serialize(hpx::serialization::input_archive& ar, unsigned);

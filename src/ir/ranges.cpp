@@ -274,9 +274,6 @@ namespace phylanx { namespace ir
 
     reverse_range_iterator range::rbegin() const
     {
-        using args_iterator_type = std::vector<
-            execution_tree::primitive_argument_type>::reverse_iterator;
-
         switch (data_.index())
         {
         case 0:    // int_range_type
@@ -313,9 +310,6 @@ namespace phylanx { namespace ir
 
     reverse_range_iterator range::rend() const
     {
-        using args_iterator_type = std::vector<
-            execution_tree::primitive_argument_type>::reverse_iterator;
-
         switch (data_.index())
         {
         case 0:    // int_range_type
@@ -634,14 +628,14 @@ namespace phylanx { namespace ir
             {
                 int_range_type& int_range = util::get<0>(data_);
                 ar << int_range.start() << int_range.stop() << int_range.step();
-                break;
             }
+            break;
 
         case 1:    // wrapped_args_type
             {
                 ar << util::get<1>(data_);
-                break;
             }
+            break;
 
         case 2:    // arg_pair_type
             {
@@ -650,16 +644,16 @@ namespace phylanx { namespace ir
                 m.reserve(size());
                 std::copy(p.first, p.second, std::back_inserter(m));
                 ar << m;
-                break;
             }
+            break;
 
         default:
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::range::serialize()",
+                "range object holds unsupported data type");
             break;
         }
 
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::ir::range::serialize()",
-            "range object holds unsupported data type");
     }
     void range::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
@@ -673,8 +667,8 @@ namespace phylanx { namespace ir
                 std::int64_t start, stop, step;
                 ar >> start >> stop >> step;
                 data_ = int_range_type{start, stop, step};
-                break;
             }
+            break;
 
         case 1:    // wrapped_args_type
         case 2:    // arg_pair_type (serialized as wrapped_args_type)
@@ -682,13 +676,14 @@ namespace phylanx { namespace ir
                 args_type m;
                 ar >> m;
                 data_ = std::move(m);
-                break;
             }
+            break;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "phylanx::ir::range::serialize()",
                 "range object holds unsupported data type");
+            break;
         }
     }
 }}
