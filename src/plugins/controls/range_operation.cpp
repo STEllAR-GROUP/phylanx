@@ -63,13 +63,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (args.size())
         {
         case 1:
-            return ir::range(args[0].scalar());
+            return primitive_argument_type{ir::range(args[0].scalar())};
 
         case 2:
-            return ir::range(args[0].scalar(), args[1].scalar());
+            return primitive_argument_type{
+                ir::range(args[0].scalar(), args[1].scalar())};
 
         case 3:
-            return ir::range(args[0].scalar(), args[1].scalar(), args[2].scalar());
+            return primitive_argument_type{ir::range(
+                args[0].scalar(), args[1].scalar(), args[2].scalar())};
 
         default:
             break;

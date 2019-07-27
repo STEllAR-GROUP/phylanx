@@ -39,13 +39,19 @@ namespace phylanx { namespace util
 
     ///////////////////////////////////////////////////////////////////////////
     repr_wrapper::repr_wrapper(std::ostream& strm)
-        : strm_(strm)
+      : strm_(strm), has_repr_(is_repr(strm_))
     {
-        strm_ << repr;
+        if (!has_repr_)
+        {
+            strm_ << repr;
+        }
     }
     repr_wrapper::~repr_wrapper()
     {
-        strm_ << norepr;
+        if (!has_repr_)
+        {
+            strm_ << norepr;
+        }
     }
 }}
 

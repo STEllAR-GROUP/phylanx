@@ -40,23 +40,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type shape0d() const;
-        primitive_argument_type shape0d(std::int64_t index) const;
+        primitive_argument_type shape0d(primitive_argument_type&& arg) const;
+        primitive_argument_type shape0d(
+            primitive_argument_type&& arg, std::int64_t index) const;
 
-        primitive_argument_type shape1d(std::int64_t size) const;
+        primitive_argument_type shape1d(primitive_argument_type&& arg) const;
         primitive_argument_type shape1d(
-            std::int64_t size, std::int64_t index) const;
+            primitive_argument_type&& arg, std::int64_t index) const;
 
+        primitive_argument_type shape2d(primitive_argument_type&& arg) const;
         primitive_argument_type shape2d(
-            std::int64_t rows, std::int64_t columns) const;
-        primitive_argument_type shape2d(
-            std::int64_t rows, std::int64_t columns, std::int64_t index) const;
+            primitive_argument_type&& arg, std::int64_t index) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type shape3d(primitive_argument_type&& arg) const;
         primitive_argument_type shape3d(
-            std::int64_t pages, std::int64_t rows, std::int64_t columns) const;
-        primitive_argument_type shape3d(std::int64_t pages, std::int64_t rows,
-            std::int64_t columns, std::int64_t index) const;
+            primitive_argument_type&& arg, std::int64_t index) const;
 #endif
     };
 

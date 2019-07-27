@@ -248,21 +248,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 1:
             initial = fold_left_array_helper_1d(std::move(bound_func),
-                std::move(initial), extract_node_data<T>(std::move(data)),
-                std::move(ctx));
+                std::move(initial), std::move(data), std::move(ctx));
             break;
 
         case 2:
             initial = fold_left_array_helper_2d(std::move(bound_func),
-                std::move(initial), extract_node_data<T>(std::move(data)),
-                std::move(ctx));
+                std::move(initial), std::move(data), std::move(ctx));
             break;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             initial = fold_left_array_helper_3d(std::move(bound_func),
-                std::move(initial), extract_node_data<T>(std::move(data)),
-                std::move(ctx));
+                std::move(initial), std::move(data), std::move(ctx));
             break;
 #endif
         }

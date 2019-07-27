@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/keras_support/sigmoid_operation.hpp>
 #include <phylanx/util/detail/div_simd.hpp>
@@ -196,6 +197,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [this_ = std::move(this_)](primitive_argument_type&& arg)
                 -> primitive_argument_type
                 {
+                    annotation_wrapper wrap(arg);
+
                     // Extract the argument, the result should always be double
                     arg_type a = extract_numeric_value(
                         std::move(arg), this_->name_, this_->codename_);
@@ -204,18 +207,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (a_dims)
                     {
                     case 0:
-                        return this_->sigmoid0d(std::move(a));
+                        return wrap.propagate(this_->sigmoid0d(std::move(a)));
 
                     case 1:
-                        return this_->sigmoid1d(std::move(a));
+                        return wrap.propagate(this_->sigmoid1d(std::move(a)));
 
                     case 2:
-                        return this_->sigmoid2d(std::move(a));
+                        return wrap.propagate(this_->sigmoid2d(std::move(a)));
 
-    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                     case 3:
-                        return this_->sigmoid3d(std::move(a));
-    #endif
+                        return wrap.propagate(this_->sigmoid3d(std::move(a)));
+#endif
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "sigmoid_operation::eval",

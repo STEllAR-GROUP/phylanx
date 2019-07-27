@@ -110,3 +110,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(primitive_argument_type(locality_));
     }
 }}}
+
+///////////////////////////////////////////////////////////////////////////////
+HPX_PLAIN_ACTION(phylanx::execution_tree::primitives::get_num_localities,
+    num_localities);
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    match_pattern_type const num_localities_match_data =
+    {
+        hpx::util::make_tuple(
+            "num_localities", std::vector<std::string>{"num_localities()"},
+            &create_generic_function< ::num_localities>,
+            &create_primitive<generic_function< ::num_localities>>, R"(
+            num_localities
+
+            Args:
+
+                none
+
+            Returns:
+
+            The number of localities of the currently executing code)")
+    };
+
+    hpx::future<primitive_argument_type> get_num_localities(
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context)
+    {
+        std::int64_t localities = hpx::get_num_localities(hpx::launch::sync);
+        return hpx::make_ready_future(primitive_argument_type(localities));
+    }
+}}}

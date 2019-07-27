@@ -52,11 +52,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type dict_operation::generate_dict(
-        std::vector<ir::range, arguments_allocator<ir::range>>&& args) const
+        ir::range&& args_list) const
     {
-        ir::range args_list =
-            extract_list_value_strict(std::move(args[0]), name_, codename_);
-
         if (args_list.empty())
         {
             return primitive_argument_type{ir::dictionary{}};
@@ -75,7 +72,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "two elements each"));
             }
 
-            auto element = extract_list_value_strict(std::move(*it));
+            auto element =
+                extract_list_value_strict(std::move(*it), name_, codename_);
             auto && p = element.args();
 
             if (p.size() != 2)
@@ -123,15 +121,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    std::vector<ir::range, arguments_allocator<ir::range>>&& args)
-                -> primitive_argument_type
-                {
-                    return this_->generate_dict(std::move(args));
-                }),
-            detail::map_operands(
-                operands, functional::list_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            [this_ = std::move(this_)](hpx::future<ir::range>&& arg)
+            -> primitive_argument_type
+            {
+                return this_->generate_dict(arg.get());
+            },
+            list_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

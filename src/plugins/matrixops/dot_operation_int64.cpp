@@ -13,25 +13,9 @@
 #include <cstdint>
 
 ///////////////////////////////////////////////////////////////////////////////
+// explicitly instantiate the required functions
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    // explicitly instantiate the required functions
-
-    ///////////////////////////////////////////////////////////////////////////
-    template primitive_argument_type dot_operation::dot0d(
-        ir::node_data<std::int64_t>&&, ir::node_data<std::int64_t>&&) const;
-
-    template primitive_argument_type dot_operation::dot1d(
-        ir::node_data<std::int64_t>&&, ir::node_data<std::int64_t>&&) const;
-
-    template primitive_argument_type dot_operation::dot2d(
-        ir::node_data<std::int64_t>&&, ir::node_data<std::int64_t>&&) const;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template primitive_argument_type dot_operation::dot3d(
-        ir::node_data<std::int64_t>&&, ir::node_data<std::int64_t>&&) const;
-#endif
-
     ///////////////////////////////////////////////////////////////////////////
     template primitive_argument_type dot_operation::outer_nd_helper(
         ir::node_data<std::int64_t>&&, ir::node_data<std::int64_t>&&) const;

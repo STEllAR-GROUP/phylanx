@@ -8,6 +8,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/common/dot_operation_nd.hpp>
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -124,137 +125,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "which is not supported"));
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type dot_operation::dot0d(
-        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
-    {
-        switch (extract_common_type(lhs, rhs))
-        {
-        case node_data_type_bool:
-            return dot0d(
-                extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_int64:
-            return dot0d(
-                extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_unknown: HPX_FALLTHROUGH;
-        case node_data_type_double:
-            return dot0d(
-                extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dot_operation::dot0d",
-            generate_error_message(
-                "the dot primitive requires for all arguments to "
-                    "be numeric data types"));
-    }
-
-    primitive_argument_type dot_operation::dot1d(
-        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
-    {
-        switch (extract_common_type(lhs, rhs))
-        {
-        case node_data_type_bool:
-            return dot1d(
-                extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_int64:
-            return dot1d(
-                extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_unknown: HPX_FALLTHROUGH;
-        case node_data_type_double:
-            return dot1d(
-                extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dot_operation::dot1d",
-            generate_error_message(
-                "the dot primitive requires for all arguments to "
-                    "be numeric data types"));
-    }
-
-    primitive_argument_type dot_operation::dot2d(
-        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
-    {
-        switch (extract_common_type(lhs, rhs))
-        {
-        case node_data_type_bool:
-            return dot2d(
-                extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_int64:
-            return dot2d(
-                extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_unknown: HPX_FALLTHROUGH;
-        case node_data_type_double:
-            return dot2d(
-                extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dot_operation::dot2d",
-            generate_error_message(
-                "the dot primitive requires for all arguments to "
-                    "be numeric data types"));
-    }
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    primitive_argument_type dot_operation::dot3d(
-        primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
-    {
-        switch (extract_common_type(lhs, rhs))
-        {
-        case node_data_type_bool:
-            return dot3d(
-                extract_boolean_value(std::move(lhs), name_, codename_),
-                extract_boolean_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_int64:
-            return dot3d(
-                extract_integer_value(std::move(lhs), name_, codename_),
-                extract_integer_value(std::move(rhs), name_, codename_));
-
-        case node_data_type_unknown: HPX_FALLTHROUGH;
-        case node_data_type_double:
-            return dot3d(
-                extract_numeric_value(std::move(lhs), name_, codename_),
-                extract_numeric_value(std::move(rhs), name_, codename_));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dot_operation::dot3d",
-            generate_error_message(
-                "the dot primitive requires for all arguments to "
-                "be numeric data types"));
-    }
-#endif
 
     primitive_argument_type dot_operation::outer1d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
@@ -502,17 +372,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (extract_numeric_value_dimension(lhs, name_, codename_))
         {
         case 0:
-            return dot0d(std::move(lhs), std::move(rhs));
+            return common::dot0d(
+                std::move(lhs), std::move(rhs), name_, codename_);
 
         case 1:
-            return dot1d(std::move(lhs), std::move(rhs));
+            return common::dot1d(
+                std::move(lhs), std::move(rhs), name_, codename_);
 
         case 2:
-            return dot2d(std::move(lhs), std::move(rhs));
+            return common::dot2d(
+                std::move(lhs), std::move(rhs), name_, codename_);
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
-            return dot3d(std::move(lhs), std::move(rhs));
+            return common::dot3d(
+                std::move(lhs), std::move(rhs), name_, codename_);
 #endif
 
         default:
@@ -530,7 +404,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 0:
             //outer0d has the same functionality as dot0d
-            return dot0d(std::move(lhs), std::move(rhs));
+            return common::dot0d(
+                std::move(lhs), std::move(rhs), name_, codename_);
 
         case 1:
             return outer1d(std::move(lhs), std::move(rhs));

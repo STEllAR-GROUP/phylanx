@@ -11,7 +11,6 @@
 #include <phylanx/config.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/lcos/local/barrier.hpp>
 #include <hpx/lcos/local/spinlock.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
@@ -24,7 +23,6 @@
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/bind.hpp>
 #include <hpx/util/unlock_guard.hpp>
 
 #include <algorithm>
@@ -271,7 +269,7 @@ namespace phylanx { namespace util
         /// the symbolic name
         ~distributed_object()
         {
-            hpx::unregister_with_basename(basename_, this_site_);
+            hpx::unregister_with_basename(basename_, this_site_).get();
         }
 
         /// Access the calling locality's value instance for this distributed_object
@@ -349,7 +347,8 @@ namespace phylanx { namespace util
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
                     "distributed_object::get_part_id",
-                    "attempting to access invalid part of the ditributed object");
+                    "attempting to access invalid part of the distributed "
+                    "object");
             }
 
             std::lock_guard<hpx::lcos::local::spinlock> l(part_ids_mtx_);
@@ -508,7 +507,7 @@ namespace phylanx { namespace util
                 hpx::local_new<server::distributed_object_part<T&>>(
                     hpx::launch::sync, value);
 
-            hpx::register_with_basename(basename_, part_id, this_site_);
+            hpx::register_with_basename(basename_, part_id, this_site_).get();
 
             part_ids_[this_site_] = part_id;
             ptr_ = hpx::get_ptr<server::distributed_object_part<T&>>(
@@ -528,7 +527,8 @@ namespace phylanx { namespace util
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
                     "distributed_object::get_part_id",
-                    "attempting to access invalid part of the ditributed object");
+                    "attempting to access invalid part of the distributed "
+                    "object");
             }
 
             std::lock_guard<hpx::lcos::local::spinlock> l(part_ids_mtx_);

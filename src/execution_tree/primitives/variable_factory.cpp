@@ -66,8 +66,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // create a new instance of the function, do not register with AGAS
-        primitive_argument_type func = create_function(
-            hpx::find_here(), std::move(body), name_, codename_, false);
+        primitive_argument_type func = primitive_argument_type{create_function(
+            hpx::find_here(), std::move(body), name_, codename_, false)};
 
         // if the function should not receive any bound arguments, we're done
         if (!(ctx.mode_ & eval_dont_wrap_functions) && !args.empty())
