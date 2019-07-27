@@ -15,11 +15,11 @@
 #include <phylanx/util/hashed_string.hpp>
 #include <phylanx/util/variant.hpp>
 
+#include <hpx/allocator_support/internal_allocator.hpp>
 #include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/runtime.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
 #include <iosfwd>

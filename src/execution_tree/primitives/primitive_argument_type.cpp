@@ -8,8 +8,8 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
+#include <hpx/allocator_support/internal_allocator.hpp>
 #include <hpx/include/serialization.hpp>
-#include <hpx/util/internal_allocator.hpp>
 
 #include <cstdint>
 #include <memory>

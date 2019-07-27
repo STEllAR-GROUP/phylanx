@@ -11,7 +11,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/util/tuple.hpp>
+#include <hpx/datastructures/tuple.hpp>
 
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>

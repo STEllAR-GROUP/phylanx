@@ -9,8 +9,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/plugin_base.hpp>
 
+#include <hpx/datastructures/detail/pack.hpp>
 #include <hpx/plugins/plugin_factory_base.hpp>
-#include <hpx/util/detail/pack.hpp>
 #include <hpx/util/plugin.hpp>
 #include <hpx/util/plugin/export_plugin.hpp>
 

@@ -10,11 +10,11 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
+#include <hpx/allocator_support/internal_allocator.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
-#include <hpx/util/internal_allocator.hpp>
 
 #include <cstddef>
 #include <cstdint>
