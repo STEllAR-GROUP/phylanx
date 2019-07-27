@@ -119,6 +119,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#als">als</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#amax">amax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#amin">amin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotate">annotate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotate-d">annotate_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#any">any</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#append">append</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apply">apply</a></li>
@@ -152,6 +154,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#diag">diag</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dict">dict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dot">dot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dot-d">dot_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dstack">dstack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#elu">elu</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#enable-tracing">enable_tracing</a></li>
@@ -204,6 +207,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#minimum">minimum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ndim">ndim</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nonzero">nonzero</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#num-localities">num_localities</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#one-hot">one_hot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#outer">outer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pad">pad</a></li>
@@ -242,6 +246,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#tensordot">tensordot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tile">tile</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transpose">transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transpose-d">transpose_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tuple-slice">tuple_slice</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#unique">unique</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#var">var</a></li>
@@ -745,6 +750,35 @@ one. False by default</dd>
 </dd>
 </dl>
 </div>
+<div class="section" id="annotate">
+<h2>annotate<a class="headerlink" href="#annotate" title="Permalink to this headline">¶</a></h2>
+<p>annotate (target, args)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>target : the value that has to be annotated
+<a href="#id15"><span class="problematic" id="id16">*</span></a>args (arg list) : an optional list of annotations (default is <cite>None</cite>)</div></blockquote>
+<p>Returns:</p>
+<p>The <cite>target</cite> annotated with the list of values given by <cite>*args</cite>.</p>
+</div></blockquote>
+</div>
+<div class="section" id="annotate-d">
+<h2>annotate_d<a class="headerlink" href="#annotate-d" title="Permalink to this headline">¶</a></h2>
+<p>annotate_d (target, name, args)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>target : the value that has to be annotated
+name : a unique string identifying the annotated object across</p>
+<blockquote>
+<div>localities</div></blockquote>
+<p><a href="#id17"><span class="problematic" id="id18">*</span></a>args (arg list) : an optional list of annotations (default is <cite>None</cite>)</p>
+</div></blockquote>
+<p>Returns:</p>
+<p>The <cite>target</cite> annotated with the list of values given by <cite>*args</cite>. The
+<cite>target</cite> is also identified by the given <cite>name</cite> across localities.</p>
+</div></blockquote>
+</div>
 <div class="section" id="any">
 <h2>any<a class="headerlink" href="#any" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
@@ -853,9 +887,9 @@ specified, a vector of minima along the axis is returned.</p>
 <h2>argsort<a class="headerlink" href="#argsort" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>argsort (a, axis, kind, order)</dt>
-<dd><dl class="first last docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><dl class="docutils">
 <dt>a (array_like):</dt>
 <dd>An array to sort.</dd>
 <dt>axis (optional, {int, nil}):</dt>
@@ -873,7 +907,8 @@ fields will still be used, in the order in which they come up in the
 dtype, to break ties.
 <strong>* ignored *</strong></dd>
 </dl>
-</dd>
+</div></blockquote>
+<dl class="last docutils">
 <dt>Returns:</dt>
 <dd>index_array ({ndarray, int}):
 When a is an array with fields defined, this argument specifies which
@@ -959,15 +994,14 @@ pool_size (a tuple of 3 integers) : the size of pooling over each</p>
 <h2>batch_dot<a class="headerlink" href="#batch-dot" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>batch_dot (x, y, axes)</dt>
-<dd><dl class="first docutils">
-<dt>Args:</dt>
-<dd><p class="first">x (array) : a matrix or a tensor
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>x (array) : a matrix or a tensor
 y (array) : a matrix or a tensor
 axes (optional, integer or tuple of integers): None by default.</p>
-<blockquote class="last">
+<blockquote>
 <div>Target dimensions to be reduced.</div></blockquote>
-</dd>
-</dl>
+</div></blockquote>
 <p class="last">Returns:
 The batch dot along specified axes. For more deyail refer to
 <a class="reference external" href="https://keras.io/backend/#batch_dot">https://keras.io/backend/#batch_dot</a></p>
@@ -1013,7 +1047,7 @@ output = np.log(output / (1 - output))</dd>
 <dt>block (stmt)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id15"><span class="problematic" id="id16">*</span></a>stmt (statement list) :  a list of statements.</div></blockquote>
+<div><a href="#id19"><span class="problematic" id="id20">*</span></a>stmt (statement list) :  a list of statements.</div></blockquote>
 <p>Returns:</p>
 <p class="last">The value of the last statement.</p>
 </dd>
@@ -1197,7 +1231,7 @@ by default.</dd>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt><a href="#id17"><span class="problematic" id="id18">*</span></a>args (list of variables) <span class="classifier-delimiter">:</span> <span class="classifier">print a string representation</span></dt>
+<dt><a href="#id21"><span class="problematic" id="id22">*</span></a>args (list of variables) <span class="classifier-delimiter">:</span> <span class="classifier">print a string representation</span></dt>
 <dd>of the variables to stdout.</dd>
 </dl>
 </div></blockquote>
@@ -1224,11 +1258,14 @@ v2 (vector) : a vector</div></blockquote>
 <dt>ctc_decode (y_pred, input_length, greedy, beam_width, top_paths)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p>y_pred : The scalar, vector, matrix, or tensor to perform ctc_decode over
-input_length
-greedy : boolean, if True performs best-path search otherwise beam-search
-beam_width : Integer, if greedy is False specifies the width of the beam.
-top_paths : Integer, if greedy is False specifies the number of top paths</p>
+<div><dl class="docutils">
+<dt>y_pred (scalar, vector, matrix, or tensor) <span class="classifier-delimiter">:</span> <span class="classifier">The variable to perform</span></dt>
+<dd>ctc_decode over</dd>
+</dl>
+<p>input_length (list) : a list of input lengths
+greedy (bool) : if True performs best-path search otherwise beam-search
+beam_width (int) : if greedy is False specifies the width of the beam.
+top_paths (int) : if greedy is False specifies the number of top paths</p>
 <blockquote>
 <div>desired.</div></blockquote>
 </div></blockquote>
@@ -1287,7 +1324,7 @@ the flattened array.</div></blockquote>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt><a href="#id19"><span class="problematic" id="id20">*</span></a>args (list of variables) <span class="classifier-delimiter">:</span> <span class="classifier">print a string representation</span></dt>
+<dt><a href="#id23"><span class="problematic" id="id24">*</span></a>args (list of variables) <span class="classifier-delimiter">:</span> <span class="classifier">print a string representation</span></dt>
 <dd>of the variables to stderr.</dd>
 </dl>
 </div></blockquote>
@@ -1368,13 +1405,27 @@ N-D array and an M-D array is of dimension N+M-2</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="dot-d">
+<h2>dot_d<a class="headerlink" href="#dot-d" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>dot_d (a, b)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div>a (array) : a scalar, vector, matrix or a tensor
+b (array) : a scalar, vector, matrix or a tensor</div></blockquote>
+<p>Returns:</p>
+<p class="last">The dot product of two arrays: <cite>a</cite> and <cite>b</cite>. The dot product of an
+N-D array and an M-D array is of dimension N+M-2</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="dstack">
 <h2>dstack<a class="headerlink" href="#dstack" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>dstack (args, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p><a href="#id21"><span class="problematic" id="id22">*</span></a>args (list, optional) : a list of array-like objects
+<div><p><a href="#id25"><span class="problematic" id="id26">*</span></a>args (list, optional) : a list of array-like objects
 dtype (optional, string) : the data-type of the returned array,</p>
 <blockquote>
 <div>defaults to dtype of input arrays.</div></blockquote>
@@ -1629,11 +1680,11 @@ item in list <cite>listv</cite>.</p>
 <div><p>Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>func <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes two arbitrary arguments</span></dt>
+<dt>func (function) <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes two arbitrary arguments</span></dt>
 <dd>and returns the result of folding the two arguments</dd>
 </dl>
-<p>initial : an initial value
-data : a list or an array-like object</p>
+<p>initial (int or None) : an initial value
+data (list or array) : the data to operate on</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
@@ -1674,11 +1725,11 @@ print(v)</div></blockquote>
 <div><p>Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>func <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes two arbitrary arguments</span></dt>
+<dt>func (function) <span class="classifier-delimiter">:</span> <span class="classifier">a function that takes two arbitrary arguments</span></dt>
 <dd>and returns the result of folding the two arguments</dd>
 </dl>
-<p>initial : an initial value
-data : a list or an array-like object</p>
+<p>initial (int or None) : an initial value
+data (list or array) : the data to operate on</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
@@ -1760,7 +1811,7 @@ def foo():</p>
 <div><p>Args:</p>
 <blockquote>
 <div>s (string) : a format string
-<a href="#id23"><span class="problematic" id="id24">*</span></a>args (arg list, optional) : a list of arguments</div></blockquote>
+<a href="#id27"><span class="problematic" id="id28">*</span></a>args (arg list, optional) : a list of arguments</div></blockquote>
 <p>Returns:</p>
 <p>A formatted string, with each <cite>{}</cite> in s replaced by
 a value from <cite>*args</cite>.</p>
@@ -1807,7 +1858,7 @@ approximation of the sigmoid function.</p>
 <dt>hsplit (args)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id25"><span class="problematic" id="id26">*</span></a>args (m - matrix or row vector, N - number of blocks)</div></blockquote>
+<div><a href="#id29"><span class="problematic" id="id30">*</span></a>args (m - matrix or row vector, N - number of blocks)</div></blockquote>
 <p>Returns:</p>
 <p class="last">An N by 1 matrix of horizontal partitions of m</p>
 </dd>
@@ -1819,7 +1870,7 @@ approximation of the sigmoid function.</p>
 <dt>hstack (args, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p><a href="#id27"><span class="problematic" id="id28">*</span></a>args (list, optional) : a list of array-like objects
+<div><p><a href="#id31"><span class="problematic" id="id32">*</span></a>args (list, optional) : a list of array-like objects
 dtype (optional, string) : the data-type of the returned array,</p>
 <blockquote>
 <div>defaults to dtype of input arrays.</div></blockquote>
@@ -1916,7 +1967,7 @@ axis.</p>
 <dt>lambda (args, body)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id29"><span class="problematic" id="id30">*</span></a>args (argument list): the list of arguments
+<div><a href="#id33"><span class="problematic" id="id34">*</span></a>args (argument list): the list of arguments
 body (statement): the body of the lambda function</div></blockquote>
 <p>Returns:</p>
 <p class="last">A function object with the arguments and body specified.</p>
@@ -1973,7 +2024,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dt>list (args)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id31"><span class="problematic" id="id32">*</span></a>args (list of values, optional): a list of values</div></blockquote>
+<div><a href="#id35"><span class="problematic" id="id36">*</span></a>args (list of values, optional): a list of values</div></blockquote>
 <p>Returns:</p>
 <p class="last">A Phylanx list populated by the values supplied.</p>
 </dd>
@@ -1997,7 +2048,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div>a (boolean) : a boolean argument
-<a href="#id33"><span class="problematic" id="id34">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<a href="#id37"><span class="problematic" id="id38">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
 <p>Returns:</p>
 <p class="last">The logical and of <cite>a</cite> and <cite>b</cite>.</p>
 </dd>
@@ -2022,7 +2073,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div>a (boolean) : a boolean argument
-<a href="#id35"><span class="problematic" id="id36">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<a href="#id39"><span class="problematic" id="id40">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
 <p>Returns:</p>
 <blockquote class="last">
 <div>The logical or of <cite>a</cite> and <cite>b</cite>.</div></blockquote>
@@ -2036,7 +2087,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div>a (boolean) : a boolean argument
-<a href="#id37"><span class="problematic" id="id38">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
+<a href="#id41"><span class="problematic" id="id42">*</span></a>b (boolean list) : a list of boolean arguments</div></blockquote>
 <p>Returns:</p>
 <blockquote class="last">
 <div>The logical xor of <cite>a</cite> and <cite>b</cite>.</div></blockquote>
@@ -2086,7 +2137,7 @@ enable_output (optional, boolean): If enabled, prints out the step</dd>
 <dt>make_list (args)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id39"><span class="problematic" id="id40">*</span></a>args (list of values, optional): a list of values</div></blockquote>
+<div><a href="#id43"><span class="problematic" id="id44">*</span></a>args (list of values, optional): a list of values</div></blockquote>
 <p>Returns:</p>
 <p class="last">A Phylanx list populated by the values supplied.</p>
 </dd>
@@ -2144,7 +2195,7 @@ pool_size (a tuple of 3 integers) : the size of pooling over each</p>
 <blockquote>
 <div><blockquote>
 <div>x0 (number): An addendn”</div></blockquote>
-<p><a href="#id41"><span class="problematic" id="id42">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
+<p><a href="#id45"><span class="problematic" id="id46">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
 </div></blockquote>
 <p>Returns:</p>
 <p class="last">The element-wise maximum of all input arrays.</p>
@@ -2174,7 +2225,7 @@ vector created when the mean is taken along the specified axis.</p>
 <blockquote>
 <div><blockquote>
 <div>x0 (number): An addendn”</div></blockquote>
-<p><a href="#id43"><span class="problematic" id="id44">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
+<p><a href="#id47"><span class="problematic" id="id48">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
 </div></blockquote>
 <p>Returns:</p>
 <p class="last">The element-wise minimum of all input arrays.</p>
@@ -2205,6 +2256,17 @@ vector created when the mean is taken along the specified axis.</p>
 non-zero.</p>
 </dd>
 </dl>
+</div>
+<div class="section" id="num-localities">
+<h2>num_localities<a class="headerlink" href="#num-localities" title="Permalink to this headline">¶</a></h2>
+<p>num_localities (num_localities)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>none</div></blockquote>
+<p>Returns:</p>
+<p>The number of localities of the currently executing code</p>
+</div></blockquote>
 </div>
 <div class="section" id="one-hot">
 <h2>one_hot<a class="headerlink" href="#one-hot" title="Permalink to this headline">¶</a></h2>
@@ -2270,11 +2332,11 @@ pad_width.”</p>
 <div class="section" id="parallel-block">
 <h2>parallel_block<a class="headerlink" href="#parallel-block" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>parallel_block (<a href="#id45"><span class="problematic" id="id46">*</span></a>args)</dt>
+<dt>parallel_block (<a href="#id49"><span class="problematic" id="id50">*</span></a>args)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt><a href="#id47"><span class="problematic" id="id48">*</span></a>args (list) <span class="classifier-delimiter">:</span> <span class="classifier">a list of zero or more statements</span></dt>
+<dt><a href="#id51"><span class="problematic" id="id52">*</span></a>args (list) <span class="classifier-delimiter">:</span> <span class="classifier">a list of zero or more statements</span></dt>
 <dd>to be evaluated in parallel.</dd>
 </dl>
 </div></blockquote>
@@ -2500,15 +2562,15 @@ by default.</dd>
 <div class="section" id="shape">
 <h2>shape<a class="headerlink" href="#shape" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>shape (m, dim)</dt>
+<dt>shape (a, dim)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div>m (object): a vector or matrix
+<div>a (object): an array of arbitrary dimensions
 dim (optional, int): the dimension to get the size of</div></blockquote>
 <p>Returns:</p>
 <p class="last">Without the optional argument, it returns a list of integers
-corresponding to the size of each dimension of the vector or
-matrix. If the optional <cite>dim</cite> argument is supplied, then the
+corresponding to the size of each dimension of the array <cite>a</cite>. If the
+optional <cite>dim</cite> argument is supplied, then the
 size for that dimension is returned as an integer.</p>
 </dd>
 </dl>
@@ -2713,7 +2775,7 @@ axis (optional, integer): an axis to squeeze along. If an axis is</p>
 <dt>stack (args, axis, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p><a href="#id49"><span class="problematic" id="id50">*</span></a>args (list, optional) : a list of array-like objects
+<div><p><a href="#id53"><span class="problematic" id="id54">*</span></a>args (list, optional) : a list of array-like objects
 axis (int, optional) : the axis along which to stack input</p>
 <blockquote>
 <div>values, the default value is ‘0’</div></blockquote>
@@ -2762,7 +2824,7 @@ value (expression) : a value to assign</div></blockquote>
 <dt>string (args)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id51"><span class="problematic" id="id52">*</span></a>args (object list) : any objects</div></blockquote>
+<div><a href="#id55"><span class="problematic" id="id56">*</span></a>args (object list) : any objects</div></blockquote>
 <p>Returns:</p>
 <p class="last">A string created by concatenating the string
 representations of the objects in <cite>args</cite>.</p>
@@ -2835,9 +2897,11 @@ The default is 2 (scalar axis).</div></blockquote>
 <dt>tile (a, reps)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div>a (array_like) : input array
-reps (integer or tuple of integers): Number of repetitions of
-a along each axis.</div></blockquote>
+<div><p>a (array_like) : input array
+reps (integer or tuple of integers): Number of repetitions of</p>
+<blockquote>
+<div><cite>a</cite> along each axis.</div></blockquote>
+</div></blockquote>
 <p>Returns:</p>
 <p class="last">Constructs an array by repeating a, the number of times given by
 reps.</p>
@@ -2848,6 +2912,24 @@ reps.</p>
 <h2>transpose<a class="headerlink" href="#transpose" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>transpose (arg, axes)</dt>
+<dd><p class="first">Args:</p>
+<blockquote>
+<div><p>arg (arr) : an array
+axes (optional, integer or a vector of integers) : By default,</p>
+<blockquote>
+<div>reverse the dimensions, otherwise permute the axes according
+to the values given.</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p class="last">The transpose of <cite>arg</cite>. If axes are provided, it returns <cite>arg</cite> with
+its axes permuted.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="transpose-d">
+<h2>transpose_d<a class="headerlink" href="#transpose-d" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>transpose_d (arg, axes)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
 <div><p>arg (arr) : an array
@@ -2913,7 +2995,7 @@ keepdims (optional, boolean): keep dimension of input</div></blockquote>
 <dt>vsplit (args)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><a href="#id53"><span class="problematic" id="id54">*</span></a>args (m - matrix or column vector, N - number of blocks)</div></blockquote>
+<div><a href="#id57"><span class="problematic" id="id58">*</span></a>args (m - matrix or column vector, N - number of blocks)</div></blockquote>
 <p>Returns:</p>
 <p class="last">An N by 1 matrix of vertical partitions of m</p>
 </dd>
@@ -2925,7 +3007,7 @@ keepdims (optional, boolean): keep dimension of input</div></blockquote>
 <dt>vstack (args, dtype)</dt>
 <dd><p class="first">Args:</p>
 <blockquote>
-<div><p><a href="#id55"><span class="problematic" id="id56">*</span></a>args (list, optional) : a list of array-like objects
+<div><p><a href="#id59"><span class="problematic" id="id60">*</span></a>args (list, optional) : a list of array-like objects
 dtype (optional, string) : the data-type of the returned array,</p>
 <blockquote>
 <div>defaults to dtype of input arrays.</div></blockquote>
@@ -3002,7 +3084,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Jul 25, 2019.
+        Last updated on Jul 27, 2019.
       </span>
 
     </p>

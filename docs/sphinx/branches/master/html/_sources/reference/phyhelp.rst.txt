@@ -372,6 +372,37 @@ amin (a, axis, keepdims, initial)
             Returns the minimum of an array or minimum along an axis.
 
 
+annotate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+annotate (target, args)
+
+        Args:
+
+            target : the value that has to be annotated
+            *args (arg list) : an optional list of annotations (default is `None`)
+
+        Returns:
+
+        The `target` annotated with the list of values given by `*args`.
+
+
+annotate_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+annotate_d (target, name, args)
+
+        Args:
+
+            target : the value that has to be annotated
+            name : a unique string identifying the annotated object across
+                   localities
+            *args (arg list) : an optional list of annotations (default is `None`)
+
+        Returns:
+
+        The `target` annotated with the list of values given by `*args`. The
+        `target` is also identified by the given `name` across localities.
+
+
 any
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 any (a, axis, keepdims, initial)
@@ -476,6 +507,7 @@ argsort
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 argsort (a, axis, kind, order)
             Args:
+
               a (array_like):
                 An array to sort.
 
@@ -570,6 +602,7 @@ batch_dot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 batch_dot (x, y, axes)
             Args:
+
                 x (array) : a matrix or a tensor
                 y (array) : a matrix or a tensor
                 axes (optional, integer or tuple of integers): None by default.
@@ -796,11 +829,12 @@ ctc_decode
 ctc_decode (y_pred, input_length, greedy, beam_width, top_paths)
             Args:
 
-                y_pred : The scalar, vector, matrix, or tensor to perform ctc_decode over
-                input_length
-                greedy : boolean, if True performs best-path search otherwise beam-search
-                beam_width : Integer, if greedy is False specifies the width of the beam.
-                top_paths : Integer, if greedy is False specifies the number of top paths
+                y_pred (scalar, vector, matrix, or tensor) : The variable to perform
+                            ctc_decode over
+                input_length (list) : a list of input lengths
+                greedy (bool) : if True performs best-path search otherwise beam-search
+                beam_width (int) : if greedy is False specifies the width of the beam.
+                top_paths (int) : if greedy is False specifies the number of top paths
                             desired.
             Returns:
 
@@ -910,6 +944,20 @@ dict (lili)
 dot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 dot (a, b)
+            Args:
+
+                a (array) : a scalar, vector, matrix or a tensor
+                b (array) : a scalar, vector, matrix or a tensor
+
+            Returns:
+
+            The dot product of two arrays: `a` and `b`. The dot product of an
+            N-D array and an M-D array is of dimension N+M-2
+
+
+dot_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dot_d (a, b)
             Args:
 
                 a (array) : a scalar, vector, matrix or a tensor
@@ -1176,10 +1224,10 @@ fold_left (func, initial, data)
 
             Args:
 
-                func : a function that takes two arbitrary arguments
+                func (function) : a function that takes two arbitrary arguments
                        and returns the result of folding the two arguments
-                initial : an initial value
-                data : a list or an array-like object
+                initial (int or None) : an initial value
+                data (list or array) : the data to operate on
 
             Returns:
 
@@ -1212,10 +1260,10 @@ fold_right (func, initial, data)
 
             Args:
 
-                func : a function that takes two arbitrary arguments
+                func (function) : a function that takes two arbitrary arguments
                        and returns the result of folding the two arguments
-                initial : an initial value
-                data : a list or an array-like object
+                initial (int or None) : an initial value
+                data (list or array) : the data to operate on
 
             Returns:
 
@@ -1723,6 +1771,19 @@ nonzero (arg)
             
 
 
+num_localities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+num_localities (num_localities)
+
+            Args:
+
+                none
+
+            Returns:
+
+            The number of localities of the currently executing code
+
+
 one_hot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 one_hot (indices, num_classes)
@@ -1992,17 +2053,17 @@ set_seed_action (seed)
 
 shape
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-shape (m, dim)
+shape (a, dim)
             Args:
 
-                m (object): a vector or matrix
+                a (object): an array of arbitrary dimensions
                 dim (optional, int): the dimension to get the size of
 
             Returns:
 
             Without the optional argument, it returns a list of integers
-            corresponding to the size of each dimension of the vector or
-            matrix. If the optional `dim` argument is supplied, then the
+            corresponding to the size of each dimension of the array `a`. If the
+            optional `dim` argument is supplied, then the
             size for that dimension is returned as an integer.
 
 
@@ -2315,7 +2376,7 @@ tile (a, reps)
 
                 a (array_like) : input array
                 reps (integer or tuple of integers): Number of repetitions of
-                a along each axis.
+                    `a` along each axis.
 
             Returns:
 
@@ -2326,6 +2387,22 @@ tile (a, reps)
 transpose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 transpose (arg, axes)
+            Args:
+
+                arg (arr) : an array
+                axes (optional, integer or a vector of integers) : By default,
+                   reverse the dimensions, otherwise permute the axes according
+                   to the values given.
+
+            Returns:
+
+            The transpose of `arg`. If axes are provided, it returns `arg` with
+            its axes permuted.
+
+
+transpose_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+transpose_d (arg, axes)
             Args:
 
                 arg (arr) : an array
