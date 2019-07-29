@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree
             constraint_.release();
         }
 
-        pybind11::handle eval(pybind11::args args) const;
+        pybind11::object eval(pybind11::args args) const;
 
         pybind11::dtype dtype() const;
 
@@ -77,19 +77,19 @@ namespace phylanx { namespace execution_tree
         }
 
     protected:
-        pybind11::handle handle_return_f(
+        pybind11::object handle_return_f(
             primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
 
-        pybind11::handle handle_return_i(
+        pybind11::object handle_return_i(
             primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
 
-        pybind11::handle handle_return_u(
+        pybind11::object handle_return_u(
             primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
 
-        pybind11::handle handle_return_b(
+        pybind11::object handle_return_b(
             primitive_argument_type&& result) const;
 
-        pybind11::handle handle_return_S(
+        pybind11::object handle_return_S(
             primitive_argument_type&& result) const;
 
     private:
