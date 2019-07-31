@@ -87,7 +87,9 @@ void test_dict_key()
 void test_dict_empty_operation(std::string const& code)
 {
     phylanx::ir::dictionary dict;
-    HPX_TEST_EQ(dict, compile_and_run(code));
+    HPX_TEST_EQ(
+        phylanx::execution_tree::primitive_argument_type{std::move(dict)},
+        compile_and_run(code));
 }
 
 int main(int argc, char* argv[])

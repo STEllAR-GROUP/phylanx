@@ -140,7 +140,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     std::cout << "Result: \n"
               << phylanx::execution_tree::extract_numeric_value(result)
               << std::endl
-              << "Calculated in :" << elapsed << " seconds" << std::endl;
+              << "Calculated in: " << elapsed << " seconds" << std::endl;
 
     return hpx::finalize();
 }

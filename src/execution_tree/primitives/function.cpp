@@ -8,8 +8,8 @@
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/thread_support/unlock_guard.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/unlock_guard.hpp>
 
 #include <cstddef>
 #include <memory>

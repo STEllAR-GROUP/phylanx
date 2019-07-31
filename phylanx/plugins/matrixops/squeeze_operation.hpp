@@ -13,8 +13,8 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/lcos/future.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <cstdint>
 #include <memory>

@@ -82,7 +82,8 @@ namespace phylanx { namespace execution_tree { namespace detail
         std::string const& codename)
     {
         ir::range const& list = util::get<7>(indices);
-        return extract_integer_value_strict(*list.begin(), name, codename);
+        return primitive_argument_type{
+            extract_integer_value_strict(*list.begin(), name, codename)};
     }
 
     // Normally an advanced boolean slicing index is provided as a
@@ -92,7 +93,8 @@ namespace phylanx { namespace execution_tree { namespace detail
         std::string const& codename)
     {
         ir::range const& list = util::get<7>(indices);
-        return extract_boolean_value_strict(*list.begin(), name, codename);
+        return primitive_argument_type{
+            extract_boolean_value_strict(*list.begin(), name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////

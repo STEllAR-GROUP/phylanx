@@ -185,8 +185,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type
         {
             primitive_arguments_type{
-                ir::node_data<double>{std::move(X)},
-                ir::node_data<double>{std::move(Y)}}
+                primitive_argument_type{ir::node_data<double>{std::move(X)}},
+                primitive_argument_type{ir::node_data<double>{std::move(Y)}}}
         };
     }
 

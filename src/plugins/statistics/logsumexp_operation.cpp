@@ -9,7 +9,7 @@
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 
-#include <hpx/util/optional.hpp>
+#include <hpx/datastructures/optional.hpp>
 
 #include <cstddef>
 #include <functional>

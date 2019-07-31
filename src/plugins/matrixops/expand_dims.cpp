@@ -14,7 +14,6 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/iterator_facade.hpp>
 
 #include <algorithm>
 #include <cstddef>

@@ -129,9 +129,7 @@ namespace phylanx { namespace execution_tree
 
         pattern_list get_all_known_patterns()
         {
-            pattern_list patterns =
-            {
-                // debugging support
+            pattern_list patterns = {// debugging support
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
                 PHYLANX_MATCH_DATA(enable_tracing),
@@ -140,6 +138,10 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(assert_condition),
 
                 // special purpose primitives
+                PHYLANX_MATCH_DATA_VERBATIM(
+                    annotate_primitive::match_data_annotate),
+                PHYLANX_MATCH_DATA_VERBATIM(
+                    annotate_primitive::match_data_annotate_d),
                 PHYLANX_MATCH_DATA(store_operation),
                 PHYLANX_MATCH_DATA(phytype),
                 PHYLANX_MATCH_DATA(phyname),
@@ -165,8 +167,10 @@ namespace phylanx { namespace execution_tree
                 patterns.push_back(pattern{p.name_, p.pattern_data_});
             }
 
-            patterns.push_back(
-                pattern{"locality", primitives::locality_match_data});
+            patterns.push_back(pattern{
+                "locality", primitives::locality_match_data});
+            patterns.push_back(pattern{
+                "num_localities", primitives::num_localities_match_data});
 
             return patterns;
         }

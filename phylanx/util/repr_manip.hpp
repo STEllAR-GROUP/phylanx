@@ -22,6 +22,7 @@ namespace phylanx { namespace util
         ~repr_wrapper();
 
         std::ostream& strm_;
+        bool has_repr_;
     };
 }}
 

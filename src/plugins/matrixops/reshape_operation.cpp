@@ -11,12 +11,11 @@
 #include <phylanx/util/matrix_iterators.hpp>
 #include <phylanx/util/tensor_iterators.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/iterator_facade.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <cstddef>
 #include <cstdint>

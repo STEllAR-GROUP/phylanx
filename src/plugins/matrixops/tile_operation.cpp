@@ -10,12 +10,11 @@
 #include <phylanx/plugins/matrixops/tile_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/iterator_facade.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -39,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 a (array_like) : input array
                 reps (integer or tuple of integers): Number of repetitions of
-                a along each axis.
+                    `a` along each axis.
 
             Returns:
 
@@ -64,20 +63,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if (arg.size() == 2)
         {
             auto it = arg.begin();
-            if (extract_scalar_integer_value_strict(*it) < 0)
+            if (extract_scalar_integer_value_strict(*it++) < 0)
                 return false;
-            if (extract_scalar_integer_value_strict(*++it) < 0)
+            if (extract_scalar_integer_value_strict(*it) < 0)
                 return false;
             return true;
         }
         else if (arg.size() == 3)
         {
             auto it = arg.begin();
+            if (extract_scalar_integer_value_strict(*it++) < 0)
+                return false;
+            if (extract_scalar_integer_value_strict(*it++) < 0)
+                return false;
             if (extract_scalar_integer_value_strict(*it) < 0)
-                return false;
-            if (extract_scalar_integer_value_strict(*++it) < 0)
-                return false;
-            if (extract_scalar_integer_value_strict(*++it) < 0)
                 return false;
             return true;
         }
@@ -104,8 +103,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
         auto it = arg.begin();
-        auto row = extract_scalar_integer_value_strict(*it);
-        auto column = extract_scalar_integer_value_strict(*++it);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
 
         blaze::DynamicMatrix<T> result(row, column, arr.scalar());
         return primitive_argument_type{std::move(result)};
@@ -117,9 +116,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
         auto it = arg.begin();
-        auto page = extract_scalar_integer_value_strict(*it);
-        auto row = extract_scalar_integer_value_strict(*++it);
-        auto column = extract_scalar_integer_value_strict(*++it);
+        auto page = extract_scalar_integer_value_strict(*it++);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
 
         blaze::DynamicTensor<T> result(page, row, column, arr.scalar());
         return primitive_argument_type{std::move(result)};
@@ -197,7 +196,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto rep = extract_scalar_integer_value_strict(*arg.begin());
 
         blaze::DynamicVector<T> result(rep * v.size());
-        for (auto i = 0; i < rep; ++i)
+        for (std::int64_t i = 0; i < rep; ++i)
         {
             blaze::subvector(result, i * v.size(), v.size()) = v;
         }
@@ -214,12 +213,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto column = extract_scalar_integer_value_strict(*++it);
 
         blaze::DynamicMatrix<T> result(row, column * v.size());
-        for (auto r = 0; r < row; ++r)
-            for (auto c = 0; c < column; ++c)
+        for (std::int64_t r = 0; r < row; ++r)
+        {
+            for (std::int64_t c = 0; c < column; ++c)
+            {
                 blaze::row(
                     blaze::submatrix(result, r, c * v.size(), 1, v.size()), 0) =
                     blaze::trans(v);
-
+            }
+        }
         return primitive_argument_type{std::move(result)};
     }
 
@@ -230,20 +232,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto v = arr.vector();
         auto it = arg.begin();
-        auto page = extract_scalar_integer_value_strict(*it);
-        auto row = extract_scalar_integer_value_strict(*++it);
-        auto column = extract_scalar_integer_value_strict(*++it);
+        auto page = extract_scalar_integer_value_strict(*it++);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
 
         blaze::DynamicTensor<T> result(page, row, column * v.size());
-        for (auto p = 0; p < page; ++p)
-            for (auto r = 0; r < row; ++r)
-                for (auto c = 0; c < column; ++c)
+        for (std::int64_t p = 0; p < page; ++p)
+        {
+            for (std::int64_t r = 0; r < row; ++r)
+            {
+                for (std::int64_t c = 0; c < column; ++c)
+                {
                     blaze::row(
-                        blaze::pageslice(blaze::subtensor(result, p, r,
-                                             c * v.size(), 1, 1, v.size()),
+                        blaze::pageslice(
+                            blaze::subtensor(
+                                result, p, r, c * v.size(), 1, 1, v.size()
+                            ),
                             0),
                         0) = blaze::trans(v);
-
+                }
+            }
+        }
         return primitive_argument_type{std::move(result)};
     }
 #endif
@@ -319,7 +328,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto rep = extract_scalar_integer_value_strict(*arg.begin());
 
         blaze::DynamicMatrix<T> result(m.rows(), rep * m.columns());
-        for (auto i = 0; i < rep; ++i)
+        for (std::int64_t i = 0; i < rep; ++i)
         {
             blaze::submatrix(
                 result, 0, i * m.columns(), m.rows(), m.columns()) = m;
@@ -333,15 +342,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arr.matrix();
         auto it = arg.begin();
-        auto row = extract_scalar_integer_value_strict(*it);
-        auto column = extract_scalar_integer_value_strict(*++it);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
 
         blaze::DynamicMatrix<T> result(row * m.rows(), column * m.columns());
-        for (auto r = 0; r < row; ++r)
-            for (auto c = 0; c < column; ++c)
-                blaze::submatrix(result, r * m.rows(), c * m.columns(),
-                    m.rows(), m.columns()) = m;
-
+        for (std::int64_t r = 0; r < row; ++r)
+        {
+            for (std::int64_t c = 0; c < column; ++c)
+            {
+                blaze::submatrix(
+                    result, r * m.rows(), c * m.columns(), m.rows(), m.columns()
+                ) = m;
+            }
+        }
         return primitive_argument_type{std::move(result)};
     }
 
@@ -352,21 +365,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arr.matrix();
         auto it = arg.begin();
-        auto page = extract_scalar_integer_value_strict(*it);
-        auto row = extract_scalar_integer_value_strict(*++it);
-        auto column = extract_scalar_integer_value_strict(*++it);
+        auto page = extract_scalar_integer_value_strict(*it++);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
 
         blaze::DynamicTensor<T> result(
             page, row * m.rows(), column * m.columns());
 
-        for (auto p = 0; p < page; ++p)
-            for (auto r = 0; r < row; ++r)
-                for (auto c = 0; c < column; ++c)
+        for (std::int64_t p = 0; p < page; ++p)
+        {
+            for (std::int64_t r = 0; r < row; ++r)
+            {
+                for (std::int64_t c = 0; c < column; ++c)
+                {
                     blaze::pageslice(
                         blaze::subtensor(result, p, r * m.rows(),
                             c * m.columns(), 1, m.rows(), m.columns()),
                         0) = m;
-
+                }
+            }
+        }
         return primitive_argument_type{std::move(result)};
     }
 #endif
@@ -443,7 +461,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto rep = extract_scalar_integer_value_strict(*arg.begin());
 
         blaze::DynamicTensor<T> result(t.pages(), t.rows(), rep * t.columns());
-        for (auto i = 0; i < rep; ++i)
+        for (std::int64_t i = 0; i < rep; ++i)
         {
             blaze::subtensor(result, 0, 0, i * t.columns(), t.pages(), t.rows(),
                 t.columns()) = t;
@@ -462,11 +480,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicTensor<T> result(
             t.pages(), row * t.rows(), column * t.columns());
-        for (auto r = 0; r < row; ++r)
-            for (auto c = 0; c < column; ++c)
+        for (std::int64_t r = 0; r < row; ++r)
+        {
+            for (std::int64_t c = 0; c < column; ++c)
+            {
                 blaze::subtensor(result, 0, r * t.rows(), c * t.columns(),
                     t.pages(), t.rows(), t.columns()) = t;
-
+            }
+        }
         return primitive_argument_type{std::move(result)};
     }
 
@@ -483,12 +504,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicTensor<T> result(
             page * t.pages(), row * t.rows(), column * t.columns());
 
-        for (auto p = 0; p < page; ++p)
-            for (auto r = 0; r < row; ++r)
-                for (auto c = 0; c < column; ++c)
+        for (std::int64_t p = 0; p < page; ++p)
+        {
+            for (std::int64_t r = 0; r < row; ++r)
+            {
+                for (std::int64_t c = 0; c < column; ++c)
+                {
                     blaze::subtensor(result, p * t.pages(), r * t.rows(),
                         c * t.columns(), t.pages(), t.rows(), t.columns()) = t;
-
+                }
+            }
+        }
         return primitive_argument_type{std::move(result)};
     }
 
@@ -584,10 +610,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_argument_type&& arr,
-                                      ir::range&& arg)
-                                      -> primitive_argument_type {
+            [this_ = std::move(this_)](
+                hpx::future<primitive_argument_type>&& farr,
+                hpx::future<ir::range>&& farg)
+            -> primitive_argument_type
+            {
+                auto && arr = farr.get();
+                auto && arg = farg.get();
+
                 auto arr_dims_num = extract_numeric_value_dimension(
                     arr, this_->name_, this_->codename_);
 
@@ -613,18 +643,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "tile_operation::eval",
                             util::generate_error_message(
-                                "operand a has an invalid "
-                                "number of dimensions",
+                                "operand a has an invalid number of dimensions",
                                 this_->name_, this_->codename_));
                     }
                 }
                 else
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "tile_operation::eval",
                         util::generate_error_message(
                             "negative dimensions are not allowed", this_->name_,
                             this_->codename_));
-            }),
+                }
+            },
             value_operand(operands[0], args, name_, codename_, ctx),
             list_operand(operands[1], args, name_, codename_, ctx));
     }

@@ -10,11 +10,11 @@
 #include <phylanx/plugins/keras_support/avg_pool2d_operation.hpp>
 #include <phylanx/plugins/keras_support/pool_indices_helper.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <array>
 #include <cstddef>

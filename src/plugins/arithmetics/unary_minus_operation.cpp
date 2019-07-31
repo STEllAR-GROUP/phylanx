@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/unary_minus_operation.hpp>
@@ -96,6 +97,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type(std::move(op));
     }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    primitive_argument_type unary_minus_operation::neg3d(
+        ir::node_data<T>&& op) const
+    {
+        if (op.is_ref())
+        {
+            op = -op.tensor();
+        }
+        else
+        {
+            op.tensor() = -op.tensor();
+        }
+        return primitive_argument_type(std::move(op));
+    }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type unary_minus_operation::neg0d(
@@ -199,6 +217,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("operand has unsupported type"));
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    primitive_argument_type unary_minus_operation::neg3d(
+        primitive_argument_type&& op) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(op);
+        }
+
+        auto sizes = extract_numeric_value_dimensions(op, name_, codename_);
+        switch (t)
+        {
+        case node_data_type_bool:
+            return neg3d(extract_value_matrix<std::uint8_t>(
+                std::move(op), sizes[0], sizes[1], name_, codename_));
+
+        case node_data_type_int64:
+            return neg3d(extract_value_matrix<std::int64_t>(
+                std::move(op), sizes[0], sizes[1], name_, codename_));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return neg3d(extract_value_matrix<double>(
+                std::move(op), sizes[0], sizes[1], name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "unary_minus_operation::neg3d",
+            generate_error_message("operand has unsupported type"));
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> unary_minus_operation::eval(
         primitive_arguments_type const& operands,
@@ -228,20 +282,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_argument_type && op)
             -> primitive_argument_type
             {
+                annotation_wrapper wrap(op);
+
                 std::size_t lhs_dims = extract_numeric_value_dimension(
                     op, this_->name_, this_->codename_);
 
                 switch (lhs_dims)
                 {
                 case 0:
-                    return this_->neg0d(std::move(op));
+                    return wrap.propagate(this_->neg0d(std::move(op)));
 
                 case 1:
-                    return this_->neg1d(std::move(op));
+                    return wrap.propagate(this_->neg1d(std::move(op)));
 
                 case 2:
-                    return this_->neg2d(std::move(op));
+                    return wrap.propagate(this_->neg2d(std::move(op)));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    return wrap.propagate(this_->neg3d(std::move(op)));
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_minus_operation::eval",

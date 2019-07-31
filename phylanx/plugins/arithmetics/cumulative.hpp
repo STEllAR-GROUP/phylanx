@@ -11,8 +11,8 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
+#include <hpx/datastructures/optional.hpp>
 #include <hpx/lcos/future.hpp>
-#include <hpx/util/optional.hpp>
 
 #include <cstdint>
 #include <memory>

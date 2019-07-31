@@ -14,9 +14,9 @@
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/util/detail/pack.hpp>
+#include <hpx/datastructures/detail/pack.hpp>
+#include <hpx/datastructures/tuple.hpp>
 #include <hpx/util/invoke.hpp>
-#include <hpx/util/tuple.hpp>
 
 #include <cstddef>
 #include <cstdint>

@@ -9,6 +9,7 @@
 #define PHYLANX_PRIMITIVES_NUMERIC_IMPL_OCT_31_2018_0138PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
@@ -530,7 +531,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     hpx::future<primitive_argument_type>&& rhs)
                 -> primitive_argument_type
                 {
-                    return this_->handle_numeric_operands(lhs.get(), rhs.get());
+                    auto&& op1 = lhs.get();
+                    auto&& op2 = rhs.get();
+
+                    annotation_wrapper wrap(op1, op2);
+
+                    return wrap.propagate(this_->handle_numeric_operands(
+                        std::move(op1), std::move(op2)));
                 },
                 value_operand(operands[0], args, name_, codename_, ctx),
                 value_operand(operands[1], args, name_, codename_, ctx));
