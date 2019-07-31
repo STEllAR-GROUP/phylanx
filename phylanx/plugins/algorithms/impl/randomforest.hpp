@@ -370,9 +370,8 @@ struct randomforest_impl {
             ).scalar();
 
             if( lw == std::numeric_limits<std::int64_t>::max()) {
-                auto& left = //phylanx::util::get<phylanx::ir::dictionary>(
-                    node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}].get(); //.variant()
-                //);
+                auto& left =
+                    node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}].get();
                 return node_predict(left, r, i);
             }
             else {
@@ -385,9 +384,8 @@ struct randomforest_impl {
         ).scalar();
 
         if(rw == std::numeric_limits<std::int64_t>::max()) {
-            auto& right = //phylanx::util::get<phylanx::ir::dictionary>(
-                node_[phylanx::execution_tree::primitive_argument_type{std::string("right")}].get(); //.variant()
-            //);
+            auto& right =
+                node_[phylanx::execution_tree::primitive_argument_type{std::string("right")}].get();
             return node_predict(right, r, i);
         }
 
