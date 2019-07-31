@@ -51,7 +51,6 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     blaze::DynamicVector<double> labels { 1.0, 1.0, 1.0, 1.0 };
 
-    std::uint64_t const train_size{(train.rows() / 2UL)};
     auto const train_submat_data = blaze::submatrix( train, 0UL
         , 0UL, train.rows(), train.columns()-1UL );
 
