@@ -52,7 +52,7 @@ struct randomforest_impl {
     std::int64_t ntrees;
     std::unordered_map<double, std::int64_t> classes;
 
-    randomforest_impl(std::int64_t const n_trees)
+    explicit randomforest_impl(const std::int64_t n_trees)
         : trees(n_trees)
         , ntrees(n_trees)
         , classes() {
@@ -400,13 +400,8 @@ struct randomforest_impl {
         , blaze::DynamicVector<std::int64_t> & idx_w_sort
         , std::int64_t const ratio) {
 
-        std::int64_t const n_sample =
-            static_cast<std::int64_t>(std::floor(static_cast<double>(
-                dataset.rows()) * ratio)
-        );
-
         std::default_random_engine generator;
-        std::uniform_int_distribution<std::int64_t> distribution(0,dataset.rows());
+        std::uniform_int_distribution<std::int64_t> distribution(0, dataset.rows());
         auto gen = [&generator, &distribution] {
             return static_cast<std::int64_t>(distribution(generator));
         };
