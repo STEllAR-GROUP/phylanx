@@ -6,7 +6,6 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/keras_support/ctc_decode_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
@@ -186,4 +185,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operands[4], args, name_, codename_, ctx));
     }
 }}}
-#endif
+

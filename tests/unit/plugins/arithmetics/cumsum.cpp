@@ -148,7 +148,6 @@ void test_cumsum_2d()
         "[[1.0, 3.0, 6.0], [4.0, 9.0, 15.0]]");
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_cumsum_3d()
 {
     test_cumsum("cumsum([[[42]]])", "[42]");
@@ -215,17 +214,13 @@ void test_cumsum_3d()
         R"(cumsum([[[1, 2, 3], [4, 5, 6]]], 2, __arg(dtype, "float")))",
         "[[[1., 3., 6.], [4., 9., 15.]]]");
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_cumsum_0d();
     test_cumsum_1d();
     test_cumsum_2d();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_cumsum_3d();
-#endif
 
     return hpx::util::report_errors();
 }

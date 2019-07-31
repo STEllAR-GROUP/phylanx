@@ -756,7 +756,6 @@ int main(int argc, char* argv[])
         "[[ 4,  5,  6,  7],[ 8, 10, 12, 14],[12, 15, 18, 21]]");
     test_dot_operation("outer(6., [1, 2, 7])", "[[6., 12., 42.]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation("outer(3., [[1, 2, 7]])", "[[3., 6., 21.]]");
     test_dot_operation("outer([1, 2, 3], [[42, 1, 1],[4, 5, 6]])",
         "[[ 42,   1,   1,   4,   5,   6],[ 84,   2,   2,   8,  10,  12],"
@@ -780,7 +779,6 @@ int main(int argc, char* argv[])
         "[[ 0, -2, -7],[ 0, 12, 42],[ 0,  2,  7],[ 0,  6, 21]]");
     test_dot_operation("outer([[[-1, 6],[1, 3]]], [[0, 2],[4, 7]])",
         "[[ 0, -2, -4, -7],[ 0, 12, 24, 42],[ 0, 2, 4, 7],[ 0,  6, 12, 21]]");
-#endif
 
     // dot product
     test_dot_operation_0d();
@@ -812,7 +810,6 @@ int main(int argc, char* argv[])
     test_dot_operation_2d2d_lit();
     test_dot_operation_2d2d_numpy();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation("dot(2, [[[1,2,3,4]],[[5,6,7,8]]])",
                        "[[[ 2,  4,  6,  8]], [[10, 12, 14, 16]]]");
     test_dot_operation("dot([1,-1,0,1], [[[3, 2, 5.], [1, 10., 2], [3, 2, 15],"
@@ -832,7 +829,6 @@ int main(int argc, char* argv[])
     test_dot_operation("dot([[[3, 2, 5], [1, 10, 2], [3, 2, 15], [1, 11, 2]]],"
                        "[[1, -1],[1, 0],[2, 1]])",
         "[[[15,  2],[15,  1],[35, 12],[16,  1]]]");
-#endif
 
     // tensordot
     //// axes = 0 (scalar axes)
@@ -844,7 +840,6 @@ int main(int argc, char* argv[])
         "[[ 4,  5,  6,  7],[ 8, 10, 12, 14],[12, 15, 18, 21]]");
     test_dot_operation("tensordot([[1,1],[2,3]], 3, 0)", "[[3, 3],[6, 9]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation(
         "tensordot(3, [[[1,2],[2,3]]], 0)", "[[[3, 6],[6, 9]]]");
     test_dot_operation("tensordot([1, 2, 3], [[42, 1, 1],[4, 5, 6]], 0)",
@@ -853,26 +848,21 @@ int main(int argc, char* argv[])
     test_dot_operation("tensordot([[[1,2],[2,3]]], 3, 0)", "[[[3, 6],[6, 9]]]");
     test_dot_operation("tensordot([[42, 1, 1],[4, 5, 6]], [1, 2], 0)",
         "[[[42, 84],[ 1,  2],[ 1,  2]],[[ 4,  8],[ 5, 10],[ 6, 12]]]");
-#endif
 
     //// axes = 1 (scalar axes), same as dot product but does not deal with <1d
     test_dot_operation(
         "tensordot([1, 2, 3], [[42, 1],[4, 5],[0, 6]], 1)", "[50, 29]");
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation("tensordot([[[1, 2],[3, 4]],[[5, 6],[7, 8]]],[[1,-1],"
                        "[1, 1]], 1)",
         "[[[ 3,  1],[ 7,  1]],[[11,  1],[15,  1]]]");
     test_dot_operation(
         "tensordot([[[3, 2, 5], [1, 10, 2], [3, 42, 15], [1, 11, 2]]],"
         "[1, 0, 2], 1)", "[[13,  5, 33,  5]]");
-#endif
 
     //// axes = 2 (scalar axes)
     test_dot_operation(
         "tensordot([[3, 1],[0, 2],[1,-1]], [[1, 2],[3, 4],[5, 6]], 2)", "12");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_dot_operation(
         "tensordot([[42, 1 ,1],[1, 2, 1]],[[[3, 2, 15], [1, 11, 2] "
         ",[4, 2, 1]],[[0,-1, 0], [4, 5, 6], [-3, 0, 0]]], 2)",
@@ -884,7 +874,6 @@ int main(int argc, char* argv[])
         "tensordot([[[42, 1 ,1],[1, 2, 1]]],[[[3, 1, 5], [1, 11, 2], "
         "[4, 2, 1]],[[0,-1, 0], [4, 5, 6], [-3, 0, 0]]], 2)",
         "[[136,  64, 225]]");
-#endif
 
     //// range of scalar axes, 1d lhs
     test_dot_operation(
@@ -917,7 +906,6 @@ int main(int argc, char* argv[])
         "make_list(1, 1))",
         "[[ 0,  0],[ 3, -1],[-2,  4]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     //// range of scalar axes, 1d lhs
     test_dot_operation(
         "tensordot([1, -1], [[[3, 2, 5], [1, 10., 2], [3, 2, 15],[1, 11, 2]],"
@@ -1010,7 +998,6 @@ int main(int argc, char* argv[])
                        "make_list(2, 1))",
         "[[[ 14,  10],[ 32,  28]],[[  4,   4],[ 38, 118]],"
         "[[ 14,  14],[-14, -14]],[[ 20,  20],[ 34,  34]]]");
-#endif
 
     return hpx::util::report_errors();
 }

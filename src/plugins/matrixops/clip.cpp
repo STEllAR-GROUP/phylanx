@@ -25,9 +25,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -87,7 +86,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{ir::node_data<T>{result}};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type clip::clip3d(ir::node_data<T>&& arg,
         ir::node_data<T>&& min, ir::node_data<T>&& max) const
@@ -97,7 +95,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{ir::node_data<T>{result}};
     }
-#endif
 
     template <typename T>
     primitive_argument_type clip::clip_helper(
@@ -135,7 +132,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(args[1]), sizes[0], sizes[1], name_, codename_),
                 extract_value_matrix<T>(
                     std::move(args[2]), sizes[0], sizes[1], name_, codename_));
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return clip3d(extract_value_tensor<T>(std::move(args[0]), sizes[0],
                               sizes[1], sizes[2], name_, codename_),
@@ -143,7 +139,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     sizes[2], name_, codename_),
                 extract_value_tensor<T>(std::move(args[2]), sizes[0], sizes[1],
                     sizes[2], name_, codename_));
-#endif
         default:
             break;
         }

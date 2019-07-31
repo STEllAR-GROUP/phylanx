@@ -66,7 +66,6 @@ int main(int argc, char* argv[])
     test_flip_operation("fliplr([[13, 42, 33],[101, 12, 65]])",
         "[[ 33,  42,  13],[ 65,  12, 101]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_flip_operation(
         "flip([[[13, 42, 33],[101, 12, 65]],[[3, 4, 31],[10, 2, 5]]])",
         "[[[  5,  2,  10],[ 31,  4,   3]],[[ 65, 12, 101],[ 33,  42,  13]]]");
@@ -112,7 +111,6 @@ int main(int argc, char* argv[])
     test_flip_operation(
         "fliplr([[[13, 42, 33],[101, 12, 65]],[[3, 4, 31],[10, 2, 5]]])",
         "[[[101,  12,  65],[ 13,  42,  33]],[[ 10,  2,  5],[ 3,  4,  31]]]");
-#endif
 
     return hpx::util::report_errors();
 }

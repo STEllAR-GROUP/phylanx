@@ -51,10 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type softsign0d(arg_type&& arg) const;
         primitive_argument_type softsign1d(arg_type&& arg) const;
         primitive_argument_type softsign2d(arg_type&& arg) const;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type softsign3d(arg_type&& arg) const;
-#endif
     };
 
     inline primitive create_softsign_operation(hpx::id_type const& locality,

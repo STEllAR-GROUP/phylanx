@@ -18,9 +18,7 @@
 #include <string>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace common
@@ -38,11 +36,9 @@ namespace phylanx { namespace common
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot0d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot0d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs);
-#endif
 
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot0d(
@@ -64,12 +60,10 @@ namespace phylanx { namespace common
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
         std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot1d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
         std::string const& codename);
-#endif
 
     // lhs_num_dims == 1
     template <typename T>
@@ -102,12 +96,10 @@ namespace phylanx { namespace common
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
         std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
         std::string const& codename);
-#endif
 
     // lhs_num_dims == 2
     // Multiply a matrix with a vector
@@ -118,7 +110,6 @@ namespace phylanx { namespace common
         std::string const& codename);
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // lhs_num_dims == 3
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot3d(
@@ -143,7 +134,6 @@ namespace phylanx { namespace common
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot3d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
         std::string const& codename);
-#endif
 
     ////////////////////////////////////////////////////////////////////////////
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot0d(
@@ -161,12 +151,10 @@ namespace phylanx { namespace common
         execution_tree::primitive_argument_type&& rhs, std::string const& name,
         std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot3d(
         execution_tree::primitive_argument_type&& lhs,
         execution_tree::primitive_argument_type&& rhs, std::string const& name,
         std::string const& codename);
-#endif
 }}
 
 #endif

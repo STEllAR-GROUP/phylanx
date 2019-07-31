@@ -36,9 +36,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 using std_int64_t = std::int64_t;
 using std_uint8_t = std::uint8_t;
@@ -82,11 +80,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // If is_scalar(lhs) && is_matrix(rhs)
             return common::dot0d2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_scalar(lhs) && is_tensor(rhs)
             return common::dot0d3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             // lhs_order == 1 && rhs_order != 2
@@ -225,7 +221,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         return execution_tree::primitive_argument_type{std::move(lhs)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot1d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -247,7 +242,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         return execution_tree::primitive_argument_type{std::move(result)};
     }
-#endif
 
     // lhs_num_dims == 1
     // Case 1: Inner product of two vectors
@@ -274,11 +268,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // If is_vector(lhs) && is_matrix(rhs)
             return dot1d2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_vector(lhs) && is_tensor(rhs)
             return dot1d3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -448,7 +440,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -473,7 +464,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         return execution_tree::primitive_argument_type{std::move(result)};
     }
-#endif
 
     // lhs_num_dims == 2
     // Multiply a matrix with a vector
@@ -499,11 +489,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // If is_matrix(lhs) && is_matrix(rhs)
             return dot2d2d(lhs.matrix(), rhs.matrix());
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_matrix(lhs) && is_tensor(rhs)
             return dot2d3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -514,7 +502,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot3d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -610,7 +597,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "the operands have incompatible number of dimensions"));
         }
     }
-#endif
 }}}
 
 #endif

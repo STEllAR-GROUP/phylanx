@@ -40,7 +40,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // operands_[0] is expected to be the actual variable, operands_[1],
         // operands_[2] and operands_[3] are optional slicing arguments
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (operands_.empty() || operands_.size() > 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -49,16 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the access_variable primitive requires at least one "
                     "and at most four operands"));
         }
-#else
-        if (operands_.empty() || operands_.size() > 3)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "access_variable::access_variable",
-                generate_error_message(
-                    "the access_variable primitive requires at least one "
-                    "and at most three operands"));
-        }
-#endif
 
         if (valid(operands_[0]))
         {
@@ -128,7 +117,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     value_operand(operands_[2], params, name_, codename_, ctx));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 4:
             {
                 // three slicing parameters
@@ -155,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     value_operand(operands_[2], params, name_, codename_, ctx),
                     value_operand(operands_[3], params, name_, codename_, ctx));
             }
-#endif
+
         default:
             break;
         }

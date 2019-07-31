@@ -16,9 +16,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::compiler::function compile(std::string const& codestr)
@@ -121,7 +119,6 @@ void generate_2d(phylanx::execution_tree::compiler::function const& call,
         phylanx::execution_tree::extract_node_data<T>(result));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 // generate a random double tensor
 template <typename T, typename Gen, typename Dist>
 void generate_3d(phylanx::execution_tree::compiler::function const& call,
@@ -150,7 +147,6 @@ void generate_3d(phylanx::execution_tree::compiler::function const& call,
     HPX_TEST_EQ(phylanx::ir::node_data<T>(std::move(t)),
         phylanx::execution_tree::extract_node_data<T>(result));
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_normal_distribution_implicit(std::mt19937& gen)
@@ -174,12 +170,10 @@ void test_normal_distribution_implicit(std::mt19937& gen)
         std::normal_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::normal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_uniform_distribution_explicit(std::mt19937& gen)
@@ -203,12 +197,10 @@ void test_uniform_distribution_explicit(std::mt19937& gen)
         std::uniform_real_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::uniform_real_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_uniform_distribution_explicit_params(std::mt19937& gen)
@@ -232,12 +224,10 @@ void test_uniform_distribution_explicit_params(std::mt19937& gen)
         std::uniform_real_distribution<double> dist{2.0, 4.0};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::uniform_real_distribution<double> dist{2.0, 4.0};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -262,12 +252,10 @@ void test_uniform_int_distribution_explicit(std::mt19937& gen)
         std::uniform_int_distribution<std::int64_t> dist;
         generate_2d<std::int64_t>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::uniform_int_distribution<std::int64_t> dist;
         generate_3d<std::int64_t>(call, gen, dist);
     }
-#endif
 }
 
 void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
@@ -291,12 +279,10 @@ void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
         std::uniform_int_distribution<std::int64_t> dist{200, 400};
         generate_2d<std::int64_t>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::uniform_int_distribution<std::int64_t> dist{200, 400};
         generate_3d<std::int64_t>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,12 +307,10 @@ void test_bernoulli_distribution(std::mt19937& gen)
         std::bernoulli_distribution dist;
         generate_2d<std::uint8_t>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::bernoulli_distribution dist;
         generate_3d<std::uint8_t>(call, gen, dist);
     }
-#endif
 }
 
 void test_bernoulli_distribution_params(std::mt19937& gen)
@@ -350,12 +334,10 @@ void test_bernoulli_distribution_params(std::mt19937& gen)
         std::bernoulli_distribution dist{0.8};
         generate_2d<std::uint8_t>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::bernoulli_distribution dist{0.8};
         generate_3d<std::uint8_t>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -380,12 +362,10 @@ void test_binomial_distribution(std::mt19937& gen)
         std::binomial_distribution<int> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::binomial_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_binomial_distribution_params(std::mt19937& gen)
@@ -409,12 +389,10 @@ void test_binomial_distribution_params(std::mt19937& gen)
         std::binomial_distribution<int> dist{10, 0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::binomial_distribution<int> dist{10, 0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -439,12 +417,10 @@ void test_negative_binomial_distribution(std::mt19937& gen)
         std::negative_binomial_distribution<int> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::negative_binomial_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_negative_binomial_distribution_params(std::mt19937& gen)
@@ -468,12 +444,10 @@ void test_negative_binomial_distribution_params(std::mt19937& gen)
         std::negative_binomial_distribution<int> dist{10, 0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::negative_binomial_distribution<int> dist{10, 0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,12 +472,10 @@ void test_geometric_distribution(std::mt19937& gen)
         std::geometric_distribution<int> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::geometric_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_geometric_distribution_params(std::mt19937& gen)
@@ -527,12 +499,10 @@ void test_geometric_distribution_params(std::mt19937& gen)
         std::geometric_distribution<int> dist{0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::geometric_distribution<int> dist{0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -557,12 +527,10 @@ void test_poisson_distribution(std::mt19937& gen)
         std::poisson_distribution<int> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::poisson_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_poisson_distribution_params(std::mt19937& gen)
@@ -586,12 +554,10 @@ void test_poisson_distribution_params(std::mt19937& gen)
         std::poisson_distribution<int> dist{4};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::poisson_distribution<int> dist{4};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -616,12 +582,10 @@ void test_exponential_distribution(std::mt19937& gen)
         std::exponential_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::exponential_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_exponential_distribution_params(std::mt19937& gen)
@@ -645,12 +609,10 @@ void test_exponential_distribution_params(std::mt19937& gen)
         std::exponential_distribution<double> dist{2.0};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::exponential_distribution<double> dist{2.0};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -675,12 +637,10 @@ void test_gamma_distribution(std::mt19937& gen)
         std::gamma_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::gamma_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_gamma_distribution_params(std::mt19937& gen)
@@ -704,12 +664,10 @@ void test_gamma_distribution_params(std::mt19937& gen)
         std::gamma_distribution<double> dist{0.8, 1.2};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::gamma_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -734,12 +692,10 @@ void test_weibull_distribution(std::mt19937& gen)
         std::weibull_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::weibull_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_weibull_distribution_params(std::mt19937& gen)
@@ -763,12 +719,10 @@ void test_weibull_distribution_params(std::mt19937& gen)
         std::weibull_distribution<double> dist{0.8, 1.2};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::weibull_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -793,12 +747,10 @@ void test_extreme_value_distribution(std::mt19937& gen)
         std::extreme_value_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::extreme_value_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_extreme_value_distribution_params(std::mt19937& gen)
@@ -822,12 +774,10 @@ void test_extreme_value_distribution_params(std::mt19937& gen)
         std::extreme_value_distribution<double> dist{0.8, 1.2};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::extreme_value_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -852,12 +802,10 @@ void test_normal_distribution(std::mt19937& gen)
         std::normal_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::normal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_normal_distribution_params(std::mt19937& gen)
@@ -881,12 +829,10 @@ void test_normal_distribution_params(std::mt19937& gen)
         std::normal_distribution<double> dist{0.8, 1.2};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::normal_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -911,12 +857,10 @@ void test_truncated_normal_distribution(std::mt19937& gen)
         phylanx::util::truncated_normal_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         phylanx::util::truncated_normal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_truncated_normal_distribution_params(std::mt19937& gen)
@@ -944,12 +888,10 @@ void test_truncated_normal_distribution_params(std::mt19937& gen)
         phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -974,12 +916,10 @@ void test_lognormal_distribution(std::mt19937& gen)
         std::lognormal_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::lognormal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_lognormal_distribution_params(std::mt19937& gen)
@@ -1003,12 +943,10 @@ void test_lognormal_distribution_params(std::mt19937& gen)
         std::lognormal_distribution<double> dist{0.8, 1.2};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::lognormal_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1033,12 +971,10 @@ void test_chi_squared_distribution(std::mt19937& gen)
         std::chi_squared_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::chi_squared_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_chi_squared_distribution_params(std::mt19937& gen)
@@ -1062,12 +998,10 @@ void test_chi_squared_distribution_params(std::mt19937& gen)
         std::chi_squared_distribution<double> dist{0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::chi_squared_distribution<double> dist{0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1092,12 +1026,10 @@ void test_cauchy_distribution(std::mt19937& gen)
         std::cauchy_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::cauchy_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_cauchy_distribution_params(std::mt19937& gen)
@@ -1121,12 +1053,10 @@ void test_cauchy_distribution_params(std::mt19937& gen)
         std::cauchy_distribution<double> dist{0.6, 0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::cauchy_distribution<double> dist{0.6, 0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1151,12 +1081,10 @@ void test_fisher_f_distribution(std::mt19937& gen)
         std::fisher_f_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::fisher_f_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_fisher_f_distribution_params(std::mt19937& gen)
@@ -1180,12 +1108,10 @@ void test_fisher_f_distribution_params(std::mt19937& gen)
         std::fisher_f_distribution<double> dist{0.6, 0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::fisher_f_distribution<double> dist{0.6, 0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1210,12 +1136,10 @@ void test_student_t_distribution(std::mt19937& gen)
         std::student_t_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::student_t_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 void test_student_t_distribution_params(std::mt19937& gen)
@@ -1239,12 +1163,10 @@ void test_student_t_distribution_params(std::mt19937& gen)
         std::student_t_distribution<double> dist{0.8};
         generate_2d<double>(call, gen, dist);
     }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         std::student_t_distribution<double> dist{0.8};
         generate_3d<double>(call, gen, dist);
     }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

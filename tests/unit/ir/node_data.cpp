@@ -15,9 +15,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
@@ -159,7 +157,6 @@ int main(int argc, char* argv[])
         test_serialization(array_value);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     {
         blaze::Rand<blaze::DynamicTensor<double>> gen{};
         blaze::DynamicTensor<double> t = gen.generate(3UL, 42UL, 101UL);
@@ -199,7 +196,6 @@ int main(int argc, char* argv[])
 
         test_serialization(array_value);
     }
-#endif
 
     return hpx::util::report_errors();
 }

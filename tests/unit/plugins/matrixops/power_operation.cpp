@@ -15,9 +15,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_power_operation_0d()
 {
@@ -105,7 +103,6 @@ void test_power_operation_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_power_operation_3d()
 {
     blaze::Rand<blaze::DynamicTensor<double>> gen{};
@@ -137,16 +134,13 @@ void test_power_operation_3d()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_power_operation_0d();
     test_power_operation_1d();
     test_power_operation_2d();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_power_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

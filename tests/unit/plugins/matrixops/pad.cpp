@@ -289,7 +289,6 @@ void test_pad_2d_list2()
                 {5.0, 5.0, 5.0, 5.0, 5.0}, {5.0, 5.0, 5.0, 5.0, 5.0}}));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_pad_3d_0()
 {
     std::string const code = R"(block(
@@ -433,7 +432,6 @@ void test_pad_3d_list2_0()
             {{0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0},
                 {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}}}));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -453,7 +451,6 @@ int main(int argc, char* argv[])
     test_pad_2d_list0();
     test_pad_2d_list1();
     test_pad_2d_list2();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_pad_3d_0();
     test_pad_3d_1();
     test_pad_3d_2();
@@ -462,6 +459,5 @@ int main(int argc, char* argv[])
     test_pad_3d_list2();
     test_pad_3d_list2_0();
 
-#endif
     return hpx::util::report_errors();
 }

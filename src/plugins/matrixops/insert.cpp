@@ -23,9 +23,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -72,10 +71,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return arg.size();
         case 2:
             return arg.dimension(1);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return arg.dimension(2);
-#endif
         default:
             break;
         }
@@ -171,7 +168,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::move(indices), std::move(values));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type insert::insert_flatten_3d(ir::node_data<T>&& arg,
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
@@ -196,7 +192,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return flatten_nd_helper(ir::node_data<T>{std::move(result_flattened)},
             std::move(indices), std::move(values));
     }
-#endif
 
     template <typename T>
     primitive_argument_type insert::insert_flatten_nd(ir::node_data<T>&& arg,
@@ -213,11 +208,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return insert_flatten_2d(
                 std::move(arg), std::move(indices), std::move(values));
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return insert_flatten_3d(
                 std::move(arg), std::move(indices), std::move(values));
-#endif
         default:
             break;
         }
@@ -399,7 +392,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "axis is out of bounds for array of dimension 2"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type insert::insert_3d_axis0(ir::node_data<T>&& arg,
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
@@ -628,7 +620,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "axis is out of bounds for array of dimension 3"));
     }
-#endif
 
     template <typename T>
     primitive_argument_type insert::insert_nd(ir::node_data<T>&& arg,
@@ -651,11 +642,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return insert_2d(std::move(arg), std::move(indices),
                 std::move(values), axis.value());
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return insert_3d(std::move(arg), std::move(indices),
                 std::move(values), axis.value());
-#endif
         default:
             break;
         }

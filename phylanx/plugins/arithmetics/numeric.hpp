@@ -76,13 +76,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type numeric2d2d(args_type<T> && args) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type numeric3d3d(
             arg_type<T>&& lhs, arg_type<T>&& rhs) const;
         template <typename T>
         primitive_argument_type numeric3d3d(args_type<T> && args) const;
-#endif
 
     protected:
         template <typename T>

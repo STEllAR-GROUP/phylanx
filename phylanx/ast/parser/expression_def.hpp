@@ -122,29 +122,23 @@ namespace phylanx { namespace ast { namespace parser
             |   bool_
             |   long_long
             |   string
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             |   int64_tensor
-#endif
             |   int64_matrix
             |   int64_vector
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             |   double_tensor
-#endif
             |   double_matrix
             |   double_vector
             |   '(' > expr > ')'
             ;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         int64_tensor %= '[' >> (int64_matrix % ',') >> ']';
-#endif
+
         int64_matrix %= '[' >> (int64_vector % ',') >> ']';
 
         int64_vector %= '[' >> -(long_long % ',') >> ']';
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         double_tensor %= '[' >> (double_matrix % ',') > ']';
-#endif
+
         double_matrix %= '[' >> (double_vector % ',') > ']';
 
         double_vector %= '[' > -(double_ % ',') > ']';
@@ -185,13 +179,9 @@ namespace phylanx { namespace ast { namespace parser
 
         ///////////////////////////////////////////////////////////////////////
         // Debugging and error handling and reporting support.
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         BOOST_SPIRIT_DEBUG_NODES(
             (int64_tensor)
             (double_tensor)
-        );
-#endif
-        BOOST_SPIRIT_DEBUG_NODES(
             (expr)
             (unary_expr)
             (primary_expr)

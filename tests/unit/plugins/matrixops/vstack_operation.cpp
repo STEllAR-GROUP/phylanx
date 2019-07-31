@@ -183,7 +183,6 @@ void vstack_operation_2d()
                 phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void vstack_operation_3d()
 {
     blaze::DynamicTensor<double> t1{
@@ -220,7 +219,6 @@ void vstack_operation_3d()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
                 phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -229,9 +227,7 @@ int main(int argc, char* argv[])
     vstack_operation_1d();
     vstack_operation_1d_2d_mix();
     vstack_operation_2d();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     vstack_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

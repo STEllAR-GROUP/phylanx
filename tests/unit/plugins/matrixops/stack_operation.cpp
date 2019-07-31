@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     test_stack_operation_operation(
         "stack(list([1., 2., 3.], [4., 5., 6.]), __arg(axis, 1))",
         "[[1., 4.], [2., 5.],[3., 6.]]");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
     test_stack_operation_operation(
         "stack(list([[[1., 2., 3.]], [[4., 5., 6.]]]))",
         "[[[1., 2., 3.]], [[4., 5., 6.]]]");
@@ -128,6 +128,6 @@ int main(int argc, char* argv[])
             "[[7., 8.], [9., 10.], [11., 12.]]), __arg(axis, 1))",
         "[[[1., 2.], [7., 8.]], [[3., 4.], [9., 10.]], "
             "[[5., 6.], [11., 12.]]]");
-#endif
+
     return hpx::util::report_errors();
 }

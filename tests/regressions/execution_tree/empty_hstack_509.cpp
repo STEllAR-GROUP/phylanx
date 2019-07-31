@@ -16,9 +16,7 @@
 
 std::string const hstack = "block(define(f, a, hstack(list(a, a))), f)";
 std::string const vstack = "block(define(f, a, vstack(list(a, a))), f)";
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 std::string const dstack = "block(define(f, a, dstack(list(a, a))), f)";
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -48,7 +46,6 @@ int main(int argc, char* argv[])
     HPX_TEST(vstack_data.dimension(1) == 1);
     HPX_TEST(vstack_data.size() == 2);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     auto const& dstack_f_code =
         phylanx::execution_tree::compile(dstack, snippets);
     auto dstack_f = dstack_f_code.run();
@@ -61,7 +58,6 @@ int main(int argc, char* argv[])
     HPX_TEST(dstack_data.dimension(1) == 1);
     HPX_TEST(dstack_data.dimension(2) == 1);
     HPX_TEST(dstack_data.size() == 2);
-#endif
 
     return hpx::util::report_errors();
 }

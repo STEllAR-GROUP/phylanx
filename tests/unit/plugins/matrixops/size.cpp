@@ -15,9 +15,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_extract_size_0d()
 {
@@ -79,7 +77,6 @@ void test_extract_size_2d()
         phylanx::execution_tree::extract_scalar_integer_value(f));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_extract_size_3d()
 {
     blaze::Rand<blaze::DynamicTensor<double>> gen{};
@@ -100,17 +97,13 @@ void test_extract_size_3d()
     HPX_TEST_EQ(std::int64_t(2431),
         phylanx::execution_tree::extract_scalar_integer_value(f));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_extract_size_0d();
     test_extract_size_1d();
     test_extract_size_2d();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_extract_size_3d();
-#endif
 
     return hpx::util::report_errors();
 }

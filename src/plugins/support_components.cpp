@@ -11,9 +11,7 @@
 #include <cstdint>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 using std_int64_t = std::int64_t;

@@ -80,14 +80,12 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             &create_primitive<slicing_operation>,
             docstr
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , match_pattern_type{"slice_page",
             std::vector<std::string>{"slice_page(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
             docstr
         }
-#endif
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -97,9 +95,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
       , slice_rows_(false)
       , slice_columns_(false)
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , slice_pages_(false)
-#endif
       , is_tuple_slice_(false)
     {
         auto func_name = compiler::extract_primitive_name(name_);
@@ -111,12 +107,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         {
             slice_columns_ = true;
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         else if (func_name == "slice_page")
         {
             slice_pages_ = true;
         }
-#endif
         else if (func_name == "tuple_slice")
         {
             is_tuple_slice_ = true;
@@ -128,27 +122,6 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        if (operands.empty() || operands.size() > 3)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "slicing_operation::eval",
-                generate_error_message(
-                    "the slicing_operation primitive requires "
-                    "either one, two or three arguments"));
-        }
-
-        if ((slice_rows_ || slice_columns_) && operands.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "slicing_operation::eval",
-                generate_error_message(
-                    "the column/row-slicing_operation primitive requires "
-                        "either one or two arguments"));
-        }
-#else
         if (operands.empty() || operands.size() > 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -169,7 +142,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     "the page/column/row-slicing_operation primitive requires "
                         "either one or two arguments"));
         }
-#endif
+
         if (is_tuple_slice_ && operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -234,13 +207,11 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             return slice(args[0], {}, args[1],
                                 this_->name_, this_->codename_);
                         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                         else if (this_->slice_pages_)
                         {
                             return slice(args[0], args[1], {},
                                 this_->name_, this_->codename_);
                         }
-#endif
                         else
                         {
                             return slice(args[0], args[1],
@@ -252,11 +223,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     return slice(args[0], args[1], args[2],
                         this_->name_, this_->codename_);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 4:
                     return slice(args[0], args[1], args[2], args[3],
                         this_->name_, this_->codename_);
-#endif
+
                 default:
                     break;
                 }

@@ -26,9 +26,8 @@
 #include <utility>
 #include <vector>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -43,13 +42,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return blaze::DynamicVector<T>(1, arr.scalar());
         case 1:
             return arr.vector();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
         case 2:
             return blaze::trans(blaze::ravel(arr.matrix()));
 
         case 3:
             return blaze::trans(blaze::ravel(arr.tensor()));
-#endif
+
         default:
              HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dot_operation::convert_to_1d",
@@ -68,7 +67,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type dot_operation::outer1d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -84,7 +82,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type dot_operation::outer1d(
@@ -101,11 +98,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // If is_vector(lhs) && is_vector(rhs) -> a matrix
             return outer1d1d(lhs.vector(), rhs.vector());
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 2:
             // If is_vector(lhs) && is_matrix(rhs) -> a tensor
             return outer1d2d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -116,7 +111,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type dot_operation::outer2d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -132,7 +126,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type dot_operation::outer2d(
@@ -145,11 +138,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // has the same functionality as dot2d0d
             return common::dot2d0d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 1:
             // If is_matrix(lhs) && is_vector(rhs) -> a tensor
             return outer2d1d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -160,7 +151,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type dot_operation::outer3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -179,7 +169,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the result has >3 dimensions which is not supported"));
         }
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -202,7 +191,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return blaze::sum(lhs % rhs);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type dot_operation::contraction2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -222,7 +210,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type dot_operation::contraction2d(
@@ -235,11 +222,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{
                 contraction2d2d(lhs.matrix(), rhs.matrix())};
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_matrix(lhs) && is_tensor(rhs) -> a vector
             return contraction2d3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -250,7 +235,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type dot_operation::contraction3d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -298,7 +282,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-
     template <typename T>
     primitive_argument_type dot_operation::contraction3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -321,7 +304,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                        "which is not supported"));
         }
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -340,7 +322,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(lhs)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type dot_operation::tensordot1d3d_0_0(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -612,7 +593,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -663,7 +643,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "vector axis can be 0 or -1 and for the right hand "
                         "side matrix axis can be between -2 and 1"));
             }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             else if (b_dims == 3)
             {
                 if (axis_a == 0 && axis_b == 0)
@@ -684,7 +663,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "vector axis can be 0 or -1 and for the right hand "
                         "side tensor axis can be between -3 and 2"));
             }
-#endif
         }
         else if(a_dims==2)
         {
@@ -728,7 +706,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "both matrices axes can be between "
                         "-2 and 1"));
             }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             else if (b_dims == 3)
             {
                 if (axis_a == 0 && axis_b == 0)
@@ -757,9 +734,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "matrix axis can be between -2 and 1 and for the right "
                         "hand side tensor axis can be between -3 and 2"));
             }
-#endif
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         else if(a_dims==3)
         {
             if (b_dims == 1)
@@ -820,7 +795,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "side operand. This is not supported"));
             }
         }
-#endif
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dot_operation::tensordot_range_of_scalars",
             generate_error_message(

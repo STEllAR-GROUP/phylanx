@@ -203,7 +203,6 @@ int main(int argc, char* argv[])
     test_squeeze_operation("squeeze([[42, 13]], -2)", "[42, 13]");
     test_squeeze_operation("squeeze([[42], [13]], 1)", "[42, 13]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_squeeze_operation("squeeze([[[42]]])", "42");
     test_squeeze_operation(
         "squeeze([[[1, 42, 1],[0, 13, 4]]])", "[[1, 42, 1],[0, 13, 4]]");
@@ -223,6 +222,6 @@ int main(int argc, char* argv[])
         "squeeze([[[42]],[[13]], [[33]]], -1)", "[[42],[13],[33]]");
     test_squeeze_operation(
         "squeeze([[[2],[3],[5]],[[1],[4],[6]]], 2)", "[[2, 3, 5],[1, 4, 6]]");
-#endif
+
     return hpx::util::report_errors();
 }

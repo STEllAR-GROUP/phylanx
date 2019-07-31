@@ -22,9 +22,9 @@
 #include <utility>
 #include <vector>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -189,7 +189,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -235,7 +234,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return batch_dot2d3d(std::move(lhs), std::move(rhs));
     }
-#endif
 
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot2d(
@@ -246,10 +244,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return batch_dot2d2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return batch_dot2d3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             break;
@@ -269,11 +265,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return batch_dot2d2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return batch_dot2d3d(
                 std::move(lhs), std::move(rhs), std::move(axes));
-#endif
 
         default:
             break;
@@ -285,7 +279,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type batch_dot_operation::batch_dot3d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -477,7 +470,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "the right operand has unsupported number of dimensions"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -489,10 +481,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return batch_dot2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return batch_dot3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -511,10 +501,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return batch_dot2d(std::move(lhs), std::move(rhs), std::move(axes));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return batch_dot3d(std::move(lhs), std::move(rhs), std::move(axes));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

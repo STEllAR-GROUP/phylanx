@@ -32,9 +32,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 namespace phylanx { namespace execution_tree
 {
@@ -407,7 +405,6 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(blaze::DynamicMatrix<std::uint8_t>&& val)
           : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
         {}
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit primitive_argument_type(
                 blaze::DynamicTensor<std::uint8_t> const& val)
           : argument_value_type{ir::node_data<std::uint8_t>{val}}
@@ -415,7 +412,6 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(blaze::DynamicTensor<std::uint8_t>&& val)
           : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
         {}
-#endif
 
         primitive_argument_type(bool val, annotation_ptr const& ann)
           : argument_value_type{ir::node_data<std::uint8_t>{val}}
@@ -445,7 +441,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
           , annotation_(ann)
         {}
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type(blaze::DynamicTensor<std::uint8_t> const& val,
                 annotation_ptr const& ann)
           : argument_value_type{ir::node_data<std::uint8_t>{val}}
@@ -456,7 +451,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
           , annotation_(ann)
         {}
-#endif
 
         primitive_argument_type(ir::node_data<std::uint8_t> const& val)
           : argument_value_type{val}
@@ -497,7 +491,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{
                 ir::node_data<std::int64_t>{std::move(val)}}
         {}
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit primitive_argument_type(
                 blaze::DynamicTensor<std::int64_t> const& val)
           : argument_value_type{ir::node_data<std::int64_t>{val}}
@@ -505,7 +498,7 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(blaze::DynamicTensor<std::int64_t>&& val)
           : argument_value_type{ir::node_data<std::int64_t>{std::move(val)}}
         {}
-#endif
+
         primitive_argument_type(std::int64_t val,
                 annotation_ptr const& ann)
           : argument_value_type{ir::node_data<std::int64_t>{val}}
@@ -533,7 +526,6 @@ namespace phylanx { namespace execution_tree
                 ir::node_data<std::int64_t>{std::move(val)}}
           , annotation_(ann)
         {}
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type(blaze::DynamicTensor<std::int64_t> const& val,
                 annotation_ptr const& ann)
           : argument_value_type{ir::node_data<std::int64_t>{val}}
@@ -544,7 +536,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{ir::node_data<std::int64_t>{std::move(val)}}
           , annotation_(ann)
         {}
-#endif
 
         primitive_argument_type(ir::node_data<std::int64_t> const& val)
           : argument_value_type{val}
@@ -603,14 +594,13 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(blaze::DynamicMatrix<double>&& val)
           : argument_value_type{ir::node_data<double>{std::move(val)}}
         {}
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit primitive_argument_type(blaze::DynamicTensor<double> const& val)
           : argument_value_type{ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicTensor<double>&& val)
           : argument_value_type{ir::node_data<double>{std::move(val)}}
         {}
-#endif
+
         primitive_argument_type(double val, annotation_ptr const& ann)
           : argument_value_type{ir::node_data<double>{val}}
           , annotation_(ann)
@@ -635,7 +625,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{ir::node_data<double>{std::move(val)}}
           , annotation_(ann)
         {}
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type(blaze::DynamicTensor<double> const& val,
                 annotation_ptr const& ann)
           : argument_value_type{ir::node_data<double>{val}}
@@ -646,7 +635,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{ir::node_data<double>{std::move(val)}}
           , annotation_(ann)
         {}
-#endif
 
         primitive_argument_type(ir::node_data<double> const& val)
           : argument_value_type{val}

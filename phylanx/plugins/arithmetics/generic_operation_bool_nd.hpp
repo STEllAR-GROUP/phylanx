@@ -24,9 +24,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -85,7 +83,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return it->second;
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     generic_operation_bool::matrix_vector_function_ptr<T>
@@ -103,7 +100,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return it->second;
     }
-#endif
 }}}
 
 #endif

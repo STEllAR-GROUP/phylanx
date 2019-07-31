@@ -920,7 +920,6 @@ void test_greater_equal_operation_2d1d_return_double()
     HPX_TEST_EQ(f.index(), 4);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& codestr)
@@ -975,7 +974,6 @@ void test_greater_equal_operation_3d()
            [[[8, 7], [6, 5]], [[4, 3], [2, 1]]])",
         R"(astype([[[0, 0], [0, 0]], [[1, 1], [1, 1]]], "bool"))");
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -1013,9 +1011,7 @@ int main(int argc, char* argv[])
     test_greater_equal_operation_2d0d_return_double();
     test_greater_equal_operation_2d1d_return_double();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_greater_equal_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

@@ -23,9 +23,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -111,7 +109,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{ std::move(arg) };
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type elu_operation::elu3d(mat_type&& arg,
         double alpha) const
     {
@@ -132,7 +129,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{ std::move(arg) };
     }
-#endif
 
     hpx::future<primitive_argument_type> elu_operation::eval(
         primitive_arguments_type const& operands,
@@ -185,14 +181,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->elu0d(std::move(mat), alpha.scalar());
+
                 case 1:
                     return this_->elu1d(std::move(mat), alpha.scalar());
+
                 case 2:
                     return this_->elu2d(std::move(mat), alpha.scalar());
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 3:
                     return this_->elu3d(std::move(mat), alpha.scalar());
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "elu_operation::eval",

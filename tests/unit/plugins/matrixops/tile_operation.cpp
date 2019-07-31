@@ -184,7 +184,6 @@ void test_tile_operation_2d_matrix()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_tile_operation_0d_tensor()
 {
     phylanx::execution_tree::primitive arr =
@@ -361,8 +360,6 @@ void test_tile_operation_3d_tensor()
         phylanx::execution_tree::extract_integer_value(f.get()));
 }
 
-#endif
-
 int main(int argc, char* argv[])
 {
     test_tile_operation_0d_vector();
@@ -372,7 +369,6 @@ int main(int argc, char* argv[])
     test_tile_operation_2d_vector();
     test_tile_operation_2d_matrix();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_tile_operation_0d_tensor();
     test_tile_operation_1d_tensor();
     test_tile_operation_2d_tensor();
@@ -380,7 +376,6 @@ int main(int argc, char* argv[])
     test_tile_operation_3d_vector();
     test_tile_operation_3d_matrix();
     test_tile_operation_3d_tensor();
-#endif
 
     return hpx::util::report_errors();
 }

@@ -8,7 +8,6 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/detail/slice_assign.hpp>
 #include <phylanx/execution_tree/primitives/detail/slice_identity.hpp>
@@ -384,7 +383,6 @@ namespace phylanx { namespace execution_tree
         return f.matrix(t, std::move(pageslice));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice3d_integer_1d(Data&& t,
         ir::node_data<std::int64_t> && pages, F const& f,
@@ -404,7 +402,6 @@ namespace phylanx { namespace execution_tree
 
         return f.tensor(t, std::move(result));
     }
-#endif
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice3d_integer(Data&& t,
@@ -417,11 +414,10 @@ namespace phylanx { namespace execution_tree
             return slice3d_integer_0d<T>(std::forward<Data>(t),
                 std::move(pages), f, name, codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 1:
             return slice3d_integer_1d<T>(std::forward<Data>(t),
                 std::move(pages), f, name, codename);
-#endif
+
         default:
             break;
         }
@@ -666,5 +662,4 @@ namespace phylanx { namespace execution_tree
     }
 }}
 
-#endif
 #endif

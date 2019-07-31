@@ -25,9 +25,7 @@
 #include <type_traits>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -108,18 +106,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         phylanx::ir::range tup(both);
         return primitive_argument_type{ std::move(tup) };
     }
+
     ///////////////////////////////////////////////////////////////////////////
+    using matrix_type = blaze::DynamicMatrix<double>;
 
-    using matrix_type =
-         blaze::DynamicMatrix<double>;
+    using vector_type = blaze::DynamicVector<double>;
 
-    using vector_type =
-         blaze::DynamicVector<double>;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    using tensor_type =
-         blaze::DynamicTensor<double>;
-#endif
+    using tensor_type = blaze::DynamicTensor<double>;
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type bin_cross_operation::bin_cross2d(
@@ -144,7 +137,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type bin_cross_operation::bin_cross3d(
         arg_type&& target, arg_type&& output, bool from_logits) const
     {
@@ -165,7 +157,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         phylanx::ir::range tup(both);
         return primitive_argument_type{ std::move(tup) };
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> bin_cross_operation::eval(
@@ -220,17 +211,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 0:
                     return this_->bin_cross0d(
                         std::move(target),std::move(output),from_logits);
+
                 case 1:
                     return this_->bin_cross1d(
                         std::move(target),std::move(output),from_logits);
+
                 case 2:
                     return this_->bin_cross2d(
                         std::move(target),std::move(output),from_logits);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 3:
                     return this_->bin_cross3d(
                         std::move(target),std::move(output),from_logits);
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "bin_cross_operation::eval",

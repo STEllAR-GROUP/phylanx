@@ -1605,7 +1605,6 @@ void test_operation(std::string const& code, std::string const& expected_str)
     HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 ///////////////////////////////////////////////////////////////////////////////
 void test_operation_3d()
 {
@@ -1653,7 +1652,6 @@ void test_operation_3d()
            astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))",
         R"(astype([[[0, 0], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -1724,9 +1722,7 @@ int main(int argc, char* argv[])
     test_operation("__or(true, false)", "true");
     test_operation("logical_or(true, false)", "true");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

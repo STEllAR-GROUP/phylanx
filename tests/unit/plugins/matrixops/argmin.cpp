@@ -17,9 +17,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_argmin_0d()
@@ -159,7 +157,6 @@ void test_argmin_2d_1_axis()
     HPX_TEST_EQ(expected, actual);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_argmin_3d_flat()
 {
     blaze::DynamicTensor<double> t1{
@@ -282,7 +279,6 @@ void test_argmin_3d_2_axis()
 
     HPX_TEST_EQ(expected, actual);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -315,12 +311,10 @@ int main(int argc, char* argv[])
     test_operation("argmin([[1.0, 2.0, -3.0], [4.0, 5.0, -6.0]], 0)", "[0, 0, 1]");
     test_operation("argmin([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], 1)", "[0, 0]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_argmin_3d_flat();
     test_argmin_3d_0_axis();
     test_argmin_3d_1_axis();
     test_argmin_3d_2_axis();
-#endif
 
     return hpx::util::report_errors();
 }

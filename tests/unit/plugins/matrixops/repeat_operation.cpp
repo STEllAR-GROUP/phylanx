@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
     test_repeat_operation("repeat([[42, 13, 33],[5, 44, 6]], 2)",
         "[42, 42, 13, 13, 33, 33,  5,  5, 44, 44,  6,  6]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     //axis 0
     test_repeat_operation(
         "repeat([[[42, 13],[33, 4]],[[5, 44],[6, 23]]], 2, 0)",
@@ -115,6 +114,6 @@ int main(int argc, char* argv[])
     test_repeat_operation("repeat([[[42, 13],[33, 4]],[[5, 44],[6, 23]]], "
                           "[0, 2, 3, 0, 1, 0, 0, 2])",
                           "[13, 13, 33, 33, 33,  5, 23, 23]");
-#endif
+
     return hpx::util::report_errors();
 }

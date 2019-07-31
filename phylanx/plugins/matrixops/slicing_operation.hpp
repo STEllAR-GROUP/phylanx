@@ -72,9 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         bool slice_rows_;
         bool slice_columns_;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         bool slice_pages_;
-#endif
         bool is_tuple_slice_;
     };
 

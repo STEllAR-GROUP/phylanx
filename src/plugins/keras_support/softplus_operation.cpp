@@ -22,9 +22,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -77,7 +75,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return blaze::UniformMatrix<T>(m.rows(), m.columns(), val);
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T, bool AF, bool PF, typename RT>
         blaze::UniformTensor<T> make_uniform(
             T val, blaze::CustomTensor<T, AF, PF, RT> const& t)
@@ -85,7 +82,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return blaze::UniformTensor<T>(
                 t.pages(), t.rows(), t.columns(), val);
         }
-#endif
 
         template <typename Ones, typename Zeros, typename Data>
         decltype(auto) softplus(
@@ -142,7 +138,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(arg)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type softplus_operation::softplus3d(arg_type&& arg) const
     {
@@ -162,7 +157,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(arg)};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> softplus_operation::eval(
@@ -210,10 +204,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 2:
                         return this_->softplus2d(std::move(a));
 
-    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                     case 3:
                         return this_->softplus3d(std::move(a));
-    #endif
+
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "softplus_operation::eval",

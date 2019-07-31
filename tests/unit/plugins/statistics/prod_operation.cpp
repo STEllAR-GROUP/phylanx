@@ -16,9 +16,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_0d()
 {
@@ -669,7 +667,6 @@ void test_2d_axes_keep_dims_true(std::int64_t axis1, std::int64_t axis2)
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_3d()
 {
     blaze::DynamicTensor<double> subject{
@@ -1269,7 +1266,6 @@ void test_3d_axes_keep_dims_true(
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -1303,7 +1299,6 @@ int main(int argc, char* argv[])
     test_2d_axes_keep_dims_true(0, 1);
     test_2d_axes_keep_dims_true(1, 0);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_3d();
     test_3d_axis0();
     test_3d_axis1();
@@ -1355,7 +1350,6 @@ int main(int argc, char* argv[])
     test_3d_axes_keep_dims_true(0, 2, 1);
     test_3d_axes_keep_dims_true(2, 1, 0);
     test_3d_axes_keep_dims_true(1, 0, 2);
-#endif
 
     return hpx::util::report_errors();
 }

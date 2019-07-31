@@ -28,9 +28,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -352,7 +350,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type argminmax<Op, Derived>::argminmax3d_flatten(
@@ -557,7 +554,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the arange primitive requires for all arguments to "
                     "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
@@ -604,10 +600,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->argminmax2d(std::move(args));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->argminmax3d(std::move(args));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argminmax<Op, Derived>::eval",

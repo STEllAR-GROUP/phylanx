@@ -130,12 +130,10 @@ namespace phylanx { namespace execution_tree
     std::size_t num_dimensions(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
     {
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (dims[2] != 0)
         {
             return 3;
         }
-#endif
         if (dims[1] != 0)
         {
             return 2;
@@ -169,7 +167,6 @@ namespace phylanx { namespace execution_tree
         return {0, dims[0]};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
     align_dimensions_to_tensor(std::size_t real_numdims,
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
@@ -186,7 +183,6 @@ namespace phylanx { namespace execution_tree
 
         return {0, dims[0], dims[1]};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
@@ -218,10 +214,9 @@ namespace phylanx { namespace execution_tree
         case 2:
             return align_dimensions_to_matrix(real_numdims, dims);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return align_dimensions_to_tensor(real_numdims, dims);
-#endif
+
         default:
             break;
         }
@@ -284,9 +279,7 @@ namespace phylanx { namespace execution_tree
                 return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{
                         (std::max)(lhs[0], rhs[0])
                       , (std::max)(lhs[1], rhs[1])
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                       , (std::max)(lhs[2], rhs[2])
-#endif
                     };
             };
 

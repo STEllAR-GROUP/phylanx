@@ -26,9 +26,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -289,7 +287,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type flip_operation::flip3d_axis0(
         ir::node_data<T>&& arg) const
@@ -725,7 +722,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the flip_operation primitive requires operand axis "
                 "to be of size 1, 2 or 3 for tensors."));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -742,10 +738,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return flip2d_both_axes(std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return flip3d_all_axes(std::move(arg));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -773,10 +767,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return flip2d(std::move(arg), std::move(axes));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return flip3d(std::move(arg), std::move(axes));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -827,10 +819,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return flip2d_axis0(std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return flip3d_axis0(std::move(arg));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -883,10 +873,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return flip2d_axis1(std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return flip3d_axis1(std::move(arg));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

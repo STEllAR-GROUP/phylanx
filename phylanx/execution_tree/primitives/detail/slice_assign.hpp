@@ -54,7 +54,6 @@ namespace phylanx { namespace execution_tree { namespace detail
         }
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename Lhs, typename Rhs>
     void check_tensor_sizes(Lhs const& lhs, Rhs const& rhs)
     {
@@ -72,7 +71,6 @@ namespace phylanx { namespace execution_tree { namespace detail
                 msg.str());
         }
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -284,7 +282,6 @@ namespace phylanx { namespace execution_tree { namespace detail
             return ir::node_data<T>{std::move(data)};
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename Data, typename View, typename F = always_true>
         ir::node_data<T> tensor(Data& data, View&& view, F const& f = F{}) const
         {
@@ -309,7 +306,6 @@ namespace phylanx { namespace execution_tree { namespace detail
             }
             return ir::node_data<T>{std::move(data)};
         }
-#endif
     };
 }}}
 

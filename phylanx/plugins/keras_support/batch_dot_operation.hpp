@@ -66,7 +66,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type batch_dot_nd(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, ir::range&& axes) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type batch_dot2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -108,7 +107,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type batch_dot3d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, ir::range&& axes) const;
-#endif
     };
 
     inline primitive create_batch_dot_operation(hpx::id_type const& locality,

@@ -292,7 +292,6 @@ void test_integer_slicing_2d_1d()
 
 void test_integer_slicing_2d_2d()
 {
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // direct array based single-value indexing
     test_integer_slicing("slice([[42], [43]], [[0]])", "[[[42]]]");
     test_integer_slicing("slice([[42, 43]], [[0]])", "[[[42, 43]]]");
@@ -314,7 +313,6 @@ void test_integer_slicing_2d_2d()
 
 //     test_integer_slicing("slice([[42], [43]], nil, [[0]])", "[[[[42], [43]]]]");
 //     test_integer_slicing("slice([[42, 43]], nil, [[0]])", "[[[[42]]]]");
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
