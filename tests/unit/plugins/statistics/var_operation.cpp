@@ -82,7 +82,6 @@ int main(int argc, char* argv[])
     test_count_var_operation(
         "var([[1.0, 2.0], [3.0, 4.0]], 1, true)", "[[0.25], [0.25]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensors
     test_count_var_operation(
         "var([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]])",
@@ -124,7 +123,6 @@ int main(int argc, char* argv[])
     test_count_var_operation(
         "var([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 2, true)",
         "[[[0.25], [0.25]], [[0.25], [0.25]]]");
-#endif
 
     return hpx::util::report_errors();
 }

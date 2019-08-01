@@ -88,7 +88,6 @@ int main(int argc, char* argv[])
     test_logsumexp_operation(
         "logsumexp([[42., 1.],[2., 33.]], 1, true)", "[[42.], [33.]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensors
     test_logsumexp_operation(
         "logsumexp([[[ 42.,  4.],[ 2.,  3.]],[[ 3.,  2.],[ 4.,  1.]]])",
@@ -137,7 +136,6 @@ int main(int argc, char* argv[])
     test_logsumexp_operation("logsumexp([[[ 42.,  4.],[ 2., 33.]],[[ 3., 25.]"
                              ",[ 44.,  1.]]], 2, true)",
                              "[[[ 42.], [ 33.]],[[ 25.], [ 44.]]]");
-#endif
 
     return hpx::util::report_errors();
 }

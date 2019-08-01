@@ -163,7 +163,6 @@ void test_clip_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_clip_3d()
 {
     blaze::DynamicTensor<double> v1{{{-1.0, 0.0, 1.0}, {2.0, 4.0, 5.0}},
@@ -194,16 +193,14 @@ void test_clip_3d()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_clip_0d();
     test_clip_1d();
     test_clip_2d();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_clip_3d();
-#endif
+
     test_clip_PhySL_0();
     test_clip_PhySL_1();
     test_clip_PhySL_2();

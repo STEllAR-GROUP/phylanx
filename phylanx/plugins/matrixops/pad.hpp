@@ -59,11 +59,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         template <typename T>
         primitive_argument_type pad_2d(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& width, T&& value) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type pad_3d(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& width, T&& value) const;
-#endif
         template <typename T>
         primitive_argument_type pad_helper(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& width,

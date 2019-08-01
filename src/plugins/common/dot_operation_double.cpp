@@ -30,11 +30,9 @@ namespace phylanx { namespace common
         ir::node_data<double>&&, ir::node_data<double>&&, std::string const&,
         std::string const&);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot3d(
         ir::node_data<double>&&, ir::node_data<double>&&, std::string const&,
         std::string const&);
-#endif
 
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     dot2d2d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,

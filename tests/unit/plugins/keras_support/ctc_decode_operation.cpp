@@ -13,7 +13,6 @@
 #include <string>
 #include <utility>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 ///////////////////////////////////////////////////////////////////////////////
 void test_ctc_decode_operation_1()
 {
@@ -118,4 +117,4 @@ int main(int argc, char* argv[])
 
     return hpx::util::report_errors();
 }
-#endif
+

@@ -90,7 +90,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type reshape2d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type reshape3d(
             primitive_argument_type&& arr, ir::range&& arg) const;
 
@@ -113,7 +112,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type reshape3d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
-#endif
 
         template <typename T>
         primitive_argument_type flatten2d(
@@ -126,11 +124,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type flatten_nd(
             ir::node_data<T>&& arr, std::string order) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type flatten3d(
             ir::node_data<T>&& arr, std::string order) const;
-#endif
 
     private:
         reshape_mode mode_;

@@ -52,7 +52,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     result[0] = extract_scalar_integer_value(*elem_1);
                     result[1] = extract_scalar_integer_value(*++elem_1);
                 }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 else if (shape.size() == 3)
                 {
                     auto elem_1 = shape.begin();
@@ -60,7 +59,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     result[1] = extract_scalar_integer_value(*++elem_1);
                     result[2] = extract_scalar_integer_value(*++elem_1);
                 }
-#endif
             }
             return result;
         }
@@ -284,7 +282,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     ir::node_data<T> constant::constant3d_helper(primitive_argument_type&& op,
@@ -334,7 +331,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the constant primitive requires for all arguments to "
                     "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> constant::eval(
@@ -488,10 +484,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->constant2d(std::move(value), dims, dtype);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->constant3d(std::move(value), dims, dtype);
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "constant::eval",

@@ -29,9 +29,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -248,7 +246,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <template <class T> class Op, typename Derived>
     template <typename T, typename Init>
     primitive_argument_type statistics<Op, Derived>::statistics3d_flat(
@@ -664,7 +661,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the statistics primitive requires for all arguments "
                 "to be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <template <class T> class Op, typename Derived>
@@ -694,10 +690,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return statistics2d(std::move(arg), axis, keepdims, initial_value);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return statistics3d(std::move(arg), axis, keepdims, initial_value);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "statistics::statisticsnd",
@@ -779,11 +774,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return statistics2d_flat(
                 std::move(arg), keepdims, initial_value);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return statistics3d_flat(
                 std::move(arg), keepdims, initial_value);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "statistics::statisticsnd_flat",
@@ -908,7 +902,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return statisticsnd_flat(
                         std::move(arg), keepdims, std::move(initial));
                 }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 else if (dims == 3)
                 {
                     detail::verify_axis(
@@ -919,11 +912,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return statistics3d_slice(std::move(arg), axis0, axis1,
                         keepdims, std::move(initial));
                 }
-#endif
             }
             break;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 auto it = axes.begin();
@@ -950,7 +941,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return statisticsnd_flat(
                     std::move(arg), keepdims, std::move(initial));
             }
-#endif
+
         default:
             break;
         }

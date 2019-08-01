@@ -25,9 +25,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -233,7 +231,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type squeeze_operation::squeeze3d_axis0(
         ir::node_data<T>&& arg) const
@@ -389,7 +386,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the squeeze primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> squeeze_operation::eval(
@@ -450,11 +446,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->squeeze1d(std::move(args[0]), axis);
             case 2:
                 return this_->squeeze2d(std::move(args[0]), axis);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 3:
                 return this_->squeeze3d(std::move(args[0]), axis);
-#endif
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,

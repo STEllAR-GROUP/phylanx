@@ -135,7 +135,6 @@ void test_mean_operation_2d_y_axis()
     HPX_TEST_EQ(expected, actual);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_mean_operation_3d_flat()
 {
     blaze::DynamicTensor<double> tensor_1{{{1.0, 5.0, 6.0}, {4.0, 5.0, 6.0}},
@@ -249,7 +248,6 @@ void test_mean_operation_3d_z_axis()
 
     HPX_TEST_EQ(expected, actual);
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -258,11 +256,10 @@ int main(int argc, char* argv[])
     test_mean_operation_2d_flat();
     test_mean_operation_2d_x_axis();
     test_mean_operation_2d_y_axis();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_mean_operation_3d_flat();
     test_mean_operation_3d_x_axis();
     test_mean_operation_3d_y_axis();
     test_mean_operation_3d_z_axis();
-#endif
+
     return hpx::util::report_errors();
 }

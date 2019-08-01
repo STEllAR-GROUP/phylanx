@@ -5,7 +5,6 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_3d.hpp>
 
@@ -20,4 +19,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name, std::string const& codename);
 }}}
 
-#endif

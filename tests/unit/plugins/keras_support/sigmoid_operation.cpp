@@ -83,7 +83,6 @@ void test_sigmoid_operation_2d()
         allclose(phylanx::ir::node_data<double>(std::move(expected)), result));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_sigmoid_operation_3d()
 {
     blaze::DynamicTensor<double> subject{
@@ -112,17 +111,13 @@ void test_sigmoid_operation_3d()
     HPX_TEST(
         allclose(phylanx::ir::node_data<double>(std::move(expected)), result));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_sigmoid_operation_0d();
     test_sigmoid_operation_1d();
     test_sigmoid_operation_2d();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_sigmoid_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

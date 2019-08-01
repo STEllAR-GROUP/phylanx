@@ -4623,9 +4623,7 @@ namespace phylanx { namespace execution_tree
 
         case 1: HPX_FALLTHROUGH; // 1 dimension
         case 2: HPX_FALLTHROUGH; // 2 dimensions
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3: HPX_FALLTHROUGH; // 3 dimensions
-#endif
         default:
             break;
         }

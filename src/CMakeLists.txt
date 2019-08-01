@@ -100,19 +100,9 @@ else()
 endif()
 
 target_link_libraries(phylanx_component
-  ${HPX_TLL_PUBLIC}
-    ${HPX_LIBRARIES}
-    ${BLAS_LIBRARIES}
-    ${LAPACK_LIBRARIES})
+  ${HPX_TLL_PUBLIC} ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries(phylanx_component
-  ${HPX_TLL_PRIVATE}
-    blaze::blaze)
-
-if(PHYLANX_WITH_BLAZE_TENSOR)
-  target_link_libraries(phylanx_component
-    ${HPX_TLL_PRIVATE}
-      BlazeTensor::BlazeTensor)
-endif()
+  ${HPX_TLL_PRIVATE} blaze::blaze BlazeTensor::BlazeTensor)
 
 set_target_properties(
   phylanx_component PROPERTIES

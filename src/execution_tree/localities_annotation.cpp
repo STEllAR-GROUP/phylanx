@@ -206,13 +206,11 @@ namespace phylanx { namespace execution_tree
             result[0] = local_tile.spans_[1].size();
             break;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             result[2] = local_tile.spans_[0].size();
             result[1] = local_tile.spans_[1].size();
             result[0] = local_tile.spans_[2].size();
             break;
-#endif
 
         default:
             {

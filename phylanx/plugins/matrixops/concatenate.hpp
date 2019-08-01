@@ -83,7 +83,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type concatenate2d_helper(
             primitive_arguments_type&& args, std::int64_t axis) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type concatenate_flatten3d(
             primitive_arguments_type&& args) const;
@@ -99,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         template <typename T>
         primitive_argument_type concatenate3d_axis2(
             primitive_arguments_type&& args) const;
-#endif
+
         std::size_t get_vec_size(primitive_arguments_type const& args) const;
         std::size_t get_matrix_size(primitive_arguments_type const& args) const;
         std::size_t get_tensor_size(primitive_arguments_type const& args) const;

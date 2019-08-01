@@ -23,9 +23,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -110,7 +109,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type tile_operation::tile0d_3args(
         ir::node_data<T>&& arr, ir::range&& arg) const
@@ -123,7 +121,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicTensor<T> result(page, row, column, arr.scalar());
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type tile_operation::tile0d(ir::node_data<T>&& arr,
@@ -137,10 +134,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return tile0d_2args(std::move(arr), std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return tile0d_3args(std::move(arr), std::move(arg));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -225,7 +220,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type tile_operation::tile1d_3args(
         ir::node_data<T>&& arr, ir::range&& arg) const
@@ -255,7 +249,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type tile_operation::tile1d(ir::node_data<T>&& arr,
@@ -269,10 +262,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return tile1d_2args(std::move(arr), std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return tile1d_3args(std::move(arr), std::move(arg));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -358,7 +349,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type tile_operation::tile2d_3args(
         ir::node_data<T>&& arr, ir::range&& arg) const
@@ -387,7 +377,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type tile_operation::tile2d(ir::node_data<T>&& arr,
@@ -401,10 +390,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return tile2d_2args(std::move(arr), std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return tile2d_3args(std::move(arr), std::move(arg));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -452,7 +439,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type tile_operation::tile3d_1arg(
         ir::node_data<T>&& arr, ir::range&& arg) const
@@ -577,7 +563,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the tile primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> tile_operation::eval(
@@ -634,10 +619,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 2:
                         return this_->tile2d(std::move(arr), std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                     case 3:
                         return this_->tile3d(std::move(arr), std::move(arg));
-#endif
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

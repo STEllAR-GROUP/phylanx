@@ -24,19 +24,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template primitive_argument_type dot_operation::outer2d(
         ir::node_data<double>&&, ir::node_data<double>&&) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template primitive_argument_type dot_operation::outer3d(
         ir::node_data<double>&&, ir::node_data<double>&&) const;
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template primitive_argument_type dot_operation::contraction2d(
         ir::node_data<double>&&, ir::node_data<double>&&) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template primitive_argument_type dot_operation::contraction3d(
         ir::node_data<double>&&, ir::node_data<double>&&) const;
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template primitive_argument_type dot_operation::tensordot_range_of_scalars(

@@ -94,7 +94,6 @@ int main(int argc, char* argv[])
                        "list(-1, 0), true, 10.)",
         "[[10.]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]])", "12.");
     test_min_operation("amin([[[13., 42., 33.],[101., 12., 65.]]], 0)",
         "[[13., 42., 33.], [101., 12., 65.]]");
@@ -136,6 +135,6 @@ int main(int argc, char* argv[])
     test_min_operation(
         "amin([[[13., 42., 33.],[101., 12., 65.]]], list(0, -1, 1), true)",
         "[[[12.]]]");
-#endif
+
     return hpx::util::report_errors();
 }

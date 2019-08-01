@@ -28,9 +28,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -197,7 +195,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             })};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
     template <typename T>
@@ -248,7 +245,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(result);
             })};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
@@ -307,7 +303,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     extract_node_data<T>(std::move(op2), name_, codename_));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 if (extract_numeric_value_dimensions(op1, name_, codename_) !=
@@ -328,7 +323,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     extract_node_data<T>(std::move(op1), name_, codename_),
                     extract_node_data<T>(std::move(op2), name_, codename_));
             }
-#endif
 
         default:
             break;
@@ -429,7 +423,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return numeric2d2d<T>(std::move(args));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 args_type<T> args;
@@ -443,7 +436,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return numeric3d3d<T>(std::move(args));
             }
-#endif
 
         default:
             break;

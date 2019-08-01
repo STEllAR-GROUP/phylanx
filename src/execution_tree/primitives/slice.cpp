@@ -96,7 +96,6 @@ namespace phylanx { namespace execution_tree
                 "as such does not support slicing", name, codename));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type slice(primitive_argument_type const& data,
         primitive_argument_type const& pages,
         primitive_argument_type const& rows,
@@ -128,7 +127,6 @@ namespace phylanx { namespace execution_tree
                 "target object does not hold a numeric data type and "
                 "as such does not support slicing", name, codename));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given primitive_argument_type instance
@@ -288,7 +286,6 @@ namespace phylanx { namespace execution_tree
                 "as such does not support slicing", name, codename));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& pages,
         primitive_argument_type const& rows,
@@ -362,7 +359,6 @@ namespace phylanx { namespace execution_tree
                 "target object does not hold a numeric data type and "
                 "as such does not support slicing", name, codename));
     }
-#endif
 }}
 
 

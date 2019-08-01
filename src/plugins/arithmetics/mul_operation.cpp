@@ -60,7 +60,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return t1 % t2;
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             template <typename T1, typename T2>
             typename std::enable_if<
                 traits::is_tensor<T1>::value && traits::is_tensor<T2>::value,
@@ -70,7 +69,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 return t1 % t2;
             }
-#endif
 
             ///////////////////////////////////////////////////////////////////
             template <typename T1, typename T2>
@@ -100,7 +98,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 t1 %= t2;
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             template <typename T1, typename T2>
             typename std::enable_if<
                 traits::is_tensor<T1>::value && traits::is_tensor<T2>::value
@@ -109,7 +106,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 t1 %= t2;
             }
-#endif
         };
     }
 

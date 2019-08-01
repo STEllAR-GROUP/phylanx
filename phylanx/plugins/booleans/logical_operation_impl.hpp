@@ -29,9 +29,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -337,7 +335,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return logical2d2d(std::move(lhs), std::move(rhs));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename Op>
     template <typename T>
     primitive_argument_type logical_operation<Op>::logical3d3d(
@@ -393,7 +390,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return logical3d3d(std::move(lhs), std::move(rhs));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
@@ -413,10 +409,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return logical2d(std::move(lhs), std::move(rhs), sizes);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return logical3d(std::move(lhs), std::move(rhs), sizes);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::logical_all",

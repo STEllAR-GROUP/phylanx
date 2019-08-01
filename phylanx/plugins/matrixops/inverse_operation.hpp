@@ -46,11 +46,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type inverse2d(ir::node_data<T>&& ops) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type inverse3d(primitive_argument_type&& ops) const;
         template <typename T>
         primitive_argument_type inverse3d(ir::node_data<T>&& ops) const;
-#endif
     };
 
     inline primitive create_inverse_operation(hpx::id_type const& locality,

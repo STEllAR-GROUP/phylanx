@@ -15,9 +15,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_extract_shape_0d()
 {
@@ -107,7 +105,6 @@ void test_extract_shape_2d_axis(std::int64_t axis, std::int64_t expected)
     HPX_TEST_EQ(expected, result);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_extract_shape_3d()
 {
     blaze::Rand<blaze::DynamicTensor<double>> gen{};
@@ -158,7 +155,6 @@ void test_extract_shape_3d_axis(std::int64_t axis, std::int64_t expected)
         phylanx::execution_tree::extract_scalar_integer_value_strict(f);
     HPX_TEST_EQ(expected, result);
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -170,12 +166,10 @@ int main(int argc, char* argv[])
     test_extract_shape_2d_axis(0, 101);
     test_extract_shape_2d_axis(1, 117);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_extract_shape_3d();
     test_extract_shape_3d_axis(0, 11);
     test_extract_shape_3d_axis(1, 17);
     test_extract_shape_3d_axis(2, 13);
-#endif
 
     return hpx::util::report_errors();
 }

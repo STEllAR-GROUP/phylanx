@@ -36,7 +36,6 @@ namespace phylanx { namespace common
         ir::node_data<std::int64_t>&& axes, std::string const& name,
         std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     transpose3d_axes102(ir::node_data<T>&& arg);
@@ -64,7 +63,6 @@ namespace phylanx { namespace common
         execution_tree::primitive_argument_type&& arg,
         ir::node_data<std::int64_t>&& axes, std::string const& name,
         std::string const& codename);
-#endif
 }}
 
 #endif

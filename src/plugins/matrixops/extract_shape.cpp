@@ -150,7 +150,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type extract_shape::shape3d(
         primitive_argument_type&& arg) const
     {
@@ -203,7 +202,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{size};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> extract_shape::eval(
@@ -251,10 +249,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 2:
                         return this_->shape2d(std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                     case 3:
                         return this_->shape3d(std::move(arg));
-#endif
+
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "extract_shape::eval",
@@ -287,10 +284,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->shape2d(std::move(arg), findex.get());
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->shape3d(std::move(arg), findex.get());
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",

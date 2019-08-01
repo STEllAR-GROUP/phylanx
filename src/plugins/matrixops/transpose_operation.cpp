@@ -121,12 +121,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value_strict(
                     std::move(arg1), name_, codename_), name_, codename_);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return common::transpose3d(std::move(arg0),
                 extract_integer_value_strict(
                     std::move(arg1), name_, codename_), name_, codename_);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "transpose_operation::transpose_nd",
@@ -148,10 +147,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return common::transpose2d(std::move(arg0), name_, codename_);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return common::transpose3d(std::move(arg0), name_, codename_);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "transpose_operation::transpose_nd",

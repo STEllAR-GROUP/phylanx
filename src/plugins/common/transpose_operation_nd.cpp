@@ -19,9 +19,7 @@
 #include <utility>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace common
@@ -136,7 +134,6 @@ namespace phylanx { namespace common
     }
 
     ////////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     execution_tree::primitive_argument_type transpose3d(ir::node_data<T>&& arg)
     {
@@ -294,6 +291,5 @@ namespace phylanx { namespace common
                 "the transpose primitive requires for its argument to "
                 "be numeric data type", name, codename));
     }
-#endif
 }}
 

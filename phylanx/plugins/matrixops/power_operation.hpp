@@ -51,13 +51,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type power2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type power3d(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         template <typename T>
         primitive_argument_type power3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,

@@ -33,9 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             stacking_mode_column_wise,  // hstack
             stacking_mode_row_wise,     // vstack
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             stacking_mode_depth_wise,   // dstack
-#endif
             stacking_mode_axis
         };
 
@@ -80,12 +78,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& dtype) const;
         primitive_argument_type stack2d(primitive_arguments_type&& args,
             primitive_argument_type&& dtype, std::int64_t axis) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type stack3d(primitive_arguments_type&& args,
             primitive_argument_type&& dtype) const;
         primitive_argument_type stack3d(primitive_arguments_type&& args,
             primitive_argument_type&& dtype, std::int64_t axis) const;
-#endif
 
         // support for stack
         template <typename T>
@@ -93,7 +89,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& args) const;
         primitive_argument_type stack1d_axis1(primitive_arguments_type&& args,
             primitive_argument_type&& dtype) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type stack2d_axis0_helper(
             primitive_arguments_type&& args) const;
@@ -114,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& args) const;
         primitive_argument_type stack3d_axis2(primitive_arguments_type&& args,
             primitive_argument_type&& dtype) const;
-#endif
+
         // support for hstack
         template <typename T>
         primitive_argument_type hstack0d1d_helper(
@@ -141,7 +136,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type vstack1d2d(primitive_arguments_type&& args,
             primitive_argument_type&& dtype) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type hstack3d_helper(
             primitive_arguments_type&& args) const;
@@ -172,7 +166,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& args) const;
         primitive_argument_type dstack2d3d(primitive_arguments_type&& args,
             primitive_argument_type&& dtype) const;
-#endif
 
     private:
         stacking_mode mode_;
@@ -195,7 +188,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             locality, "vstack", std::move(operands), name, codename);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     inline primitive create_dstack_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
@@ -203,7 +195,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "dstack", std::move(operands), name, codename);
     }
-#endif
 
     inline primitive create_stack_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,

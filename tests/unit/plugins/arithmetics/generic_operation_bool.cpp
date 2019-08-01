@@ -16,16 +16,12 @@
 #include <vector>
 
 #include <blaze/Blaze.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Blaze.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 using custom_vector_type = blaze::CustomVector<double, true, true>;
 using custom_matrix_type = blaze::CustomMatrix<double, true, true>;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 using custom_tensor_type = blaze::CustomTensor<double, true, true>;
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_generic_operation_0d(std::string const& func_name,
@@ -97,7 +93,6 @@ void test_generic_operation_2d(std::string const& func_name,
         phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_generic_operation_3d(std::string const& func_name,
     blaze::DynamicTensor<std::uint8_t> func(custom_tensor_type))
 {
@@ -122,7 +117,6 @@ void test_generic_operation_3d(std::string const& func_name,
     HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_0d_operations()
@@ -197,7 +191,6 @@ void test_2d_operations()
         });
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_3d_operations()
 {
     test_generic_operation_3d("isnan",
@@ -226,7 +219,6 @@ void test_3d_operations()
                 m, [](double m) { return std::isinf(m) && !std::signbit(m); });
         });
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -234,10 +226,7 @@ int main(int argc, char* argv[])
     test_0d_operations();
     test_1d_operations();
     test_2d_operations();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_3d_operations();
-#endif
 
     return hpx::util::report_errors();
 }

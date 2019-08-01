@@ -52,10 +52,7 @@ namespace phylanx {  namespace execution_tree {  namespace primitives
         primitive_argument_type sigmoid0d(arg_type&& arg) const;
         primitive_argument_type sigmoid1d(arg_type&& arg) const;
         primitive_argument_type sigmoid2d(arg_type&& arg) const;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type sigmoid3d(arg_type&& arg) const;
-#endif
     };
 
     inline primitive create_sigmoid_operation(hpx::id_type const& locality,

@@ -25,9 +25,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -123,7 +121,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type relu_operation::relu3d(ir::node_data<T>&& arg,
         double alpha, T max_value, double threshold) const
@@ -148,7 +145,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         result = t_pos + t_neg;
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type relu_operation::relu_helper(ir::node_data<T>&& arg,
@@ -158,14 +154,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 0:
             return relu0d(std::move(arg), alpha, max_value, threshold);
+
         case 1:
             return relu1d(std::move(arg), alpha, max_value, threshold);
+
         case 2:
             return relu2d(std::move(arg), alpha, max_value, threshold);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
         case 3:
             return relu3d(std::move(arg), alpha, max_value, threshold);
-#endif
+
         default:
             break;
         }

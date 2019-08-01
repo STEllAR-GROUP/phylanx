@@ -51,12 +51,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type neg1d(primitive_argument_type&& op) const;
         primitive_argument_type neg2d(primitive_argument_type&& op) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type neg3d(ir::node_data<T>&& op) const;
 
         primitive_argument_type neg3d(primitive_argument_type&& op) const;
-#endif
 
     protected:
         node_data_type dtype_;

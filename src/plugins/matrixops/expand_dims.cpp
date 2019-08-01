@@ -24,9 +24,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -175,7 +173,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type expand_dims::add_dim_2d(
@@ -248,7 +245,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the arange primitive requires for all arguments to "
                     "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> expand_dims::eval(
@@ -292,10 +288,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return this_->add_dim_1d(std::move(args));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 2:
                     return this_->add_dim_2d(std::move(args));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "expand_dims::eval",

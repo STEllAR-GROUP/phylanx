@@ -92,7 +92,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, primitive_argument_type&& initial) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T, typename Init>
         primitive_argument_type statistics3d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
@@ -132,7 +131,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& arg, std::int64_t axis0,
             std::int64_t axis1, bool keepdims,
             primitive_argument_type&& initial) const;
-#endif
 
         primitive_argument_type statisticsnd_flat(
             primitive_argument_type&& arg, bool keepdims,

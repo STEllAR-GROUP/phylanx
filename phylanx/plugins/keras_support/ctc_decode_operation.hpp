@@ -9,7 +9,6 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
@@ -60,5 +59,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 }}}
 
-#endif
 #endif

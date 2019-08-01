@@ -22,9 +22,7 @@
 #include <utility>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace common
@@ -70,7 +68,6 @@ namespace phylanx { namespace common
         return execution_tree::primitive_argument_type{std::move(rhs)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot0d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs)
@@ -86,7 +83,6 @@ namespace phylanx { namespace common
 
         return execution_tree::primitive_argument_type{std::move(rhs)};
     }
-#endif
 
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot0d(
@@ -107,11 +103,9 @@ namespace phylanx { namespace common
             // If is_scalar(lhs) && is_matrix(rhs)
             return dot0d2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_scalar(lhs) && is_tensor(rhs)
             return dot0d3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             // lhs_order == 1 && rhs_order != 2
@@ -177,7 +171,6 @@ namespace phylanx { namespace common
         return execution_tree::primitive_argument_type{std::move(lhs)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot1d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
@@ -201,7 +194,6 @@ namespace phylanx { namespace common
 
         return execution_tree::primitive_argument_type{std::move(result)};
     }
-#endif
 
     // lhs_num_dims == 1
     template <typename T>
@@ -223,11 +215,9 @@ namespace phylanx { namespace common
             // If is_vector(lhs) && is_matrix(rhs)
             return dot1d2d(std::move(lhs), std::move(rhs), name, codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_vector(lhs) && is_tensor(rhs)
             return dot1d3d(std::move(lhs), std::move(rhs), name, codename);
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -314,7 +304,6 @@ namespace phylanx { namespace common
         return dot2d2d(lhs.matrix(), blaze::trans(rhs.matrix()), name, codename);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot2d3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, std::string const& name,
@@ -341,7 +330,6 @@ namespace phylanx { namespace common
 
         return execution_tree::primitive_argument_type{std::move(result)};
     }
-#endif
 
     // lhs_num_dims == 2
     // Multiply a matrix with a vector
@@ -365,11 +353,9 @@ namespace phylanx { namespace common
             // If is_matrix(lhs) && is_matrix(rhs)
             return dot2d2d(lhs.matrix(), rhs.matrix(), name, codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // If is_matrix(lhs) && is_tensor(rhs)
             return dot2d3d(std::move(lhs), std::move(rhs), name, codename);
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -381,7 +367,6 @@ namespace phylanx { namespace common
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // lhs_num_dims == 3
     template <typename T>
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type dot3d(
@@ -501,7 +486,6 @@ namespace phylanx { namespace common
             util::generate_error_message(
                 "it is not supported by Phylanx yet", name, codename));
     }
-#endif
 }}
 
 #endif

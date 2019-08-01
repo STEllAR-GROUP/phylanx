@@ -8,6 +8,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/repeat_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
+#include <phylanx/util/tensor_iterators.hpp>
 
 #include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
@@ -23,10 +24,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#include <phylanx/util/tensor_iterators.hpp>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -483,7 +481,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type repeat_operation::repeat3d0d_axis0(
         ir::node_data<T>&& arg,
@@ -841,7 +838,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -861,10 +857,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return repeat2d(std::move(arg), std::move(rep), axis);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return repeat3d(std::move(arg), std::move(rep), axis);
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

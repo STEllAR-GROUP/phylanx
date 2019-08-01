@@ -7,9 +7,7 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/controls/fold_left_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <phylanx/util/tensor_iterators.hpp>
-#endif
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -25,9 +23,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -183,7 +179,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(initial)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type fold_left_operation::fold_left_array_helper_3d(
         primitive_argument_type&& bound_func, primitive_argument_type&& initial,
@@ -220,7 +215,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(initial)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type fold_left_operation::fold_left_array_helper(
@@ -256,12 +250,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(initial), std::move(data), std::move(ctx));
             break;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             initial = fold_left_array_helper_3d(std::move(bound_func),
                 std::move(initial), std::move(data), std::move(ctx));
             break;
-#endif
         }
 
         return primitive_argument_type{std::move(initial)};

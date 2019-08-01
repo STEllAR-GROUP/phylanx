@@ -76,7 +76,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type argminmax2d_1_axis(
             ir::node_data<T>&& arg) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type argminmax3d(
             primitive_arguments_type&& args) const;
 
@@ -96,7 +95,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type argminmax3d_2_axis(
             ir::node_data<T>&& arg) const;
-#endif
     };
 }}}
 

@@ -150,10 +150,8 @@ namespace phylanx { namespace execution_tree
             {
                 return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{
                     (std::max)(lhs[0], rhs[0]),
-                    (std::max)(lhs[1], rhs[1])
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-                  , (std::max)(lhs[2], rhs[2])
-#endif
+                    (std::max)(lhs[1], rhs[1]),
+                    (std::max)(lhs[2], rhs[2])
                 };
             };
 
@@ -196,7 +194,6 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // Extract a matrix value from the given argument
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> extract_value_tensor(
@@ -209,7 +206,6 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val, std::size_t pages, std::size_t rows,
         std::size_t columns, std::string const& name,
         std::string const& codename);
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // in-place versions of above functions
@@ -264,7 +260,6 @@ namespace phylanx { namespace execution_tree
                 return;
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 auto t = rhs.tensor();
@@ -280,7 +275,6 @@ namespace phylanx { namespace execution_tree
                 result = t(0, 0, 0);
                 return;
             }
-#endif
 
         default:
             break;
@@ -307,14 +301,12 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& rhs, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_EXPORT void extract_value_tensor(
         typename ir::node_data<T>::storage3d_type& result,
         ir::node_data<T>&& rhs,
         std::size_t pages, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename);
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // Return argument as a scalar in place of existing storage,
@@ -362,7 +354,6 @@ namespace phylanx { namespace execution_tree
                 return;
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 auto t = rhs.tensor();
@@ -378,7 +369,6 @@ namespace phylanx { namespace execution_tree
                 result = f(t(0, 0, 0));
                 return;
             }
-#endif
 
         default:
             break;
@@ -495,7 +485,6 @@ namespace phylanx { namespace execution_tree
                         name, codename));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 // tensors of size one can be broadcast into any vector
@@ -565,7 +554,7 @@ namespace phylanx { namespace execution_tree
                         "a vector",
                         name, codename));
             }
-#endif
+
         default:
             break;
         }
@@ -717,7 +706,6 @@ namespace phylanx { namespace execution_tree
                 return;
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 // tensors of size one can be broadcast into any other matrix
@@ -796,7 +784,6 @@ namespace phylanx { namespace execution_tree
                             "sized matrix",
                         name, codename));
             }
-#endif
 
         default:
             break;
@@ -810,7 +797,6 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     // Return argument as a matrix in place of existing storage,
     // scalars and vectors are properly broadcast,
@@ -1093,7 +1079,6 @@ namespace phylanx { namespace execution_tree
                     "value type",
                 name, codename));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // Return argument as a scalar, apply given function to value before
@@ -1147,7 +1132,6 @@ namespace phylanx { namespace execution_tree
         return ir::node_data<T>{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     // Return argument as a tensor in place of existing storage,
     // scalars, vectors, and matrices are properly broadcast,
@@ -1166,7 +1150,6 @@ namespace phylanx { namespace execution_tree
             std::forward<F>(f), pages, rows, columns, name, codename);
         return ir::node_data<T>{std::move(result)};
     }
-#endif
 }}
 
 #endif

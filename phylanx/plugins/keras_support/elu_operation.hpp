@@ -56,9 +56,7 @@ namespace phylanx {  namespace execution_tree {  namespace primitives
         primitive_argument_type elu0d(mat_type&& arg, double alpha) const;
         primitive_argument_type elu1d(mat_type&& arg, double alpha) const;
         primitive_argument_type elu2d(mat_type&& arg, double alpha) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type elu3d(mat_type&& arg, double alpha) const;
-#endif
     };
 
     inline primitive create_elu_operation(hpx::id_type const& locality,

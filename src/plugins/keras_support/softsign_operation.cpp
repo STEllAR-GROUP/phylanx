@@ -23,9 +23,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -97,7 +95,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(arg)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type softsign_operation::softsign3d(arg_type&& arg) const
     {
@@ -115,7 +112,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(arg)};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> softsign_operation::eval(
@@ -165,10 +161,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 2:
                             return this_->softsign2d(std::move(a));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                         case 3:
                             return this_->softsign3d(std::move(a));
-#endif
+
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "softsign_operation::eval",

@@ -17,9 +17,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_constant_0d()
 {
@@ -97,7 +95,6 @@ void test_constant_2d()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_constant_3d()
 {
     phylanx::execution_tree::primitive val =
@@ -128,7 +125,6 @@ void test_constant_3d()
     HPX_TEST_EQ(result.dimension(2), 101);
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -159,7 +155,6 @@ void test_empty_operation(std::string const& code,
     HPX_TEST_EQ(dims[1], result_dims[1]);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_empty_operation(std::string const& code,
     std::array<int, 3> const& dims)
 {
@@ -171,7 +166,6 @@ void test_empty_operation(std::string const& code,
     HPX_TEST_EQ(dims[1], result_dims[1]);
     HPX_TEST_EQ(dims[2], result_dims[2]);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -179,9 +173,7 @@ int main(int argc, char* argv[])
     test_constant_0d();
     test_constant_1d();
     test_constant_2d();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_3d();
-#endif
 
     // zeros, ones, full, default dtype is 'float64'
     test_constant_operation(
@@ -190,10 +182,8 @@ int main(int argc, char* argv[])
         "constant(42, list(4))", "[42.0, 42.0, 42.0, 42.0]");
     test_constant_operation(
         "constant(42, list(2, 2))", "[[42.0, 42.0], [42.0, 42.0]]");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_operation("constant(42, list(2, 2, 2))",
         "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
-#endif
 
     test_constant_operation(
         R"(constant(42, list(), __arg(dtype, "int")))", "42");
@@ -203,11 +193,9 @@ int main(int argc, char* argv[])
     test_constant_operation(
         R"(constant(42, list(2, 2), __arg(dtype, "int")))",
         "[[42, 42], [42, 42]]");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_operation(
         R"(constant(42, list(2, 2, 2), __arg(dtype, "int")))",
         "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
-#endif
 
     // ...like operations, default dtype is derived from argument
     test_constant_operation("constant_like(42, 1)", "42");
@@ -216,11 +204,9 @@ int main(int argc, char* argv[])
     test_constant_operation(
         "constant_like(42, [[1, 2], [3, 4]])",
         "[[42, 42], [42, 42]]");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_operation(
         "constant_like(42, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
         "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
-#endif
 
     test_constant_operation(
         "constant_like(42.0, 1)", "42.0");
@@ -230,11 +216,9 @@ int main(int argc, char* argv[])
     test_constant_operation(
         "constant_like(42.0, [[1, 2], [3, 4]])",
         "[[42.0, 42.0], [42.0, 42.0]]");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_constant_operation(
         "constant_like(42.0, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
         "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
-#endif
 
     // empty
     test_empty_operation(
@@ -246,11 +230,9 @@ int main(int argc, char* argv[])
     test_empty_operation(
         R"(constant(nil, list(2, 2), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_empty_operation(
         R"(constant(nil, list(2, 2, 2), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
-#endif
 
     // empty_like
     test_empty_operation(
@@ -262,7 +244,6 @@ int main(int argc, char* argv[])
     test_empty_operation(
         R"(constant_like(nil, [[1, 2], [3, 4]], __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_empty_operation(
         R"(constant_like(
                 nil,
@@ -270,7 +251,6 @@ int main(int argc, char* argv[])
                 __arg(dtype, "int"))
         )",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
-#endif
 
     return hpx::util::report_errors();
 }

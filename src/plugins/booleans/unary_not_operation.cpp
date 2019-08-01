@@ -21,9 +21,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -86,14 +84,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{blaze::map(ops.matrix(),
                     [](T x) -> std::uint8_t { return x == T(0); })}};
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             // TODO: SIMD functionality should be added, blaze implementation
             // is not currently available
             return primitive_argument_type{
                 ir::node_data<std::uint8_t>{blaze::map(ops.tensor(),
                     [](T x) -> std::uint8_t { return x == T(0); })}};
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not_operation::eval",

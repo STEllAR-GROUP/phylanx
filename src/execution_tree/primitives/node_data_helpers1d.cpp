@@ -114,7 +114,6 @@ namespace phylanx { namespace execution_tree
                         name, codename));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             {
                 // tensors of size one can be broadcast into any vector
@@ -163,7 +162,6 @@ namespace phylanx { namespace execution_tree
                         "a vector",
                         name, codename));
             }
-#endif
 
         default:
             break;

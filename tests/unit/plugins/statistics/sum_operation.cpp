@@ -356,7 +356,6 @@ void test_2d_axis1_keep_dims_false_init()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_3d()
 {
     blaze::DynamicTensor<double> subject{
@@ -546,7 +545,6 @@ void test_3d_axis2_keep_dims_false_init()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -561,7 +559,6 @@ int main(int argc, char* argv[])
     test_2d_keep_dims_true();
     test_2d_keep_dims_false();
     test_2d_axis1_keep_dims_false_init();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_3d();
     test_3d_axis0();
     test_3d_axis1();
@@ -569,6 +566,6 @@ int main(int argc, char* argv[])
     test_3d_keep_dims_true();
     test_3d_keep_dims_false();
     test_3d_axis2_keep_dims_false_init();
-#endif
+
     return hpx::util::report_errors();
 }

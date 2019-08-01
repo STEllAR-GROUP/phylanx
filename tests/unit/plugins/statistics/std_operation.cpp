@@ -92,7 +92,6 @@ int main(int argc, char* argv[])
         "std([[1.0, 2.0], [3.0, 4.0]], 1, true)",
         "[[0.5], [0.5]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensors
     test_count_std_operation(
         "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]])",
@@ -134,7 +133,6 @@ int main(int argc, char* argv[])
     test_count_std_operation(
         "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 2, true)",
         "[[[0.5], [0.5]], [[0.5], [0.5]]]");
-#endif
 
     return hpx::util::report_errors();
 }

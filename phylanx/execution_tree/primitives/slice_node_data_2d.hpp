@@ -731,20 +731,12 @@ namespace phylanx { namespace execution_tree
             return f.matrix(m, std::move(rows_result));
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         typename ir::node_data<T>::storage3d_type result(
             1, rows.size(), m.columns());
         blaze::pageslice(result, 0) = rows_result;
         return f.tensor(m, std::move(result));
-#else
-    HPX_THROW_EXCEPTION(hpx::not_implemented,
-        "phylanx::execution_tree::slice2d_integer_1d",
-        util::generate_error_message(
-            "this operation is not supported (yet)", name, codename));
-#endif
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_integer_2d(Data&& m,
         ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
@@ -763,7 +755,6 @@ namespace phylanx { namespace execution_tree
             util::generate_error_message(
                 "this operation is not supported (yet)", name, codename));
     }
-#endif
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_integer(Data&& m,
@@ -780,11 +771,10 @@ namespace phylanx { namespace execution_tree
             return slice2d_integer_1d<T>(std::forward<Data>(m),
                 std::move(rows), explicit_nil, f, name, codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 2:
             return slice2d_integer_2d<T>(std::forward<Data>(m),
                 std::move(rows), explicit_nil, f, name, codename);
-#endif
+
         default:
             break;
         }
@@ -825,7 +815,6 @@ namespace phylanx { namespace execution_tree
         return f.matrix(m, std::move(columns_result));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_integer_column_2d(Data&& m,
         ir::node_data<std::int64_t>&& columns, F const& f,
@@ -844,7 +833,6 @@ namespace phylanx { namespace execution_tree
             util::generate_error_message(
                 "this operation is not supported (yet)", name, codename));
     }
-#endif
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_integer_column(Data&& m,
@@ -861,11 +849,10 @@ namespace phylanx { namespace execution_tree
             return slice2d_integer_column_1d<T>(std::forward<Data>(m),
                 std::move(columns), f, name, codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 2:
             return slice2d_integer_column_2d<T>(std::forward<Data>(m),
                 std::move(columns), f, name, codename);
-#endif
+
         default:
             break;
         }

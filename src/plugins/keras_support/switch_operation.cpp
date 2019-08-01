@@ -24,9 +24,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -226,7 +225,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type switch_operation::switch3d(
         ir::node_data<std::uint8_t>&& cond,
         ir::node_data<double>&& then_expr,
@@ -279,7 +277,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> switch_operation::eval(
@@ -361,17 +358,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 0:
                     return this_->switch0d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
+
                 case 1:
                     return this_->switch1d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
+
                 case 2:
                     return this_->switch2d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 3:
                     return this_->switch3d(std::move(cond),
                         std::move(then_expr), std::move(else_expr));
-#endif
+
                 default:
                     break;
                 }

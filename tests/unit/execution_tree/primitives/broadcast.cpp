@@ -11,9 +11,7 @@
 #include <utility>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_broadcast_to_scalar()
 {
@@ -47,7 +45,6 @@ void test_broadcast_to_scalar()
         HPX_TEST_EQ(result[0], 42.0);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensor->scalar
     {
         blaze::DynamicTensor<double> t(1, 1, 1, 42.0);
@@ -56,7 +53,6 @@ void test_broadcast_to_scalar()
         HPX_TEST_EQ(result.num_dimensions(), 0UL);
         HPX_TEST_EQ(result[0], 42.0);
     }
-#endif
 }
 
 void test_broadcast_to_vector()
@@ -117,7 +113,6 @@ void test_broadcast_to_vector()
         HPX_TEST_EQ(result3, expected);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensor->vector
     {
         blaze::DynamicTensor<double> t1(16, 1, 1, 42.0);
@@ -148,7 +143,6 @@ void test_broadcast_to_vector()
         HPX_TEST_EQ(result4.dimension(0), 16UL);
         HPX_TEST_EQ(result4, expected);
     }
-#endif
 }
 
 void test_broadcast_to_matrix()
@@ -233,7 +227,6 @@ void test_broadcast_to_matrix()
         HPX_TEST_EQ(result5, expected8x16);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // tensor->matrix
     {
         blaze::DynamicTensor<double> t2(1, 16, 16, 42.0);
@@ -260,10 +253,8 @@ void test_broadcast_to_matrix()
         HPX_TEST_EQ(result5.dimension(1), 16UL);
         HPX_TEST_EQ(result5, expected16x16);
     }
-#endif
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_broadcast_to_tensor()
 {
     using phylanx::execution_tree::extract_value_tensor;
@@ -391,16 +382,14 @@ void test_broadcast_to_tensor()
         HPX_TEST_EQ(result5, expected);
     }
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_broadcast_to_scalar();
     test_broadcast_to_vector();
     test_broadcast_to_matrix();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_broadcast_to_tensor();
-#endif
+
     return hpx::util::report_errors();
 }
 

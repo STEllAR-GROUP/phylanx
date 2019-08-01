@@ -93,7 +93,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& funcname, std::string const& name,
             std::string const& codename);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type generic3d_bool(arg_type<T>&& op) const;
         primitive_argument_type generic3d_bool(
@@ -106,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         static matrix_vector_function_ptr<T> get_3d_function(
             std::string const& funcname, std::string const& name,
             std::string const& codename);
-#endif
+
     private:
         std::string func_name_;
         node_data_type dtype_;

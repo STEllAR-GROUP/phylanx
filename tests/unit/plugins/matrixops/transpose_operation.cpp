@@ -329,7 +329,6 @@ int main(int argc, char* argv[])
     test_transpose_operation_2d_axes();
     test_transpose_operation_2d_axes_nochange();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_transpose_operation(
         "transpose([[[1,2,3],[4,5,6]]])", "[[[1], [4]],[[2], [5]],[[3], [6]]]");
     test_transpose_operation(
@@ -368,7 +367,6 @@ int main(int argc, char* argv[])
         "[[13,14,15],[16,17,18]], [[19,20,21],[22,23,24]]], [0, -2, -1])",
         "[[[ 1,  2,  3],[ 4,  5,  6]],[[ 7,  8,  9],[10, 11, 12]],"
         "[[13, 14, 15],[16, 17, 18]],[[19, 20, 21],[22, 23, 24]]]");
-#endif
 
     return hpx::util::report_errors();
 }

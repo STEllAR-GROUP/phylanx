@@ -97,14 +97,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     slice(target, args[0], args[1], name_, codename_));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             if (args.size() > 2)
             {
                 // handle page/row/column-slicing
                 return hpx::make_ready_future(
                     slice(target, args[0], args[1], args[2], name_, codename_));
             }
-#endif
+
             // handle row-slicing
             return hpx::make_ready_future(
                 slice(target, args[0], name_, codename_));
@@ -210,7 +209,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bound_value_ = std::move(result);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     void variable::store3dslice(primitive_arguments_type&& data,
         primitive_arguments_type&& params, eval_context ctx)
     {
@@ -232,7 +230,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(data[0]), name_, codename_);
         bound_value_ = std::move(result);
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     void variable::store(primitive_arguments_type&& data,
@@ -283,12 +280,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(data), std::move(params), std::move(ctx));
                 return;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 4:
                 store3dslice(
                     std::move(data), std::move(params), std::move(ctx));
                 return;
-#endif
 
             default:
                 break;

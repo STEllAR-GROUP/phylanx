@@ -12,9 +12,7 @@
 #include <type_traits>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 namespace phylanx { namespace traits
 {
@@ -34,12 +32,10 @@ namespace phylanx { namespace traits
     {
     };
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     struct is_tensor : std::false_type
     {
     };
-#endif
 
     template <typename T>
     using is_scalar_t = typename is_scalar<T>::type;
@@ -56,12 +52,10 @@ namespace phylanx { namespace traits
 //     template <typename T>
 //     using is_matrix_v = is_matrix<T>::value;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     using is_tensor_t = typename is_tensor<T>::type;
 //     template <typename T>
 //     using is_tensor_v = is_tensor<T>::value;
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <>
@@ -101,7 +95,6 @@ namespace phylanx { namespace traits
     {
     };
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     struct is_tensor<blaze::DynamicTensor<T>> : std::true_type
@@ -112,7 +105,6 @@ namespace phylanx { namespace traits
     struct is_matrix<blaze::CustomTensor<T, AF, PF, RT>> : std::true_type
     {
     };
-#endif
 }}
 
 #endif
