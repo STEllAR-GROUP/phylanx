@@ -412,6 +412,15 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(blaze::DynamicTensor<std::uint8_t>&& val)
           : argument_value_type{ir::node_data<std::uint8_t>{std::move(val)}}
         {}
+        explicit primitive_argument_type(
+            blaze::DynamicArray<4UL, std::uint8_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+        {}
+        explicit primitive_argument_type(
+            blaze::DynamicArray<4UL, std::uint8_t>&& val)
+          : argument_value_type{
+                phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
+        {}
 
         primitive_argument_type(bool val, annotation_ptr const& ann)
           : argument_value_type{ir::node_data<std::uint8_t>{val}}
@@ -497,6 +506,15 @@ namespace phylanx { namespace execution_tree
         {}
         explicit primitive_argument_type(blaze::DynamicTensor<std::int64_t>&& val)
           : argument_value_type{ir::node_data<std::int64_t>{std::move(val)}}
+        {}
+        explicit primitive_argument_type(
+            blaze::DynamicArray<4UL, std::int64_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+        {}
+        explicit primitive_argument_type(
+            blaze::DynamicArray<4UL, std::int64_t>&& val)
+          : argument_value_type{
+                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
         {}
 
         primitive_argument_type(std::int64_t val,
@@ -599,6 +617,13 @@ namespace phylanx { namespace execution_tree
         {}
         explicit primitive_argument_type(blaze::DynamicTensor<double>&& val)
           : argument_value_type{ir::node_data<double>{std::move(val)}}
+        {}
+        explicit primitive_argument_type(
+            blaze::DynamicArray<4UL, double> const& val)
+          : argument_value_type{phylanx::ir::node_data<double>{val}}
+        {}
+        explicit primitive_argument_type(blaze::DynamicArray<4UL, double>&& val)
+          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
         {}
 
         primitive_argument_type(double val, annotation_ptr const& ann)

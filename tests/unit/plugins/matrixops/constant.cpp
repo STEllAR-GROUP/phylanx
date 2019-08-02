@@ -126,6 +126,40 @@ void test_constant_3d()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
 
+void test_constant_4d()
+{
+    phylanx::execution_tree::primitive val =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+
+    phylanx::execution_tree::primitive const_ =
+        phylanx::execution_tree::primitives::create_constant(hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(val),
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        phylanx::ir::node_data<std::int64_t>(3),
+                        phylanx::ir::node_data<std::int64_t>(13),
+                        phylanx::ir::node_data<std::int64_t>(33),
+                        phylanx::ir::node_data<std::int64_t>(105)}
+                    }});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        const_.eval();
+
+    blaze::DynamicArray<4UL, double> expected =
+        blaze::DynamicArray<4UL, double>(
+            blaze::init_from_value, 42.0, 3UL, 13UL, 33UL, 105UL);
+    auto result = phylanx::execution_tree::extract_numeric_value(f.get());
+
+    HPX_TEST_EQ(result.num_dimensions(), 4);
+    HPX_TEST_EQ(result.dimension(0), 3);
+    HPX_TEST_EQ(result.dimension(1), 13);
+    HPX_TEST_EQ(result.dimension(2), 33);
+    HPX_TEST_EQ(result.dimension(3), 105);
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& codestr)
@@ -167,6 +201,19 @@ void test_empty_operation(std::string const& code,
     HPX_TEST_EQ(dims[2], result_dims[2]);
 }
 
+void test_empty_operation(std::string const& code,
+    std::array<int, 4> const& dims)
+{
+    auto f = compile_and_run(code);
+    auto result_dims =
+        phylanx::execution_tree::extract_numeric_value_dimensions(f());
+
+    HPX_TEST_EQ(dims[0], result_dims[0]);
+    HPX_TEST_EQ(dims[1], result_dims[1]);
+    HPX_TEST_EQ(dims[2], result_dims[2]);
+    HPX_TEST_EQ(dims[3], result_dims[3]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -174,6 +221,7 @@ int main(int argc, char* argv[])
     test_constant_1d();
     test_constant_2d();
     test_constant_3d();
+    test_constant_4d();
 
     // zeros, ones, full, default dtype is 'float64'
     test_constant_operation(
@@ -233,6 +281,9 @@ int main(int argc, char* argv[])
     test_empty_operation(
         R"(constant(nil, list(2, 2, 2), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
+    test_empty_operation(
+        R"(constant(nil, list(2, 3, 4, 5), __arg(dtype, "int")))",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 3, 4, 5});
 
     // empty_like
     test_empty_operation(
@@ -250,7 +301,15 @@ int main(int argc, char* argv[])
                 [[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
                 __arg(dtype, "int"))
         )",
-        std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
+    std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
+        test_empty_operation(
+        R"(constant_like(
+                nil,
+                [[[[1, 2, 3, 4], [3, 4, 5, 6], [7, 8, 9, 10]],
+                [[1, 2, 3, 4], [3, 4, 5, 6], [7, 8, 9, 10]]]],
+                __arg(dtype, "int"))
+        )",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{1, 2, 3, 4});
 
     return hpx::util::report_errors();
 }
