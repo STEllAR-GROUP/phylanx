@@ -7,8 +7,7 @@
 
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_3d.hpp>
-
-#include <string>
+#include <phylanx/plugins/arithmetics/generic_operation_3d_definitions.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives

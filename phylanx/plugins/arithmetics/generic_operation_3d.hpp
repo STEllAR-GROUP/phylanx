@@ -32,6 +32,11 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ////////////////////////////////////////////////////////////////////////////
+#define GENERIC_OPERATION_3D_DECLARATION(func)                                 \
+    template <typename T>                                                      \
+    ir::node_data<T> func##_3d(ir::node_data<T>&& t);                          \
+    /**/
+
 #define GENERIC_OPERATION_3D(func)                                             \
     template <typename T>                                                      \
     ir::node_data<T> func##_3d(ir::node_data<T>&& t)                           \
@@ -49,115 +54,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /**/
 
 
-    GENERIC_OPERATION_3D(abs);
-    GENERIC_OPERATION_3D(floor);
-    GENERIC_OPERATION_3D(ceil);
-    GENERIC_OPERATION_3D(trunc);
-    GENERIC_OPERATION_3D(round);
-    GENERIC_OPERATION_3D(conj);
-    GENERIC_OPERATION_3D(real);
-    GENERIC_OPERATION_3D(imag);
-    GENERIC_OPERATION_3D(sqrt);
-    GENERIC_OPERATION_3D(invsqrt);
-    GENERIC_OPERATION_3D(cbrt);
-    GENERIC_OPERATION_3D(invcbrt);
-    GENERIC_OPERATION_3D(exp);
-    GENERIC_OPERATION_3D(exp2);
-    GENERIC_OPERATION_3D(exp10);
-    GENERIC_OPERATION_3D(log);
-    GENERIC_OPERATION_3D(log2);
-    GENERIC_OPERATION_3D(log10);
-    GENERIC_OPERATION_3D(sin);
-    GENERIC_OPERATION_3D(cos);
-    GENERIC_OPERATION_3D(tan);
-    GENERIC_OPERATION_3D(sinh);
-    GENERIC_OPERATION_3D(cosh);
-    GENERIC_OPERATION_3D(tanh);
-    GENERIC_OPERATION_3D(asin);
-    GENERIC_OPERATION_3D(acos);
-    GENERIC_OPERATION_3D(atan);
-    GENERIC_OPERATION_3D(asinh);
-    GENERIC_OPERATION_3D(erf);
-    GENERIC_OPERATION_3D(erfc);
-    GENERIC_OPERATION_3D(sign);
+    GENERIC_OPERATION_3D_DECLARATION(abs);
+    GENERIC_OPERATION_3D_DECLARATION(floor);
+    GENERIC_OPERATION_3D_DECLARATION(ceil);
+    GENERIC_OPERATION_3D_DECLARATION(trunc);
+    GENERIC_OPERATION_3D_DECLARATION(round);
+    GENERIC_OPERATION_3D_DECLARATION(conj);
+    GENERIC_OPERATION_3D_DECLARATION(real);
+    GENERIC_OPERATION_3D_DECLARATION(imag);
+    GENERIC_OPERATION_3D_DECLARATION(sqrt);
+    GENERIC_OPERATION_3D_DECLARATION(invsqrt);
+    GENERIC_OPERATION_3D_DECLARATION(cbrt);
+    GENERIC_OPERATION_3D_DECLARATION(invcbrt);
+    GENERIC_OPERATION_3D_DECLARATION(exp);
+    GENERIC_OPERATION_3D_DECLARATION(exp2);
+    GENERIC_OPERATION_3D_DECLARATION(exp10);
+    GENERIC_OPERATION_3D_DECLARATION(log);
+    GENERIC_OPERATION_3D_DECLARATION(log2);
+    GENERIC_OPERATION_3D_DECLARATION(log10);
+    GENERIC_OPERATION_3D_DECLARATION(sin);
+    GENERIC_OPERATION_3D_DECLARATION(cos);
+    GENERIC_OPERATION_3D_DECLARATION(tan);
+    GENERIC_OPERATION_3D_DECLARATION(sinh);
+    GENERIC_OPERATION_3D_DECLARATION(cosh);
+    GENERIC_OPERATION_3D_DECLARATION(tanh);
+    GENERIC_OPERATION_3D_DECLARATION(asin);
+    GENERIC_OPERATION_3D_DECLARATION(acos);
+    GENERIC_OPERATION_3D_DECLARATION(atan);
+    GENERIC_OPERATION_3D_DECLARATION(asinh);
+    GENERIC_OPERATION_3D_DECLARATION(acosh);
+    GENERIC_OPERATION_3D_DECLARATION(atanh);
+    GENERIC_OPERATION_3D_DECLARATION(erf);
+    GENERIC_OPERATION_3D_DECLARATION(erfc);
+    GENERIC_OPERATION_3D_DECLARATION(square);
+    GENERIC_OPERATION_3D_DECLARATION(sign);
 
-#undef GENERIC_OPERATION_3D
-
-    ////////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    ir::node_data<T> acosh_3d(ir::node_data<T>&& t)
-    {
-#if defined(PHYLANX_DEBUG)
-        for (size_t k = 0UL; k < t.tensor().pages(); ++k)
-        {
-            for (size_t i = 0UL; i < t.tensor().rows(); ++i)
-            {
-                for (size_t j = 0UL; j < t.tensor().columns(); ++j)
-                {
-                    if (t.tensor()(k, i, j) < 1)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "arccosh", "tensor arccosh: domain error");
-                    }
-                }
-            }
-        }
-#endif
-        if (t.is_ref())
-        {
-            t = blaze::acosh(t.tensor());
-        }
-        else
-        {
-            t.tensor() = blaze::acosh(t.tensor());
-        }
-        return ir::node_data<T>(std::move(t));
-    }
-
-    template <typename T>
-    ir::node_data<T> atanh_3d(ir::node_data<T>&& t)
-    {
-#if defined(PHYLANX_DEBUG)
-        for (size_t k = 0UL; k < t.tensor().pages(); ++k)
-        {
-            for (size_t i = 0UL; i < t.tensor().rows(); ++i)
-            {
-                for (size_t j = 0UL; j < t.tensor().columns(); ++j)
-                {
-                    if (t.tensor()(k, i, j) <= -1 ||
-                        t.tensor()(k, i, j) >= 1)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "arctanh", "tensor arctanh: domain error");
-                    }
-                }
-            }
-        }
-#endif
-        if (t.is_ref())
-        {
-            t = blaze::atanh(t.tensor());
-        }
-        else
-        {
-            t.tensor() = blaze::atanh(t.tensor());
-        }
-        return ir::node_data<T>(std::move(t));
-    }
-
-    template <typename T>
-    ir::node_data<T> square_3d(ir::node_data<T>&& t)
-    {
-        if (t.is_ref())
-        {
-            t = t.tensor() % t.tensor();
-        }
-        else
-        {
-            t.tensor() %= t.tensor();
-        }
-        return ir::node_data<T>(std::move(t));
-    }
+#undef GENERIC_OPERATION_3D_DECLARATION
 
     ////////////////////////////////////////////////////////////////////////////
     // Helper to explicitly instantiate one of the functions above
