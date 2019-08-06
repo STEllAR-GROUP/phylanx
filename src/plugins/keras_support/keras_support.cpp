@@ -57,5 +57,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(softplus_operation_plugin,
     phylanx::execution_tree::primitives::softplus_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(softsign_operation_plugin,
     phylanx::execution_tree::primitives::softsign_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(spatial_2d_padding_operation_plugin,
+    phylanx::execution_tree::primitives::spatial_2d_padding_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(switch_operation_plugin,
     phylanx::execution_tree::primitives::switch_operation::match_data);
