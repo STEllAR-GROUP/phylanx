@@ -15,6 +15,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -140,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                                       -> primitive_argument_type {
 
                 ir::range padding(0);
-                std::size_t pad_front, pad_rear, pad_top, pad_bottom;
+                std::int64_t pad_front, pad_rear, pad_top, pad_bottom;
                 if (args.size() > 1)
                 {
                     padding = extract_list_value_strict(
@@ -167,23 +168,23 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                                 "tuple of 2 tuples, each contains two "
                                 "non-negative integers"));
                     }
-                    pad_front = extract_scalar_integer_value_strict(
-                        *it_pages.begin());
+                    pad_front =
+                        extract_scalar_integer_value_strict(*it_pages.begin());
                     pad_rear = extract_scalar_integer_value_strict(
                         *++it_pages.begin());
-                    pad_top = extract_scalar_integer_value_strict(
-                        *it_rows.begin());
-                    pad_bottom = extract_scalar_integer_value_strict(
-                        *++it_rows.begin());
+                    pad_top =
+                        extract_scalar_integer_value_strict(*it_rows.begin());
+                    pad_bottom =
+                        extract_scalar_integer_value_strict(*++it_rows.begin());
 
-                    if (pad_front < 0 && pad_rear < 0 && pad_top < 0 &&
+                    if (pad_front < 0 || pad_rear < 0 || pad_top < 0 ||
                         pad_bottom < 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "spatial_2d_padding_operation::eval",
                             this_->generate_error_message(
                                 "spatial_2d_padding requires each pad to be a "
-                                "non-negative integers"));
+                                "non-negative integer"));
                     }
 
                     if (pad_front == 1 && pad_rear == 1 && pad_top == 1 &&
