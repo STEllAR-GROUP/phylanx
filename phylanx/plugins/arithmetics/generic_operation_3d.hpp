@@ -28,465 +28,124 @@
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+#define GENERIC_OPERATION_3D_DECLARATION(func)                                 \
+    template <typename T>                                                      \
+    ir::node_data<T> func##_3d(ir::node_data<T>&& t);                          \
+    /**/
+
+#define GENERIC_OPERATION_3D(func)                                             \
+    template <typename T>                                                      \
+    ir::node_data<T> func##_3d(ir::node_data<T>&& t)                           \
+    {                                                                          \
+        if (t.is_ref())                                                        \
+        {                                                                      \
+            t = blaze::func(t.tensor());                                       \
+        }                                                                      \
+        else                                                                   \
+        {                                                                      \
+            t.tensor() = blaze::func(t.tensor());                              \
+        }                                                                      \
+        return ir::node_data<T>(std::move(t));                                 \
+    }                                                                          \
+    /**/
+
+
+    GENERIC_OPERATION_3D_DECLARATION(abs);
+    GENERIC_OPERATION_3D_DECLARATION(floor);
+    GENERIC_OPERATION_3D_DECLARATION(ceil);
+    GENERIC_OPERATION_3D_DECLARATION(trunc);
+    GENERIC_OPERATION_3D_DECLARATION(round);
+    GENERIC_OPERATION_3D_DECLARATION(conj);
+    GENERIC_OPERATION_3D_DECLARATION(real);
+    GENERIC_OPERATION_3D_DECLARATION(imag);
+    GENERIC_OPERATION_3D_DECLARATION(sqrt);
+    GENERIC_OPERATION_3D_DECLARATION(invsqrt);
+    GENERIC_OPERATION_3D_DECLARATION(cbrt);
+    GENERIC_OPERATION_3D_DECLARATION(invcbrt);
+    GENERIC_OPERATION_3D_DECLARATION(exp);
+    GENERIC_OPERATION_3D_DECLARATION(exp2);
+    GENERIC_OPERATION_3D_DECLARATION(exp10);
+    GENERIC_OPERATION_3D_DECLARATION(log);
+    GENERIC_OPERATION_3D_DECLARATION(log2);
+    GENERIC_OPERATION_3D_DECLARATION(log10);
+    GENERIC_OPERATION_3D_DECLARATION(sin);
+    GENERIC_OPERATION_3D_DECLARATION(cos);
+    GENERIC_OPERATION_3D_DECLARATION(tan);
+    GENERIC_OPERATION_3D_DECLARATION(sinh);
+    GENERIC_OPERATION_3D_DECLARATION(cosh);
+    GENERIC_OPERATION_3D_DECLARATION(tanh);
+    GENERIC_OPERATION_3D_DECLARATION(asin);
+    GENERIC_OPERATION_3D_DECLARATION(acos);
+    GENERIC_OPERATION_3D_DECLARATION(atan);
+    GENERIC_OPERATION_3D_DECLARATION(asinh);
+    GENERIC_OPERATION_3D_DECLARATION(acosh);
+    GENERIC_OPERATION_3D_DECLARATION(atanh);
+    GENERIC_OPERATION_3D_DECLARATION(erf);
+    GENERIC_OPERATION_3D_DECLARATION(erfc);
+    GENERIC_OPERATION_3D_DECLARATION(square);
+    GENERIC_OPERATION_3D_DECLARATION(sign);
+
+#undef GENERIC_OPERATION_3D_DECLARATION
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Helper to explicitly instantiate one of the functions above
+#define GENERIC_OPERATION_3D_INSTANTIATION(func, type)                         \
+    template ir::node_data<type> func##_3d<type>(ir::node_data<type> && t);    \
+    /**/
+
+    ////////////////////////////////////////////////////////////////////////////
     template <typename T>
     std::map<std::string,
         generic_operation::matrix_vector_function_ptr<T>> const&
     generic_operation::get_3d_map()
     {
         static std::map<std::string, matrix_vector_function_ptr<T>> map3d = {
-            {"absolute",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::abs(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::abs(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"floor",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::floor(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::floor(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"ceil",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::ceil(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::ceil(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"trunc",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::trunc(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::trunc(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"rint",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::round(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::round(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"conj",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::conj(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::conj(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"real",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::real(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::real(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"imag",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::imag(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::imag(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"sqrt",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::sqrt(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::sqrt(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"invsqrt",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::invsqrt(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::invsqrt(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"cbrt",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::cbrt(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::cbrt(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"invcbrt",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::invcbrt(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::invcbrt(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"exp",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::exp(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::exp(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"exp2",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::exp2(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::ceil(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"exp10",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::exp10(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::exp10(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"log",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::log(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::log(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"log2",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::log2(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::log2(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"log10",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::log10(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::log10(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"sin",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::sin(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::sin(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"cos",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::cos(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::cos(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"tan",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::tan(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::tan(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"sinh",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::sinh(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::sinh(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"cosh",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::cosh(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::cosh(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"tanh",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::tanh(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::tanh(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"arcsin",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::asin(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::asin(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"arccos",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::acos(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::acos(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"arctan",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::atan(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::atan(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"arcsinh",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::asinh(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::asinh(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"arccosh",
-                [](arg_type<T>&& t) -> arg_type<T> {
-#if defined(PHYLANX_DEBUG)
-                    for (size_t k = 0UL; k < t.tensor().pages(); ++k)
-                    {
-                        for (size_t i = 0UL; i < t.tensor().rows(); ++i)
-                        {
-                            for (size_t j = 0UL; j < t.tensor().columns(); ++j)
-                            {
-                                if (t.tensor()(k, i, j) < 1)
-                                {
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "arccosh", "tensor arccosh: domain error");
-                                }
-                            }
-                        }
-                    }
-#endif
-                    if (t.is_ref())
-                    {
-                        t = blaze::acosh(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::acosh(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"arctanh",
-                [](arg_type<T>&& t) -> arg_type<T> {
-#if defined(PHYLANX_DEBUG)
-                    for (size_t k = 0UL; k < t.tensor().pages(); ++k)
-                    {
-                        for (size_t i = 0UL; i < t.tensor().rows(); ++i)
-                        {
-                            for (size_t j = 0UL; j < t.tensor().columns(); ++j)
-                            {
-                                if (t.tensor()(k, i, j) <= -1 ||
-                                    t.tensor()(k, i, j) >= 1)
-                                {
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "arctanh", "tensor arctanh: domain error");
-                                }
-                            }
-                        }
-                    }
-#endif
-                    if (t.is_ref())
-                    {
-                        t = blaze::atanh(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::atanh(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"erf",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::erf(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::erf(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"erfc",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::erfc(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::erfc(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"square",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = t.tensor() % t.tensor();
-                    }
-                    else
-                    {
-                        t.tensor() %= t.tensor();
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
-            {"sign",
-                [](arg_type<T>&& t) -> arg_type<T> {
-                    if (t.is_ref())
-                    {
-                        t = blaze::sign(t.tensor());
-                    }
-                    else
-                    {
-                        t.tensor() = blaze::sign(t.tensor());
-                    }
-                    return arg_type<T>(std::move(t));
-                }},
+            {"absolute", &abs_3d<T>},
+            {"floor", &floor_3d<T>},
+            {"ceil", &ceil_3d<T>},
+            {"trunc", &trunc_3d<T>},
+            {"rint", round_3d<T>},
+            {"conj", conj_3d<T>},
+            {"real", real_3d<T>},
+            {"imag", imag_3d<T>},
+            {"sqrt", sqrt_3d<T>},
+            {"invsqrt", &invsqrt_3d<T>},
+            {"cbrt", &cbrt_3d<T>},
+            {"invcbrt", &invcbrt_3d<T>},
+            {"exp", &exp_3d<T>},
+            {"exp2", &exp2_3d<T>},
+            {"exp10", &exp10_3d<T>},
+            {"log", &log_3d<T>},
+            {"log2", &log2_3d<T>},
+            {"log10", &log10_3d<T>},
+            {"sin", &sin_3d<T>},
+            {"cos", &cos_3d<T>},
+            {"tan", &tan_3d<T>},
+            {"sinh", &sinh_3d<T>},
+            {"cosh", &cosh_3d<T>},
+            {"tanh", &tanh_3d<T>},
+            {"arcsin", &asin_3d<T>},
+            {"arccos", &acos_3d<T>},
+            {"arctan", &atan_3d<T>},
+            {"arcsinh", &asinh_3d<T>},
+            {"arccosh", &acosh_3d<T>},
+            {"arctanh", &atanh_3d<T>},
+            {"erf", &erf_3d<T>},
+            {"erfc", &erfc_3d<T>},
+            {"square", &square_3d<T>},
+            {"sign", &sign_3d<T>},
             {"normalize",
                 [](arg_type<T>&& t) -> arg_type<T> {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
                         "normalize() is not a supported tensor operation");
                 }},
             {"trace", [](arg_type<T>&& t) -> arg_type<T> {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
-                        "trace() is not a supported tensor operation");
+                 HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
+                     "trace() is not a supported tensor operation");
                 }}
         };
         return map3d;
