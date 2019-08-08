@@ -63,6 +63,21 @@ namespace phylanx { namespace common
         execution_tree::primitive_argument_type&& arg,
         ir::node_data<std::int64_t>&& axes, std::string const& name,
         std::string const& codename);
+
+    template <typename T>
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type transpose4d(
+        ir::node_data<T>&& arg);
+    //template <typename T>
+    //PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type transpose3d(
+    //    ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes);
+
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type transpose4d(
+        execution_tree::primitive_argument_type&& arg,
+        std::string const& name, std::string const& codename);
+    //PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type transpose3d(
+    //    execution_tree::primitive_argument_type&& arg,
+    //    ir::node_data<std::int64_t>&& axes, std::string const& name,
+    //    std::string const& codename);
 }}
 
 #endif

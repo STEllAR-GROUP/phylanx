@@ -291,5 +291,50 @@ namespace phylanx { namespace common
                 "the transpose primitive requires for its argument to "
                 "be numeric data type", name, codename));
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    execution_tree::primitive_argument_type transpose4d(ir::node_data<T>&& arg)
+    {
+        //if (arg.is_ref())
+            arg = blaze::trans(arg.quatern());
+
+        //else
+        //    blaze::transpose(arg.tensor_non_ref(), {3, 2, 1, 0});
+
+        return execution_tree::primitive_argument_type{std::move(arg)};
+    }
+
+    execution_tree::primitive_argument_type transpose4d(
+        execution_tree::primitive_argument_type&& arg, std::string const& name,
+        std::string const& codename)
+    {
+        using namespace execution_tree;
+
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return transpose4d(
+                extract_boolean_value_strict(std::move(arg), name, codename));
+
+        case node_data_type_int64:
+            return transpose4d(
+                extract_integer_value_strict(std::move(arg), name, codename));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return transpose4d(
+                extract_numeric_value(std::move(arg), name, codename));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "transpose4d",
+            util::generate_error_message(
+                "the transpose primitive requires for its argument to "
+                    "be numeric data type", name, codename));
+    }
 }}
 
