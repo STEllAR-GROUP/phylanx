@@ -45,4 +45,60 @@ namespace phylanx { namespace common
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     dot2d2dt(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
         std::string const& name, std::string const& codename);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot0d0d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot0d1d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot0d2d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot0d3d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    ///////////////////////////////////////////////////////////////////////////
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot1d0d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot1d1d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot1d2d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot1d3d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
+    ///////////////////////////////////////////////////////////////////////////
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot2d0d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot2d1d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot2d3d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot3d0d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot3d2d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    dot3d3d(ir::node_data<double>&& lhs, ir::node_data<double>&& rhs,
+        std::string const& name, std::string const& codename);
+
 }}
