@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         randomforest_fit() = default;
 
         ///
-        /// Creates a primitive executing the RandomForest algorithm on 
+        /// Creates a primitive executing the RandomForest algorithm on
         /// the given input data
         ///
         /// \param args Is a (possibly empty) list of any values to be
@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         randomforest_predict() = default;
 
         ///
-        /// Creates a primitive executing the RandomForest algorithm on 
+        /// Creates a primitive executing the RandomForest algorithm on
         /// the given input data
         ///
         /// \param args Is a (possibly empty) list of any values to be

@@ -97,7 +97,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
                 generate_error_message(
                     "the randomforest algorithm primitive requires for the number "
-                    "of rows in 'training_data' to be equal to the size of 'training_labels'"));
+                    "of rows in 'training_data' to be equal to the size of "
+                    "'training_labels'"));
         }
 
         auto max_depth = static_cast<std::int64_t>(
@@ -198,10 +199,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicVector<double> test_labels(test.rows());
 
-        std::int64_t const ntree = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
-             tree[phylanx::execution_tree::primitive_argument_type{
-                 std::string("n_trees")
-             }].get().variant()).scalar();
+        std::int64_t const ntree =
+            phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
+                tree[phylanx::execution_tree::primitive_argument_type{
+                    std::string("n_trees")
+                }].get().variant()).scalar();
 
         randomforest_impl rf(ntree);
 

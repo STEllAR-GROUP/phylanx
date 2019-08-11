@@ -1,5 +1,5 @@
 //   Copyright (c) 2017 Hartmut Kaiser
-//   Copyright (c) 2018 Christopher Taylor 
+//   Copyright (c) 2018 Christopher Taylor
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -26,7 +26,8 @@ char const* const randomforest_test_code = R"(block(
             define(min_size, 1),
             define(sample_size, 1.0),
             define(n_trees, 10),
-            define(model, randomforest_fit(train_data, train_labels, mx_depth, min_size, sample_size, n_trees)),
+            define(model, randomforest_fit(train_data,
+                train_labels, mx_depth, min_size, sample_size, n_trees)),
             block(
                 store(test_labels, randomforest_predict(model, test_data)),
                 cout(test_data)

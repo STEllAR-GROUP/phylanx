@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <cmath>
 
 #include <blaze/Math.h>
@@ -44,7 +45,8 @@
  */
 namespace phylanx { namespace algorithms { namespace impl {
 
-using randomforest_node = phylanx::execution_tree::primitive_argument_type; //phylanx::ir::dictionary;
+using randomforest_node =
+    phylanx::execution_tree::primitive_argument_type;
 
 struct randomforest_impl {
 
@@ -88,7 +90,8 @@ struct randomforest_impl {
     static double gini_index(
         blaze::DynamicMatrix<double> const& dataset
         , blaze::DynamicVector<double> const& dataset_labels
-        , std::tuple< blaze::DynamicVector<std::int64_t>, blaze::DynamicVector<std::int64_t> > const& groups
+        , std::tuple< blaze::DynamicVector<std::int64_t>
+            , blaze::DynamicVector<std::int64_t> > const& groups
         , std::unordered_map<double, std::int64_t> & classes) {
 
         std::vector<std::int64_t> groups_len{static_cast<std::int64_t>(std::get<0>(groups).size())
@@ -152,11 +155,11 @@ struct randomforest_impl {
         , std::unordered_map<double, std::int64_t> & classes
         , randomforest_node & ret) {
 
-        std::int64_t b_idx = std::numeric_limits<std::int64_t>::max();
-        double b_val = std::numeric_limits<double>::max();
-        double b_score = std::numeric_limits<double>::max();
-        //std::tuple< std::vector<std::int64_t>, std::vector<std::int64_t> > b_groups;
-        std::tuple< blaze::DynamicVector<std::int64_t>, blaze::DynamicVector<std::int64_t> > b_groups;
+        std::int64_t b_idx = (std::numeric_limits<std::int64_t>::max)();
+        double b_val = (std::numeric_limits<double>::max)();
+        double b_score = (std::numeric_limits<double>::max)();
+        std::tuple< blaze::DynamicVector<std::int64_t>
+            , blaze::DynamicVector<std::int64_t> > b_groups;
 
         std::vector<std::int64_t> features(n_features);
 
@@ -192,8 +195,8 @@ struct randomforest_impl {
         for(std::int64_t feature : features) {
             for(std::int64_t r : dataset_indices) {
                 test_split(feature, dataset(r, feature), dataset, groups);
-                auto const gini = gini_index(dataset
-                    , dataset_labels, groups, classes);
+                auto const gini = gini_index(dataset,
+                    dataset_labels, groups, classes);
                 if(gini < b_score) {
                     b_idx = feature;
                     b_val = dataset(r, feature);
@@ -224,13 +227,13 @@ struct randomforest_impl {
         node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
             phylanx::execution_tree::primitive_argument_type{
                 phylanx::ir::node_data<std::int64_t>(
-                    std::numeric_limits<std::int64_t>::max()
+                    (std::numeric_limits<std::int64_t>::max)()
                 )
             };
         node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
             phylanx::execution_tree::primitive_argument_type{
                 phylanx::ir::node_data<std::int64_t>(
-                    std::numeric_limits<std::int64_t>::max()
+                    (std::numeric_limits<std::int64_t>::max)()
                 )
             };
     }
@@ -267,28 +270,37 @@ struct randomforest_impl {
 
         blaze::DynamicVector<std::int64_t> left =
             phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
-                node_[phylanx::execution_tree::primitive_argument_type{std::string("groups_l")}].get().variant()
+                node_[phylanx::execution_tree::primitive_argument_type{
+                         std::string("groups_l")}].get().variant()
             ).vector();
 
         blaze::DynamicVector<std::int64_t> right =
             phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
-                node_[phylanx::execution_tree::primitive_argument_type{std::string("groups_r")}].get().variant()
+                node_[phylanx::execution_tree::primitive_argument_type{
+                         std::string("groups_r")}].get().variant()
             ).vector();
 
 
-        node_.erase(phylanx::execution_tree::primitive_argument_type{std::string("groups_l")});
-        node_.erase(phylanx::execution_tree::primitive_argument_type{std::string("groups_r")});
+        node_.erase(phylanx::execution_tree::primitive_argument_type{
+                        std::string("groups_l")});
+        node_.erase(phylanx::execution_tree::primitive_argument_type{
+                        std::string("groups_r")});
 
         if(left.size() == 0 || right.size() == 0) {
             blaze::DynamicVector<std::int64_t> joint{left};
             auto jsz = joint.size();
             joint.reserve(jsz + right.size());
-            std::for_each(right.begin(), right.end(), [&joint, &jsz](auto rval) { joint[jsz] = rval; ++jsz; });
+
+            std::for_each(right.begin(), right.end()
+                , [&joint, &jsz](auto rval) { joint[jsz] = rval; ++jsz; });
+
             auto term = to_terminal(train_labels, joint, classes);
             node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
-                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{term}};
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>{term}};
             node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
-                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{term}};
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>{term}};
             return;
         }
 
@@ -296,16 +308,19 @@ struct randomforest_impl {
             auto lterm = to_terminal(train_labels, left, classes);
             auto rterm = to_terminal(train_labels, right, classes);
             node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
-                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{lterm}};
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>{lterm}};
             node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
-                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{rterm}};
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>{rterm}};
             return;
         }
 
         if(left.size() <= min_size) {
              auto lterm = to_terminal(train_labels, left, classes);
              node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
-                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{lterm}};
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>{lterm}};
         }
         else {
             randomforest_node left_node{};
@@ -319,7 +334,8 @@ struct randomforest_impl {
         if(right.size() <= min_size) {
             auto rterm = to_terminal(train_labels, right, classes);
             node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
-                phylanx::execution_tree::primitive_argument_type{phylanx::ir::node_data<std::int64_t>{rterm}};
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::ir::node_data<std::int64_t>{rterm}};
         }
         else {
             randomforest_node right_node{};
@@ -357,21 +373,25 @@ struct randomforest_impl {
         auto& node_ = phylanx::util::get<phylanx::ir::dictionary>(node);
 
         std::int64_t index = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("index")}].get().variant()
+            node_[phylanx::execution_tree::primitive_argument_type{
+                    std::string("index")}].get().variant()
         ).scalar();
 
         double value = phylanx::util::get<phylanx::ir::node_data<double>>(
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("value")}].get().variant()
+            node_[phylanx::execution_tree::primitive_argument_type{
+                    std::string("value")}].get().variant()
         ).scalar();
 
         if(r(i, index) < value) {
             std::int64_t lw = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
-                node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}].get().variant()
+                node_[phylanx::execution_tree::primitive_argument_type{
+                    std::string("lw")}].get().variant()
             ).scalar();
 
-            if( lw == std::numeric_limits<std::int64_t>::max()) {
+            if( lw == (std::numeric_limits<std::int64_t>::max)()) {
                 auto& left =
-                    node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}].get();
+                    node_[phylanx::execution_tree::primitive_argument_type{
+                        std::string("left")}].get();
                 return node_predict(left, r, i);
             }
             else {
@@ -380,12 +400,14 @@ struct randomforest_impl {
         }
 
         auto rw = phylanx::util::get<phylanx::ir::node_data<std::int64_t>>(
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}].get().variant()
+            node_[phylanx::execution_tree::primitive_argument_type{
+                    std::string("rw")}].get().variant()
         ).scalar();
 
-        if(rw == std::numeric_limits<std::int64_t>::max()) {
+        if(rw == (std::numeric_limits<std::int64_t>::max)()) {
             auto& right =
-                node_[phylanx::execution_tree::primitive_argument_type{std::string("right")}].get();
+                node_[phylanx::execution_tree::primitive_argument_type{
+                        std::string("right")}].get();
             return node_predict(right, r, i);
         }
 
