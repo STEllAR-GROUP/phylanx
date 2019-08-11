@@ -97,7 +97,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(lhs)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type power_operation::power3d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
@@ -112,7 +111,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type{std::move(lhs)};
     }
-#endif
 
     primitive_argument_type power_operation::power0d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
@@ -207,7 +205,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "be numeric data type"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type power_operation::power3d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
     {
@@ -238,7 +235,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the power primitive requires for its argument to "
                     "be numeric data type"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> power_operation::eval(
@@ -291,10 +287,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->power2d(std::move(op1), std::move(op2));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->power3d(std::move(op1), std::move(op2));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "power_operation::eval",

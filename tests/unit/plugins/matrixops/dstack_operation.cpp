@@ -9,8 +9,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -189,17 +187,14 @@ void dstack_operation_2d_3d_mix()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     dstack_operation_empty();
     dstack_operation_0d();
     dstack_operation_1d();
     dstack_operation_2d();
     dstack_operation_2d_3d_mix();
-#endif
 
     return hpx::util::report_errors();
 }

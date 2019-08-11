@@ -24,9 +24,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -83,7 +81,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             A joined sequence of array-like objects along a new axis.)"
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , match_pattern_type{
             "dstack",
             std::vector<std::string>{"dstack(_1, __arg(_2_dtype, nil))"},
@@ -99,7 +96,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             A vertically (depth wise) stacked sequence of array-like objects)"
         }
-#endif
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -119,12 +115,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 result = stack_operation::stacking_mode_column_wise;
             }
-    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             else if (name.find("dstack") != std::string::npos)
             {
                 result = stack_operation::stacking_mode_depth_wise;
             }
-    #endif
             return result;
         }
 
@@ -152,7 +146,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         ir::node_data<T>{storage2d_type(0, 0)}};
                 }
 
-    #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 3:
                 {
                     // dstack without arguments returns an empty 3D tensor
@@ -161,7 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return primitive_argument_type{
                         ir::node_data<T>{storage3d_type(0, 0, 0)}};
                 }
-    #endif
+
             default:
                 break;
             }
@@ -193,14 +186,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     detail::empty_helper<T>(2, name_, codename_));
             }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
             {
                 // dstack without arguments returns an empty 3D tensor
                 return hpx::make_ready_future(
                     detail::empty_helper<T>(3, name_, codename_));
             }
-#endif
+
         default:
             break;
         }
@@ -427,7 +419,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type stack_operation::hstack3d_helper(
@@ -545,7 +536,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the stack_operation primitive requires for all arguments to "
                     "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -760,7 +750,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type stack_operation::vstack3d_helper(
@@ -1195,7 +1184,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the stack_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type stack_operation::stack0d(
@@ -1209,10 +1197,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case stacking_mode_row_wise:
             return vstack0d(std::move(args), std::move(dtype));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
             return dstack0d(std::move(args), std::move(dtype));
-#endif
+
         default:
             break;
         }
@@ -1353,10 +1340,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case stacking_mode_row_wise:
             return vstack1d2d(std::move(args), std::move(dtype));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
             return dstack1d(std::move(args), std::move(dtype));
-#endif
+
         default:
             break;
         }
@@ -1386,7 +1372,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("unsupported axis requested"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type stack_operation::stack2d_axis0_helper(
         primitive_arguments_type&& args) const
@@ -1622,7 +1607,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the stack_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     primitive_argument_type stack_operation::stack2d(
         primitive_arguments_type&& args, primitive_argument_type&& dtype) const
@@ -1635,10 +1619,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case stacking_mode_row_wise:
             return vstack1d2d(std::move(args), std::move(dtype));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case stacking_mode_depth_wise:
             return dstack2d3d(std::move(args), std::move(dtype));
-#endif
+
         default:
             break;
         }
@@ -1657,13 +1640,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (axis == 0 || axis == -2)
                 return primitive_argument_type{std::move(args[0])};
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             if (axis == 1 || axis == -1)
                 return stack2d_axis1(std::move(args), std::move(dtype));
-#endif
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        else {
+        else
+        {
             if (axis == 0 || axis == -3)
                 return stack2d_axis0(std::move(args), std::move(dtype));
             if (axis == 1 || axis == -2)
@@ -1671,13 +1652,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (axis == 2 || axis == -1)
                 return dstack2d3d(std::move(args), std::move(dtype));
         }
-#endif
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "stack_operation::stack2d",
             generate_error_message("unsupported axis requested"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type stack_operation::stack3d_axis1_helper(
         primitive_arguments_type&& args) const
@@ -1895,7 +1875,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "stack_operation::stack3d",
             generate_error_message("unsupported number of dimensions"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
@@ -2008,10 +1987,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return stack2d(std::move(ops), std::move(dtype));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return stack3d(std::move(ops), std::move(dtype));
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "stack_operation::handle_hvdstack",
@@ -2084,13 +2062,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 1:
             return stack1d(std::move(ops), std::move(dtype), axis);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 2:
             return stack2d(std::move(ops), std::move(dtype), axis);
 
         case 3:
             return stack3d(std::move(ops), std::move(dtype), axis);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "stack_operation::handle_stack",

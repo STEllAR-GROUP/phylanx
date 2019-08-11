@@ -110,9 +110,7 @@ namespace phylanx { namespace execution_tree { namespace detail
         case 1:
             return extract_numeric_value_dimensions(indices, name, codename)[0];
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3: HPX_FALLTHROUGH;
-#endif
         case 2:
             break;
         }

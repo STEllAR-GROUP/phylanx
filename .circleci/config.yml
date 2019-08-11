@@ -121,7 +121,11 @@ jobs:
                 command: cmake --version
             - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet
-                command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
+                command: |
+                    curl \
+                        https://raw.githubusercontent.com/Kitware/CDash/master/app/cdash/tests/circle/conv.xsl \
+                        --fail \
+                        -o conv.xsl
             # Install blaze_tensors library
             - run:
                 name: Install blaze_tensor

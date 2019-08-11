@@ -25,9 +25,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -393,10 +392,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return concatenate_flatten2d<T>(std::move(args));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return concatenate_flatten3d<T>(std::move(args));
-#endif
+
         default:
             break;
         }
@@ -435,7 +433,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     std::size_t concatenate::get_tensor_size(
         primitive_arguments_type const& args) const
     {
@@ -731,7 +728,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the concatenate primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> concatenate::handle_concatenate(
@@ -776,11 +772,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->concatenate2d(
                         std::move(args), std::move(axis));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->concatenate3d(
                         std::move(args), std::move(axis));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "concatenate::eval",

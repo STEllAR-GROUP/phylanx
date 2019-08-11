@@ -67,7 +67,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type cumulative2d_rows(
             primitive_arguments_type&& ops) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type cumulative3d(primitive_arguments_type&& ops,
             hpx::util::optional<std::int64_t>&& axis) const;
@@ -84,7 +83,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type cumulative3d_rows(
             primitive_arguments_type&& ops) const;
-#endif
     };
 }}}
 

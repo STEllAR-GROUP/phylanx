@@ -60,7 +60,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             ir::node_data<T>&& arg,
             execution_tree::localities_information&& localities) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         execution_tree::primitive_argument_type transpose3d(
             execution_tree::primitive_argument_type&& arg) const;
         execution_tree::primitive_argument_type transpose3d(
@@ -75,7 +74,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type transpose3d(
             ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
             execution_tree::localities_information&& localities) const;
-#endif
     };
 
     inline execution_tree::primitive

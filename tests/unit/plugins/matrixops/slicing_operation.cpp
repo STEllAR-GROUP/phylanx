@@ -558,7 +558,6 @@ void test_set_index_list()
     HPX_TEST_EQ(result[0], 0.95);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_slicing_operation_3d_value()
 {
     std::string const code = R"(block(
@@ -647,8 +646,6 @@ void test_slicing_operation_3d_single_slice()
     HPX_TEST_EQ(result.tensor()(0, 0, 0), 2);
 }
 
-#endif
-
 int main(int argc, char* argv[])
 {
     test_slicing_operation_0d();
@@ -683,21 +680,17 @@ int main(int argc, char* argv[])
     test_set_index_scalar();
     test_set_index_list();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_slicing_operation_3d_value();
     test_slicing_operation_3d_value_negative_index();
 
     test_slicing_operation_3d_single_slice();
-#endif
 
     test_tuple_slicing_operation_0d();
     test_tuple_slicing_operation_1d();
     test_tuple_slicing_operation_2d_value();
     test_tuple_slicing_operation_2d();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_tuple_slicing_operation_3d_value();
-#endif
 
     return hpx::util::report_errors();
 }

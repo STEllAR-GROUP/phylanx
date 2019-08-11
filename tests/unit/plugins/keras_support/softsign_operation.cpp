@@ -41,10 +41,8 @@ int main(int argc, char* argv[])
         "softsign([-1., -4., 3., 9.])", "[-0.5, -0.8, 0.75, 0.9]");
     test_softsign_operation("softsign([[-1., -4., 3.], [-9., 4., 1.5]])",
         "[[-0.5, -0.8, 0.75], [-0.9, 0.8, 0.6]]");
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_softsign_operation("softsign([[[-1., -4., 3.], [-9., 4., 1.5]]])",
         "[[[-0.5, -0.8, 0.75], [-0.9, 0.8, 0.6]]]");
-#endif
+
     return hpx::util::report_errors();
 }

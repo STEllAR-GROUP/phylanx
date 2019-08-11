@@ -25,9 +25,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives {
@@ -93,7 +91,6 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         return primitive_argument_type{std::move(idx)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type argsort::argsort_flatten3d(
         ir::node_data<T>&& in_array, std::string kind, std::string order) const
@@ -107,7 +104,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
             [&flatten](size_t a, size_t b) { return flatten[a] < flatten[b]; });
         return primitive_argument_type{std::move(idx)};
     }
-#endif
+
     template <typename T>
     primitive_argument_type argsort::argsort_flatten_helper(
         ir::node_data<T>&& in_array, std::int64_t axis, std::string kind,
@@ -118,31 +115,23 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         {
         case 1:
             return argsort1d(std::move(in_array), -1, kind, order);
+
         case 2:
             return argsort_flatten2d(std::move(in_array), kind, order);
+
         case 3:
             return argsort_flatten3d(std::move(in_array), kind, order);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "argsort::argsort_helper",
-                util::generate_error_message(
-                    "Invalid dimension. The `in_array` could be 0 to 3 "
-                    "dimensional.",
-                    name_, codename_));
-#else
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "argsort::argsort_helper",
-                util::generate_error_message(
-                    "Invalid dimension. The `in_array` could be 0 to 2 "
-                    "dimensional.",
-                    name_, codename_));
-#endif
+            break;
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "argsort::argsort_flatten_helper",
-            generate_error_message("Invalid axis."));
+            "argsort::argsort_helper",
+            util::generate_error_message(
+                "Invalid dimension. The `in_array` could be 0 to 3 "
+                "dimensional.",
+                name_, codename_));
     }
 
     primitive_argument_type argsort::argsort_flatten(
@@ -273,7 +262,6 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         }
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type argsort::argsort3d_axis0(
         ir::node_data<T>&& in_array, std::string kind, std::string order) const
@@ -410,7 +398,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
                                        "must be in range [-3, 2]"));
         }
     }
-#endif
+
     template <typename T>
     primitive_argument_type argsort::argsort_helper(ir::node_data<T>&& in_array,
         std::int64_t axis, std::string kind, std::string order) const
@@ -423,10 +411,8 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
             return argsort1d(std::move(in_array), axis, kind, order);
         case 2:
             return argsort2d(std::move(in_array), axis, kind, order);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return argsort3d(std::move(in_array), axis, kind, order);
-#endif
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argsort::argsort_helper",

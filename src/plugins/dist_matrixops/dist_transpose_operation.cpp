@@ -29,9 +29,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives
 {
@@ -313,7 +312,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     namespace detail
     {
         execution_tree::annotation transpose_3d_annotation(
@@ -475,7 +473,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 "the transpose primitive requires for its argument to "
                 "be numeric data type"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<execution_tree::primitive_argument_type>
@@ -551,12 +548,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 extract_integer_value_strict(std::move(args[1]),
                                     this_->name_, this_->codename_));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                         case 3:
                             return this_->transpose3d(std::move(args[0]),
                                 extract_integer_value_strict(std::move(args[1]),
                                     this_->name_, this_->codename_));
-#endif
+
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_transpose_operation::eval",
@@ -588,10 +584,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 case 2:
                     return this_->transpose2d(std::move(args[0]));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->transpose3d(std::move(args[0]));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dist_transpose_operation::eval",

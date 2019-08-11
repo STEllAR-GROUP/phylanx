@@ -69,7 +69,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type squeeze2d(ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> axis) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type squeeze3d(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> axis) const;
 
@@ -85,9 +84,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type squeeze3d(ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> axis) const;
-#endif
-
     };
+
     inline primitive create_squeeze_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")

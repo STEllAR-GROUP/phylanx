@@ -64,7 +64,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<T>&& rhs, bool propagate_type,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type comparison3d3d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type) const;
@@ -72,7 +71,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type comparison3d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
-#endif
 
         template <typename T>
         primitive_argument_type comparison_all(ir::node_data<T>&& lhs,

@@ -40,7 +40,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // operands_[2], operands_[3], and operands_[4] are optional slicing
         // arguments
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (operands_.empty() || operands_.size() > 5)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -49,16 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the access_argument primitive requires at least one "
                     "and at most four operands"));
         }
-#else
-        if (operands_.empty() || operands_.size() > 4)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "access_argument::access_argument",
-                generate_error_message(
-                    "the access_argument primitive requires at least one "
-                    "and at most three operands"));
-        }
-#endif
         argnum_ = extract_integer_value(operands_[0])[0];
     }
 
@@ -95,9 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // parameters as argument evaluation can't depend on those anyways
         switch (operands_.size())
         {
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 5: HPX_FALLTHROUGH;
-#endif
         case 3: HPX_FALLTHROUGH;
         case 4:
             {
@@ -140,7 +127,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(ctx)));
                 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 if (operands_.size() > 4)
                 {
                     // handle page/row/column-slicing
@@ -163,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         value_operand(operands_[4], params, name_, codename_,
                             std::move(ctx)));
                 }
-#endif
+
                 // handle row-slicing
                 return value_operand(
                         operands_[2], params, name_, codename_, std::move(ctx))
@@ -274,7 +260,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 5:
                 {
                     auto data1 = value_operand_sync(
@@ -288,7 +273,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(data[0]), name_, codename_);
                 }
                 return;
-#endif
+
             default:
                 break;
             }
@@ -396,7 +381,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 5:
                 {
                     auto data1 = value_operand_sync(
@@ -410,7 +394,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(data), name_, codename_);
                 }
                 return;
-#endif
+
             default:
                 break;
             }

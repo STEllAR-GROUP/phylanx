@@ -50,12 +50,11 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
             arg_type&& target, arg_type&& output,
             bool from_logbits) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type bin_cross3d(
             arg_type&& target, arg_type&& output,
             bool from_logbits) const;
-#endif
     };
+
     inline primitive create_bin_cross_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")

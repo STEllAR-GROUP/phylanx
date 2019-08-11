@@ -16,9 +16,7 @@
 #include <utility>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -55,7 +53,6 @@ int main(int argc, char* argv[])
         "expand_dims([42., 13., 33.], 0)", "[[42., 13., 33.]]");
     test_expand_dims_operation(
         "expand_dims([42., 13., 33.], -2)", "[[42., 13., 33.]]");
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], 0)",
         "[[[ 42.,  13.], [  2.,  33.]]]");
     test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], -3)",
@@ -68,8 +65,6 @@ int main(int argc, char* argv[])
         "[[[ 42.,  13.]], [[  2.,  33.]]]");
     test_expand_dims_operation("expand_dims([[42., 13.],[2., 33.]], -2)",
         "[[[ 42.,  13.]], [[  2.,  33.]]]");
-
-#endif
 
     return hpx::util::report_errors();
 }

@@ -61,14 +61,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             operand_type::dimensions_type const& dim,
             node_data_type dtype) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         ir::node_data<T> constant3d_helper(primitive_argument_type&& op,
             operand_type::dimensions_type const& dim) const;
+        template <typename T>
+        ir::node_data<T> constant4d_helper(primitive_argument_type&& op,
+            operand_type::dimensions_type const& dim) const;
+
         primitive_argument_type constant3d(primitive_argument_type&& op,
             operand_type::dimensions_type const& dim,
             node_data_type dtype) const;
-#endif
+        primitive_argument_type constant4d(primitive_argument_type&& op,
+            operand_type::dimensions_type const& dim,
+            node_data_type dtype) const;
 
     private:
         bool implements_like_operations_;

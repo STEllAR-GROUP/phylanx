@@ -69,7 +69,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type sort::sort_flatten3d(ir::node_data<T>&& arg,
         std::string kind) const
@@ -82,7 +81,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::sort(result.begin(), result.begin() + result.size());
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type sort::sort_flatten_helper(
@@ -100,11 +98,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return sort1d(std::move(arg), -1, kind);
         case 2:
             return sort_flatten2d(std::move(arg), kind);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return sort_flatten3d(std::move(arg), kind);
-#endif
+
         default:
             break;
         }
@@ -225,7 +221,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "operand has an invalid value for the axis parameter"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type sort::sort3d_axis0(ir::node_data<T>&& arg,
         std::string kind) const
@@ -312,7 +307,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "operand has an invalid value for the axis parameter"));
     }
-#endif
 
     template <typename T>
     primitive_argument_type sort::sort_helper(
@@ -330,11 +324,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return sort1d(std::move(arg), axis, kind);
         case 2:
             return sort2d(std::move(arg), axis, kind);
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return sort3d(std::move(arg), axis, kind);
-#endif
         default:
             break;
         }

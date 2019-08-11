@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
               "\"quicksort\")",
         "[-4., 1., 2., 2., 3., 4., 5., 6., 7., 9.]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_sort(
         "sort([[[2., 1., 7., 4., 3.],[5., -24., 6., 9., 22.]], [[12., -8., "
         "17., 14., 1.],[15., -14., 16., 19., 12.]]], 0, \"quicksort\")",
@@ -92,6 +91,6 @@ int main(int argc, char* argv[])
         "17., 14., 1.],[15., -14., 16., 19., 12.]]], nil, \"quicksort\")",
         "[-24., -14., -8., 1., 1., 2., 3., 4., 5., 6., 7., 9., 12., 12., 14., "
         "15., 16., 17., 19., 22.]");
-#endif
+
     return hpx::util::report_errors();
 }

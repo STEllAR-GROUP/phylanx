@@ -49,11 +49,10 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
         primitive_argument_type one_hot1d(
             arg_type&& arg, val_type num_classes) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type one_hot2d(
             arg_type&& arg, val_type num_classes) const;
-#endif
     };
+
     inline primitive create_one_hot_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")

@@ -93,7 +93,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             get_2d_function<T>(func_name_, name_, codename_)(std::move(op))};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type generic_operation_bool::generic3d_bool(
         arg_type<T>&& op) const
@@ -101,7 +100,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{
             get_3d_function<T>(func_name_, name_, codename_)(std::move(op))};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type generic_operation_bool::generic0d_bool(
@@ -185,7 +183,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("operand has unsupported type"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type generic_operation_bool::generic3d_bool(
         primitive_argument_type&& op) const
     {
@@ -212,7 +209,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "generic_operation_bool::generic3d_bool",
             generate_error_message("operand has unsupported type"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> generic_operation_bool::eval(
@@ -261,10 +257,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return wrap.propagate(this_->generic2d_bool(std::move(op)));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return wrap.propagate(this_->generic3d_bool(std::move(op)));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "generic_operation_bool::eval",

@@ -275,7 +275,6 @@ void test_unary_not_operation_2d_double_lit()
         phylanx::execution_tree::extract_boolean_value_strict(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& codestr)
@@ -303,7 +302,6 @@ void test_unary_not_operation_3d()
         R"(!!astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))",
         R"(  astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))");
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -323,9 +321,7 @@ int main(int argc, char* argv[])
     test_unary_not_operation_2d_double();
     test_unary_not_operation_2d_double_lit();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_unary_not_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

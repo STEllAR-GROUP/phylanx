@@ -144,7 +144,6 @@ void test_cumprod_2d()
         "[[1.0, 2.0, 6.0], [4.0, 20.0, 120.0]]");
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_cumprod_3d()
 {
     test_cumprod("cumprod([[[42]]])", "[42]");
@@ -211,17 +210,13 @@ void test_cumprod_3d()
         R"(cumprod([[[1, 2, 3], [4, 5, 6]]], 2, __arg(dtype, "float")))",
         "[[[1., 2., 6.], [4., 20., 120.]]]");
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_cumprod_0d();
     test_cumprod_1d();
     test_cumprod_2d();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_cumprod_3d();
-#endif
 
     return hpx::util::report_errors();
 }

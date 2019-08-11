@@ -2028,7 +2028,7 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_positive_integer_value_strict",
             util::generate_error_message(
-                "primitive_argument_type does not hold an integer "
+                "primitive_argument_type does not hold a positive integer "
                 "value type (type held: '" +
                     type + "')",
                 name, codename));
@@ -4623,9 +4623,7 @@ namespace phylanx { namespace execution_tree
 
         case 1: HPX_FALLTHROUGH; // 1 dimension
         case 2: HPX_FALLTHROUGH; // 2 dimensions
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3: HPX_FALLTHROUGH; // 3 dimensions
-#endif
         default:
             break;
         }

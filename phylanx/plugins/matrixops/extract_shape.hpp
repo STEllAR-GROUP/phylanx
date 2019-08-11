@@ -52,11 +52,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type shape2d(
             primitive_argument_type&& arg, std::int64_t index) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type shape3d(primitive_argument_type&& arg) const;
         primitive_argument_type shape3d(
             primitive_argument_type&& arg, std::int64_t index) const;
-#endif
     };
 
     inline primitive create_extract_shape(hpx::id_type const& locality,

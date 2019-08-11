@@ -54,13 +54,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& initial, ir::node_data<T>&& data,
             eval_context ctx) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type fold_right_array_helper_3d(
             primitive_argument_type&& bound_func,
             primitive_argument_type&& initial, ir::node_data<T>&& data,
             eval_context ctx) const;
-#endif
+
         template <typename T>
         primitive_argument_type fold_right_array_helper(
             primitive_argument_type&& bound_func,

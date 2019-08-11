@@ -46,14 +46,22 @@ namespace phylanx { namespace ast { namespace parser
         qi::rule<Iterator, ast::operand(), skipper<Iterator>> unary_expr;
         qi::rule<Iterator, ast::operand(), skipper<Iterator>> primary_expr;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        qi::rule<Iterator,
+            std::vector<std::vector<std::vector<std::vector<double>>>>(),
+            skipper<Iterator>>
+            double_quatern;
+        qi::rule<Iterator,
+            std::vector<std::vector<std::vector<std::vector<std::int64_t>>>>(),
+            skipper<Iterator>>
+            int64_quatern;
+
         qi::rule<Iterator, std::vector<std::vector<std::vector<double>>>(),
             skipper<Iterator>>
             double_tensor;
         qi::rule<Iterator, std::vector<std::vector<std::vector<std::int64_t>>>(),
             skipper<Iterator>>
             int64_tensor;
-#endif
+
         qi::rule<Iterator, std::vector<std::vector<double>>(),
             skipper<Iterator>>
             double_matrix;

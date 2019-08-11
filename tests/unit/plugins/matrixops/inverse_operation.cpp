@@ -14,9 +14,7 @@
 #include <utility>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 void test_inversion_0d()
 {
@@ -80,7 +78,6 @@ void test_inversion_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_inversion_3d()
 {
     blaze::Rand<blaze::DynamicTensor<double>> gen{};
@@ -111,7 +108,6 @@ void test_inversion_3d()
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -120,9 +116,7 @@ int main(int argc, char* argv[])
 
     test_inversion_2d();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_inversion_3d();
-#endif
 
     return hpx::util::report_errors();
 }

@@ -83,7 +83,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<std::int64_t>&& indices,
             ir::node_data<T>&& values) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type insert_flatten_3d(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& indices,
@@ -107,7 +106,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type insert_3d(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values,
             std::int64_t axis) const;
-#endif
 
         template <typename T>
         primitive_argument_type insert_flatten_nd(ir::node_data<T>&& arg,

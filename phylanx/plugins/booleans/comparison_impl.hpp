@@ -29,9 +29,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -204,7 +202,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return comparison2d2d(std::move(lhs), std::move(rhs), propagate_type);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
@@ -276,7 +273,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return comparison3d3d(std::move(lhs), std::move(rhs), propagate_type);
     }
-#endif
 
     template <typename Op>
     template <typename T>
@@ -298,11 +294,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return comparison2d(
                 std::move(lhs), std::move(rhs), propagate_type, sizes);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return comparison3d(
                 std::move(lhs), std::move(rhs), propagate_type, sizes);
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "comparison<Op>::comparison_all",

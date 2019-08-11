@@ -25,9 +25,8 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
@@ -92,7 +91,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         return primitive_argument_type{result};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type pad::pad_3d(ir::node_data<T>&& arg,
         ir::node_data<std::int64_t>&& width, T&& value) const
@@ -109,7 +107,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         return primitive_argument_type{result};
     }
-#endif
 
     template <typename T>
     primitive_argument_type pad::pad_helper(ir::node_data<T>&& arg,
@@ -131,11 +128,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         case 2:
             return pad_2d<T>(
                 std::move(arg), std::move(width), std::move(values.scalar()));
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return pad_3d<T>(
                 std::move(arg), std::move(width), std::move(values.scalar()));
-#endif
         default:
             break;
         }
@@ -434,12 +429,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         extract_value_matrix<std::int64_t>(std::move(args[1]),
                             ndim, 2, this_->name_, this_->codename_);
                     break;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     width =
                         extract_value_matrix<std::int64_t>(std::move(args[1]),
                             ndim, 2, this_->name_, this_->codename_);
-#endif
                 default:
                     break;
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

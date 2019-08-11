@@ -70,7 +70,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type flip2d(ir::node_data<T>&& arg,
             ir::range&& axes) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type flip3d_axis0(ir::node_data<T>&& arg) const;
         template <typename T>
@@ -88,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         template <typename T>
         primitive_argument_type flip3d(ir::node_data<T>&& arg,
             ir::range&& axes) const;
-#endif
+
         template <typename T>
         primitive_argument_type flipnd(ir::node_data<T>&& arg) const;
         template <typename T>

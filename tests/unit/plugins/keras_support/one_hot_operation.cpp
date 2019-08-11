@@ -42,14 +42,10 @@ int main(int argc, char* argv[])
     test_one_hot_operation("one_hot([1, 2, 13, 0, 3, 2], 3)",
         "[[ 0.,  1.,  0.],[ 0.,  0.,  1.],[ 0.,  0.,  0.],[ 1.,  0.,  0.],"
         "[ 0.,  0.,  0.],[ 0.,  0.,  1.]]");
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_one_hot_operation("one_hot([[0, 1, 2, 3],[3, 2, 1, 0]], 4)",
         "[[[ 1.,  0.,  0.,  0.],[ 0.,  1.,  0.,  0.],[ 0.,  0.,  1.,  0.], "
         "[0.,  0.,  0.,  1.]],[[ 0.,  0.,  0.,  1.],[ 0.,  0.,  1., 0.] "
         ",[ 0.,  1.,  0.,  0.],[ 1.,  0.,  0.,  0.]]]");
-
-#endif
 
     return hpx::util::report_errors();
 }

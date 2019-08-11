@@ -98,7 +98,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type(std::move(op));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type unary_minus_operation::neg3d(
         ir::node_data<T>&& op) const
@@ -113,7 +112,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return primitive_argument_type(std::move(op));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type unary_minus_operation::neg0d(
@@ -217,7 +215,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("operand has unsupported type"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type unary_minus_operation::neg3d(
         primitive_argument_type&& op) const
     {
@@ -251,7 +248,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "unary_minus_operation::neg3d",
             generate_error_message("operand has unsupported type"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> unary_minus_operation::eval(
@@ -298,10 +294,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return wrap.propagate(this_->neg2d(std::move(op)));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return wrap.propagate(this_->neg3d(std::move(op)));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_minus_operation::eval",

@@ -38,10 +38,7 @@
 #undef BLAZE_USE_BOOST_THREADS
 
 ///////////////////////////////////////////////////////////////////////////////
-#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
-#  define PHYLANX_MAX_DIMENSIONS 2
-#else
-#  define PHYLANX_MAX_DIMENSIONS 3
-#endif
+#  define PHYLANX_MAX_DIMENSIONS 4
+
 
 #endif // PHYLANX_CONFIG_AUG_25_2017_0711PM

@@ -77,7 +77,6 @@ void test_concatenate_PhySL_2d_nil()
             1.0, 2.0, 3.0, 6.0, 1.0, 9.0, 0.0, 4.0, 7.0, 5.0}));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_concatenate_PhySL_3d_axis0()
 {
     std::string const code = R"(block(
@@ -143,7 +142,6 @@ void test_concatenate_PhySL_3d_nil()
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{
             1.0, 2.0, 3.0, 6.0, 1.0, 9.0, 0.0, 4.0, 4.0, 7.0, 5.0, 1.0}));
 }
-#endif
 
 void test_concatenate_1d()
 {
@@ -228,11 +226,10 @@ int main(int argc, char* argv[])
     test_concatenate_PhySL_2d_axis0();
     test_concatenate_PhySL_2d_axis1();
     test_concatenate_PhySL_2d_nil();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_concatenate_PhySL_3d_axis0();
     test_concatenate_PhySL_3d_axis1();
     test_concatenate_PhySL_3d_axis2();
     test_concatenate_PhySL_3d_nil();
-#endif
+
     return hpx::util::report_errors();
 }

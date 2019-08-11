@@ -30,9 +30,7 @@
 #include <sstream>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -73,9 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 result[0] = extract_scalar_integer_value(data, name, codename);
                 break;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case 3:  HPX_FALLTHROUGH;
-#endif
             case 1:  HPX_FALLTHROUGH;
             case 2:
                 break;
@@ -118,7 +114,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto const& args = util::get<7>(val);
                 switch (args.size())
                 {
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                 {
                     auto elem_0 = args.begin();
@@ -130,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         *(++elem_0), name, codename);
                 }
                     return result;
-#endif
+
                 case 2:
                 {
                     auto elem_0 = args.begin();
@@ -332,7 +327,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(m)};
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename Dist, typename T>
         primitive_argument_type randomize(
             Dist& dist, blaze::DynamicTensor<T>& t)
@@ -354,7 +348,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             return primitive_argument_type{std::move(t)};
         }
-#endif
 
         ///////////////////////////////////////////////////////////////////////
         struct distribution
@@ -365,10 +358,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             virtual primitive_argument_type call1d(std::size_t dim) = 0;
             virtual primitive_argument_type call2d(
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             virtual primitive_argument_type call3d(
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
-#endif
         };
 
         using create_distribution_type = std::unique_ptr<distribution> (*)(
@@ -376,7 +367,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const&);
 
         //////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #define PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
     primitive_argument_type call3d(                                            \
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
@@ -385,9 +375,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return randomize(dist_, data);                                         \
     }                                                                          \
     /**/
-#else
-#define PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)
-#endif
 
 #define PHYLANX_RANDOM_DISTRIBUTION_1(type, stdtype, param, T)                 \
     struct type##_distribution : distribution                                  \
@@ -986,7 +973,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return (it->second)(params, name, codename)->call2d(dims);
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type randomize3d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params, std::string const& name,
@@ -1012,18 +998,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             return (it->second)(params, name, codename)->call3d(dims);
         }
-#endif
 
         ///////////////////////////////////////////////////////////////////////
         inline int num_dimensions(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
         {
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             if (dims[2] != 0)
             {
                 return 3;
             }
-#endif
             if (dims[1] != 0)
             {
                 return 2;
@@ -1093,10 +1076,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->random2d(dims, std::move(params));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->random3d(dims, std::move(params));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
@@ -1127,14 +1109,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return detail::randomize2d(dims, std::move(params), name_, codename_);
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type random::random3d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
         distribution_parameters_type&& params) const
     {
         return detail::randomize3d(dims, std::move(params), name_, codename_);
     }
-#endif
 }}}
 
 ///////////////////////////////////////////////////////////////////////////////

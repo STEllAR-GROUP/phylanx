@@ -905,7 +905,6 @@ void test_less_operation_2d1d_return_double()
     HPX_TEST_EQ(f.index(), 4);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& codestr)
@@ -960,7 +959,6 @@ void test_less_operation_3d()
            [[[8, 7], [6, 5]], [[4, 3], [2, 1]]])",
         R"(astype([[[1, 1], [1, 1]], [[0, 0], [0, 0]]], "bool"))");
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -1000,9 +998,7 @@ int main(int argc, char* argv[])
     test_less_operation_2d0d_return_double();
     test_less_operation_2d1d_return_double();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_less_operation_3d();
-#endif
 
     return hpx::util::report_errors();
 }

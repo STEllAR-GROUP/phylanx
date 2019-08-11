@@ -9,8 +9,6 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-
 #include <cstddef>
 #include <utility>
 
@@ -285,5 +283,4 @@ namespace phylanx { namespace util
 
 }}
 
-#endif
 #endif

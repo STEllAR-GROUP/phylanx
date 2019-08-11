@@ -138,7 +138,6 @@ void test_softmax_operation_2d_row()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_softmax_operation_3d()
 {
     blaze::DynamicTensor<double> subject{
@@ -266,7 +265,6 @@ void test_softmax_operation_3d_column()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -275,13 +273,10 @@ int main(int argc, char* argv[])
     test_softmax_operation_2d();
     test_softmax_operation_2d_column();
     test_softmax_operation_2d_row();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_softmax_operation_3d();
     test_softmax_operation_3d_page();
     test_softmax_operation_3d_row();
     test_softmax_operation_3d_column();
-#endif
 
     return hpx::util::report_errors();
 }

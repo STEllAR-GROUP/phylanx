@@ -21,9 +21,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -123,7 +121,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type softmax_operation::softmax3d_axis0(
         arg_type&& arg) const
     {
@@ -219,7 +216,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the softmax_operation primitive requires operand axis "
                 "to be between -3 and 2 for tensors."));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> softmax_operation::eval(
@@ -278,14 +274,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->softmax0d();
+
                 case 1:
                     return this_->softmax1d(std::move(a));
+
                 case 2:
                     return this_->softmax2d(std::move(a), axis);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 3:
                     return this_->softmax3d(std::move(a), axis);
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "softmax_operation::eval",

@@ -27,9 +27,7 @@
 #include <type_traits>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -114,79 +112,84 @@ namespace phylanx { namespace execution_tree { namespace primitives
         phylanx::ir::range tup(both);
         return primitive_argument_type{ std::move(tup) };
     }
-    ///////////////////////////////////////////////////////////////////////////
-
-    using matrix_type =
-         blaze::DynamicMatrix<double>;
-
-    using vector_type =
-         blaze::DynamicVector<double>;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    using tensor_type =
-         blaze::DynamicTensor<double>;
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
-    vector_type sum2d_axis1(const matrix_type& m) {
-       vector_type out(m.rows());
-       out = 0;
-       for(std::size_t j=0; j < m.columns(); ++j) {
-          out += blaze::column(m, j);
-       }
-       return out;
+    using matrix_type = blaze::DynamicMatrix<double>;
+
+    using vector_type = blaze::DynamicVector<double>;
+
+    using tensor_type = blaze::DynamicTensor<double>;
+
+    ///////////////////////////////////////////////////////////////////////////
+    vector_type sum2d_axis1(const matrix_type& m)
+    {
+        vector_type out(m.rows());
+        out = 0;
+        for (std::size_t j = 0; j < m.columns(); ++j)
+        {
+            out += blaze::column(m, j);
+        }
+        return out;
     }
 
-    vector_type sum2d_axis0(const matrix_type& m) {
-       vector_type out(m.columns());
-       out = 0;
-       for(std::size_t i=0; i < m.rows(); ++i) {
-          out += blaze::trans(blaze::row(m, i));
-       }
-       return out;
+    vector_type sum2d_axis0(const matrix_type& m)
+    {
+        vector_type out(m.columns());
+        out = 0;
+        for (std::size_t i = 0; i < m.rows(); ++i)
+        {
+            out += blaze::trans(blaze::row(m, i));
+        }
+        return out;
     }
-    vector_type sum2d(const matrix_type& m,int axis) {
-        if(axis == 0)
+    vector_type sum2d(const matrix_type& m, int axis)
+    {
+        if (axis == 0)
             return sum2d_axis0(m);
         else
             return sum2d_axis1(m);
     }
 
-
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    matrix_type sum3d_axis2(const tensor_type& t) {
-       matrix_type out(t.pages(),t.rows());
-       out = 0;
-       for(std::size_t j = 0; j < t.columns(); ++j)
-          out += blaze::columnslice(t, j);
-       return out;
+    matrix_type sum3d_axis2(const tensor_type& t)
+    {
+        matrix_type out(t.pages(), t.rows());
+        out = 0;
+        for (std::size_t j = 0; j < t.columns(); ++j)
+            out += blaze::columnslice(t, j);
+        return out;
     }
-    matrix_type sum3d_axis1(const tensor_type& t) {
-       matrix_type out(t.columns(),t.pages());
-       out = 0;
-       for(std::size_t j = 0; j < t.rows(); ++j) {
-          auto slice = blaze::rowslice(t, j);
-          out += slice;
-       }
-       return out;
+
+    matrix_type sum3d_axis1(const tensor_type& t)
+    {
+        matrix_type out(t.columns(), t.pages());
+        out = 0;
+        for (std::size_t j = 0; j < t.rows(); ++j)
+        {
+            auto slice = blaze::rowslice(t, j);
+            out += slice;
+        }
+        return out;
     }
-    matrix_type sum3d_axis0(const tensor_type& t) {
-       matrix_type out(t.rows(),t.columns());
-       out = 0;
-       for(std::size_t j = 0; j < t.pages(); ++j)
-          out += blaze::pageslice(t, j);
-       return out;
+
+    matrix_type sum3d_axis0(const tensor_type& t)
+    {
+        matrix_type out(t.rows(), t.columns());
+        out = 0;
+        for (std::size_t j = 0; j < t.pages(); ++j)
+            out += blaze::pageslice(t, j);
+        return out;
     }
-    matrix_type sum3d(const tensor_type& t,int axis) {
-        if(axis == 0)
+
+    matrix_type sum3d(const tensor_type& t, int axis)
+    {
+        if (axis == 0)
             return sum3d_axis0(t);
-        else if(axis == 1)
+        else if (axis == 1)
             return sum3d_axis1(t);
-        else
-            return sum3d_axis2(t);
+
+        return sum3d_axis2(t);
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type cat_cross_operation::cat_cross2d(
@@ -229,8 +232,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-     blaze::DynamicTensor<double> softmax3d_axis2(const tensor_type& t)
+    blaze::DynamicTensor<double> softmax3d_axis2(const tensor_type& t)
     {
         blaze::DynamicTensor<double> result(t.pages(), t.rows(), t.columns());
         for (std::size_t i = 0; i != t.pages(); ++i)
@@ -279,10 +281,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        target_ = blaze::map(target.tensor(), output.tensor(),[](double t_, double o_){
-            return -t_*std::log((std::min)(clip_high,(std::max)(clip_low,o_)));
-        });
-        matrix_type ans = sum3d(target.tensor(),axis);
+        target_ = blaze::map(
+            target.tensor(), output.tensor(), [](double t_, double o_) {
+                return -t_ *
+                    std::log((std::min)(clip_high, (std::max)(clip_low, o_)));
+            });
+
+        matrix_type ans = sum3d(target.tensor(), axis);
         if(axis == 1)
             ans = blaze::trans(ans);
         primitive_argument_type part1(std::move(ans)), part2(std::move(output));
@@ -290,7 +295,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         phylanx::ir::range tup(both);
         return primitive_argument_type{ std::move(tup) };
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> cat_cross_operation::eval(
@@ -355,17 +359,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 0:
                     return this_->cat_cross0d(
                         std::move(target),std::move(output),from_logits);
+
                 case 1:
                     return this_->cat_cross1d(
                         std::move(target),std::move(output),from_logits);
+
                 case 2:
                     return this_->cat_cross2d(
                         std::move(target),std::move(output),from_logits,axis);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 3:
                     return this_->cat_cross3d(
                         std::move(target),std::move(output),from_logits,axis);
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "cat_cross_operation::eval",

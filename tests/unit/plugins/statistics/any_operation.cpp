@@ -392,7 +392,6 @@ void test_any_operation_2d_double_numpy_true()
     HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_any_operation_3d()
 {
     blaze::Rand<blaze::DynamicTensor<int>> gen{};
@@ -542,7 +541,6 @@ void test_any_operation_3d_double_numpy_true()
 
     HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -569,7 +567,6 @@ int main(int argc, char* argv[])
     test_any_operation_2d_double_numpy_false();
     test_any_operation_2d_double_numpy_true();
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_any_operation_3d();
     test_any_operation_3d_false();
     test_any_operation_3d_double();
@@ -578,6 +575,6 @@ int main(int argc, char* argv[])
     test_any_operation_3d_numpy_true();
     test_any_operation_3d_double_numpy_false();
     test_any_operation_3d_double_numpy_true();
-#endif
+
     return hpx::util::report_errors();
 }

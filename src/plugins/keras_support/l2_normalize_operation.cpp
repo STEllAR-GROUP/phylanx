@@ -22,9 +22,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -156,7 +154,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type l2_normalize_operation::l2_normalize3d_axis0(
         arg_type&& arg) const
     {
@@ -283,7 +280,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the l2_normalize_operation primitive requires operand axis "
                 "to be between -3 and 2 for tensors."));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> l2_normalize_operation::eval(
@@ -333,14 +329,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->l2_normalize0d();
+
                 case 1:
                     return this_->l2_normalize1d(std::move(a));
+
                 case 2:
                     return this_->l2_normalize2d(std::move(a), axis);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 3:
                     return this_->l2_normalize3d(std::move(a), axis);
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "l2_normalize_operation::eval",
@@ -356,14 +354,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
             case 0:
                 return this_->l2_normalize0d();
+
             case 1:
                 return this_->l2_normalize1d(std::move(a));
+
             case 2:
                 return this_->l2_normalize2d_flatten(std::move(a));
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
             case 3:
                 return this_->l2_normalize3d_flatten(std::move(a));
-#endif
+
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "l2_normalize_operation::eval",

@@ -21,9 +21,8 @@
 #include <utility>
 #include <vector>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives
@@ -196,7 +195,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     execution_tree::primitive_argument_type dist_dot_operation::dot3d(
         execution_tree::primitive_argument_type&& lhs,
         execution_tree::primitive_argument_type&& rhs) const
@@ -245,7 +243,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 "the distributed dot primitive requires for all arguments to "
                     "be numeric data types"));
     }
-#endif
 
     ////////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type dist_dot_operation::dot_nd(
@@ -265,10 +262,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         case 2:
             return dot2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return dot3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

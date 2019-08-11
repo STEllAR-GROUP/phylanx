@@ -87,14 +87,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type outer_nd_helper(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type outer3d(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
 
         template <typename T>
         primitive_argument_type outer3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
 
         primitive_argument_type dot_nd(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
@@ -112,7 +110,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::ElementType_t<typename std::decay<Matrix1>::type>
         contraction2d2d(Matrix1&& lhs, Matrix2&& rhs) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type contraction2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -129,7 +126,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type contraction3d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
 
         primitive_argument_type tensordot_range_of_scalars(
             primitive_argument_type&& lhs, primitive_argument_type&& rhs,
@@ -151,7 +147,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type tensordot2d2d_0_1(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type tensordot1d3d_0_0(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -185,7 +180,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type tensordot3d2d_2_1(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
 
     private:
         dot_mode mode_;

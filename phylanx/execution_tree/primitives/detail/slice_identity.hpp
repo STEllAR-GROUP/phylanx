@@ -80,7 +80,6 @@ namespace phylanx { namespace execution_tree { namespace detail
                 blaze::DynamicMatrix<T>{std::forward<View>(view)}};
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename Data, typename View, typename F = always_true>
         ir::node_data<T> tensor(
             Data const&, View&& view, F const& f = F{}) const
@@ -88,7 +87,6 @@ namespace phylanx { namespace execution_tree { namespace detail
             return ir::node_data<T>{
                 blaze::DynamicTensor<T>{std::forward<View>(view)}};
         }
-#endif
     };
 }}}
 

@@ -47,7 +47,6 @@ int main(int argc, char* argv[])
         "batch_dot([[1, 2], [3, 4]], [[-5,-6],[ 7, 8]], make_list(1, 1))",
         "[[-17],[53]]");
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_batch_dot_operation(
         "batch_dot([[1, 2, 3], [4, 5, 6]], [[[-5,-6, 1, 0],[-7,-8, 1, 0]"
         ",[-1,-2, 13, 2]],[[ 5, 6,-1, 5],[7, 1, 0, 8],[1, 1,-2, 2]]])",
@@ -124,7 +123,6 @@ int main(int argc, char* argv[])
         ", make_list(1,-1))",
         "[[[ -23,  -58],[  0,  -5],[ 1, 3]],[[ -600, -1307],[ -335,  -808],"
         "[-39, -96]]]");
-#endif
 
     return hpx::util::report_errors();
 }

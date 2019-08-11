@@ -5,7 +5,6 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <phylanx/plugins/arithmetics/generic_operation_bool.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_bool_nd.hpp>
 
@@ -15,6 +14,7 @@
 #include <string>
 
 #include <blaze/Math.h>
+#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -71,4 +71,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name, std::string const& codename);
 }}}
 
-#endif

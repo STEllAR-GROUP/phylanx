@@ -16,6 +16,7 @@ set(tests
     determinant
     diag_operation
     dot_operation
+    dstack_operation
     expand_dims
     extract_shape
     eye_operation
@@ -49,10 +50,6 @@ set(tests
     vsplit_operation
     vstack_operation
    )
-
-if(PHYLANX_WITH_BLAZE_TENSOR)
-  set(tests ${tests} dstack_operation)
-endif()
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

@@ -330,7 +330,6 @@ namespace phylanx { namespace ast
         {
         }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primary_expr(std::vector<std::vector<std::vector<T>>> const& val)
           : expr_node_type(phylanx::ir::node_data<T>{val})
@@ -341,7 +340,19 @@ namespace phylanx { namespace ast
           : expr_node_type(phylanx::ir::node_data<T>{std::move(val)})
         {
         }
-#endif
+
+        template <typename T>
+        primary_expr(
+            std::vector<std::vector<std::vector<std::vector<T>>>> const& val)
+          : expr_node_type(phylanx::ir::node_data<T>{val})
+        {
+        }
+        template <typename T>
+        primary_expr(
+            std::vector<std::vector<std::vector<std::vector<T>>>>&& val)
+          : expr_node_type(phylanx::ir::node_data<T>{std::move(val)})
+        {
+        }
 
         primary_expr(identifier const& val)
           : expr_node_type(val)

@@ -211,7 +211,6 @@ void test_fold_right_2d()
    HPX_TEST_EQ(result, expected_result);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_fold_right_3d()
 {
     std::string const code = R"(
@@ -229,7 +228,6 @@ void test_fold_right_3d()
 
    HPX_TEST_EQ(result, expected_result);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -248,9 +246,7 @@ int main(int argc, char* argv[])
     test_fold_right_1d();
     test_fold_right_1d_none();
     test_fold_right_2d();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_fold_right_3d();
-#endif
 
     return hpx::util::report_errors();
 }

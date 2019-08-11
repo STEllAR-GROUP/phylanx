@@ -56,12 +56,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type switch2d(ir::node_data<std::uint8_t>&& cond,
             ir::node_data<double>&& then_expr,
             ir::node_data<double>&& else_expr) const;
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         primitive_argument_type switch3d(ir::node_data<std::uint8_t>&& cond,
             ir::node_data<double>&& then_expr,
             ir::node_data<double>&& else_expr) const;
-#endif
     };
 
     inline primitive create_switch_operation(hpx::id_type const& locality,

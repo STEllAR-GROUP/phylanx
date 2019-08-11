@@ -138,7 +138,6 @@ namespace phylanx { namespace common
                     "be numeric data types", name, codename));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     execution_tree::primitive_argument_type dot3d(
         execution_tree::primitive_argument_type&& lhs,
         execution_tree::primitive_argument_type&& rhs, std::string const& name,
@@ -177,5 +176,4 @@ namespace phylanx { namespace common
                 "the dot primitive requires for all arguments to "
                 "be numeric data types", name, codename));
     }
-#endif
 }}

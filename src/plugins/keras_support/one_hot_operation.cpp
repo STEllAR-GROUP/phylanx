@@ -20,9 +20,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -82,7 +80,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type one_hot_operation::one_hot2d(
         arg_type&& arg, val_type num_classes) const
     {
@@ -102,7 +99,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> one_hot_operation::eval(
@@ -159,12 +155,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->one_hot0d(std::move(a),num_classes);
+
                 case 1:
                     return this_->one_hot1d(std::move(a),num_classes);
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
                 case 2:
                     return this_->one_hot2d(std::move(a),num_classes);
-#endif
+
                 default:
                     break;
                 }

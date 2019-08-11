@@ -58,11 +58,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         template <typename T>
         execution_tree::primitive_argument_type dot1d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         execution_tree::primitive_argument_type dot1d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
         template <typename T>
         execution_tree::primitive_argument_type dot1d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
@@ -80,11 +78,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         template <typename Matrix1, typename Matrix2>
         execution_tree::primitive_argument_type dot2d2d(
             Matrix1&& lhs, Matrix2&& rhs) const;
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         execution_tree::primitive_argument_type dot2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
-#endif
         template <typename T>
         execution_tree::primitive_argument_type dot2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
@@ -94,7 +90,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             execution_tree::primitive_argument_type&&,
             execution_tree::primitive_argument_type&&) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         execution_tree::primitive_argument_type dot3d1d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
@@ -112,7 +107,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type dot3d(
             execution_tree::primitive_argument_type&&,
             execution_tree::primitive_argument_type&&) const;
-#endif
 
         execution_tree::primitive_argument_type dot_nd(
             execution_tree::primitive_argument_type&& lhs,

@@ -22,9 +22,9 @@
 #include <utility>
 #include <vector>
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -192,7 +192,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type dot_operation::outer3d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
     {
@@ -225,7 +224,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dot_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     primitive_argument_type dot_operation::contraction2d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
@@ -260,7 +258,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     primitive_argument_type dot_operation::contraction3d(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs) const
     {
@@ -293,7 +290,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dot_operation primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     primitive_argument_type dot_operation::tensordot_range_of_scalars(
         primitive_argument_type&& lhs, primitive_argument_type&& rhs,
@@ -383,11 +379,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return common::dot2d(
                 std::move(lhs), std::move(rhs), name_, codename_);
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return common::dot3d(
                 std::move(lhs), std::move(rhs), name_, codename_);
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -413,10 +407,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return outer2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return outer3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -435,10 +427,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return contraction2d(std::move(lhs), std::move(rhs));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return contraction3d(std::move(lhs), std::move(rhs));
-#endif
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

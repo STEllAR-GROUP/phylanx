@@ -28,9 +28,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -198,7 +196,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return cumulative2d_noaxis<T>(std::move(ops));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
     template <typename T>
@@ -347,7 +344,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // no axis specified
         return cumulative3d_noaxis<T>(std::move(ops));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
@@ -370,10 +366,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return cumulative2d<T>(std::move(ops), std::move(axis));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return cumulative3d<T>(std::move(ops), std::move(axis));
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cumulative<Op, Derived>::cumulative_helper<T>",

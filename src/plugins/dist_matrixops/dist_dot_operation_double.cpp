@@ -30,10 +30,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const;
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template execution_tree::primitive_argument_type dist_dot_operation::dot3d(
         ir::node_data<double>&&, ir::node_data<double>&&,
         execution_tree::localities_information const& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const;
-#endif
 }}}

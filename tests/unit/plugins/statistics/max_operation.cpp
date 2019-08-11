@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
                        "list(-1, 0), true, 110.)",
         "[[110.]]");
     test_2d_keep_dims_true();
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+
     test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]])", "101.");
     test_max_operation("amax([[[13., 42., 33.],[101., 12., 65.]]], 0)",
         "[[13., 42., 33.], [101., 12., 65.]]");
@@ -144,6 +144,6 @@ int main(int argc, char* argv[])
     test_max_operation(
         "amax([[[13., 42., 33.],[101., 12., 65.]]], list(0, -1, 1), true)",
         "[[[101.]]]");
-#endif
+
     return hpx::util::report_errors();
 }

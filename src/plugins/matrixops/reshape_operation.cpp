@@ -25,9 +25,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -124,7 +122,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             return false;
         }
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         else if (arg.size() == 3)
         {
             auto it = arg.begin();
@@ -153,7 +150,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             return false;
         }
-#endif
         else
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -179,11 +175,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{
                 blaze::DynamicMatrix<T>{1, 1, arr.scalar()}};
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return primitive_argument_type{
                 blaze::DynamicTensor<T>{1, 1, 1, arr.scalar()}};
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::eval",
@@ -257,7 +252,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type reshape_operation::reshape1d_3d(
         ir::node_data<T>&& arr, ir::range&& arg) const
@@ -290,7 +284,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type reshape_operation::reshape1d(ir::node_data<T>&& arr,
@@ -304,10 +297,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return reshape1d_2d(std::move(arr),std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return reshape1d_3d(std::move(arr),std::move(arg));
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::reshape1d",
@@ -403,7 +395,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type reshape_operation::reshape2d_3d(
         ir::node_data<T>&& arr, ir::range&& arg) const
@@ -437,7 +428,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{std::move(result)};
     }
-#endif
 
     template <typename T>
     primitive_argument_type reshape_operation::reshape2d(ir::node_data<T>&& arr,
@@ -451,10 +441,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return reshape2d_2d(std::move(arr), std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return reshape2d_3d(std::move(arr), std::move(arg));
-#endif
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::reshape2d",
@@ -499,7 +488,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type reshape_operation::reshape3d_1d(
@@ -636,7 +624,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the reshape primitive requires for all arguments to "
                 "be numeric data types"));
     }
-#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -664,7 +651,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return reshape2d_1d(std::move(arr));
     }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     primitive_argument_type reshape_operation::flatten3d(
         ir::node_data<T>&& arr, std::string order) const
@@ -692,7 +678,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // order is 'C'
         return reshape3d_1d(std::move(arr));
     }
-#endif
 
     template <typename T>
     primitive_argument_type reshape_operation::flatten_nd(
@@ -710,10 +695,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return reshape2d_1d(std::move(arr));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return reshape3d_1d(std::move(arr));
-#endif
+
         default:
             break;
         }
@@ -740,10 +724,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 2:
             return flatten2d(std::move(arr), std::move(order));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case 3:
             return flatten3d(std::move(arr), std::move(order));
-#endif
+
         default:
             break;
         }
@@ -875,10 +858,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->reshape2d(std::move(arr), std::move(arg));
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 case 3:
                     return this_->reshape3d(std::move(arr), std::move(arg));
-#endif
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "reshape_operation::eval",
