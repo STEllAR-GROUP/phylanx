@@ -142,6 +142,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value_strict(
                     std::move(arg1), name_, codename_), name_, codename_);
 
+        case 4:
+            return common::transpose4d(std::move(arg0),
+                extract_integer_value_strict(
+                    std::move(arg1), name_, codename_), name_, codename_);
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "transpose_operation::transpose_nd",
