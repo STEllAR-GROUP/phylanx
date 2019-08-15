@@ -62,6 +62,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<T>&& arg, std::int64_t axis) const;
 
         primitive_argument_type add_dim_2d(primitive_arguments_type&& arg) const;
+
+        template <typename T>
+        primitive_argument_type add_dim_3d(
+            ir::node_data<T>&& arg, std::int64_t axis) const;
+
+        primitive_argument_type add_dim_3d(primitive_arguments_type&& arg) const;
     };
 
     inline primitive create_expand_dims(hpx::id_type const& locality,
