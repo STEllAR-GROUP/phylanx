@@ -149,6 +149,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type random3d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params) const;
+        primitive_argument_type random4d(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+            distribution_parameters_type&& params) const;
     };
 
     inline primitive create_random(hpx::id_type const& locality,

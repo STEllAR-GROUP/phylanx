@@ -148,6 +148,41 @@ void generate_3d(phylanx::execution_tree::compiler::function const& call,
         phylanx::execution_tree::extract_node_data<T>(result));
 }
 
+// generate a random double 4d array
+template <typename T, typename Gen, typename Dist>
+void generate_4d(phylanx::execution_tree::compiler::function const& call,
+    Gen& gen, Dist& dist)
+{
+    phylanx::execution_tree::primitive_arguments_type dims = {
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{3}},
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{32}},
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{16}},
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{13}}
+    };
+
+    auto result = call(dims);
+
+    blaze::DynamicArray<4UL, T> q(3UL, 32UL, 16UL, 13UL);
+    for (std::size_t quat = 0; quat != blaze::quats(q); ++quat)
+    {
+        for (std::size_t page = 0; page != blaze::pages(q); ++page)
+        {
+            for (std::size_t row = 0; row != blaze::rows(q); ++row)
+            {
+                for (auto& val :
+                    blaze::row(
+                        blaze::pageslice(blaze::quatslice(q, quat), page), row))
+                {
+                    val = dist(gen);
+                }
+            }
+        }
+    }
+
+    HPX_TEST_EQ(phylanx::ir::node_data<T>(std::move(q)),
+        phylanx::execution_tree::extract_node_data<T>(result));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void test_normal_distribution_implicit(std::mt19937& gen)
 {
@@ -173,6 +208,10 @@ void test_normal_distribution_implicit(std::mt19937& gen)
     {
         std::normal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::normal_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -201,6 +240,10 @@ void test_uniform_distribution_explicit(std::mt19937& gen)
         std::uniform_real_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::uniform_real_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_uniform_distribution_explicit_params(std::mt19937& gen)
@@ -227,6 +270,10 @@ void test_uniform_distribution_explicit_params(std::mt19937& gen)
     {
         std::uniform_real_distribution<double> dist{2.0, 4.0};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::uniform_real_distribution<double> dist{2.0, 4.0};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -256,6 +303,10 @@ void test_uniform_int_distribution_explicit(std::mt19937& gen)
         std::uniform_int_distribution<std::int64_t> dist;
         generate_3d<std::int64_t>(call, gen, dist);
     }
+    {
+        std::uniform_int_distribution<std::int64_t> dist;
+        generate_4d<std::int64_t>(call, gen, dist);
+    }
 }
 
 void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
@@ -282,6 +333,10 @@ void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
     {
         std::uniform_int_distribution<std::int64_t> dist{200, 400};
         generate_3d<std::int64_t>(call, gen, dist);
+    }
+    {
+        std::uniform_int_distribution<std::int64_t> dist{200, 400};
+        generate_4d<std::int64_t>(call, gen, dist);
     }
 }
 
@@ -311,6 +366,10 @@ void test_bernoulli_distribution(std::mt19937& gen)
         std::bernoulli_distribution dist;
         generate_3d<std::uint8_t>(call, gen, dist);
     }
+    {
+        std::bernoulli_distribution dist;
+        generate_4d<std::uint8_t>(call, gen, dist);
+    }
 }
 
 void test_bernoulli_distribution_params(std::mt19937& gen)
@@ -337,6 +396,10 @@ void test_bernoulli_distribution_params(std::mt19937& gen)
     {
         std::bernoulli_distribution dist{0.8};
         generate_3d<std::uint8_t>(call, gen, dist);
+    }
+    {
+        std::bernoulli_distribution dist{0.8};
+        generate_4d<std::uint8_t>(call, gen, dist);
     }
 }
 
@@ -366,6 +429,10 @@ void test_binomial_distribution(std::mt19937& gen)
         std::binomial_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::binomial_distribution<int> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_binomial_distribution_params(std::mt19937& gen)
@@ -392,6 +459,10 @@ void test_binomial_distribution_params(std::mt19937& gen)
     {
         std::binomial_distribution<int> dist{10, 0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::binomial_distribution<int> dist{10, 0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -421,6 +492,10 @@ void test_negative_binomial_distribution(std::mt19937& gen)
         std::negative_binomial_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::negative_binomial_distribution<int> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_negative_binomial_distribution_params(std::mt19937& gen)
@@ -447,6 +522,10 @@ void test_negative_binomial_distribution_params(std::mt19937& gen)
     {
         std::negative_binomial_distribution<int> dist{10, 0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::negative_binomial_distribution<int> dist{10, 0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -476,6 +555,10 @@ void test_geometric_distribution(std::mt19937& gen)
         std::geometric_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::geometric_distribution<int> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_geometric_distribution_params(std::mt19937& gen)
@@ -502,6 +585,10 @@ void test_geometric_distribution_params(std::mt19937& gen)
     {
         std::geometric_distribution<int> dist{0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::geometric_distribution<int> dist{0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -531,6 +618,10 @@ void test_poisson_distribution(std::mt19937& gen)
         std::poisson_distribution<int> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::poisson_distribution<int> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_poisson_distribution_params(std::mt19937& gen)
@@ -557,6 +648,10 @@ void test_poisson_distribution_params(std::mt19937& gen)
     {
         std::poisson_distribution<int> dist{4};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::poisson_distribution<int> dist{4};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -586,6 +681,10 @@ void test_exponential_distribution(std::mt19937& gen)
         std::exponential_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::exponential_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_exponential_distribution_params(std::mt19937& gen)
@@ -612,6 +711,10 @@ void test_exponential_distribution_params(std::mt19937& gen)
     {
         std::exponential_distribution<double> dist{2.0};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::exponential_distribution<double> dist{2.0};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -641,6 +744,10 @@ void test_gamma_distribution(std::mt19937& gen)
         std::gamma_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::gamma_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_gamma_distribution_params(std::mt19937& gen)
@@ -667,6 +774,10 @@ void test_gamma_distribution_params(std::mt19937& gen)
     {
         std::gamma_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::gamma_distribution<double> dist{0.8, 1.2};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -696,6 +807,10 @@ void test_weibull_distribution(std::mt19937& gen)
         std::weibull_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::weibull_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_weibull_distribution_params(std::mt19937& gen)
@@ -722,6 +837,10 @@ void test_weibull_distribution_params(std::mt19937& gen)
     {
         std::weibull_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::weibull_distribution<double> dist{0.8, 1.2};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -751,6 +870,10 @@ void test_extreme_value_distribution(std::mt19937& gen)
         std::extreme_value_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::extreme_value_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_extreme_value_distribution_params(std::mt19937& gen)
@@ -777,6 +900,10 @@ void test_extreme_value_distribution_params(std::mt19937& gen)
     {
         std::extreme_value_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::extreme_value_distribution<double> dist{0.8, 1.2};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -806,6 +933,10 @@ void test_normal_distribution(std::mt19937& gen)
         std::normal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::normal_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_normal_distribution_params(std::mt19937& gen)
@@ -832,6 +963,10 @@ void test_normal_distribution_params(std::mt19937& gen)
     {
         std::normal_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::normal_distribution<double> dist{0.8, 1.2};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -860,6 +995,10 @@ void test_truncated_normal_distribution(std::mt19937& gen)
     {
         phylanx::util::truncated_normal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        phylanx::util::truncated_normal_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -892,6 +1031,10 @@ void test_truncated_normal_distribution_params(std::mt19937& gen)
         phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
     }
+    {
+        phylanx::util::truncated_normal_distribution<double> dist{0.8, 1.2};
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -920,6 +1063,10 @@ void test_lognormal_distribution(std::mt19937& gen)
         std::lognormal_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::lognormal_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_lognormal_distribution_params(std::mt19937& gen)
@@ -946,6 +1093,10 @@ void test_lognormal_distribution_params(std::mt19937& gen)
     {
         std::lognormal_distribution<double> dist{0.8, 1.2};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::lognormal_distribution<double> dist{0.8, 1.2};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -975,6 +1126,10 @@ void test_chi_squared_distribution(std::mt19937& gen)
         std::chi_squared_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::chi_squared_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_chi_squared_distribution_params(std::mt19937& gen)
@@ -1001,6 +1156,10 @@ void test_chi_squared_distribution_params(std::mt19937& gen)
     {
         std::chi_squared_distribution<double> dist{0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::chi_squared_distribution<double> dist{0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -1030,6 +1189,10 @@ void test_cauchy_distribution(std::mt19937& gen)
         std::cauchy_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::cauchy_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_cauchy_distribution_params(std::mt19937& gen)
@@ -1056,6 +1219,10 @@ void test_cauchy_distribution_params(std::mt19937& gen)
     {
         std::cauchy_distribution<double> dist{0.6, 0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::cauchy_distribution<double> dist{0.6, 0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -1085,6 +1252,10 @@ void test_fisher_f_distribution(std::mt19937& gen)
         std::fisher_f_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::fisher_f_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_fisher_f_distribution_params(std::mt19937& gen)
@@ -1111,6 +1282,10 @@ void test_fisher_f_distribution_params(std::mt19937& gen)
     {
         std::fisher_f_distribution<double> dist{0.6, 0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::fisher_f_distribution<double> dist{0.6, 0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
@@ -1140,6 +1315,10 @@ void test_student_t_distribution(std::mt19937& gen)
         std::student_t_distribution<double> dist;
         generate_3d<double>(call, gen, dist);
     }
+    {
+        std::student_t_distribution<double> dist;
+        generate_4d<double>(call, gen, dist);
+    }
 }
 
 void test_student_t_distribution_params(std::mt19937& gen)
@@ -1166,6 +1345,10 @@ void test_student_t_distribution_params(std::mt19937& gen)
     {
         std::student_t_distribution<double> dist{0.8};
         generate_3d<double>(call, gen, dist);
+    }
+    {
+        std::student_t_distribution<double> dist{0.8};
+        generate_4d<double>(call, gen, dist);
     }
 }
 
