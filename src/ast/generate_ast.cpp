@@ -9,7 +9,7 @@
 #include <phylanx/ast/parser/expression.hpp>
 #include <phylanx/ast/parser/skipper.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <boost/spirit/include/qi.hpp>
 

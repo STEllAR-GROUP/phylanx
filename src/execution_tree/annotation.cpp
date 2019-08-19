@@ -12,7 +12,7 @@
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/repr_manip.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/runtime/serialization/serialize.hpp>
 #include <hpx/util/format.hpp>
 

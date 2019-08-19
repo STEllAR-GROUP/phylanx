@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compiler/locality_attribute.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cstdint>
 #include <string>

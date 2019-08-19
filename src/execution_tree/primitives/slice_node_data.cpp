@@ -15,7 +15,7 @@
 #include <phylanx/ir/ranges.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/exception.hpp>
+#include <hpx/errors/exception.hpp>
 
 #include <algorithm>
 #include <cstddef>
