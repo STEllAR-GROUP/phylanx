@@ -2244,6 +2244,23 @@ sort (a, axis, kind, order)
             
 
 
+spatial_2d_padding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+spatial_2d_padding (x, padding)
+        Args:
+
+            x (array_like) : input 4d array
+            padding (optional, a tuple of two tuples): the first tuple contains
+                two integers which indicate number of pages to pad on front and
+                rear respectively. The second tuple also contains two integers
+                that indicate number of rows to pad on the top and bottom of
+                the data. The default is ((1,1),(1,1)).
+
+        Returns:
+
+        Pads the second and third dimensions of a 4d array with zeros
+
+
 squeeze
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 squeeze (a, axis)

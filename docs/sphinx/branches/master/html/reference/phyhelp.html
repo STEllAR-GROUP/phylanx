@@ -236,6 +236,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#softplus">softplus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#softsign">softsign</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sort">sort</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spatial-2d-padding">spatial_2d_padding</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#squeeze">squeeze</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stack">stack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#std">std</a></li>
@@ -2769,6 +2770,25 @@ oredr (optional, string or list of string) :  specifies which fields to</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="spatial-2d-padding">
+<h2>spatial_2d_padding<a class="headerlink" href="#spatial-2d-padding" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>spatial_2d_padding (x, padding)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>x (array_like) : input 4d array
+padding (optional, a tuple of two tuples): the first tuple contains</p>
+<blockquote>
+<div><p>two integers which indicate number of pages to pad on front and
+rear respectively. The second tuple also contains two integers
+that indicate number of rows to pad on the top and bottom of
+the data. The default is ((1,1),(1,1)).</p>
+</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p>Pads the second and third dimensions of a 4d array with zeros</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="squeeze">
 <h2>squeeze<a class="headerlink" href="#squeeze" title="Permalink to this headline">¶</a></h2>
 <dl>
@@ -3100,7 +3120,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Aug 07, 2019.
+        Last updated on Aug 19, 2019.
       </span>
 
     </p>
