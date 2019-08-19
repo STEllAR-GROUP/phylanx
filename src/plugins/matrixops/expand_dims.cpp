@@ -119,6 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(result)};
         }
 
+        // axis == 1
         blaze::DynamicMatrix<T> result(data.size(), 1);
         blaze::column(result, 0) = data;
         return primitive_argument_type{std::move(result)};
@@ -185,13 +186,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::pageslice(result, 0) = data;
             return primitive_argument_type{std::move(result)};
         }
-        else if (axis == 1)
+        if (axis == 1)
         {
             blaze::DynamicTensor<T> result(data.rows(), 1, data.columns());
             blaze::rowslice(result, 0) = blaze::trans(data);
             return primitive_argument_type{std::move(result)};
         }
 
+        // axis == 2
         blaze::DynamicTensor<T> result(data.rows(), data.columns(), 1);
         blaze::columnslice(result, 0) = data;
         return primitive_argument_type{std::move(result)};
@@ -247,6 +249,105 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type expand_dims::add_dim_3d(
+        ir::node_data<T>&& arg, std::int64_t axis) const
+    {
+        auto t = arg.tensor();
+        std::size_t pages = t.pages();
+        std::size_t rows  = t.rows();
+        std::size_t columns = t.columns();
+
+        if (axis == 0)
+        {
+            blaze::DynamicArray<4UL, T> result(1UL, pages, rows, columns);
+            blaze::quatslice(result, 0) = t;
+            return primitive_argument_type{std::move(result)};
+        }
+        if (axis == 1)
+        {
+            blaze::DynamicArray<4UL, T> result(pages, 1UL, rows, columns);
+            for (std::size_t i = 0; i != pages; ++i)
+            {
+                blaze::quatslice(result, i) =
+                    blaze::subtensor(t, i, 0UL, 0UL, 1UL, rows, columns);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+
+        if (axis == 2)
+        {
+            blaze::DynamicArray<4UL, T> result(pages, rows, 1UL, columns);
+            for (std::size_t i = 0; i != pages; ++i)
+            {
+                blaze::quatslice(result, i) = blaze::trans(
+                    blaze::subtensor(t, i, 0UL, 0UL, 1UL, rows, columns),
+                    {1, 0, 2});
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+
+        // axis == 3
+        blaze::DynamicArray<4UL, T> result(pages, rows, columns, 1UL);
+        for (std::size_t i = 0; i != pages; ++i)
+        {
+            blaze::quatslice(result, i) = blaze::trans(
+                blaze::subtensor(t, i, 0UL, 0UL, 1UL, rows, columns),
+                {1, 2, 0});
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type expand_dims::add_dim_3d(
+        primitive_arguments_type&& args) const
+    {
+        std::int64_t axis =
+            extract_scalar_integer_value_strict(args[1], name_, codename_);
+
+        if (axis > 3 || axis < -4)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::expand_dims::add_dim_3d",
+                generate_error_message(
+                    "the expand_dims primitive requires operand axis "
+                    "to be between -4 and 3 for tensor values."));
+        }
+
+        if (axis < 0)
+        {
+            axis += 4;
+        }
+
+        switch (extract_common_type(args[0]))
+        {
+        case node_data_type_bool:
+            return add_dim_3d(extract_boolean_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_int64:
+            return add_dim_3d(extract_integer_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_double:
+            return add_dim_3d(extract_numeric_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_unknown:
+            return add_dim_3d(extract_numeric_value(
+                std::move(args[0]), name_, codename_), axis);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::expand_dims::add_dim_3d",
+            generate_error_message(
+                "the arange primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> expand_dims::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -290,6 +391,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 2:
                     return this_->add_dim_2d(std::move(args));
+
+                case 3:
+                    return this_->add_dim_3d(std::move(args));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
