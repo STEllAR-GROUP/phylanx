@@ -12,6 +12,7 @@
 #include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/assertion.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/lcos/local/spinlock.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
@@ -24,7 +25,6 @@
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/thread_support/unlock_guard.hpp>
-#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <map>

@@ -13,7 +13,7 @@
 
 #include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
-#include <hpx/util/format.hpp>
+#include <hpx/format.hpp>
 
 #include <algorithm>
 #include <array>
