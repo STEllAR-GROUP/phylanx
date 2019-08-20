@@ -11,7 +11,7 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <algorithm>
 #include <array>

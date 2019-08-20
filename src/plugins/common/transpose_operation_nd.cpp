@@ -12,7 +12,7 @@
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cstdint>
 #include <string>

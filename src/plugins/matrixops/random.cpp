@@ -14,7 +14,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <array>
 #include <cmath>
@@ -418,11 +418,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return randomize(dist_, data);                                         \
     }                                                                          \
     /**/
-#define PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                     \
+#define PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
     primitive_argument_type call4d(                                            \
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
     {                                                                          \
-        blaze::DynamicArray<4UL, T> data(dims[0], dims[1], dims[2], dims[3]);               \
+        blaze::DynamicArray<4UL, T> data(dims[0], dims[1], dims[2], dims[3]);  \
         return randomize(dist_, data);                                         \
     }                                                                          \
     /**/

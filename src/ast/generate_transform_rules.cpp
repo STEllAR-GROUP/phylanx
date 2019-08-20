@@ -11,7 +11,7 @@
 #include <phylanx/ast/transform_ast.hpp>
 #include <phylanx/ast/generate_transform_rules.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/fusion/include/std_pair.hpp>

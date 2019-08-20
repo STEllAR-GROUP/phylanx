@@ -86,7 +86,6 @@ void test_random_2d()
     HPX_TEST_EQ(result.dimension(1), 105);
 }
 
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 void test_random_3d()
 {
     blaze::Rand<blaze::DynamicTensor<double>> gen{};
@@ -141,18 +140,15 @@ void test_random_4d()
     HPX_TEST_EQ(result.dimension(2),  42);
     HPX_TEST_EQ(result.dimension(3), 105);
 }
-#endif
 
 int main(int argc, char* argv[])
 {
     test_random_0d();
     test_random_1d();
     test_random_2d();
-
-#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_random_3d();
     test_random_4d();
-#endif
+
 
     return hpx::util::report_errors();
 }

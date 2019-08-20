@@ -16,7 +16,7 @@
 #include <string>
 #include <utility>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <blaze/Math.h>
 

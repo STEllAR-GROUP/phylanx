@@ -11,7 +11,7 @@
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <algorithm>
 #include <array>
