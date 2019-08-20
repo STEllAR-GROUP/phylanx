@@ -23,6 +23,7 @@ set(tests
     softmax_operation
     softplus_operation
     softsign_operation
+    spatial_2d_padding_operation
     switch_operation
    )
 

@@ -13,8 +13,8 @@
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/errors/throw_exception.hpp>
+#include <hpx/format.hpp>
 #include <hpx/runtime/serialization/serialize.hpp>
-#include <hpx/util/format.hpp>
 
 #include <cctype>
 #include <cstdint>

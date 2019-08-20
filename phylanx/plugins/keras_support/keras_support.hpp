@@ -26,6 +26,7 @@
 #include <phylanx/plugins/keras_support/softmax_operation.hpp>
 #include <phylanx/plugins/keras_support/softplus_operation.hpp>
 #include <phylanx/plugins/keras_support/softsign_operation.hpp>
+#include <phylanx/plugins/keras_support/spatial_2d_padding_operation.hpp>
 #include <phylanx/plugins/keras_support/switch_operation.hpp>
 
 #endif
