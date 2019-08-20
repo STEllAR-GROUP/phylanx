@@ -12,7 +12,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <cstddef>

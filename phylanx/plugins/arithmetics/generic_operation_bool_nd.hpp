@@ -13,7 +13,7 @@
 #include <phylanx/plugins/arithmetics/generic_operation_bool.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>

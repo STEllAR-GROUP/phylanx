@@ -15,7 +15,7 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <string>
 #include <utility>

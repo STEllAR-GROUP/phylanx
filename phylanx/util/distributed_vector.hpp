@@ -23,8 +23,8 @@
 #include <hpx/runtime/get_num_localities.hpp>
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/runtime/launch_policy.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/thread_support/unlock_guard.hpp>
-#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <map>
