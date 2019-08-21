@@ -150,7 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto t = arg.tensor();
         if (!arg.is_ref())
         {
-            for (std::size_t i = 0; i != arg.tensor().columns(); ++i)
+            for (std::size_t i = 0; i != t.columns(); ++i)
             {
                 blaze::columnslice(t, i) =
                     blaze::softmax<blaze::rowwise>(blaze::columnslice(t, i));
@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto t = arg.tensor();
         if (!arg.is_ref())
         {
-            for (std::size_t i = 0; i != arg.tensor().pages(); ++i)
+            for (std::size_t i = 0; i != t.pages(); ++i)
             {
                 blaze::pageslice(t, i) =
                     blaze::softmax<blaze::rowwise>(blaze::pageslice(t, i));
@@ -215,6 +215,167 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "the softmax_operation primitive requires operand axis "
                 "to be between -3 and 2 for tensors."));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type softmax_operation::softmax4d_axis0(
+        arg_type&& arg) const
+    {
+        auto q = arg.quatern();
+        std::size_t quats = q.columns();
+        std::size_t pages = q.rows();
+
+        for (std::size_t l = 0; l != quats; ++l)
+        {
+            auto t = quatslice(blaze::trans(q), l);
+            for (std::size_t i = 0; i != pages; ++i)
+            {
+                blaze::pageslice(t, i) =
+                    blaze::softmax<blaze::rowwise>(blaze::pageslice(t, i));
+            }
+        }
+        blaze::DynamicArray<4UL, val_type> result = q;
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type softmax_operation::softmax4d_axis1(
+        arg_type&& arg) const
+    {
+        auto q = arg.quatern();
+        std::size_t quats = q.quats();
+        std::size_t columns = q.columns();
+        if (!arg.is_ref())
+        {
+            for (std::size_t l = 0; l != quats; ++l)
+            {
+                auto t = quatslice(q, l);
+                for (std::size_t i = 0; i != columns; ++i)
+                {
+                    blaze::columnslice(t, i) =
+                        blaze::softmax<blaze::columnwise>(
+                            blaze::columnslice(t, i));
+                }
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+
+        blaze::DynamicArray<4UL, val_type> result(
+            quats, q.pages(), q.rows(), columns);
+        for (std::size_t l = 0; l != quats; ++l)
+        {
+            auto t = quatslice(q, l);
+            auto res_tensor = quatslice(result, l);
+            for (std::size_t i = 0; i != columns; ++i)
+            {
+                auto slice = blaze::columnslice(t, i);
+                blaze::columnslice(res_tensor, i) =
+                    blaze::softmax<blaze::columnwise>(slice);
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type softmax_operation::softmax4d_axis2(
+        arg_type&& arg) const
+    {
+        auto q = arg.quatern();
+        std::size_t quats = q.quats();
+        std::size_t pages = q.pages();
+        if (!arg.is_ref())
+        {
+            for (std::size_t l = 0; l != quats; ++l)
+            {
+                auto t = quatslice(q, l);
+                for (std::size_t i = 0; i != pages; ++i)
+                {
+                    blaze::pageslice(t, i) = blaze::softmax<blaze::columnwise>(
+                        blaze::pageslice(t, i));
+                }
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+
+        blaze::DynamicArray<4UL, val_type> result(
+            quats, pages, q.rows(), q.columns());
+        for (std::size_t l = 0; l != quats; ++l)
+        {
+            auto t = quatslice(q, l);
+            auto res_tensor = quatslice(result, l);
+            for (std::size_t i = 0; i != pages; ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                blaze::pageslice(res_tensor, i) =
+                    blaze::softmax<blaze::columnwise>(slice);
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type softmax_operation::softmax4d_axis3(
+        arg_type&& arg) const
+    {
+        auto q = arg.quatern();
+        std::size_t quats = q.quats();
+        std::size_t pages = q.pages();
+        if (!arg.is_ref())
+        {
+            for (std::size_t l = 0; l != quats; ++l)
+            {
+                auto t = quatslice(q, l);
+                for (std::size_t i = 0; i != pages; ++i)
+                {
+                    blaze::pageslice(t, i) =
+                        blaze::softmax<blaze::rowwise>(blaze::pageslice(t, i));
+                }
+            }
+            return primitive_argument_type{std::move(arg)};
+        }
+
+        blaze::DynamicArray<4UL, val_type> result(
+            quats, pages, q.rows(), q.columns());
+        for (std::size_t l = 0; l != quats; ++l)
+        {
+            auto t = quatslice(q, l);
+            auto res_tensor = quatslice(result, l);
+            for (std::size_t i = 0; i != pages; ++i)
+            {
+                auto slice = blaze::pageslice(t, i);
+                blaze::pageslice(res_tensor, i) =
+                    blaze::softmax<blaze::rowwise>(slice);
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type softmax_operation::softmax4d(
+        arg_type&& arg, std::int64_t axis) const
+    {
+        switch (axis)
+        {
+        case -4: HPX_FALLTHROUGH;
+        case 0:
+            return softmax4d_axis0(std::move(arg));
+
+        case -3: HPX_FALLTHROUGH;
+        case 1:
+            return softmax4d_axis1(std::move(arg));
+
+        case -2: HPX_FALLTHROUGH;
+        case 2:
+            return softmax4d_axis2(std::move(arg));
+
+        case -1: HPX_FALLTHROUGH;
+        case 3:
+            return softmax4d_axis3(std::move(arg));
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "softmax_operation::softmax4d",
+            generate_error_message(
+                "the softmax_operation primitive requires operand axis "
+                "to be between -4 and 3 for 4d arrays."));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -264,7 +425,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             args[1], this_->name_, this_->codename_);
                 }
 
-                // Extract the matrix, the result should always be double
+                // Extract the array, the result should always be double
                 arg_type a = extract_numeric_value(
                     std::move(args[0]), this_->name_, this_->codename_);
 
@@ -283,6 +444,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 3:
                     return this_->softmax3d(std::move(a), axis);
+
+                case 4:
+                    return this_->softmax4d(std::move(a), axis);
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
