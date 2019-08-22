@@ -9,6 +9,7 @@
 #include <phylanx/plugins/keras_support/avg_pool2d_operation.hpp>
 #include <phylanx/plugins/keras_support/avg_pool3d_operation.hpp>
 #include <phylanx/plugins/keras_support/batch_dot_operation.hpp>
+#include <phylanx/plugins/keras_support/bias_add_operation.hpp>
 #include <phylanx/plugins/keras_support/binary_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/conv1d_operation.hpp>
