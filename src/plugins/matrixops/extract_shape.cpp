@@ -77,7 +77,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type extract_shape::shape1d(
         primitive_argument_type&& arg, std::int64_t index) const
     {
-        if (index != 0 || index != -1)
+        if (index != 0 && index != -1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::shape1d",
