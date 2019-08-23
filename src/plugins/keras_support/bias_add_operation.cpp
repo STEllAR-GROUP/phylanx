@@ -36,8 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         R"(x, bias
         Args:
 
-            x (array_like) : input 3d or 4d array
-            bias (array_like): a bias vector or an array of x_dims - 1
+            x (array_like) : input array of at least rank 2
+            bias (array_like): a bias vector or an array of x_dims-1 dimensions
 
         Returns:
 
@@ -50,6 +50,29 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type bias_add_operation::bias_add2d(
+        ir::node_data<double>&& arg,ir::node_data<double>&& bias) const
+    {
+        auto m = arg.matrix();
+        std::size_t rows  = m.rows();
+        std::size_t columns = m.columns();
+        ir::node_data<double> b = extract_value_matrix<double>(
+            std::move(bias), rows, columns, name_, codename_);
+
+        if (!arg.is_ref())
+        {
+            arg = m + b.matrix();
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicMatrix<double> result(rows, columns);
+            result = m + b.matrix();
+            return primitive_argument_type{std::move(result)};
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type bias_add_operation::bias_add3d(
@@ -73,6 +96,36 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             result = t + b.tensor();
             return primitive_argument_type{std::move(result)};
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type bias_add_operation::bias_add4d(
+        ir::node_data<double>&& arg,ir::node_data<double>&& bias) const
+    {
+        auto q = arg.quatern();
+        std::size_t quats = q.quats();
+        std::size_t pages = q.pages();
+        std::size_t rows  = q.rows();
+        std::size_t columns = q.columns();
+        ir::node_data<double> b = extract_value_quatern<double>(
+            std::move(bias), quats, pages, rows, columns, name_, codename_);
+
+        std::cout << b.quatern() << "\n";
+        //if (!arg.is_ref())
+        //{
+        //    arg = q + b.quatern();
+        //    return primitive_argument_type{std::move(arg)};
+        //}
+        //else
+        //{
+        //    blaze::DynamicArray<4UL, double> result(
+        //        quats, pages, rows, columns);
+        //    result = q + b.quatern();
+            blaze::DynamicArray<4UL, double> result = q;
+            result += b.quatern();
+            return primitive_argument_type{std::move(result)};
+        //}
+        return primitive_argument_type{std::move(arg)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -124,12 +177,25 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
             switch (x_dims)
             {
-                case 3:
-                    return this_->bias_add3d(
-                        extract_numeric_value(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_numeric_value(
-                            std::move(args[1]), this_->name_, this_->codename_));
+            case 2:
+                return this_->bias_add2d(
+                    extract_numeric_value(
+                        std::move(args[0]), this_->name_, this_->codename_),
+                    extract_numeric_value(
+                        std::move(args[1]), this_->name_, this_->codename_));
+            case 3:
+                return this_->bias_add3d(
+                    extract_numeric_value(
+                        std::move(args[0]), this_->name_, this_->codename_),
+                    extract_numeric_value(
+                        std::move(args[1]), this_->name_, this_->codename_));
+
+            case 4:
+                return this_->bias_add4d(
+                    extract_numeric_value(
+                        std::move(args[0]), this_->name_, this_->codename_),
+                    extract_numeric_value(
+                        std::move(args[1]), this_->name_, this_->codename_));
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,

@@ -21,7 +21,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives {
 /// \brief Adds a bias array to an array
-/// \param x     The 3d (tensor) or 4d array (the quaternion)
+/// \param x     An array of at least rank 2
 /// \param bias  The array to be added to x. It can be a vector or have
 ///              1 dimension less than x.
 
@@ -44,7 +44,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
+        primitive_argument_type bias_add2d(
+            ir::node_data<double>&& arg, ir::node_data<double>&& bias) const;
         primitive_argument_type bias_add3d(
+            ir::node_data<double>&& arg, ir::node_data<double>&& bias) const;
+        primitive_argument_type bias_add4d(
             ir::node_data<double>&& arg, ir::node_data<double>&& bias) const;
     };
     inline primitive create_bias_add_operation(
