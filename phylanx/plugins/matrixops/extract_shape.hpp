@@ -55,6 +55,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type shape3d(primitive_argument_type&& arg) const;
         primitive_argument_type shape3d(
             primitive_argument_type&& arg, std::int64_t index) const;
+
+        primitive_argument_type shape4d(primitive_argument_type&& arg) const;
+        primitive_argument_type shape4d(
+            primitive_argument_type&& arg, std::int64_t index) const;
     };
 
     inline primitive create_extract_shape(hpx::id_type const& locality,
