@@ -105,6 +105,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return primitive_argument_type{ir::node_data<std::int64_t>{
                         static_cast<std::int64_t>(val[0])}};
 
+                case 4:     // for quaterns, return number of quats
+                    return primitive_argument_type{ir::node_data<std::int64_t>{
+                        static_cast<std::int64_t>(val[0])}};
+
                 default:
                     break;
                 }
