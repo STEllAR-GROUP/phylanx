@@ -39,6 +39,11 @@ void test_bias_add_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
+    // 2d
+    test_bias_add_operation(
+        "bias_add([[1,2,3],[4,5,6]],[13,42,33])",
+        "[[14., 44., 36.], [17., 47., 39.]]");
+
     // 3d
     test_bias_add_operation(
         "bias_add([[[1,2,3],[4,5,6]],[[7,8,9],[10,11,12]]],[-1,-2,-3])",

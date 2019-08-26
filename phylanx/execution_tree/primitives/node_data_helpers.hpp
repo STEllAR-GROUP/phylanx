@@ -1876,14 +1876,17 @@ namespace phylanx { namespace execution_tree
                                 "sized quatern",
                             name, codename));
                 }
-
-                for (std::size_t k = 0; k != pages; ++k)
+                for (std::size_t l = 0; l != quats; ++l)
                 {
-                    for (std::size_t i = 0; i != rows; ++i)
+                    for (std::size_t k = 0; k != pages; ++k)
                     {
-                        for (std::size_t j = 0; j != columns; ++j)
+                        for (std::size_t i = 0; i != rows; ++i)
                         {
-                            result(l, k, i, j) = f(rhs.at(k, i, j), l, k, i, j);
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                result(l, k, i, j) =
+                                    f(rhs.at(k, i, j), l, k, i, j);
+                            }
                         }
                     }
                 }

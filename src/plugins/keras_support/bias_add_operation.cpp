@@ -14,6 +14,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -110,7 +111,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         ir::node_data<double> b = extract_value_quatern<double>(
             std::move(bias), quats, pages, rows, columns, name_, codename_);
 
-        std::cout << b.quatern() << "\n";
         //if (!arg.is_ref())
         //{
         //    arg = q + b.quatern();
@@ -161,12 +161,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             hpx::util::unwrapping([this_ = std::move(this_)](
                                       primitive_arguments_type&& args)
                                       -> primitive_argument_type {
-            std::size_t x_dims = extract_numeric_value_dimension(
+            std::size_t x_ndim = extract_numeric_value_dimension(
                 args[0], this_->name_, this_->codename_);
-            std::size_t bias_dims = extract_numeric_value_dimension(
+            std::size_t bias_ndim = extract_numeric_value_dimension(
                 args[1], this_->name_, this_->codename_);
 
-            if (bias_dims != 1 && bias_dims != x_dims - 1)
+            if (bias_ndim != 1 && bias_ndim != x_ndim - 1)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "bias_add_operation::eval",
@@ -175,7 +175,25 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         this_->name_, this_->codename_));
             }
 
-            switch (x_dims)
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims =
+                extract_numeric_value_dimensions(
+                    args[0], this_->name_, this_->codename_);
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& bias_dims =
+                extract_numeric_value_dimensions(
+                    args[1], this_->name_, this_->codename_);
+            for (std::size_t i = 0; i != bias_ndim; ++i)
+            {
+                if (dims[x_ndim - i - 1] != bias_dims[bias_ndim - i - 1] &&
+                    bias_dims[bias_ndim - i - 1] != 1)
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "bias_add_operation::eval",
+                        util::generate_error_message(
+                            "bias has at least one incompatible dimension with "
+                            "the original array",
+                            this_->name_, this_->codename_));
+            }
+
+            switch (x_ndim)
             {
             case 2:
                 return this_->bias_add2d(
