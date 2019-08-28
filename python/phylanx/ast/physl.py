@@ -11,6 +11,7 @@ import inspect
 import numpy as np
 import phylanx.execution_tree
 from phylanx import PhylanxSession
+from phylanx.ast.deploy import deployer
 
 
 def physl_zip(loop):
@@ -562,7 +563,11 @@ class PhySL:
     def call(self, args=()):
         """Invoke this Phylanx function, pass along the given arguments"""
 
-        return self.lazy(args).eval()
+        if 'deploy' not in self.kwargs:
+            return self.lazy(args).eval()
+
+        deployer = self.kwargs['deploy']
+        return deployer(args)
 
 # #############################################################################
 # Transducer rules

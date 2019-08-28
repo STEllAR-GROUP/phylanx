@@ -16,7 +16,6 @@ from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
 
-
 class LambdaExtractor(ast.NodeVisitor):
     _ast = None
 
@@ -145,7 +144,6 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             result = self.backend.call(map(self.map_decorated, args))
 
             self.__perfdata__ = self.backend.__perfdata__
-
             return result
 
         def generate_ast(self):
