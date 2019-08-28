@@ -612,6 +612,19 @@ batch_dot (x, y, axes)
             https://keras.io/backend/#batch_dot
 
 
+bias_add
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bias_add (x, bias)
+        Args:
+
+            x (array_like) : input array of at least rank 2
+            bias (array_like): a bias vector or an array of x_dims-1 dimensions
+
+        Returns:
+
+        Adds a bias array to an array
+
+
 binary_crossentropy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 binary_crossentropy (target, output, from_logits)
