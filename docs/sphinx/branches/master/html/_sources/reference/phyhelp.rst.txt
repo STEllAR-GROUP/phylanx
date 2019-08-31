@@ -2017,15 +2017,16 @@ resize_images
 resize_images (a)
             Args:
 
-                a (array_like) : input array
+                a (array_like) : input 4d array
                 height_factor (integer) : enlargement factor for height
                 width_factor (integer) : enlargement factor for width
-                interpolation (string) : interpolation type, "bilinear" or "nearest"
+                interpolation (string) : interpolation type, "bilinear" or
+                    "nearest"
 
             Returns:
 
-            Returns a resized version of the array with height_factor and width_factor
-            using the specified interpolation .
+            Returns a resized version of the array with height_factor and
+            width_factor using the specified interpolation .
 
 
 separable_conv1d
