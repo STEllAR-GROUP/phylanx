@@ -24,10 +24,10 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives {
 /// \brief Pools out the value with each stride of a pool_size filter
-/// \param x         The matrix to pool information out of it
-/// \param pool_size The size of pooling over each dimension
+/// \param x         The array to pool information out of it
+/// \param pool_size The size of pooling over 2nd and 3rd dimensions
 /// \param padding   Padding mode, either `same` or `valid`
-/// \param strides   The step to apply pooling on each dimension
+/// \param strides   The step to apply pooling on 2nd and 3rd dimension
 
     class max_pool2d_operation
       : public primitive_component_base

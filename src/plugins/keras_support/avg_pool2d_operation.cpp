@@ -41,13 +41,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         R"(x, pool_size, padding, strides
         Args:
 
-            x (array) : a matrix
-            pool_size (a tuple of integers) : the size of pooling over each
-                dimension
+            x (array) : a 4d array
+            pool_size (a tuple of two integers) : the size of pooling over the
+                2nd and the 3rd dimensions
             padding (optional, string) : padding mode, it can be either `same`
                 or `valid`. `valid` by default.
             strides (optional, a tuple of 2 integers) : the step to apply
-                pooling over each dimension. `(1, 1)` by default.
+                pooling over the 2nd and the the 3rd dimensions. `(1, 1)` by
+                default.
 
         Returns:
 
@@ -64,19 +65,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, std::size_t filter_height,
         std::size_t filter_width) const
     {
-        auto m = arg.matrix();
+        auto q = arg.quatern();
 
-        std::size_t result_height = m.rows() - filter_height + 1;
-        std::size_t result_width = m.columns() - filter_width + 1;
+        std::size_t result_height = q.pages() - filter_height + 1;
+        std::size_t result_width  = q.rows() - filter_width + 1;
+        std::size_t batch = q.quats();
+        std::size_t channels = q.columns();
 
-        blaze::DynamicMatrix<double> result(result_height, result_width);
+        blaze::DynamicArray<4UL, double> result(
+            batch, result_height, result_width, channels);
 
-        for (std::size_t r = 0; r != result_height; ++r)
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            for (std::size_t c = 0; c != result_width; ++c)
+            auto res_tensor = blaze::quatslice(result, l);
+            auto t = blaze::quatslice(q, l);
+            for (std::size_t j = 0; j != channels; ++j)
             {
-                result(r, c) = blaze::mean(
-                    blaze::submatrix(m, r, c, filter_height, filter_width));
+                auto res_slice = blaze::columnslice(res_tensor, j);
+                auto slice = blaze::columnslice(t, j);
+
+                for (std::size_t r = 0; r != result_height; ++r)
+                {
+                    for (std::size_t c = 0; c != result_width; ++c)
+                    {
+                        res_slice(r, c) = (blaze::mean)(blaze::submatrix(
+                            slice, r, c, filter_height, filter_width));
+                    }
+                }
             }
         }
 
@@ -88,23 +103,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t filter_width, std::size_t stride_height,
         std::size_t stride_width) const
     {
-        auto m = arg.matrix();
+        auto q = arg.quatern();
 
         std::size_t result_height = blaze::ceil(
-            static_cast<double>(m.rows() - filter_height + 1) / stride_height);
+            static_cast<double>(q.pages() - filter_height + 1) / stride_height);
         std::size_t result_width =
-            blaze::ceil(static_cast<double>(m.columns() - filter_width + 1) /
+            blaze::ceil(static_cast<double>(q.rows() - filter_width + 1) /
                 stride_width);
+        std::size_t batch = q.quats();
+        std::size_t channels = q.columns();
 
-        blaze::DynamicMatrix<double> result(result_height, result_width);
+        blaze::DynamicArray<4UL, double> result(
+            batch, result_height, result_width, channels);
 
-        for (std::size_t r = 0; r != result_height; ++r)
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            for (std::size_t c = 0; c != result_width; ++c)
+            auto res_tensor = blaze::quatslice(result, l);
+            auto t = blaze::quatslice(q, l);
+            for (std::size_t j = 0; j != channels; ++j)
             {
-                result(r, c) =
-                    blaze::mean(blaze::submatrix(m, r * stride_height,
-                        c * stride_width, filter_height, filter_width));
+                auto res_slice = blaze::columnslice(res_tensor, j);
+                auto slice = blaze::columnslice(t, j);
+
+                for (std::size_t r = 0; r != result_height; ++r)
+                {
+                    for (std::size_t c = 0; c != result_width; ++c)
+                    {
+                        res_slice(r, c) = (blaze::mean)(
+                            blaze::submatrix(slice, r * stride_height,
+                                c * stride_width, filter_height, filter_width));
+                    }
+                }
             }
         }
 
@@ -116,30 +145,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg,
          std::size_t filter_height, std::size_t filter_width) const
     {
-        auto m = arg.matrix();
+        auto q = arg.quatern();
 
         std::int64_t pad_top = (filter_height - 1) / 2;
         std::int64_t pad_left = (filter_width - 1) / 2;
 
-        std::size_t nrows = m.rows();
-        std::size_t ncolumns = m.columns();
+        std::size_t nrows = q.pages();
+        std::size_t ncolumns = q.rows();
+        std::size_t batch = q.quats();
+        std::size_t channels = q.columns();
 
-        blaze::DynamicMatrix<double> result(nrows, ncolumns);
+        blaze::DynamicArray<4UL, double> result(
+            batch, nrows, ncolumns, channels);
 
-        for (std::size_t r = 0; r != nrows; ++r)
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            auto sub_row =
-                pool_indices::get_subsizes(nrows, filter_height, r - pad_top);
-            for (std::size_t c = 0; c != ncolumns; ++c)
+            auto res_tensor = blaze::quatslice(result, l);
+            auto t = blaze::quatslice(q, l);
+            for (std::size_t j = 0; j != channels; ++j)
             {
-                auto sub_column = pool_indices::get_subsizes(
-                    ncolumns, filter_width, c - pad_left);
+                auto res_slice = blaze::columnslice(res_tensor, j);
+                auto slice = blaze::columnslice(t, j);
+                for (std::size_t r = 0; r != nrows; ++r)
+                {
+                    auto sub_row = pool_indices::get_subsizes(
+                        nrows, filter_height, r - pad_top);
+                    for (std::size_t c = 0; c != ncolumns; ++c)
+                    {
+                        auto sub_column = pool_indices::get_subsizes(
+                            ncolumns, filter_width, c - pad_left);
 
-                result(r, c) =
-                    blaze::mean(blaze::submatrix(m, sub_row.image_beg_,
-                    sub_column.image_beg_, sub_row.size_, sub_column.size_));
+                        res_slice(r, c) = (blaze::mean)(blaze::submatrix(slice,
+                            sub_row.image_beg_, sub_column.image_beg_,
+                            sub_row.size_, sub_column.size_));
+                    }
+                }
             }
         }
+
         return primitive_argument_type{std::move(result)};
     }
 
@@ -148,27 +191,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t filter_width, std::size_t stride_height,
         std::size_t stride_width) const
     {
-        auto m = arg.matrix();
+        auto q = arg.quatern();
 
         std::size_t pad_height;
         std::size_t pad_width;
 
-        std::size_t nrows = m.rows();
-        std::size_t ncolumns = m.columns();
+        std::size_t nrows = q.pages();
+        std::size_t ncolumns = q.rows();
+        std::size_t batch = q.quats();
+        std::size_t channels = q.columns();
 
         if (nrows % stride_height == 0)
-            pad_height = (blaze::max)(
-                filter_height - stride_height, static_cast<std::size_t>(0));
+            pad_height = filter_height > stride_height ?
+                filter_height - stride_height :
+                static_cast<std::size_t>(0);
         else
-            pad_height = (blaze::max)(filter_height - (nrows % stride_height),
-                static_cast<std::size_t>(0));
+            pad_height = filter_height > (nrows % stride_height) ?
+                filter_height - (nrows % stride_height) :
+                static_cast<std::size_t>(0);
 
         if (ncolumns % stride_width == 0)
-            pad_width = (blaze::max)(
-                filter_width - stride_width, static_cast<std::size_t>(0));
+            pad_width = filter_width > stride_width ?
+                filter_width - stride_width :
+                static_cast<std::size_t>(0);
         else
-            pad_width = (blaze::max)(filter_width - (ncolumns % stride_width),
-                static_cast<std::size_t>(0));
+            pad_width = filter_width > (ncolumns % stride_width) ?
+                filter_width - (ncolumns % stride_width) :
+                static_cast<std::size_t>(0);
 
         std::size_t pad_top  = pad_height / 2;
         std::size_t pad_left = pad_width  / 2;
@@ -180,20 +229,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
             static_cast<double>(ncolumns + pad_width - filter_width + 1) /
             stride_width);
 
-        blaze::DynamicMatrix<double> result(result_height, result_width);
+        blaze::DynamicArray<4UL, double> result(
+            batch, result_height, result_width, channels);
 
-        for (std::size_t r = 0; r != result_height; ++r)
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            auto sub_row = pool_indices::get_subsizes(
-                nrows, filter_height, r * stride_height - pad_top);
-            for (std::size_t c = 0; c != result_width; ++c)
+            auto res_tensor = blaze::quatslice(result, l);
+            auto t = blaze::quatslice(q, l);
+            for (std::size_t j = 0; j != channels; ++j)
             {
-                auto sub_column = pool_indices::get_subsizes(
-                    ncolumns, filter_width, c * stride_width - pad_left);
+                auto res_slice = blaze::columnslice(res_tensor, j);
+                auto slice = blaze::columnslice(t, j);
+                for (std::size_t r = 0; r != result_height; ++r)
+                {
+                    auto sub_row = pool_indices::get_subsizes(
+                        nrows, filter_height, r * stride_height - pad_top);
+                    for (std::size_t c = 0; c != result_width; ++c)
+                    {
+                        auto sub_column = pool_indices::get_subsizes(ncolumns,
+                            filter_width, c * stride_width - pad_left);
 
-                result(r, c) =
-                    blaze::mean(blaze::submatrix(m, sub_row.image_beg_,
-                    sub_column.image_beg_, sub_row.size_, sub_column.size_));
+                        res_slice(r, c) = (blaze::mean)(blaze::submatrix(slice,
+                            sub_row.image_beg_, sub_column.image_beg_,
+                            sub_row.size_, sub_column.size_));
+                    }
+                }
             }
         }
 
@@ -261,13 +321,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::range pool_size = extract_list_value_strict(
                     args[1], this_->name_, this_->codename_);
 
-                if (pool_size.size() != ndim || ndim != 2)
+                if (pool_size.size() != 2 || ndim != 4)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "avg_pool2d_operation::eval",
                         this_->generate_error_message(
-                            "the length of pool_size should be same as array "
-                            "dimensions. pool2d operates on matrices and "
+                            "the length of pool_size should be same as image "
+                            "dimensions. pool2d operates on 4d arrays and "
                             "requires a 2d pool_size"));
                 }
 
@@ -296,7 +356,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& dims =
                         extract_numeric_value_dimensions(
                             args[0], this_->name_, this_->codename_);
-                    if (filter_height > dims[0] || filter_width > dims[1])
+                    if (filter_height > dims[1] || filter_width > dims[2])
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "avg_pool2d_operation::eval",
