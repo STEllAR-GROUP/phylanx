@@ -959,15 +959,16 @@ dtype : the data-type to which the array is cast</p>
 <dl>
 <dt>avg_pool2d (x, pool_size, padding, strides)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>x (array) : a matrix
-pool_size (a tuple of integers) : the size of pooling over each</p>
+<div><p>x (array) : a 4d array
+pool_size (a tuple of two integers) : the size of pooling over the</p>
 <blockquote>
-<div><p>dimension</p>
+<div><p>2nd and the 3rd dimensions</p>
 </div></blockquote>
 <dl>
 <dt>padding (optional, string)<span class="classifier">padding mode, it can be either <cite>same</cite></span></dt><dd><p>or <cite>valid</cite>. <cite>valid</cite> by default.</p>
 </dd>
-<dt>strides (optional, a tuple of 2 integers)<span class="classifier">the step to apply</span></dt><dd><p>pooling over each dimension. <cite>(1, 1)</cite> by default.</p>
+<dt>strides (optional, a tuple of 2 integers)<span class="classifier">the step to apply</span></dt><dd><p>pooling over the 2nd and the the 3rd dimensions. <cite>(1, 1)</cite> by
+default.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -2178,15 +2179,15 @@ enable_output (optional, boolean): If enabled, prints out the step</p>
 <dl>
 <dt>max_pool2d (x, pool_size, padding, strides)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>x (array) : a matrix
-pool_size (a tuple of integers) : the size of pooling over each</p>
+<div><p>x (array) : a 4d array
+pool_size (a tuple of two integers) : the size of pooling over the</p>
 <blockquote>
-<div><p>dimension</p>
+<div><p>2nd and the 3rd dimensions</p>
 </div></blockquote>
 <dl>
 <dt>padding (optional, string)<span class="classifier">padding mode, it can be either <cite>same</cite></span></dt><dd><p>or <cite>valid</cite>. <cite>valid</cite> by default.</p>
 </dd>
-<dt>strides (optional, a tuple of 2 integers)<span class="classifier">the step to apply</span></dt><dd><p>pooling over each dimension. <cite>(1, 1)</cite> by default.</p>
+<dt>strides (optional, a tuple of two integers)<span class="classifier">the step to apply</span></dt><dd><p>pooling over the 2nd and the 3rd dimensions. <cite>(1, 1)</cite> by default.</p>
 </dd>
 </dl>
 </div></blockquote>

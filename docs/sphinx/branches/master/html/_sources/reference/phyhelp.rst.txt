@@ -567,13 +567,14 @@ avg_pool2d
 avg_pool2d (x, pool_size, padding, strides)
         Args:
 
-            x (array) : a matrix
-            pool_size (a tuple of integers) : the size of pooling over each
-                dimension
+            x (array) : a 4d array
+            pool_size (a tuple of two integers) : the size of pooling over the
+                2nd and the 3rd dimensions
             padding (optional, string) : padding mode, it can be either `same`
                 or `valid`. `valid` by default.
             strides (optional, a tuple of 2 integers) : the step to apply
-                pooling over each dimension. `(1, 1)` by default.
+                pooling over the 2nd and the the 3rd dimensions. `(1, 1)` by
+                default.
 
         Returns:
 
@@ -1686,13 +1687,13 @@ max_pool2d
 max_pool2d (x, pool_size, padding, strides)
         Args:
 
-            x (array) : a matrix
-            pool_size (a tuple of integers) : the size of pooling over each
-                dimension
+            x (array) : a 4d array
+            pool_size (a tuple of two integers) : the size of pooling over the
+                2nd and the 3rd dimensions
             padding (optional, string) : padding mode, it can be either `same`
                 or `valid`. `valid` by default.
-            strides (optional, a tuple of 2 integers) : the step to apply
-                pooling over each dimension. `(1, 1)` by default.
+            strides (optional, a tuple of two integers) : the step to apply
+                pooling over the 2nd and the 3rd dimensions. `(1, 1)` by default.
 
         Returns:
 
