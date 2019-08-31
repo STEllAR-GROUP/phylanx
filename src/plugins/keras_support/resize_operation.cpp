@@ -31,20 +31,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const resize_operation::match_data = {
         hpx::util::make_tuple("resize_images",
-            std::vector<std::string>{"resize_images(_1, _2, _3, _4)"},
+            std::vector<std::string>{R"(
+                resize_images(_1,
+                _2_height_factor,
+                _3_width_factor,
+                __arg(_4_interpolation,"nearest")))"},
             &create_resize_operation, &create_primitive<resize_operation>,
             R"(a
             Args:
 
-                a (array_like) : input array
+                a (array_like) : input 4d array
                 height_factor (integer) : enlargement factor for height
                 width_factor (integer) : enlargement factor for width
-                interpolation (string) : interpolation type, "bilinear" or "nearest"
+                interpolation (string) : interpolation type, "bilinear" or
+                    "nearest"
 
             Returns:
 
-            Returns a resized version of the array with height_factor and width_factor
-            using the specified interpolation .)")};
+            Returns a resized version of the array with height_factor and
+            width_factor using the specified interpolation .)")};
 
     ///////////////////////////////////////////////////////////////////////////
     resize_operation::resize_operation(primitive_arguments_type&& operands,
@@ -59,22 +64,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t height_factor, std::int64_t width_factor,
         std::string interpolation) const
     {
-        auto m = arg.matrix();
-        blaze::DynamicMatrix<T> result(
-            m.rows() * height_factor, m.columns() * width_factor);
+        auto q = arg.quatern();
 
-        std::size_t num_elements =
-            m.rows() * height_factor * m.columns() * width_factor;
-        for (std::size_t i = 0; i < num_elements; ++i)
+        std::size_t batch = q.quats();
+        std::size_t channels = q.columns();
+        std::size_t height = q.pages();
+        std::size_t width = q.rows();
+        std::size_t result_height = height * height_factor;
+        std::size_t result_width = width * width_factor;
+
+        blaze::DynamicArray<4UL, T> result(
+            batch, result_height, result_width, channels);
+        std::size_t num_elements = result_height * result_width;
+        std::size_t fx;
+        std::size_t dx;
+        std::size_t fy;
+        std::size_t dy;
+
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            std::size_t fx = i / result.columns();
-            std::size_t dx = fx / height_factor;
-            std::size_t fy = i - fx * result.columns();
-            std::size_t dy = fy / width_factor;
+            auto res_tensor = blaze::quatslice(result, l);
+            auto t = blaze::quatslice(q, l);
+            for (std::size_t j = 0; j != channels; ++j)
+            {
+                auto res_slice = blaze::columnslice(res_tensor, j);
+                auto m = blaze::columnslice(t, j);
+                for (std::size_t i = 0; i != num_elements; ++i)
+                {
+                    fx = i / result_width;
+                    dx = fx / height_factor;
+                    fy = i - fx * result_width;
+                    dy = fy / width_factor;
 
-            result(fx, fy) = m(dx, dy);
+                    res_slice(fx, fy) = m(dx, dy);
+                }
+            }
         }
-
         return primitive_argument_type{std::move(result)};
     }
 
@@ -82,38 +107,69 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double>&& arg, std::int64_t height_factor,
         std::int64_t width_factor, std::string interpolation) const
     {
-        auto m = arg.matrix();
-        blaze::DynamicMatrix<double> result(
-            m.rows() * height_factor, m.columns() * width_factor, 0.);
+        auto q = arg.quatern();
 
-        std::size_t num_elements =
-            m.rows() * height_factor * m.columns() * width_factor;
-        for (std::size_t i = 0; i < num_elements; ++i)
+        std::size_t batch = q.quats();
+        std::size_t channels = q.columns();
+        std::size_t height = q.pages();
+        std::size_t width = q.rows();
+        std::size_t result_height = height * height_factor;
+        std::size_t result_width = width * width_factor;
+
+        blaze::DynamicArray<4UL, double> result(blaze::init_from_value, 0.0,
+            batch, result_height, result_width, channels);
+
+        std::size_t num_elements = result_height * result_width;
+        std::size_t fx;
+        std::size_t dx;
+        std::size_t rx;
+        std::size_t fy;
+        std::size_t dy;
+        std::size_t ry;
+        std::size_t bx;
+        std::size_t by;
+        double ul;
+        double ur;
+        double ll;
+        double lr;
+        double tmp;
+
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            std::size_t fx = i / result.columns();
-            std::size_t fy = i - fx * result.columns();
+            auto res_tensor = blaze::quatslice(result, l);
+            auto t = blaze::quatslice(q, l);
+            for (std::size_t j = 0; j != channels; ++j)
+            {
+                auto res_slice = blaze::columnslice(res_tensor, j);
+                auto m = blaze::columnslice(t, j);
+                for (std::size_t i = 0; i < num_elements; ++i)
+                {
+                    fx = i / result_width;
+                    fy = i - fx * result_width;
 
-            std::size_t dx = fx / height_factor;
-            std::size_t rx = fx % height_factor;
-            std::size_t dy = fy / width_factor;
-            std::size_t ry = fy % width_factor;
+                    dx = fx / height_factor;
+                    rx = fx % height_factor;
+                    dy = fy / width_factor;
+                    ry = fy % width_factor;
 
-            std::size_t bx = 1;
-            std::size_t by = 1;
-            if (dx == m.rows() - 1)
-                bx = 0;
-            if (dy == m.columns() - 1)
-                by = 0;
+                    bx = 1;
+                    by = 1;
+                    if (dx == height - 1)
+                        bx = 0;
+                    if (dy == width - 1)
+                        by = 0;
 
-            double ul = m(dx, dy);
-            double ur = m(dx, dy + by);
-            double ll = m(dx + bx, dy);
-            double lr = m(dx + bx, dy + by);
-            double tmp = ry * (ur - ul) / width_factor;
+                    ul = m(dx, dy);
+                    ur = m(dx, dy + by);
+                    ll = m(dx + bx, dy);
+                    lr = m(dx + bx, dy + by);
+                    tmp = ry * (ur - ul) / width_factor;
 
-            result(fx, fy) = ul + tmp +
-                rx * (ll - ul - tmp + ry * (lr - ll) / width_factor) /
-                    height_factor;
+                    res_slice(fx, fy) = ul + tmp +
+                        rx * (ll - ul - tmp + ry * (lr - ll) / width_factor) /
+                            height_factor;
+                }
+            }
         }
         return primitive_argument_type{std::move(result)};
     }
