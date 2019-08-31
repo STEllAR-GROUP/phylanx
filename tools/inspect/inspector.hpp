@@ -11,15 +11,16 @@
 #ifndef BOOST_INSPECTOR_HPP
 #define BOOST_INSPECTOR_HPP
 
+#include <hpx/filesystem.hpp>
+
 #include <cstddef>
 #include <iostream>
 #include <ostream>
 #include <set>
 #include <string>
-#include "boost/filesystem/path.hpp"
 
 using std::string;
-using boost::filesystem::path;
+using hpx::filesystem::path;
 
 namespace boost
 {

@@ -7,6 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <hpx/config/defines.hpp>
+#include <hpx/filesystem.hpp>
 
 #include "boost/regex.hpp"
 #include "boost/lexical_cast.hpp"

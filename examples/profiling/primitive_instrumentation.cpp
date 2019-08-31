@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const fib_code = R"(block(
@@ -46,7 +46,7 @@ char const* const fib_code = R"(block(
 ))";
 
 ///////////////////////////////////////////////////////////////////////////////
-int hpx_main(boost::program_options::variables_map& vm)
+int hpx_main(hpx::program_options::variables_map& vm)
 {
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -89,11 +89,11 @@ int hpx_main(boost::program_options::variables_map& vm)
 int main(int argc, char* argv[])
 {
     // Command-line handling
-    boost::program_options::options_description desc(
+    hpx::program_options::options_description desc(
         "usage: primitive_instrumentation [options]");
     desc.add_options()
         ("num_iterations,n",
-            boost::program_options::value<std::int64_t>()->default_value(10),
+            hpx::program_options::value<std::int64_t>()->default_value(10),
             "number of iterations (default: 10)");
 
     return hpx::init(desc, argc, argv);

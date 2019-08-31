@@ -9,14 +9,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <hpx/config/defines.hpp>
+#include <hpx/filesystem.hpp>
 
 #include "deprecated_macro_check.hpp"
 #include <functional>
 #include "function_hyper.hpp"
 #include "boost/regex.hpp"
-#include "boost/filesystem/operations.hpp"
 
-namespace fs = boost::filesystem;
+namespace fs = hpx::filesystem;
 
 namespace
 {

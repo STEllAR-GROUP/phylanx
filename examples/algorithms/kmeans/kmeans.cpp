@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include <blaze/Math.h>
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 
 #include <hpx/include/agas.hpp>
 #include <hpx/runtime_fwd.hpp>
@@ -81,7 +81,7 @@ blaze::DynamicMatrix<double> generate_random(int centroids, int num_points)
     return gen_2d.generate(num_points, 2ul);
 }
 
-int hpx_main(boost::program_options::variables_map& vm)
+int hpx_main(hpx::program_options::variables_map& vm)
 {
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -122,15 +122,15 @@ int hpx_main(boost::program_options::variables_map& vm)
 int main(int argc, char* argv[])
 {
     // command line handling
-    boost::program_options::options_description desc("usage: als [options]");
+    hpx::program_options::options_description desc("usage: als [options]");
     desc.add_options()
-        ("centroids", boost::program_options::value<std::int64_t>()->default_value(3),
+        ("centroids", hpx::program_options::value<std::int64_t>()->default_value(3),
             "number of centroids(default: 3)")
-        ("iterations", boost::program_options::value<std::int64_t>()->default_value(2),
+        ("iterations", hpx::program_options::value<std::int64_t>()->default_value(2),
             "number of iterations (default: 2)")
-        ("points", boost::program_options::value<std::int64_t>()->default_value(250),
+        ("points", hpx::program_options::value<std::int64_t>()->default_value(250),
             "alpha (default: 250)")
-        ("show_result", boost::program_options::value<bool>()->default_value(false),
+        ("show_result", hpx::program_options::value<bool>()->default_value(false),
             "show calculated result (default: false)");
 
     return hpx::init(desc, argc, argv);
