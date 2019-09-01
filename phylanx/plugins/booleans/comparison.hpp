@@ -73,6 +73,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
 
         template <typename T>
+        primitive_argument_type comparison4d4d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool propagate_type) const;
+        template <typename T>
+        primitive_argument_type comparison4d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool propagate_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
+
+        template <typename T>
         primitive_argument_type comparison_all(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs, bool propagate_type) const;
     };

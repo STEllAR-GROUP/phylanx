@@ -74,6 +74,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
 
         template <typename T>
+        primitive_argument_type logical4d4d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type logical4d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const;
+
+        template <typename T>
         primitive_argument_type logical_all(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
     };

@@ -391,6 +391,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return logical3d3d(std::move(lhs), std::move(rhs));
     }
 
+    template <typename Op>
+    template <typename T>
+    primitive_argument_type logical_operation<Op>::logical4d4d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+    {
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "logical_operation<Op>::logical4d4d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        // TODO: SIMD functionality should be added, blaze implementation
+        //       is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.quatern(), rhs.quatern(),
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
+        }
+        else
+        {
+            lhs.quatern() = blaze::map(lhs.quatern(), rhs.quatern(),
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); });
+        }
+
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
+
+    template <typename Op>
+    template <typename T>
+    primitive_argument_type logical_operation<Op>::logical4d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
+    {
+        if (lhs.dimensions() != rhs.dimensions())
+        {
+            blaze::DynamicArray<4UL, T> lhs_data, rhs_data;
+
+            extract_value_quatern(lhs_data, std::move(lhs), sizes[0], sizes[1],
+                sizes[2], sizes[3], name_, codename_);
+            extract_value_quatern(rhs_data, std::move(rhs), sizes[0], sizes[1],
+                sizes[2], sizes[3], name_, codename_);
+
+            return ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                [&](bool x, bool y) -> std::uint8_t { return Op{}(x, y); })};
+        }
+
+        return logical4d4d(std::move(lhs), std::move(rhs));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
@@ -411,6 +467,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return logical3d(std::move(lhs), std::move(rhs), sizes);
+
+        case 4:
+            return logical4d(std::move(lhs), std::move(rhs), sizes);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
