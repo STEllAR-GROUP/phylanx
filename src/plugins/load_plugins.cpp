@@ -107,7 +107,7 @@ namespace phylanx { namespace plugin
             typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
             boost::char_separator<char> sep(HPX_INI_PATH_DELIMITER);
             tokenizer tokens(component_path, sep);
-            boost::system::error_code fsec;
+            hpx::filesystem::error_code fsec;
             for (tokenizer::iterator it = tokens.begin(); it != tokens.end();
                  ++it)
             {
