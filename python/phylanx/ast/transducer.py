@@ -125,7 +125,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             return val
 
-        def lazy(self, *args):
+        def lazy(self, *args, **kwargs):
             """Compile this decorator, return wrapper binding the function to
                arguments"""
 
@@ -133,16 +133,22 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            return self.backend.lazy(map(self.map_decorated, args))
+            mapped_args = map(self.map_decorated, args)
+            kwitems = kwargs.items()
+            mapped_kwargs = { k: self.map_decorated(v) for k, v in kwitems }
+            return self.backend.lazy(*mapped_args, **mapped_kwargs)
 
-        def __call__(self, *args):
+        def __call__(self, *args, **kwargs):
             """Invoke this decorator using the given arguments"""
 
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            result = self.backend.call(map(self.map_decorated, args))
+            mapped_args = map(self.map_decorated, args)
+            kwitems = kwargs.items()
+            mapped_kwargs = { k: self.map_decorated(v) for k, v in kwitems }
+            result = self.backend.call(*mapped_args, **mapped_kwargs)
 
             self.__perfdata__ = self.backend.__perfdata__
 

@@ -482,10 +482,11 @@ class PhySL:
     class eval_wrapper:
         """evaluation wrapper binding arguments to a compiled function"""
 
-        def __init__(self, outer, args):
+        def __init__(self, outer, *args, **kwargs):
             """initialize evaluation wrapper"""
             self.outer = outer
             self.args = args
+            self.kwargs = kwargs
             self.func_name = self.outer.wrapped_function.__name__
 
         def eval(self):
@@ -501,7 +502,7 @@ class PhySL:
 
             result = phylanx.execution_tree.eval(
                 PhySL.compiler_state, self.outer.file_name, self.func_name,
-                *self.args)
+                *self.args, **self.kwargs)
 
             if self.outer.performance:
                 treedata = phylanx.execution_tree.retrieve_tree_topology(
@@ -536,7 +537,7 @@ class PhySL:
 
         return val
 
-    def lazy(self, args=()):
+    def lazy(self, *args, **kwargs):
         """Compile a given function, return wrapper binding the function to
            arguments"""
 
@@ -557,12 +558,15 @@ class PhySL:
 
             self.is_compiled = True
 
-        return self.eval_wrapper(self, tuple(map(self.map_wrapped, args)))
+        mapped_args = tuple(map(self.map_wrapped, args))
+        kwitems = kwargs.items()
+        mapped_kwargs = { k: self.map_wrapped(v) for k, v in kwitems }
+        return self.eval_wrapper(self, *mapped_args, **mapped_kwargs)
 
-    def call(self, args=()):
+    def call(self, *args, **kwargs):
         """Invoke this Phylanx function, pass along the given arguments"""
 
-        return self.lazy(args).eval()
+        return self.lazy(*args, **kwargs).eval()
 
 # #############################################################################
 # Transducer rules

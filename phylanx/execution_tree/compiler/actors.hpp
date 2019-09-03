@@ -19,6 +19,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
@@ -90,22 +91,28 @@ namespace phylanx { namespace execution_tree { namespace compiler
     ///////////////////////////////////////////////////////////////////////////
     struct function
     {
-        function() = default;
+        function()
+          : num_named_args_(0)
+        {}
 
         function(primitive_argument_type const& arg)
           : arg_(arg)
+          , num_named_args_(0)
         {}
         function(primitive_argument_type && arg)
           : arg_(std::move(arg))
+          , num_named_args_(0)
         {}
 
         function(primitive_argument_type const& arg, std::string name)
           : arg_(arg)
+          , num_named_args_(0)
         {
             set_name(std::move(name));
         }
         function(primitive_argument_type && arg, std::string name)
           : arg_(std::move(arg))
+          , num_named_args_(0)
         {
             set_name(std::move(name));
         }
@@ -143,8 +150,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return extract_copy_value(arg_, name_);
         }
 
-        result_type operator()(
-            arguments_type&& args, eval_context ctx) const
+        result_type operator()(arguments_type&& args, eval_context ctx) const
         {
             if (is_primitive_operand(arg_))
             {
@@ -156,6 +162,55 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 for (auto const& arg : keep_alive)
                 {
                     params.emplace_back(extract_ref_value(arg, name_));
+                }
+
+                return extract_copy_value(
+                    value_operand_sync(arg_, std::move(params), name_,
+                        "<unknown>", std::move(ctx)),
+                    name_);
+            }
+            return extract_copy_value(arg_, name_);
+        }
+
+        using kwarguments_type = std::map<std::string, primitive_argument_type>;
+
+        result_type operator()(arguments_type&& args, kwarguments_type&& kwargs,
+            eval_context ctx) const
+        {
+            if (is_primitive_operand(arg_))
+            {
+                arguments_type keep_alive(std::move(args));
+                kwarguments_type kw_keep_alive(std::move(kwargs));
+
+                // construct argument-pack to use for actual call
+                arguments_type params;
+                params.reserve(keep_alive.size() + num_named_args_);
+                for (auto const& arg : keep_alive)
+                {
+                    params.emplace_back(extract_ref_value(arg, name_));
+                }
+
+                // fill in the given named arguments at their correct positions
+                for (auto const& kwarg : kw_keep_alive)
+                {
+                    auto it = std::find(named_args_.get(),
+                        named_args_.get() + num_named_args_, kwarg.first);
+                    if (it == named_args_.get() + num_named_args_)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "function::operator()",
+                            hpx::util::format("cannot locate requested "
+                                "named argument '{}'", kwarg.first));
+                    }
+
+                    std::ptrdiff_t kwarg_pos =
+                        std::distance(named_args_.get(), it);
+                    if (kwarg_pos >= std::ptrdiff_t(params.size()))
+                    {
+                        params.resize(kwarg_pos + 1);
+                    }
+
+                    params[kwarg_pos] = extract_ref_value(kwarg.second, name_);
                 }
 
                 return extract_copy_value(
@@ -295,11 +350,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return hpx::make_ready_future(arg_);
         }
 
+        ////////////////////////////////////////////////////////////////////////
         void set_name(std::string && name)
         {
             name_ = std::move(name);
         }
 
+        void set_named_args(std::shared_ptr<std::string[]> named_args,
+            std::size_t num_named_args)
+        {
+            num_named_args_ = num_named_args;
+            named_args_ = std::move(named_args);
+        }
+
+        ////////////////////////////////////////////////////////////////////////
         topology get_expression_topology() const
         {
             primitive const* p = util::get_if<primitive>(&arg_);
@@ -341,6 +405,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         primitive_argument_type arg_;
         std::string name_;
+        std::size_t num_named_args_;
+        std::shared_ptr<std::string[]> named_args_;
 
     private:
         friend class hpx::serialization::access;
@@ -368,7 +434,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         // execute the code represented by this entry point
-        primitive_argument_type run(eval_context ctx = eval_context{}) const
+        function run(eval_context ctx = eval_context{}) const
         {
             auto last = code_.end();
             if (!code_.empty())
@@ -379,11 +445,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 if (it == last)
                 {
-                    return it->run(ctx);
+                    auto f = function{it->run(ctx), it->name_};
+                    f.set_named_args(it->named_args_, it->num_named_args_);
+
+                    return f;
                 }
                 it->run(ctx);
             }
-            return primitive_argument_type{};
+            return function{};
         }
 
         std::list<function> const& functions() const
@@ -424,7 +493,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         ///////////////////////////////////////////////////////////////////////
         // simply run the program, return whatever the last snippet has returned
-        primitive_argument_type run(eval_context ctx = eval_context{}) const
+        function run(eval_context ctx = eval_context{}) const
         {
             auto last = entrypoints_.end();
             if (!entrypoints_.empty())
@@ -439,7 +508,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
                 it->run(ctx);
             }
-            return primitive_argument_type{};
+            return function{};
         }
 
         ///////////////////////////////////////////////////////////////////////
