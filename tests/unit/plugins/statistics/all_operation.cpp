@@ -10,6 +10,7 @@
 #include <hpx/testing.hpp>
 
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -551,6 +552,32 @@ void test_all_operation_3d_numpy_false()
     HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
+}
+
+void test_operation(std::string const& code, std::string const& expected_str)
+{
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void test_all_operation_4d()
+{
+    test_operation(
+        R"(all([[[[1.,2.], [4.,1.], [3.,4.]],[[3.,6.], [2.,-2.], [1.,1.]]],
+            [[[1.,2.], [4.,1.], [3.,2.]],[[0. ,6.], [-2.,6.], [1.,1.]]]]))",
+        R"(astype(0 ,"bool"))");
+}
+
 int main(int argc, char* argv[])
 {
     test_all_operation_0d_true();
@@ -584,6 +611,8 @@ int main(int argc, char* argv[])
     test_all_operation_3d_double_numpy_true();
     test_all_operation_3d_numpy_true();
     test_all_operation_3d_numpy_false();
+
+    test_all_operation_4d();
 
     return hpx::util::report_errors();
 }
