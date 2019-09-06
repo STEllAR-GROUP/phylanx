@@ -41,7 +41,7 @@ phylanx::execution_tree::compiler::function compile(
 
     auto const& code =
         phylanx::execution_tree::compile(codestr, snippets, env, id);
-    return code.run();
+    return code.run().arg_;
 }
 
 void test_remote_run_on(std::uint32_t there)

@@ -218,7 +218,7 @@ read_arguments(std::vector<std::string> const& args,
         {
             auto const& code = phylanx::execution_tree::compile(
                 "<arguments>", s, snippets, env);
-            return code.run();
+            return code.run().arg_;
         });
 
     return result;
@@ -453,7 +453,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     if (!dry_run)
     {
         hpx::util::high_resolution_timer t;
-        auto retval = code.run(ctx);
+        auto retval = code.run(ctx).arg_;
 
         if (print_time)
         {
