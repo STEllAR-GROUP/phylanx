@@ -14,7 +14,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -230,13 +230,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (data_length % strides == 0)
         {
-            pad_width = (blaze::max)(
-                filter_length - strides, static_cast<std::int64_t>(0));
+            pad_width = filter_length > strides ? filter_length - strides :
+                                                  static_cast<std::int64_t>(0);
         }
         else
         {
-            pad_width = (blaze::max)(filter_length - (data_length % strides),
-                static_cast<std::int64_t>(0));
+            pad_width = filter_length > (data_length % strides) ?
+                filter_length - (data_length % strides) :
+                static_cast<std::int64_t>(0);
         }
 
         std::size_t result_length = blaze::ceil(

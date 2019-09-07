@@ -13,7 +13,7 @@
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
 
-#include <boost/filesystem.hpp>
+#include <hpx/filesystem.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/tokenizer.hpp>
 
@@ -101,19 +101,19 @@ namespace phylanx { namespace plugin
                 plugin_ini = ini.get_section(plugin_section);
             }
 
-            boost::filesystem::path lib_path;
+            hpx::filesystem::path lib_path;
             std::string component_path = sect.get_entry("path");
 
             typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
             boost::char_separator<char> sep(HPX_INI_PATH_DELIMITER);
             tokenizer tokens(component_path, sep);
-            boost::system::error_code fsec;
+            hpx::filesystem::error_code fsec;
             for (tokenizer::iterator it = tokens.begin(); it != tokens.end();
                  ++it)
             {
-                boost::filesystem::path dir = boost::filesystem::path(*it);
+                hpx::filesystem::path dir = hpx::filesystem::path(*it);
                 lib_path = dir / std::string(HPX_MAKE_DLL_STRING(component));
-                if (boost::filesystem::exists(lib_path, fsec))
+                if (hpx::filesystem::exists(lib_path, fsec))
                 {
                     break;
                 }

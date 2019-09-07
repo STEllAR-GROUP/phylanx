@@ -13,7 +13,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -103,6 +103,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return true;
             }
         }
+        else if (a_dims == 4)
+        {
+            if (axes.num_dimensions() == 1)
+            {
+                auto v = axes.vector();
+                for (auto& it : v)
+                {
+                    if (it < 0)
+                        it += 4;
+                    if (it != 0 && it != 1 && it != 2 && it != 3)
+                        return false;
+                }
+                if (blaze::sum(v) == 6)
+                    return true;
+            }
+        }
         return false;    // axes are not allowed for 0-d arrays
     }
 
@@ -123,6 +139,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return common::transpose3d(std::move(arg0),
+                extract_integer_value_strict(
+                    std::move(arg1), name_, codename_), name_, codename_);
+
+        case 4:
+            return common::transpose4d(std::move(arg0),
                 extract_integer_value_strict(
                     std::move(arg1), name_, codename_), name_, codename_);
 
@@ -149,6 +170,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return common::transpose3d(std::move(arg0), name_, codename_);
+
+        case 4:
+            return common::transpose4d(std::move(arg0), name_, codename_);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

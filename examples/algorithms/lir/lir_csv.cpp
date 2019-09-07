@@ -12,7 +12,7 @@
 #include <utility>
 
 #include <blaze/Math.h>
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////
 // This example uses part of the breast cancer dataset from UCI Machine Learning
@@ -85,7 +85,7 @@ char const* const lir_code = R"(block(
     lir
 ))";
 
-int hpx_main(boost::program_options::variables_map& vm)
+int hpx_main(hpx::program_options::variables_map& vm)
 {
     if (vm.count("data_csv") == 0)
     {
@@ -147,22 +147,22 @@ int hpx_main(boost::program_options::variables_map& vm)
 int main(int argc, char* argv[])
 {
     // command line handling
-    boost::program_options::options_description desc("usage: lir [options]");
+    hpx::program_options::options_description desc("usage: lir [options]");
     desc.add_options()("enable_output,e",
         "enable progress output (default: false)")("num_iterations,n",
-        boost::program_options::value<std::int64_t>()->default_value(750),
+        hpx::program_options::value<std::int64_t>()->default_value(750),
         "number of iterations (default: 750)")("alpha,a",
-        boost::program_options::value<double>()->default_value(1e-10),
+        hpx::program_options::value<double>()->default_value(1e-10),
         "alpha (default: 1e-10)")("data_csv",
-        boost::program_options::value<std::string>(),
+        hpx::program_options::value<std::string>(),
         "file name for reading data")("row_start",
-        boost::program_options::value<std::int64_t>()->default_value(0),
+        hpx::program_options::value<std::int64_t>()->default_value(0),
         "row_start (default: 0)")("col_start",
-        boost::program_options::value<std::int64_t>()->default_value(0),
+        hpx::program_options::value<std::int64_t>()->default_value(0),
         "col_start (default: 0)")("row_stop",
-        boost::program_options::value<std::int64_t>()->default_value(569),
+        hpx::program_options::value<std::int64_t>()->default_value(569),
         "row_stop (default: 569)")("col_stop",
-        boost::program_options::value<std::int64_t>()->default_value(30),
+        hpx::program_options::value<std::int64_t>()->default_value(30),
         "col_stop (default: 30)");
 
     return hpx::init(desc, argc, argv);

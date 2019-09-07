@@ -8,13 +8,13 @@
 #ifndef FUNCTION_HYPER_HPP
 #define FUNCTION_HYPER_HPP
 
-#include "inspector.hpp"
+#include <hpx/filesystem.hpp>
 
-#include <boost/filesystem/path.hpp>
+#include "inspector.hpp"
 
 #include <string>
 
-using boost::filesystem::path;
+using hpx::filesystem::path;
 
 // When you have a specific line and the line is the location of the link
 inline std::string linelink(const path & full_path, std::string linenumb)

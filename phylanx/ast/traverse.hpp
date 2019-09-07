@@ -10,8 +10,8 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/concepts/has_member_xxx.hpp>
-#include <hpx/util/invoke.hpp>
+#include <hpx/concepts.hpp>
+#include <hpx/functional.hpp>
 
 #include <cstdint>
 #include <list>

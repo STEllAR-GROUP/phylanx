@@ -156,6 +156,58 @@ void test_extract_shape_3d_axis(std::int64_t axis, std::int64_t expected)
     HPX_TEST_EQ(expected, result);
 }
 
+void test_extract_shape_4d()
+{
+    blaze::Rand<blaze::DynamicArray<4UL, std::int64_t>> gen{};
+    blaze::DynamicArray<4UL, std::int64_t> m = gen.generate(11UL, 5UL, 17UL, 13UL);
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(m));
+
+    phylanx::execution_tree::primitive shape =
+        phylanx::execution_tree::primitives::create_extract_shape(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
+
+    auto result = phylanx::execution_tree::extract_list_value(f);
+    auto it = result.begin();
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(11), *it++);
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>( 5), *it++);
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(17), *it++);
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(13), *it++);
+    HPX_TEST(it == result.end());
+}
+
+void test_extract_shape_4d_axis(std::int64_t axis, std::int64_t expected)
+{
+    blaze::Rand<blaze::DynamicArray<4UL, double>> gen{};
+    blaze::DynamicArray<4UL, double> m = gen.generate(11UL, 5UL, 17UL, 13UL);
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
+
+    phylanx::execution_tree::primitive arg2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(axis));
+
+    phylanx::execution_tree::primitive shape =
+        phylanx::execution_tree::primitives::create_extract_shape(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(arg1), std::move(arg2)});
+
+    phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
+
+    auto result =
+        phylanx::execution_tree::extract_scalar_integer_value_strict(f);
+    HPX_TEST_EQ(expected, result);
+}
+
 int main(int argc, char* argv[])
 {
     test_extract_shape_0d();
@@ -170,6 +222,14 @@ int main(int argc, char* argv[])
     test_extract_shape_3d_axis(0, 11);
     test_extract_shape_3d_axis(1, 17);
     test_extract_shape_3d_axis(2, 13);
+    test_extract_shape_3d_axis(-1, 13);
+
+    test_extract_shape_4d();
+    test_extract_shape_4d_axis(-4, 11);
+    test_extract_shape_4d_axis(-3,  5);
+    test_extract_shape_4d_axis( 1,  5);
+    test_extract_shape_4d_axis(-2, 17);
+    test_extract_shape_4d_axis(-1, 13);
 
     return hpx::util::report_errors();
 }

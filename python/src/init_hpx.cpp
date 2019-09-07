@@ -101,7 +101,7 @@ char** __argv = *_NSGetArgv();
 
 #elif defined(WIN32)
 
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 
 #undef __argc
 #undef __argv
@@ -112,7 +112,7 @@ char** __argv = nullptr;
 struct get_command_line
 {
     get_command_line()
-      : args_(boost::program_options::split_winmain(GetCommandLine()))
+      : args_(hpx::program_options::split_winmain(GetCommandLine()))
     {
         argv_.resize(args_.size() + 1);
 

@@ -11,7 +11,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -77,7 +77,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type extract_shape::shape1d(
         primitive_argument_type&& arg, std::int64_t index) const
     {
-        if (index != 0)
+        if (index != 0 && index != -1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::shape1d",
@@ -127,12 +127,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type extract_shape::shape2d(
         primitive_argument_type&& arg, std::int64_t index) const
     {
-        if (index < 0 || index >= 2)
+        if (index < -2 || index >= 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::shape2d",
                 generate_error_message("index out of range"));
         }
+
+        if (index < 0)
+            index += 2;
 
         std::int64_t size = 0;
         if (arg.has_annotation())
@@ -181,12 +184,76 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type extract_shape::shape3d(
         primitive_argument_type&& arg, std::int64_t index) const
     {
-        if (index < 0 || index >= 3)
+        if (index < -3 || index >= 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::shape3d",
                 generate_error_message("index out of range"));
         }
+
+        if (index < 0)
+            index += 3;
+
+        std::int64_t size = 0;
+        if (arg.has_annotation())
+        {
+            localities_information localities =
+                extract_localities_information(arg, name_, codename_);
+            size = localities.dimensions(name_, codename_)[index];
+        }
+        else
+        {
+            auto dims = extract_numeric_value_dimensions(arg, name_, codename_);
+            size = dims[index];
+        }
+        return primitive_argument_type{size};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type extract_shape::shape4d(
+        primitive_argument_type&& arg) const
+    {
+        // return a list of numbers representing the dimensions of the argument
+        std::int64_t quats = 0;
+        std::int64_t pages = 0;
+        std::int64_t rows = 0;
+        std::int64_t columns = 0;
+        if (arg.has_annotation())
+        {
+            localities_information localities =
+                extract_localities_information(arg, name_, codename_);
+            quats = localities.quats();
+            pages = localities.pages();
+            rows = localities.rows();
+            columns = localities.columns();
+        }
+        else
+        {
+            auto dims = extract_numeric_value_dimensions(arg, name_, codename_);
+            quats = dims[0];
+            pages = dims[1];
+            rows = dims[2];
+            columns = dims[3];
+        }
+
+        primitive_arguments_type result{primitive_argument_type{quats},
+            primitive_argument_type{pages}, primitive_argument_type{rows},
+            primitive_argument_type{columns}};
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type extract_shape::shape4d(
+        primitive_argument_type&& arg, std::int64_t index) const
+    {
+        if (index < -4 || index >= 4)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "extract_shape::shape4d",
+                generate_error_message("index out of range"));
+        }
+
+        if (index < 0)
+            index += 4;
 
         std::int64_t size = 0;
         if (arg.has_annotation())
@@ -252,6 +319,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 3:
                         return this_->shape3d(std::move(arg));
 
+                    case 4:
+                        return this_->shape4d(std::move(arg));
+
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "extract_shape::eval",
@@ -286,6 +356,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 3:
                     return this_->shape3d(std::move(arg), findex.get());
+
+                case 4:
+                    return this_->shape4d(std::move(arg), findex.get());
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

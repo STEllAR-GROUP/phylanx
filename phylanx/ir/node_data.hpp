@@ -12,7 +12,7 @@
 
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <array>
 #include <cstddef>

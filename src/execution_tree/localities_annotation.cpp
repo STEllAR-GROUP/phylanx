@@ -12,8 +12,8 @@
 #include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/throw_exception.hpp>
-#include <hpx/util/format.hpp>
+#include <hpx/errors/throw_exception.hpp>
+#include <hpx/format.hpp>
 
 #include <algorithm>
 #include <array>
@@ -212,6 +212,13 @@ namespace phylanx { namespace execution_tree
             result[0] = local_tile.spans_[2].size();
             break;
 
+        case 4:
+            result[3] = local_tile.spans_[0].size();
+            result[2] = local_tile.spans_[1].size();
+            result[1] = local_tile.spans_[2].size();
+            result[0] = local_tile.spans_[3].size();
+            break;
+
         default:
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -254,6 +261,11 @@ namespace phylanx { namespace execution_tree
     std::size_t localities_information::size() const
     {
         return detail::dimension<0>(tiles_);
+    }
+
+    std::size_t localities_information::quats() const
+    {
+        return detail::dimension<3>(tiles_);
     }
 
     std::size_t localities_information::pages() const

@@ -14,7 +14,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <array>
 #include <cmath>
@@ -71,6 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 result[0] = extract_scalar_integer_value(data, name, codename);
                 break;
 
+            case 4:  HPX_FALLTHROUGH;
             case 3:  HPX_FALLTHROUGH;
             case 1:  HPX_FALLTHROUGH;
             case 2:
@@ -114,11 +115,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto const& args = util::get<7>(val);
                 switch (args.size())
                 {
+                case 4:
+                {
+                    auto elem_0 = args.begin();
+                    result[0] = extract_scalar_integer_value(
+                        *elem_0, name, codename);
+                    result[1] = extract_scalar_integer_value(
+                        *(++elem_0), name, codename);
+                    result[2] = extract_scalar_integer_value(
+                        *(++elem_0), name, codename);
+                    result[3] = extract_scalar_integer_value(
+                        *(++elem_0), name, codename);
+                }
+                    return result;
+
                 case 3:
                 {
                     auto elem_0 = args.begin();
-                    result[0] =
-                        extract_scalar_integer_value(*elem_0, name, codename);
+                    result[0] = extract_scalar_integer_value(
+                        *elem_0, name, codename);
                     result[1] = extract_scalar_integer_value(
                         *(++elem_0), name, codename);
                     result[2] = extract_scalar_integer_value(
@@ -129,8 +144,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                 {
                     auto elem_0 = args.begin();
-                    result[0] =
-                        extract_scalar_integer_value(*elem_0, name, codename);
+                    result[0] = extract_scalar_integer_value(
+                        *elem_0, name, codename);
                     result[1] = extract_scalar_integer_value(
                         *(++elem_0), name, codename);
                 }
@@ -349,6 +364,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(t)};
         }
 
+        template <typename Dist, typename T>
+        primitive_argument_type randomize(
+            Dist& dist, blaze::DynamicArray<4UL, T>& q)
+        {
+            std::size_t const quats = q.quats();
+            std::size_t const pages = q.pages();
+            std::size_t const rows  = q.rows();
+            std::size_t const columns = q.columns();
+
+            for (std::size_t l = 0; l != quats; ++l)
+            {
+                for (std::size_t k = 0; k != pages; ++k)
+                {
+                    for (std::size_t i = 0; i != rows; ++i)
+                    {
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            q(l, k, i, j) = dist(util::rng_);
+                        }
+                    }
+                }
+            }
+
+            return primitive_argument_type{std::move(q)};
+        }
+
         ///////////////////////////////////////////////////////////////////////
         struct distribution
         {
@@ -359,6 +400,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             virtual primitive_argument_type call2d(
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
             virtual primitive_argument_type call3d(
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
+            virtual primitive_argument_type call4d(
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
         };
 
@@ -372,6 +415,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
     {                                                                          \
         blaze::DynamicTensor<T> data(dims[0], dims[1], dims[2]);               \
+        return randomize(dist_, data);                                         \
+    }                                                                          \
+    /**/
+#define PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
+    primitive_argument_type call4d(                                            \
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
+    {                                                                          \
+        blaze::DynamicArray<4UL, T> data(dims[0], dims[1], dims[2], dims[3]);  \
         return randomize(dist_, data);                                         \
     }                                                                          \
     /**/
@@ -416,6 +467,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return randomize(dist_, data);                                     \
         }                                                                      \
         PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
+        PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
         stdtype dist_;                                                         \
     };                                                                         \
     /**/
@@ -465,6 +517,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return randomize(dist_, data);                                     \
         }                                                                      \
         PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
+        PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
         stdtype dist_;                                                         \
     };                                                                         \
     /**/
@@ -872,6 +925,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #undef PHYLANX_RANDOM_DISTRIBUTION_1
 #undef PHYLANX_RANDOM_DISTRIBUTION_2
 #undef PHYLANX_RANDOM_IMPLEMENT_TENSOR
+#undef PHYLANX_RANDOM_IMPLEMENT_QUATERN
 
         ///////////////////////////////////////////////////////////////////////
         std::map<std::string, create_distribution_type> distributions =
@@ -999,10 +1053,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return (it->second)(params, name, codename)->call3d(dims);
         }
 
+        primitive_argument_type randomize4d(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+            distribution_parameters_type&& params, std::string const& name,
+            std::string const& codename)
+        {
+            auto it = distributions.find(std::get<0>(params));
+            if (it == distributions.end())
+            {
+                std::ostringstream msg;
+                msg << "attempting to use an unknown random number "
+                            "distribution: " << std::get<0>(params) << ". ";
+                msg << "Known distributions are";
+                std::string tween = ": ";
+                for(it = distributions.begin(); it != distributions.end(); ++it) {
+                    msg << tween;
+                    msg << it->first;
+                    tween = ", ";
+                }
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "random::randomize4d",
+                    util::generate_error_message(
+                        msg.str(), name, codename));
+            }
+            return (it->second)(params, name, codename)->call4d(dims);
+        }
+
         ///////////////////////////////////////////////////////////////////////
         inline int num_dimensions(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
         {
+            if (dims[3] != 0)
+            {
+                return 4;
+            }
             if (dims[2] != 0)
             {
                 return 3;
@@ -1079,6 +1163,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 3:
                     return this_->random3d(dims, std::move(params));
 
+                case 4:
+                    return this_->random4d(dims, std::move(params));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
@@ -1114,6 +1200,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         distribution_parameters_type&& params) const
     {
         return detail::randomize3d(dims, std::move(params), name_, codename_);
+    }
+
+    primitive_argument_type random::random4d(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+        distribution_parameters_type&& params) const
+    {
+        return detail::randomize4d(dims, std::move(params), name_, codename_);
     }
 }}}
 

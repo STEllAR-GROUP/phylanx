@@ -21,6 +21,9 @@ const char* phylanx_no_inspect = "phylanx-" "no-inspect";
 //  Directories with a file name of the phylanx_no_inspect value are not inspected.
 //  Files that contain the phylanx_no_inspect value are not inspected.
 
+#include <hpx/filesystem.hpp>
+#include <hpx/program_options.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -32,9 +35,6 @@ const char* phylanx_no_inspect = "phylanx-" "no-inspect";
 #include <string>
 #include <vector>
 
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/fstream.hpp"
-#include "boost/program_options.hpp"
 #include "function_hyper.hpp"
 
 #include <stdio.h>  // for popen, pclose
@@ -80,7 +80,7 @@ const char* phylanx_no_inspect = "phylanx-" "no-inspect";
 #include "boost/test/included/prg_exec_monitor.hpp"
 #endif
 
-namespace fs = boost::filesystem;
+namespace fs = hpx::filesystem;
 
 using namespace boost::inspect;
 
@@ -250,7 +250,7 @@ namespace
       && local.find("doc/xml") != 0
       && local.find("doc\\xml") != 0
       // ignore if tag file present
-      && !boost::filesystem::exists(pth / phylanx_no_inspect)
+      && !hpx::filesystem::exists(pth / phylanx_no_inspect)
       ;
   }
 
@@ -814,7 +814,7 @@ int main( int argc_param, char * argv_param[] )
 int cpp_main( int argc_param, char * argv_param[] )
 #endif
 {
-    using namespace boost::program_options;
+    using namespace hpx::program_options;
     options_description desc_commandline(
         "Usage: inspect [dir [dir ...]] [options]");
 

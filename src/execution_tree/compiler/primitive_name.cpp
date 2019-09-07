@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
 
 #include <cstdint>

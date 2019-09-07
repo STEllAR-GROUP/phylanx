@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include <blaze/Math.h>
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 
 #include <hpx/include/agas.hpp>
 #include <hpx/runtime_fwd.hpp>
@@ -314,7 +314,7 @@ void print_performance_counter_data_csv(
     std::cout << std::endl;
 }
 
-int hpx_main(boost::program_options::variables_map& vm)
+int hpx_main(hpx::program_options::variables_map& vm)
 {
     if (vm.count("data_csv") == 0)
     {
@@ -396,24 +396,24 @@ int hpx_main(boost::program_options::variables_map& vm)
 int main(int argc, char* argv[])
 {
     // command line handling
-    boost::program_options::options_description desc("usage: als [options]");
+    hpx::program_options::options_description desc("usage: als [options]");
     desc.add_options()("enable_output,e",
         "enable progress output (default: false)")("instrument,i",
         "print instrumentation information (default: false)")("direct,d",
         "use direct implementation of ALS (default: false)")("iterations,n",
-        boost::program_options::value<std::int64_t>()->default_value(3),
+        hpx::program_options::value<std::int64_t>()->default_value(3),
         "number of iterations (default: 10.0)")("factors,f",
-        boost::program_options::value<std::int64_t>()->default_value(10),
+        hpx::program_options::value<std::int64_t>()->default_value(10),
         "number of factors (default: 10)")("alpha,a",
-        boost::program_options::value<double>()->default_value(40),
+        hpx::program_options::value<double>()->default_value(40),
         "alpha (default: 40)")("regularization,r",
-        boost::program_options::value<double>()->default_value(0.1),
+        hpx::program_options::value<double>()->default_value(0.1),
         "regularization (default: 0.1)")("data_csv",
-        boost::program_options::value<std::string>(),
+        hpx::program_options::value<std::string>(),
         "file name for reading data")("row_stop",
-        boost::program_options::value<std::int64_t>()->default_value(10),
+        hpx::program_options::value<std::int64_t>()->default_value(10),
         "row_stop (default: 10)")("col_stop",
-        boost::program_options::value<std::int64_t>()->default_value(100),
+        hpx::program_options::value<std::int64_t>()->default_value(100),
         "col_stop (default: 100)");
     return hpx::init(desc, argc, argv);
 }

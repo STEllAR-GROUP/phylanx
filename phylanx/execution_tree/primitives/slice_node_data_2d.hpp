@@ -16,7 +16,7 @@
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <algorithm>
 #include <cstddef>

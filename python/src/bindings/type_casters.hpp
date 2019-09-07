@@ -96,8 +96,8 @@ namespace pybind11 { namespace detail
     // Takes an input array and determines whether we can make it fit into the
     // Blaze type.
     using array_index_type = hpx::util::tuple<
-        std::size_t, std::size_t, std::size_t,
-        std::size_t, std::size_t, std::size_t>;
+        std::size_t, std::size_t, std::size_t, std::size_t,
+        std::size_t, std::size_t, std::size_t, std::size_t>;
 
     template <typename Scalar>
     inline bool conformable(
@@ -107,6 +107,23 @@ namespace pybind11 { namespace detail
         if (dims != expected_dims)
             return false;
 
+        if (dims == 4)
+        {
+            // 4D Array type: require exact match (or dynamic)
+            std::size_t np_rows = a.shape(0);
+            std::size_t np_cols = a.shape(1);
+            std::size_t np_pages = a.shape(2);
+            std::size_t np_quats = a.shape(3);
+            std::size_t np_rstride = a.strides(0) / sizeof(Scalar);
+            std::size_t np_cstride = a.strides(1) / sizeof(Scalar);
+            std::size_t np_pstride = a.strides(2) / sizeof(Scalar);
+            std::size_t np_qstride = a.strides(3) / sizeof(Scalar);
+
+            t = array_index_type{
+                np_rows, np_cols, np_pages, np_quats,
+                np_rstride, np_cstride, np_pstride, np_qstride};
+            return true;
+        }
         if (dims == 3)
         {
             // Tensor type: require exact match (or dynamic)
@@ -118,7 +135,8 @@ namespace pybind11 { namespace detail
             std::size_t np_pstride = a.strides(2) / sizeof(Scalar);
 
             t = array_index_type{
-                np_rows, np_cols, np_pages, np_rstride, np_cstride, np_pstride};
+                np_rows, np_cols, np_pages, 0,
+                np_rstride, np_cstride, np_pstride, 0};
             return true;
         }
         else if (dims == 2)
@@ -130,7 +148,8 @@ namespace pybind11 { namespace detail
             std::size_t np_cstride = a.strides(1) / sizeof(Scalar);
 
             t = array_index_type{
-                np_rows, np_cols, 0, np_rstride, np_cstride, 0};
+                np_rows, np_cols, 0, 0,
+                np_rstride, np_cstride, 0, 0};
             return true;
         }
         else if (dims == 1)
@@ -141,12 +160,12 @@ namespace pybind11 { namespace detail
             std::size_t const n = a.shape(0);
             std::size_t stride = a.strides(0) / sizeof(Scalar);
 
-            t = array_index_type{n, 1, 0, stride, 0, 0};
+            t = array_index_type{n, 1, 0, 0, stride, 0, 0, 0};
             return true;
         }
         else if (dims == 0)
         {
-            t = array_index_type{1, 1, 0, 1, 0, 0};
+            t = array_index_type{1, 1, 0, 0, 1, 0, 0, 0};
             return true;
         }
         return false;
@@ -170,8 +189,8 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF, bool TF>
-    handle blaze_array_cast(blaze::CustomVector<T, AF, PF, TF> const& src,
+    template <typename T, bool AF, bool PF, bool TF, typename RT>
+    handle blaze_array_cast(blaze::CustomVector<T, AF, PF, TF, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
         array a{{src.size()}, {sizeof(T)}, src.data(), base};
@@ -201,6 +220,7 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     template <typename T>
     handle blaze_array_cast(blaze::DynamicMatrix<T, true> const& src,
         handle base = handle(), bool writeable = true)
@@ -218,8 +238,8 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF>
-    handle blaze_array_cast(blaze::CustomMatrix<T, AF, PF, false> const& src,
+    template <typename T, bool AF, bool PF, typename RT>
+    handle blaze_array_cast(blaze::CustomMatrix<T, AF, PF, false, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
         array a{
@@ -235,8 +255,8 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF>
-    handle blaze_array_cast(blaze::CustomMatrix<T, AF, PF, true> const& src,
+    template <typename T, bool AF, bool PF, typename RT>
+    handle blaze_array_cast(blaze::CustomMatrix<T, AF, PF, true, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
         array a{
@@ -252,6 +272,7 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     template <typename T>
     handle blaze_array_cast(blaze::DynamicTensor<T> const& src,
         handle base = handle(), bool writeable = true)
@@ -271,13 +292,54 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF>
-    handle blaze_array_cast(blaze::CustomTensor<T, AF, PF> const& src,
+    template <typename T, bool AF, bool PF, typename RT>
+    handle blaze_array_cast(blaze::CustomTensor<T, AF, PF, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
         array a{
             {src.pages(), src.rows(), src.columns()},       // sizes
             {   sizeof(T) * src.spacing() * src.rows(),     // strides
+                sizeof(T) * src.spacing(),
+                sizeof(T)},
+            src.data(), base};
+
+        if (!writeable)
+        {
+            array_proxy(a.ptr())->flags &=
+                ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+        }
+        return a.release();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    handle blaze_array_cast(blaze::DynamicArray<4, T> const& src,
+        handle base = handle(), bool writeable = true)
+    {
+        array a{
+            {src.quats(), src.pages(), src.rows(), src.columns()},    // sizes
+            {   sizeof(T) * src.spacing() * src.rows() * src.pages(), // strides
+                sizeof(T) * src.spacing() * src.rows(),
+                sizeof(T) * src.spacing(),
+                sizeof(T)},
+            src.data(), base};
+
+        if (!writeable)
+        {
+            array_proxy(a.ptr())->flags &=
+                ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+        }
+        return a.release();
+    }
+
+    template <typename T, bool AF, bool PF, typename RT>
+    handle blaze_array_cast(blaze::CustomArray<4, T, AF, PF, RT> const& src,
+        handle base = handle(), bool writeable = true)
+    {
+        array a{
+            {src.quats(), src.pages(), src.rows(), src.columns()},    // sizes
+            {   sizeof(T) * src.spacing() * src.rows() * src.pages(), // strides
+                sizeof(T) * src.spacing() * src.rows(),
                 sizeof(T) * src.spacing(),
                 sizeof(T)},
             src.data(), base};
@@ -578,6 +640,51 @@ namespace pybind11 { namespace detail
             return true;
         }
 
+        bool load4d(handle src, bool convert)
+        {
+            if (!convert && !is_array_instance<result_type>::call(src))
+            {
+                return false;
+            }
+
+            // Coerce into an array, but don't do type conversion yet; the copy
+            // below handles it.
+            auto buf = array::ensure(src);
+            if (!buf) return false;
+
+            if (!convert && !is_array_instance<result_type>::call(buf))
+            {
+                return false;
+            }
+
+            auto dims = buf.ndim();
+            if (dims != 4) return false;
+
+            array_index_type ait;
+            bool fits = conformable<result_type>(buf, 4, ait);
+            if (!fits) return false;
+
+            // Allocate the new type, then build a numpy reference into it
+            value = blaze::DynamicArray<4, T>(
+                hpx::util::get<0>(ait), hpx::util::get<1>(ait),
+                hpx::util::get<2>(ait), hpx::util::get<3>(ait));
+
+            auto q = value.quatern();
+            auto ref = reinterpret_steal<array>(blaze_ref_array(q));
+
+            if (ref.ndim() == 1) buf = buf.squeeze();
+
+            int result =
+                detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+            if (result < 0)
+            {
+                // Copy failed!
+                PyErr_Clear();
+                return false;
+            }
+            return true;
+        }
+
         template <typename Type>
         static handle cast_impl_automatic(Type* src)
         {
@@ -593,6 +700,14 @@ namespace pybind11 { namespace detail
             case phylanx::ir::node_data<T>::storage2d:
                 return blaze_encapsulate(&(src->matrix_non_ref()));
 
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_encapsulate(&(src->tensor_non_ref()));
+
+            // blaze::DynamicArray<4, T>
+            case phylanx::ir::node_data<T>::storage4d:
+                return blaze_encapsulate(&(src->quatern_non_ref()));
+
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
@@ -604,14 +719,15 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
-            // blaze::DynamicTensor<T>
-            case phylanx::ir::node_data<T>::storage3d:
-                return blaze_encapsulate(&(src->tensor_non_ref()));
-
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
                 return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
+
+            // blaze::CustomArray<4, T>
+            case phylanx::ir::node_data<T>::custom_storage4d:
+                return blaze_encapsulate(new blaze::DynamicArray<4, T_>(
+                    src->quatern_copy()));
 
             default:
                 throw cast_error("cast_impl_automatic: "
@@ -637,6 +753,16 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     std::move(src->matrix_non_ref())));
 
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
+                    std::move(src->tensor_non_ref())));
+
+            // blaze::DynamicArray<4, T>
+            case phylanx::ir::node_data<T>::storage4d:
+                return blaze_encapsulate(new blaze::DynamicArray<4, T_>(
+                    std::move(src->quatern_non_ref())));
+
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
@@ -648,15 +774,15 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
-            // blaze::DynamicTensor<T>
-            case phylanx::ir::node_data<T>::storage3d:
-                return blaze_encapsulate(new blaze::DynamicTensor<T_>(
-                    std::move(src->tensor_non_ref())));
-
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
                 return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
+
+            // blaze::CustomArray<4, T>
+            case phylanx::ir::node_data<T>::custom_storage4d:
+                return blaze_encapsulate(new blaze::DynamicArray<4, T_>(
+                    src->quatern_copy()));
 
             default:
                 throw cast_error("cast_impl_move: "
@@ -680,6 +806,14 @@ namespace pybind11 { namespace detail
             case phylanx::ir::node_data<T>::storage2d:
                 return blaze_array_cast(src->matrix_non_ref());
 
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_array_cast(src->tensor_non_ref());
+
+            // blaze::DynamicArray<4, T>
+            case phylanx::ir::node_data<T>::storage4d:
+                return blaze_array_cast(src->quatern_non_ref());
+
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
                 return blaze_encapsulate(new blaze::DynamicVector<T_>(
@@ -690,14 +824,15 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
-            // blaze::DynamicTensor<T>
-            case phylanx::ir::node_data<T>::storage3d:
-                return blaze_array_cast(src->tensor_non_ref());
-
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
                 return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
+
+            // blaze::CustomArray<4, T>
+            case phylanx::ir::node_data<T>::custom_storage4d:
+                return blaze_encapsulate(new blaze::DynamicArray<4, T_>(
+                    src->quatern_copy()));
 
             default:
                 throw cast_error("cast_impl_copy: "
@@ -721,6 +856,14 @@ namespace pybind11 { namespace detail
             case phylanx::ir::node_data<T>::storage2d:
                 return blaze_ref_array(src->matrix_non_ref());
 
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_ref_array(src->tensor_non_ref());
+
+            // blaze::DynamicArray<4, T>
+            case phylanx::ir::node_data<T>::storage4d:
+                return blaze_ref_array(src->quatern_non_ref());
+
             // custom types require a copy (done by vector_copy/matrix_copy)
             // blaze::CustomVector<T>
             case phylanx::ir::node_data<T>::custom_storage1d:
@@ -732,14 +875,15 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T_>(
                     src->matrix_copy()));
 
-            // blaze::DynamicTensor<T>
-            case phylanx::ir::node_data<T>::storage3d:
-                return blaze_ref_array(src->tensor_non_ref());
-
             // blaze::CustomTensor<T>
             case phylanx::ir::node_data<T>::custom_storage3d:
                 return blaze_encapsulate(new blaze::DynamicTensor<T_>(
                     src->tensor_copy()));
+
+            // blaze::CustomArray<T4, >
+            case phylanx::ir::node_data<T>::custom_storage4d:
+                return blaze_encapsulate(new blaze::DynamicArray<4, T_>(
+                    src->quatern_copy()));
 
             default:
                 throw cast_error("cast_impl_automatic_reference: "
@@ -765,12 +909,16 @@ namespace pybind11 { namespace detail
             case phylanx::ir::node_data<T>::storage3d:
                 return blaze_ref_array(src->tensor_non_ref(), parent);
 
-            // blaze::CustomTensor<T>
-            case phylanx::ir::node_data<T>::custom_storage3d: HPX_FALLTHROUGH;
+            // blaze::DynamicArray<4, T>
+            case phylanx::ir::node_data<T>::storage4d:
+                return blaze_ref_array(src->quatern_non_ref(), parent);
 
-            // blaze::CustomVector<T>, blaze::CustomMatrix<T>
+            // blaze::CustomVector<T>, blaze::CustomMatrix<T>,
+            // blaze::CustomTensor<T>, blaze::CustomArray<4, T>
             case phylanx::ir::node_data<T>::custom_storage1d: HPX_FALLTHROUGH;
             case phylanx::ir::node_data<T>::custom_storage2d: HPX_FALLTHROUGH;
+            case phylanx::ir::node_data<T>::custom_storage3d: HPX_FALLTHROUGH;
+            case phylanx::ir::node_data<T>::custom_storage4d: HPX_FALLTHROUGH;
             default:
                 throw cast_error("cast_impl_reference_internal: "
                     "unexpected node_data type: should not happen!");
@@ -826,6 +974,7 @@ namespace pybind11 { namespace detail
                 || load1d(src, convert)
                 || load2d(src, convert)
                 || load3d(src, convert)
+                || load4d(src, convert)
                 ;
         }
 

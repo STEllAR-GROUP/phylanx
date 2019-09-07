@@ -11,8 +11,7 @@
 
 #include <hpx/datastructures/detail/pack.hpp>
 #include <hpx/plugins/plugin_factory_base.hpp>
-#include <hpx/util/plugin.hpp>
-#include <hpx/util/plugin/export_plugin.hpp>
+#include <hpx/plugin.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace plugin

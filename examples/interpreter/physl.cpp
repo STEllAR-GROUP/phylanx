@@ -20,11 +20,11 @@
 #include <vector>
 #include <cstdlib>
 
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
+#include <hpx/program_options.hpp>
+#include <hpx/filesystem.hpp>
 
-namespace fs = boost::filesystem;
-namespace po = boost::program_options;
+namespace fs = hpx::filesystem;
+namespace po = hpx::program_options;
 
 std::string read_user_code(std::string const& path)
 {

@@ -14,7 +14,7 @@
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>
 #include <string>

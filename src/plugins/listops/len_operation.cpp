@@ -12,7 +12,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
+#include <hpx/errors/throw_exception.hpp>
 
 #include <cstdint>
 #include <cstddef>
@@ -102,6 +102,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         static_cast<std::int64_t>(val[0])}};
 
                 case 3:     // for tensors, return number of pages
+                    return primitive_argument_type{ir::node_data<std::int64_t>{
+                        static_cast<std::int64_t>(val[0])}};
+
+                case 4:     // for quaterns, return number of quats
                     return primitive_argument_type{ir::node_data<std::int64_t>{
                         static_cast<std::int64_t>(val[0])}};
 

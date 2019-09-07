@@ -43,6 +43,7 @@ namespace phylanx { namespace execution_tree
 
         std::size_t size() const;
 
+        std::size_t quats() const;
         std::size_t pages() const;
         std::size_t rows() const;
         std::size_t columns() const;

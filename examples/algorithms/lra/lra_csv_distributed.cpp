@@ -13,7 +13,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////
 // This example uses part of the breast cancer dataset from UCI Machine Learning
@@ -134,7 +134,7 @@ void calculate_vertical_tiling_parameters(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int hpx_main(boost::program_options::variables_map& vm)
+int hpx_main(hpx::program_options::variables_map& vm)
 {
     if (vm.count("data_csv") == 0)
     {
@@ -213,8 +213,8 @@ int hpx_main(boost::program_options::variables_map& vm)
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    using boost::program_options::options_description;
-    using boost::program_options::value;
+    using hpx::program_options::options_description;
+    using hpx::program_options::value;
 
     // command line handling
     options_description desc("usage: lra [options]");

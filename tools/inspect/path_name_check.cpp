@@ -8,10 +8,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <hpx/config/defines.hpp>
+#include <hpx/filesystem.hpp>
 
 #include "path_name_check.hpp"
 
-#include "boost/filesystem/operations.hpp"
 #include "boost/lexical_cast.hpp"
 #include "function_hyper.hpp"
 

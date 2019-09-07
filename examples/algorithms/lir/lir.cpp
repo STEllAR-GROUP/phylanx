@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <iostream>
 
-#include <boost/program_options.hpp>
+#include <hpx/program_options.hpp>
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ char const* const lir_code = R"(block(
     lir
 ))";
 
-int hpx_main(boost::program_options::variables_map& vm)
+int hpx_main(hpx::program_options::variables_map& vm)
 {
     blaze::DynamicMatrix<double> v1{
             {15.04, 16.74}, {13.82, 24.49}, {12.54, 16.32}, {23.09, 19.83},
@@ -87,11 +87,11 @@ int hpx_main(boost::program_options::variables_map& vm)
 int main(int argc, char* argv[])
 {
     // command line handling
-    boost::program_options::options_description desc("usage: lir [options]");
+    hpx::program_options::options_description desc("usage: lir [options]");
     desc.add_options()
             ("enable_output,e", "enable progress output (default: false)")
             ("num_iterations,n",
-             boost::program_options::value<std::int64_t>()->default_value(850),
+             hpx::program_options::value<std::int64_t>()->default_value(850),
              "number of iterations (default: 850)")
             ;
 
