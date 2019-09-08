@@ -56,7 +56,7 @@ namespace phylanx { namespace plugin
         }
 
         hpx::util::section::section_map& s = (*sec).get_sections();
-        typedef hpx::util::section::section_map::iterator iterator;
+        using iterator = hpx::util::section::section_map::iterator;
 
         iterator end = s.end();
         for (iterator i = s.begin(); i != end; ++i)
@@ -104,7 +104,7 @@ namespace phylanx { namespace plugin
             hpx::filesystem::path lib_path;
             std::string component_path = sect.get_entry("path");
 
-            typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+            using tokenizer = boost::tokenizer<boost::char_separator<char> >;
             boost::char_separator<char> sep(HPX_INI_PATH_DELIMITER);
             tokenizer tokens(component_path, sep);
             hpx::filesystem::error_code fsec;
@@ -128,16 +128,20 @@ namespace phylanx { namespace plugin
             hpx::util::plugin::dll module(
                 lib_path.string(), HPX_MANGLE_STRING(component));
 
-            // get the factory
+            // Get the factory (get base class as hpx::util::any compares the
+            // full typeid of the held pointer, requiring us to pretend its a
+            // hpx::plugins::plugin_factory_base* and cast it up below).
             hpx::util::plugin::plugin_factory<
-                    phylanx::plugin::plugin_factory_base
+                    hpx::plugins::plugin_factory_base
                 > pf(module, "phylanx_primitive_factory");
 
             try {
                 // create the plugin factory object, if not disabled
                 hpx::error_code ec(hpx::lightweight);
-                std::shared_ptr<phylanx::plugin::plugin_factory_base> factory (
-                    pf.create(instance, ec, glob_ini, plugin_ini, true));
+                std::shared_ptr<phylanx::plugin::plugin_factory_base> factory(
+                    static_cast<phylanx::plugin::plugin_factory_base*>(
+                        pf.create(instance, ec, glob_ini, plugin_ini, true)));
+
                 if (!ec)
                 {
                     // store component factory and module for later use
