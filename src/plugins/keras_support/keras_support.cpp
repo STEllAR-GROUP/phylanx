@@ -18,6 +18,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(avg_pool3d_operation_plugin,
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(batch_dot_operation_plugin,
     phylanx::execution_tree::primitives::batch_dot_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(batch_normalization_operation_plugin,
+    phylanx::execution_tree::primitives::batch_normalization_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(bias_add_operation_plugin,
     phylanx::execution_tree::primitives::bias_add_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(bin_cross_operation_plugin,

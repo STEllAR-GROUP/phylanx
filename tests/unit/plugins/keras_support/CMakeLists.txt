@@ -8,6 +8,7 @@ set(tests
     avg_pool2d_operation
     avg_pool3d_operation
     batch_dot_operation
+    batch_normalization_operation
     bias_add_operation
     conv1d_operation
     ctc_decode_operation
