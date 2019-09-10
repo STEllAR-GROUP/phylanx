@@ -16,6 +16,7 @@ macro(phylanx_detect_cpp_dialect_non_msvc)
     if(PHYLANX_WITH_CXX17 OR NOT (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
                               AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17)))
       check_cxx_compiler_flag(-std=c++17 PHYLANX_WITH_CXX17)
+      set(CMAKE_CXX_STANDARD 17)
     endif()
 
     if(PHYLANX_WITH_CXX17)
