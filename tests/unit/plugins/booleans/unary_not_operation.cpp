@@ -303,6 +303,18 @@ void test_unary_not_operation_3d()
         R"(  astype([[[1, 1], [1, 0]], [[1, 1], [1, 1]]], "bool"))");
 }
 
+void test_unary_not_operation_4d()
+{
+    test_unary_not_operation(
+        R"(!astype([[[[1, 1], [1, 0]], [[1, 1], [1, 1]]],
+            [[[1, 1], [1, 0]], [[0, 0], [1, 1]]]], "bool"))",
+        R"( astype([[[[0, 0], [0, 1]], [[0, 0], [0, 0]]],
+            [[[0, 0], [0, 1]], [[1, 1], [0, 0]]]], "bool"))");
+    test_unary_not_operation(
+        R"(!!astype([[[[1, 1, 1, 0]], [[1, 1, 1, 1]]]], "bool"))",
+        R"(  astype([[[[1, 1, 1, 0]], [[1, 1, 1, 1]]]], "bool"))");
+}
+
 int main(int argc, char* argv[])
 {
     test_unary_not_operation_0d_false();
@@ -322,6 +334,8 @@ int main(int argc, char* argv[])
     test_unary_not_operation_2d_double_lit();
 
     test_unary_not_operation_3d();
+
+    test_unary_not_operation_4d();
 
     return hpx::util::report_errors();
 }

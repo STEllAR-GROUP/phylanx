@@ -130,6 +130,10 @@ namespace phylanx { namespace execution_tree
     std::size_t num_dimensions(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
     {
+        if (dims[3] != 0)
+        {
+            return 4;
+        }
         if (dims[2] != 0)
         {
             return 3;
@@ -184,6 +188,27 @@ namespace phylanx { namespace execution_tree
         return {0, dims[0], dims[1]};
     }
 
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    align_dimensions_to_quatern(std::size_t real_numdims,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
+    {
+        HPX_ASSERT(real_numdims <= 3);
+        if (real_numdims == 0)
+        {
+            return {};
+        }
+        if (real_numdims == 1)
+        {
+            return {0, 0, 0, dims[0]};
+        }
+        if (real_numdims == 2)
+        {
+            return {0, 0, dims[0], dims[1]};
+        }
+
+        return {0, dims[0], dims[1], dims[2]};
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
     extract_aligned_dimensions(
@@ -216,6 +241,9 @@ namespace phylanx { namespace execution_tree
 
         case 3:
             return align_dimensions_to_tensor(real_numdims, dims);
+
+        case 4:
+            return align_dimensions_to_quatern(real_numdims, dims);
 
         default:
             break;
@@ -280,6 +308,7 @@ namespace phylanx { namespace execution_tree
                         (std::max)(lhs[0], rhs[0])
                       , (std::max)(lhs[1], rhs[1])
                       , (std::max)(lhs[2], rhs[2])
+                      , (std::max)(lhs[3], rhs[3])
                     };
             };
 

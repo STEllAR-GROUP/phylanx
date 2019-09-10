@@ -274,6 +274,79 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return comparison3d3d(std::move(lhs), std::move(rhs), propagate_type);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Op>
+    template <typename T>
+    primitive_argument_type comparison<Op>::comparison4d4d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
+    {
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "comparison<Op>::comparison4d4d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        // TODO: SIMD functionality should be added, blaze implementation
+        //       is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.quatern(), rhs.quatern(),
+                [&](T x, T y) -> std::uint8_t { return Op{}(x, y); });
+        }
+        else
+        {
+            lhs.quatern() = blaze::map(lhs.quatern(), rhs.quatern(),
+                [&](T x, T y) -> std::uint8_t { return Op{}(x, y); });
+        }
+
+        if (propagate_type)
+        {
+            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
+        }
+
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
+
+    template <typename Op>
+    template <typename T>
+    primitive_argument_type comparison<Op>::comparison4d(ir::node_data<T>&& lhs,
+        ir::node_data<T>&& rhs, bool propagate_type,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& sizes) const
+    {
+        if (lhs.dimensions() != rhs.dimensions())
+        {
+            blaze::DynamicArray<4UL, T> lhs_data, rhs_data;
+
+            extract_value_quatern(lhs_data, std::move(lhs), sizes[0], sizes[1],
+                sizes[2], sizes[3], name_, codename_);
+            extract_value_quatern(rhs_data, std::move(rhs), sizes[0], sizes[1],
+                sizes[2], sizes[3], name_, codename_);
+
+            if (propagate_type)
+            {
+                return primitive_argument_type(ir::node_data<T>{
+                    blaze::map(lhs_data, rhs_data, [&](T x, T y) -> T {
+                        return Op{}(x, y) ? T(1) : T(0);
+                    })});
+            }
+
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{blaze::map(lhs_data, rhs_data,
+                    [&](T x, T y) -> std::uint8_t { return Op{}(x, y); })});
+        }
+
+        return comparison4d4d(std::move(lhs), std::move(rhs), propagate_type);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op>
     template <typename T>
     primitive_argument_type comparison<Op>::comparison_all(
@@ -296,6 +369,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 3:
             return comparison3d(
+                std::move(lhs), std::move(rhs), propagate_type, sizes);
+
+        case 4:
+            return comparison4d(
                 std::move(lhs), std::move(rhs), propagate_type, sizes);
 
         default:
