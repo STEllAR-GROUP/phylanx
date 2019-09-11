@@ -101,7 +101,7 @@ namespace phylanx { namespace util { namespace server
 }}}
 /// \endcond
 
-#define REGISTER_distributed_matrix_DECLARATION(type)                          \
+#define REGISTER_DISTRIBUTED_MATRIX_DECLARATION(type)                          \
     HPX_REGISTER_ACTION_DECLARATION(                                           \
         phylanx::util::server::distributed_matrix_part<type>::fetch_action,    \
         HPX_PP_CAT(__distributed_matrix_part_fetch_action_, type));            \
@@ -111,7 +111,7 @@ namespace phylanx { namespace util { namespace server
         HPX_PP_CAT(__distributed_matrix_part_fetch_part_action_, type))        \
     /**/
 
-#define REGISTER_distributed_matrix(type)                                      \
+#define REGISTER_DISTRIBUTED_MATRIX(type)                                      \
     HPX_REGISTER_ACTION(                                                       \
         phylanx::util::server::distributed_matrix_part<type>::fetch_action,    \
         HPX_PP_CAT(__distributed_matrix_part_fetch_action_, type));            \
@@ -169,7 +169,7 @@ namespace phylanx { namespace util
                     num_sites)
           , this_site_(this_site == std::size_t(-1) ? hpx::get_locality_id() :
                                                       this_site)
-          , basename_("dist_vector_" + std::move(basename))
+          , basename_("dist_matrix_" + std::move(basename))
         {
             if (this_site_ >= num_sites_)
             {
@@ -208,7 +208,7 @@ namespace phylanx { namespace util
                     num_sites)
           , this_site_(this_site == std::size_t(-1) ? hpx::get_locality_id() :
                                                       this_site)
-          , basename_("dist_vector_" + std::move(basename))
+          , basename_("dist_matrix_" + std::move(basename))
         {
             if (this_site_ >= num_sites_)
             {
@@ -327,7 +327,7 @@ namespace phylanx { namespace util
                 HPX_THROW_EXCEPTION(hpx::no_success,
                     "distributed_matrix::get_part_id",
                     "attempting to access invalid part of the distributed "
-                    "vector");
+                    "matrix");
             }
 
             std::lock_guard<hpx::lcos::local::spinlock> l(part_ids_mtx_);

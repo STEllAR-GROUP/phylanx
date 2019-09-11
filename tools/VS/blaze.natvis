@@ -80,7 +80,7 @@
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>2</Rank>
-                <Size>$i == 0 ? (int)nn_ : (int)m_</Size>
+                <Size>$i == 0 ? (int)m_ : (int)nn_</Size>
                 <ValuePointer>($T1*)v_</ValuePointer>
             </ArrayItems>
         </Expand>
@@ -95,7 +95,7 @@
             <ArrayItems>
                 <Direction>Backward</Direction>
                 <Rank>2</Rank>
-                <Size>$i == 0 ? (int)m_ : (int)nn_</Size>
+                <Size>$i == 0 ? (int)nn_ : (int)m_</Size>
                 <ValuePointer>($T1*)v_</ValuePointer>
             </ArrayItems>
         </Expand>
