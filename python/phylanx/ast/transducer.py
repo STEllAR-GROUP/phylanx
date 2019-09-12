@@ -135,7 +135,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             mapped_args = map(self.map_decorated, args)
             kwitems = kwargs.items()
-            mapped_kwargs = { k: self.map_decorated(v) for k, v in kwitems }
+            mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}
             return self.backend.lazy(*mapped_args, **mapped_kwargs)
 
         def __call__(self, *args, **kwargs):
@@ -147,7 +147,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             mapped_args = map(self.map_decorated, args)
             kwitems = kwargs.items()
-            mapped_kwargs = { k: self.map_decorated(v) for k, v in kwitems }
+            mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}
             result = self.backend.call(*mapped_args, **mapped_kwargs)
 
             self.__perfdata__ = self.backend.__perfdata__

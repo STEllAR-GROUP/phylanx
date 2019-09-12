@@ -560,7 +560,7 @@ class PhySL:
 
         mapped_args = tuple(map(self.map_wrapped, args))
         kwitems = kwargs.items()
-        mapped_kwargs = { k: self.map_wrapped(v) for k, v in kwitems }
+        mapped_kwargs = {k: self.map_wrapped(v) for k, v in kwitems}
         return self.eval_wrapper(self, *mapped_args, **mapped_kwargs)
 
     def call(self, *args, **kwargs):

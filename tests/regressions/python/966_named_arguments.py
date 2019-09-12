@@ -10,6 +10,11 @@ from phylanx import Phylanx
 import numpy as np
 
 
+# make flake happy
+def eye(N, M, k, dtype):
+    pass
+
+
 @Phylanx
 def i(N, M=None, k=0, dtype=None):
     return eye(N, M=M, k=k, dtype=dtype)
