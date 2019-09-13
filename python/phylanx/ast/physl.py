@@ -427,11 +427,12 @@ class PhySL:
                 PhySL.compiler_state = phylanx.execution_tree.compiler_state(
                     self.file_name)
 
-            PhySLFunction.compile()
-
+            if PhySLFunction.functions:
+                PhySLFunction.compile()
+            else:
             phylanx.execution_tree.compile(
-                PhySL.compiler_state, self.file_name,
-                self.wrapped_function.__name__, self.__src__)
+                   PhySL.compiler_state, self.file_name,
+                   self.wrapped_function.__name__, self.__src__) 
 
             self.is_compiled = True
         else:
