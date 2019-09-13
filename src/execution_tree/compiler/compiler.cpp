@@ -724,14 +724,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 snippets_.sequence_numbers_[define_lambda_]++, id.id, id.col,
                 snippets_.compile_id_ - 1, get_locality_id(locality));
 
-            function body_f = compile_body(args, body, locality);
-
             std::string lambda_name = compose_primitive_name(name_parts);
             f = function{
                     primitive_argument_type{create_primitive_component(
                         default_locality_, name_parts.primitive,
                         primitive_argument_type{}, lambda_name, name_)},
                     lambda_name};
+
+            function body_f = compile_body(args, body, locality);
             f.set_named_args(
                 std::move(body_f.named_args_), body_f.num_named_args_);
 
@@ -788,10 +788,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 compiled_function* cf = env_.define_variable(
                     name, access_target(f, "access-variable", default_locality_));
 
-                auto body_f = compile_body(body, locality);
-
                 // Correct type of the access object if this variable refers
                 // to a lambda or a block.
+                auto body_f = compile_body(body, locality);
                 primitive_name_parts body_name_parts;
                 if (parse_primitive_name(body_f.name_, body_name_parts) &&
                     (body_name_parts.primitive == "lambda" ||
@@ -842,14 +841,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 env_.define_variable(name_parts.instance,
                     access_target(f, "access-function", default_locality_));
 
-                function body_f = compile_lambda(args, body, id, locality);
-
                 std::string variable_name = compose_primitive_name(name_parts);
                 f = function{primitive_argument_type{
                         create_primitive_component(
                             default_locality_, "variable-factory",
                             primitive_argument_type{}, variable_name, name_)
                     }, variable_name};
+
+                function body_f = compile_lambda(args, body, id, locality);
                 f.set_named_args(
                     std::move(body_f.named_args_), body_f.num_named_args_);
 

@@ -9,7 +9,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/util/variant.hpp>
-
+#include <hpx/serialization/serialization_fwd.hpp>
 #include <hpx/serialization/unordered_map.hpp>
 
 #include <cstddef>
