@@ -9,6 +9,7 @@ macro(phylanx_detect_cpp_dialect_non_msvc)
 
   if(PHYLANX_WITH_CUDA AND NOT PHYLANX_WITH_CUDA_CLANG)
     set(CXX_FLAG -std=c++11)
+    set(CMAKE_CXX_STANDARD 11)
     phylanx_info("C++ mode used: C++11")
   else()
 
@@ -31,6 +32,7 @@ macro(phylanx_detect_cpp_dialect_non_msvc)
 
       if(PHYLANX_WITH_CXX1Z)
         set(CXX_FLAG -std=c++1z)
+        set(CMAKE_CXX_STANDARD 14)
         phylanx_info("C++ mode used: C++1z")
       else()
         # ... otherwise try -std=c++14
@@ -41,6 +43,7 @@ macro(phylanx_detect_cpp_dialect_non_msvc)
 
         if(PHYLANX_WITH_CXX14)
           set(CXX_FLAG -std=c++14)
+          set(CMAKE_CXX_STANDARD 14)
           phylanx_info("C++ mode used: C++14")
         else()
           # ... otherwise try -std=c++1y
@@ -51,18 +54,21 @@ macro(phylanx_detect_cpp_dialect_non_msvc)
 
           if(PHYLANX_WITH_CXX1Y)
             set(CXX_FLAG -std=c++1y)
+            set(CMAKE_CXX_STANDARD 11)
             phylanx_info("C++ mode used: C++1y")
           else()
             # ... otherwise try -std=c++11
             check_cxx_compiler_flag(-std=c++11 PHYLANX_WITH_CXX11)
             if(PHYLANX_WITH_CXX11)
               set(CXX_FLAG -std=c++11)
+              set(CMAKE_CXX_STANDARD 11)
               phylanx_info("C++ mode used: C++11")
             else()
               # ... otherwise try -std=c++0x
               check_cxx_compiler_flag(-std=c++0x PHYLANX_WITH_CXX0X)
               if(PHYLANX_WITH_CXX0X)
                 set(CXX_FLAG -std=c++0x)
+                set(CMAKE_CXX_STANDARD 11)
                 phylanx_info("C++ mode used: C++0x")
               endif()
             endif()
@@ -74,6 +80,29 @@ macro(phylanx_detect_cpp_dialect_non_msvc)
 endmacro()
 
 macro(phylanx_detect_cpp_dialect)
+
+  if(NOT PHYLANX_WITH_CXX17 AND NOT PHYLANX_WITH_CXX1Z AND
+     NOT PHYLANX_WITH_CXX14 AND NOT PHYLANX_WITH_CXX1X AND
+     NOT PHYLANX_WITH_CXX11 AND NOT PHYLANX_WITH_CXX0X)
+
+    if(HPX_CXX_STANDARD)
+      if(${HPX_CXX_STANDARD} STREQUAL "17")
+        set(PHYLANX_WITH_CXX17 ON)
+      elseif(${HPX_CXX_STANDARD} STREQUAL "1z")
+        set(PHYLANX_WITH_CXX1Z ON)
+      elseif(${HPX_CXX_STANDARD} STREQUAL "14")
+        set(PHYLANX_WITH_CXX14 ON)
+      elseif(${HPX_CXX_STANDARD} STREQUAL "1x")
+        set(PHYLANX_WITH_CXX1X ON)
+      elseif(${HPX_CXX_STANDARD} STREQUAL "11")
+        set(PHYLANX_WITH_CXX11 ON)
+      elseif(${HPX_CXX_STANDARD} STREQUAL "0x")
+        set(PHYLANX_WITH_CXX0X ON)
+      else()
+        phylanx_error("Unknown HPX_CXX_STANDARD value: ${HPX_CXX_STANDARD}")
+      endif()
+    endif()
+  endif()
 
   if(MSVC)
     set(CXX_FLAG)
