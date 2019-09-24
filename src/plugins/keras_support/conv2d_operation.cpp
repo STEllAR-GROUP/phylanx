@@ -249,10 +249,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto res_slice = blaze::pageslice(res_tensor, l);
                 for (std::size_t i = 0; i != in_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes(
+                        in_height, filter_height, i - pad_top);
                     for (std::size_t j = 0; j != in_width; ++j)
                     {
-                        auto sub_height = conv_indices::get_subsizes(
-                            in_height, filter_height, i - pad_top);
                         auto sub_width = conv_indices::get_subsizes(
                             in_width, filter_width, j - pad_left);
                         auto schur_product =
@@ -336,10 +336,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto res_slice = blaze::pageslice(res_tensor, l);
                 for (std::size_t i = 0; i != res_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes(
+                        in_height, filter_height, i * stride_height - pad_top);
                     for (std::size_t j = 0; j != res_width; ++j)
                     {
-                        auto sub_height = conv_indices::get_subsizes(in_height,
-                            filter_height, i * stride_height - pad_top);
                         auto sub_width = conv_indices::get_subsizes(in_width,
                             filter_width, j * stride_width - pad_left);
                         auto schur_product =
@@ -389,12 +389,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto res_slice = blaze::pageslice(res_tensor, l);
                 for (std::size_t i = 0; i != in_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes_dilated(
+                        in_height, filter_height, i - pad_top, dilation_height);
                     for (std::size_t j = 0; j != in_width; ++j)
                     {
-                        auto sub_height = conv_indices::get_subsizes_dilated(
-                            in_height, filter_height, i - pad_top,dilation_height);
-                        auto sub_width = conv_indices::get_subsizes_dilated(
-                            in_width, filter_width, j - pad_left,dilation_width);
+                        auto sub_width =
+                            conv_indices::get_subsizes_dilated(in_width,
+                                filter_width, j - pad_left, dilation_width);
                         if (sub_height.size_ == 0 || sub_width.size_ == 0)
                             continue;
 

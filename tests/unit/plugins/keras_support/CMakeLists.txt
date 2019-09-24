@@ -11,6 +11,7 @@ set(tests
     bias_add_operation
     conv1d_operation
     conv2d_operation
+    conv2d_transpose_operation
     ctc_decode_operation
     elu_operation
     hard_sigmoid_operation

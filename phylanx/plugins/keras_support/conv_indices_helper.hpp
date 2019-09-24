@@ -27,19 +27,18 @@ namespace conv_indices
         if (relative_position < 0)
         {
             if (kernel_size + relative_position > image_size)
-                return sizes{ 0, -relative_position, image_size };
+                return sizes{0, -relative_position, image_size};
 
             return sizes{
-                0, -relative_position, kernel_size + relative_position };
+                0, -relative_position, kernel_size + relative_position};
         }
 
         if (relative_position > image_size - kernel_size)
         {
-            return sizes{
-                relative_position, 0, image_size - relative_position };
+            return sizes{relative_position, 0, image_size - relative_position};
         }
 
-        return sizes{ relative_position, 0, kernel_size };
+        return sizes{relative_position, 0, kernel_size};
     }
 
     inline sizes get_subsizes_dilated(std::int64_t image_size,
@@ -70,7 +69,7 @@ namespace conv_indices
             }
             std::int64_t kernel_beg_ = blaze::ceil(
                 static_cast<double>(-relative_position) / dilation_rate);
-            return sizes{ remainder, kernel_beg_, corrected_kernel_size };
+            return sizes{remainder, kernel_beg_, corrected_kernel_size};
         }
 
         if (relative_position >= image_size - (kernel_size - 1) * dilation_rate)
@@ -78,10 +77,47 @@ namespace conv_indices
             std::int64_t corrected_kernel_size = blaze::ceil(
                 static_cast<double>(image_size - relative_position) /
                 dilation_rate);
-            return sizes{ relative_position, 0, corrected_kernel_size };
+            return sizes{relative_position, 0, corrected_kernel_size};
         }
 
-        return sizes{ relative_position, 0, kernel_size };
+        return sizes{relative_position, 0, kernel_size};
+    }
+
+     inline sizes get_subsizes_transpose(std::int64_t image_size,
+        std::int64_t kernel_size, std::int64_t relative_position,
+        std::int64_t dilation_rate)
+    {
+        if (relative_position < 0)
+        {
+            std::int64_t corrected_kernel_size = 0;
+            if (-relative_position<kernel_size)
+            {
+                corrected_kernel_size = image_size +
+                    blaze::floor(
+                        static_cast<double>(relative_position) / dilation_rate);
+            }
+            std::int64_t kernel_beg_ = -relative_position;
+            return sizes{ 0, kernel_beg_, corrected_kernel_size };
+        }
+
+        std::int64_t dilated_image_size = (image_size - 1) * dilation_rate + 1;
+        std::int64_t image_begin =
+            blaze::ceil(static_cast<double>(relative_position) / dilation_rate);
+        std::int64_t remainder = relative_position % dilation_rate;
+        std::int64_t corrected_kernel_size;
+        std::int64_t kernel_begin =
+            remainder == 0 ? 0 : dilation_rate - remainder;
+        if (relative_position > dilated_image_size - kernel_size)
+        {
+            corrected_kernel_size = blaze::ceil(
+                static_cast<double>(dilated_image_size - relative_position) /
+                dilation_rate);
+            return sizes{image_begin, kernel_begin, corrected_kernel_size};
+        }
+
+        corrected_kernel_size =
+            blaze::ceil(static_cast<double>(kernel_size) / dilation_rate);
+        return sizes{image_begin, kernel_begin, corrected_kernel_size};
     }
 }
 #endif
