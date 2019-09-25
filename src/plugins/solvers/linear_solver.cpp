@@ -157,7 +157,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
          A matrix `x` such that `a x = b`, solved using the
          BiCGSTAB solver utilizing the Cholesky decomposition as
          its preconditioner.)"
-         )
+         ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_cg_jacobi",
+                               R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         CG solver utilizing the Jacobi decomposition as
+         its preconditioner.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_cg_ssor",
+                               R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         CG solver utilizing the SSOR decomposition as
+         its preconditioner.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_cg_incompleteCholesky",
+                               R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         CG solver utilizing the incomplete Cholesky factorization as
+         its preconditioner.)"
+        )
 #endif
     };
 
@@ -262,7 +301,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "Cholesky");
                     return arg_type{std::move(b)};
-                }}
+                }},
+            {"iterative_solver_cg_jacobi",
+                // Iterative Precondition CG solver with Jacobi preconditioner
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::PreconditionCGTag tag;
+                    b = blaze::iterative::solve(A, b, tag, "Jacobi preconditioning");
+                    return arg_type{std::move(b)};
+                }},
+            {"iterative_solver_cg_ssor",
+                    // Iterative Precondition CG solver with ssor preconditioner
+                    // Note: Relies on BlazeIterative library and
+                    // need to be explicitly enabled
+             [](args_type&& args) -> arg_type {
+                 storage2d_type A{blaze::trans(args[0].matrix())};
+                 storage1d_type b{args[1].vector()};
+                 blaze::iterative::PreconditionCGTag tag;
+                 b = blaze::iterative::solve(A, b, tag, "SSOR preconditioning");
+                 return arg_type{std::move(b)};
+             }},
+            {"iterative_solver_cg_incompleteCholesky",
+                    // Iterative Precondition CG solver with incomplete Cholesky factorization
+                    // Note: Relies on BlazeIterative library and
+                    // need to be explicitly enabled
+             [](args_type&& args) -> arg_type {
+                 storage2d_type A{blaze::trans(args[0].matrix())};
+                 storage1d_type b{args[1].vector()};
+                 blaze::iterative::PreconditionCGTag tag;
+                 b = blaze::iterative::solve(A, b, tag, "incomplete Cholesky factorization");
+                 return arg_type{std::move(b)};
+             }}
 #endif
         };
         return lin_solver[name];
