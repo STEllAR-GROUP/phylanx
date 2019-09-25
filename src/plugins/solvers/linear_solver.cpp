@@ -220,46 +220,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return arg_type{std::move(b)};
                 }},
             {"iterative_solver_bicgstab_lu",
-                // Iterative BiCGSTAB solver
+                // Iterative Precondition BiCGSTAB solver with LU preconditioner
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
-                    blaze::iterative::BiCGSTABTag tag;
+                    blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "LU");
                     return arg_type{std::move(b)};
                 }},
             {"iterative_solver_bicgstab_rq",
-                // Iterative BiCGSTAB solver
+                // Iterative Precondition BiCGSTAB solver with RQ preconditioner
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
-                    blaze::iterative::BiCGSTABTag tag;
+                    blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "RQ");
                     return arg_type{std::move(b)};
                 }},
             {"iterative_solver_bicgstab_qr",
-                // Iterative BiCGSTAB solver
+                // Iterative Precondition BiCGSTAB solver with QR preconditioner
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
-                    blaze::iterative::BiCGSTABTag tag;
+                    blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "QR");
                     return arg_type{std::move(b)};
                 }},
             {"iterative_solver_bicgstab_cholesky",
-                // Iterative BiCGSTAB solver
+                // Iterative Precondition BiCGSTAB solver with Cholesky preconditioner
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
-                    blaze::iterative::BiCGSTABTag tag;
+                    blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "Cholesky");
                     return arg_type{std::move(b)};
                 }}
