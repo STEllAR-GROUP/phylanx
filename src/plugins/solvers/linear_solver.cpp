@@ -196,6 +196,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
          A matrix `x` such that `a x = b`, solved using the
          CG solver utilizing the incomplete Cholesky factorization as
          its preconditioner.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_cg_symmetric_gauss_seidel",
+                               R"(a, b
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+
+         Returns:
+
+         A matrix `x` such that `a x = b`, solved using the
+         CG solver utilizing the Symmetric Gauss Seidel as
+         its preconditioner.)"
         )
 #endif
     };
@@ -333,6 +346,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                  storage1d_type b{args[1].vector()};
                  blaze::iterative::PreconditionCGTag tag;
                  b = blaze::iterative::solve(A, b, tag, "incomplete Cholesky factorization");
+                 return arg_type{std::move(b)};
+             }},
+            {"iterative_solver_cg_symmetric_gauss_seidel",
+                    // Iterative Precondition CG solver with Symmetric Gauss Seidel preconditioner
+                    // Note: Relies on BlazeIterative library and
+                    // need to be explicitly enabled
+             [](args_type&& args) -> arg_type {
+                 storage2d_type A{blaze::trans(args[0].matrix())};
+                 storage1d_type b{args[1].vector()};
+                 blaze::iterative::PreconditionCGTag tag;
+                 b = blaze::iterative::solve(A, b, tag, "Symmetric Gauss Seidel preconditioning");
                  return arg_type{std::move(b)};
              }}
 #endif
