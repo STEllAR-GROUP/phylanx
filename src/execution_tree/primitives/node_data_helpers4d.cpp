@@ -339,11 +339,332 @@ namespace phylanx { namespace execution_tree
             }
 
         case 4:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::extract_value_quatern",
-                util::generate_error_message(
-                    "not implemented error",
-                    name, codename));
+            {
+                // quaterns of size one can be broadcast into any quatern
+                if (rhs.size() == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+
+                    result = rhs.at(0, 0, 0, 0);
+                    return;
+                }
+
+                // quaterns with just one quat, page and row can be broadcast
+                // into any quatern with the same number of columns
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto row = blaze::row(
+                        blaze::pageslice(blaze::quatslice(q, 0), 0), 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        for (std::size_t k = 0; k != pages; ++k)
+                        {
+                            auto page = blaze::pageslice(quat, k);
+                            for (std::size_t i = 0; i != rows; ++i)
+                            {
+                                blaze::row(page, i) = row;
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one quat, page and column can be broadcast
+                // into any quatern with the same number of rows
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto col = blaze::column(
+                        blaze::pageslice(blaze::quatslice(q, 0), 0), 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        for (std::size_t k = 0; k != pages; ++k)
+                        {
+                            auto page = blaze::pageslice(quat, k);
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                blaze::column(page, j) = col;
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one quat, row and column can be broadcast
+                // into any quatern with the same number of pages
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto row = blaze::row(
+                        blaze::rowslice(blaze::quatslice(q, 0), 0), 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            auto slice = blaze::rowslice(quat, i);
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                blaze::row(slice, j) = row;
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one page, row and column can be broadcast
+                // into any quatern with the same number of quats
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_quatern",
+                        util::generate_error_message(
+                            "not implemented error. broadcasting (quats,1,1,1)",
+                            name, codename));
+                }
+
+                // quaterns with just one page and row can be broadcast
+                // into any quatern with the same number of quats/columns
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_quatern",
+                        util::generate_error_message(
+                            "not implemented error. broadcasting "
+                            "(quats,1,1,columns)",
+                            name, codename));
+                }
+
+                // quaterns with just one page and column can be broadcast
+                // into any quatern with the same number of quats/row
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_quatern",
+                        util::generate_error_message(
+                            "not implemented error. broadcasting "
+                            "(quats,1,rows,1)",
+                            name, codename));
+                }
+
+                // quaterns with just one row and column can be broadcast
+                // into any quatern with the same number of quats/pages
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_quatern",
+                        util::generate_error_message(
+                            "not implemented error. broadcasting "
+                            "(quats,pages,1,1)",
+                            name, codename));
+                }
+
+                // quaterns with just one quat and page can be broadcast into
+                // any quatern with the same number of columns/rows
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto rhs_page = blaze::pageslice(blaze::quatslice(q, 0), 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        for (std::size_t k = 0; k != pages; ++k)
+                        {
+                            blaze::pageslice(quat, k) = rhs_page;
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one quat and row can be broadcast into any
+                // quatern with the same number of pages/columns
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto rhs_rowslice =
+                        blaze::rowslice(blaze::quatslice(q, 0), 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            blaze::rowslice(quat, i) = rhs_rowslice;
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one quat and column can be broadcast into
+                // any quatern with the same number of pages/rows
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto rhs_columnslice =
+                        blaze::columnslice(blaze::quatslice(q, 0), 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            blaze::columnslice(quat, j) = rhs_columnslice;
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one quat can be broadcast into
+                // any quatern with the same number of pages/rows/columns
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    auto rhs_tensor = blaze::quatslice(q, 0);
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        blaze::quatslice(result, l) = rhs_tensor;
+                    }
+                    return;
+                }
+
+                // quaterns with just one page can be broadcast into
+                // any quatern with the same number of quats/rows/columns
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        auto rhs_slice =
+                            blaze::pageslice(blaze::quatslice(q, l), 0);
+                        for (std::size_t k = 0; k != pages; ++k)
+                        {
+                            blaze::pageslice(quat, k) = rhs_slice;
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one row can be broadcast into
+                // any quatern with the same number of quats/pages/columns
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == 1 && rhs.dimension(3) == columns)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        auto rhs_slice =
+                            blaze::rowslice(blaze::quatslice(q, l), 0);
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            blaze::rowslice(quat, i) = rhs_slice;
+                        }
+                    }
+                    return;
+                }
+
+                // quaterns with just one column can be broadcast into
+                // any quatern with the same number of quats/pages/rows
+                if (rhs.dimension(0) == quats && rhs.dimension(1) == pages &&
+                    rhs.dimension(2) == rows && rhs.dimension(3) == 1)
+                {
+                    result.resize(std::array<std::size_t, 4>{
+                        columns, rows, pages, quats});
+                    auto q = rhs.quatern();
+
+                    for (std::size_t l = 0; l != quats; ++l)
+                    {
+                        auto quat = blaze::quatslice(result, l);
+                        auto rhs_slice =
+                            blaze::columnslice(blaze::quatslice(q, l), 0);
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            blaze::columnslice(quat, j) = rhs_slice;
+                        }
+                    }
+                    return;
+                }
+
+                if (rhs.dimension(0) != quats || rhs.dimension(1) != pages ||
+                    rhs.dimension(2) != rows || rhs.dimension(3) != columns)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_quatern",
+                        util::generate_error_message(
+                            "cannot broadcast a quatern into a quatern with "
+                            "different quats, pages, rows or columns",
+                            name, codename));
+                }
+
+                if (rhs.is_ref())
+                {
+                    result = rhs.quatern();
+                }
+                else
+                {
+                    result = std::move(rhs.quatern_non_ref());
+                }
+                return;
+            }
+
 
         default:
             break;

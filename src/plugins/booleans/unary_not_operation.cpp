@@ -91,6 +91,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{blaze::map(ops.tensor(),
                     [](T x) -> std::uint8_t { return x == T(0); })}};
 
+        case 4:
+            // TODO: SIMD functionality should be added, blaze implementation
+            // is not currently available
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{blaze::map(ops.quatern(),
+                    [](T x) -> std::uint8_t { return x == T(0); })}};
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not_operation::eval",
