@@ -323,42 +323,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionCGTag tag;
-                    b = blaze::iterative::solve(A, b, tag, "Jacobi preconditioning");
+                    b = blaze::iterative::solve(A, b, tag, "Jacobi");
                     return arg_type{std::move(b)};
                 }},
             {"iterative_solver_cg_ssor",
-                    // Iterative Precondition CG solver with ssor preconditioner
-                    // Note: Relies on BlazeIterative library and
-                    // need to be explicitly enabled
-             [](args_type&& args) -> arg_type {
-                 storage2d_type A{blaze::trans(args[0].matrix())};
-                 storage1d_type b{args[1].vector()};
-                 blaze::iterative::PreconditionCGTag tag;
-                 b = blaze::iterative::solve(A, b, tag, "SSOR preconditioning");
-                 return arg_type{std::move(b)};
-             }},
+                // Iterative Precondition CG solver with ssor preconditioner
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::PreconditionCGTag tag;
+                    b = blaze::iterative::solve(A, b, tag, "SSOR");
+                    return arg_type{std::move(b)};
+                }},
             {"iterative_solver_cg_incompleteCholesky",
-                    // Iterative Precondition CG solver with incomplete Cholesky factorization
-                    // Note: Relies on BlazeIterative library and
-                    // need to be explicitly enabled
-             [](args_type&& args) -> arg_type {
-                 storage2d_type A{blaze::trans(args[0].matrix())};
-                 storage1d_type b{args[1].vector()};
-                 blaze::iterative::PreconditionCGTag tag;
-                 b = blaze::iterative::solve(A, b, tag, "incomplete Cholesky factorization");
-                 return arg_type{std::move(b)};
-             }},
+                // Iterative Precondition CG solver with incomplete Cholesky factorization
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::PreconditionCGTag tag;
+                    b = blaze::iterative::solve(
+                        A, b, tag, "incomplete_Cholesky");
+                    return arg_type{std::move(b)};
+                }},
             {"iterative_solver_cg_symmetric_gauss_seidel",
-                    // Iterative Precondition CG solver with Symmetric Gauss Seidel preconditioner
-                    // Note: Relies on BlazeIterative library and
-                    // need to be explicitly enabled
-             [](args_type&& args) -> arg_type {
-                 storage2d_type A{blaze::trans(args[0].matrix())};
-                 storage1d_type b{args[1].vector()};
-                 blaze::iterative::PreconditionCGTag tag;
-                 b = blaze::iterative::solve(A, b, tag, "Symmetric Gauss Seidel preconditioning");
-                 return arg_type{std::move(b)};
-             }}
+                // Iterative Precondition CG solver with Symmetric Gauss Seidel preconditioner
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::PreconditionCGTag tag;
+                    b = blaze::iterative::solve(
+                        A, b, tag, "Symmetric_Gauss_Seidel");
+                    return arg_type{std::move(b)};
+                }}
 #endif
         };
         return lin_solver[name];
@@ -407,7 +409,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type linear_solver::calculate_linear_solver(
-        args_type && op) const
+        args_type&& op) const
     {
         if (func_ == nullptr)
         {
