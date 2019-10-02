@@ -350,7 +350,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return arg_type{std::move(b)};
                 }},
             {"iterative_solver_cg_symmetric_gauss_seidel",
-                // Iterative Precondition CG solver with Symmetric Gauss Seidel preconditioner
+                // Iterative Precondition CG solver with Symmetric Gauss Seidel
+                // preconditioner
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
