@@ -89,8 +89,8 @@ namespace phylanx { namespace util { namespace server
             std::size_t start_column, std::size_t stop_column) const
         {
             return data_type{
-                blaze::submatrix(data_, start_row, stop_row - start_row,
-                    start_column, stop_column - start_column)};
+                blaze::submatrix(data_, start_row, start_column,
+                stop_row - start_row, stop_column - start_column)};
         }
 
         HPX_DEFINE_COMPONENT_ACTION(distributed_matrix_part, fetch_part);

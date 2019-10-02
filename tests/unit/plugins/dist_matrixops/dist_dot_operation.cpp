@@ -34,8 +34,9 @@ void test_dot_operation(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
     hpx::cout << name << hpx::endl;
-    HPX_TEST_EQ(
-        compile_and_run(name, code), compile_and_run(name, expected_str));
+    auto x = compile_and_run(name, code);
+    auto y = compile_and_run(name, expected_str);
+    HPX_TEST_EQ(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -263,8 +264,8 @@ void test_dot_2d2d_1()
             )
         )",
             R"(
-            annotate_d([[91], [91]], "test2d2d_1_1/1",
-                list("tile", list("columns", 0, 2), list("rows", 0, 1)))
+            annotate_d([[91, 91]], "test2d2d_1_1/1",
+                list("tile", list("rows", 0, 1), list("columns", 0, 2)))
         )");
     }
     else
@@ -278,7 +279,7 @@ void test_dot_2d2d_1()
             )
         )",
             R"(
-            annotate_d([[91], [91]], "test2d2d_1_1/1",
+            annotate_d([[91, 91]], "test2d2d_1_1/1",
                 list("tile", list("columns", 0, 2), list("rows", 1, 2)))
         )");
     }
