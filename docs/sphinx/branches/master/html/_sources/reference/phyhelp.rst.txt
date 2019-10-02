@@ -802,6 +802,32 @@ conv1d (x, kernel, padding, strides, dilation_rate)
         1D convolution (or 1D mathematical cross-correlation)
 
 
+conv2d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+conv2d (x, kernel, padding, strides, dilation_rate)
+        Args:
+
+            x (array) : a 4d array consiting of batch, in_height, in_width and
+                in_channels dimensions.
+            kernel (array) : a 4d array consisting of filter_height,
+                filter_width, in_channels and out_channels dimension. Note that
+                the in_channels should be the same in kernel and original array.
+            padding (optional, string) : padding mode, `valid` by default. It
+                can be either `valid` or `same`. `vaild` means no padding.
+                `same` results the output with the same shape as original array
+                in case of unit strides.
+            strides (optional, a tuple of two integers) : the steps to apply
+                convolution over height and width of the array. It sets to
+                (1,1) by default.
+            dilation_rate (optional, a tuple of two integers) : indicates the
+                dilation rate, the rate to sample the height and the width of
+                the array in each step of convolution, (1,1) by default.
+
+        Returns:
+
+        2D convolution (or 2D mathematical cross-correlation)
+
+
 count_nonzero
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 count_nonzero (ar)
