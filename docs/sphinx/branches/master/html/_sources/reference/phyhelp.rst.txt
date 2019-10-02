@@ -2281,7 +2281,7 @@ squeeze
 squeeze (a, axis)
         Args:
 
-            a (array) : a scalar, vector, matrix or a tensor
+            a (array) : a scalar, vector, matrix, tensor or a quatern
             axis (optional, integer): an axis to squeeze along. If an axis is
                 selected with shape entry greater than one, an error is raised.
 
