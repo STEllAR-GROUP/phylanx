@@ -626,7 +626,7 @@ namespace phylanx {
                     b.wait();
                 }
             }
-                return result;
+            return result;
         }
 
             template <typename T>

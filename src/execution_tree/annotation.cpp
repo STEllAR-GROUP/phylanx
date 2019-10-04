@@ -271,7 +271,6 @@ namespace phylanx { namespace execution_tree
                         
                     if (*l_it != *r_it || *(l_it++) != *(r_it++))
                         eq = false;
-                        
                 }
                 else if (key == "name")
                 {
@@ -288,7 +287,7 @@ namespace phylanx { namespace execution_tree
             else
             {
                 eq = false;
-            }  
+            }
             it++;
         }
 
