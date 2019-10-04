@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>

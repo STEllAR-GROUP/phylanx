@@ -8,7 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/execution_tree/annotation.hpp>
+//#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/ir/dictionary.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
@@ -45,10 +45,8 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     class primitive;
     struct primitive_argument_type;
-    struct annotation;
 
-    bool operator==(annotation const& lhs, annotation const& rhs);
-    bool operator!=(annotation const& lhs, annotation const& rhs);
+    struct annotation;
 
     ///////////////////////////////////////////////////////////////////////////
     struct topology
@@ -930,8 +928,9 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline bool operator==(primitive_argument_type const& lhs,
-        primitive_argument_type const& rhs)
+    PHYLANX_EXPORT bool operator==(primitive_argument_type const& lhs,
+        primitive_argument_type const& rhs);
+    /*
     {
         if (lhs.variant() == rhs.variant())
         {
@@ -947,6 +946,7 @@ namespace phylanx { namespace execution_tree
         }
         return false;
     }
+    */
 
     inline bool operator!=(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs)

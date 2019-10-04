@@ -477,7 +477,7 @@ namespace phylanx {
                         "the operands have incompatible number of dimensions"));
             }
 
-            // construct a distributed vector object for the rhs
+            // construct a distributed matrix object for the rhs
             util::distributed_matrix<T> rhs_data(
                 rhs_localities.annotation_.name_, rhs.matrix(),
                 rhs_localities.locality_.num_localities_,
@@ -592,42 +592,42 @@ namespace phylanx {
                             tile_info.as_annotation(name_, codename_),
                             lhs_localities.annotation_, name_, codename_),
                         name_, codename_);
-                    }
-                    else
-                    {
-                        result = execution_tree::primitive_argument_type{
-                            hpx::all_reduce(
-                                ("all_reduce_" +
-                                    lhs_localities.annotation_.name_)
-                                    .c_str(),
-                                result_matrix, blaze::Add{},
-                                lhs_localities.locality_.num_localities_,
-                                std::size_t(-1),
-                                lhs_localities.locality_.locality_id_)
-                                .get()};
-                    }
                 }
                 else
                 {
-                    // the result is completely local, no need to all_reduce it
-                    //result =
-                    // execution_tree::primitive_argument_type{std::move(dot_result)};
                     result = execution_tree::primitive_argument_type{
-                        std::move(result_matrix)};
-                    // if the rhs is distributed we should synchronize with all
-                    // connected localities however to avoid for the distributed vector
-                    // going out of scope
-                    if (rhs_localities.locality_.num_localities_ > 1)
-                    {
-                        hpx::lcos::barrier b(
-                            "barrier_" + rhs_localities.annotation_.name_,
-                            rhs_localities.locality_.num_localities_,
-                            rhs_localities.locality_.locality_id_);
-                        b.wait();
-                    }
+                        hpx::all_reduce(
+                            ("all_reduce_" +
+                                lhs_localities.annotation_.name_)
+                                .c_str(),
+                            result_matrix, blaze::Add{},
+                            lhs_localities.locality_.num_localities_,
+                            std::size_t(-1),
+                            lhs_localities.locality_.locality_id_)
+                            .get()};
                 }
-                return result;
             }
+            else
+            {
+                // the result is completely local, no need to all_reduce it
+                //result =
+                // execution_tree::primitive_argument_type{std::move(dot_result)};
+                result = execution_tree::primitive_argument_type{
+                    std::move(result_matrix)};
+                // if the rhs is distributed we should synchronize with all
+                // connected localities however to avoid for the distributed vector
+                // going out of scope
+                if (rhs_localities.locality_.num_localities_ > 1)
+                {
+                    hpx::lcos::barrier b(
+                        "barrier_" + rhs_localities.annotation_.name_,
+                        rhs_localities.locality_.num_localities_,
+                        rhs_localities.locality_.locality_id_);
+                    b.wait();
+                }
+            }
+                return result;
+        }
 
             template <typename T>
             execution_tree::primitive_argument_type dist_dot_operation::dot2d3d(

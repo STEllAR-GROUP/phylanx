@@ -193,6 +193,108 @@ namespace phylanx { namespace execution_tree
         }
     }
 
+    bool operator==(annotation const& lhs, annotation const& rhs)
+    {
+        // This makes the assumption that annotations contain something like:
+        //annotation("localities", list("meta_0", list("tile", list("rows", 0, 1),
+        //                                                     list("columns", 0, 2))),
+        //                         list("meta_1", list("tile", list("rows", 1, 2),
+        //                                                     list("columns", 0, 2))),
+        //						   list("locality", 0, 2),
+        //						   list("name", "test2d2d_1_1/1"))'
+        // l_data should be a annotation->ir::range->range_type->
+        // recursive_wrapper->primitive_arguments_type->std::vector<primitive_argument_type>
+        ir::range l_data = lhs.get_data();
+        bool eq = true;
+        int i = 0;
+        ir::range_iterator it = l_data.begin();
+        while (it != l_data.end())
+        {
+            // l_meta_level_list = list("meta_0",
+            //                          list("tile", list("rows", 0, 1),
+            //                                       list("columns", 0, 2)))
+
+            ir::range l_meta_level_list_with_key =
+                phylanx::execution_tree::extract_list_value_strict(*it);
+            std::string key = extract_string_value(
+                *l_meta_level_list_with_key.begin());
+            
+            annotation r_meta_level_ann;
+            if (lhs.find(key, r_meta_level_ann))
+            {
+                ir::range_iterator tmp = l_meta_level_list_with_key.begin();
+                tmp++;
+                ir::range l_meta_level_data_list(
+                    tmp,
+                    l_meta_level_list_with_key.end());
+                ir::range r_meta_level_data_list =
+                    r_meta_level_ann.get_data();
+                if (key.substr(0, 4) == "meta")
+                {
+                    ir::range l_tile_level_list =
+                        phylanx::execution_tree::extract_list_value_strict(
+                            *(l_meta_level_data_list.begin()));
+                    ir::range r_tile_level_list =
+                        phylanx::execution_tree::extract_list_value_strict(
+                            *(r_meta_level_data_list.begin()));
+                    ir::range_iterator l_tile = l_tile_level_list.begin();
+                    ir::range_iterator r_tile = r_tile_level_list.begin();
+                    if (phylanx::execution_tree::extract_string_value(
+                            *l_tile) == "tile" &&
+                        *l_tile == *r_tile)
+                    {
+                        l_tile++;
+                        r_tile++;
+                        while (l_tile != l_tile_level_list.end())
+                        {
+                            auto found = std::find(
+                                r_tile, r_tile_level_list.end(), *l_tile);
+                            if (found == r_tile_level_list.end())
+                                eq = false;
+                            l_tile++;
+                        }
+                    }
+                    else
+                    {
+                        // That string should be equal to 'tile', if not,
+                        // something's wrong
+                        // Maybe it should throw actually
+                        eq = false;
+                    }
+                }
+                else if (key == "locality")
+                {
+                    ir::range_iterator l_it =
+                        l_meta_level_data_list.begin();
+                    ir::range_iterator r_it =
+                        r_meta_level_data_list.begin();
+                        
+                    if (*l_it != *r_it || *(l_it++) != *(r_it++))
+                        eq = false;
+                        
+                }
+                else if (key == "name")
+                {
+                    if (*l_meta_level_data_list.begin() !=
+                        *r_meta_level_data_list.begin())
+                        eq = false;
+                }
+                else
+                {
+                    // There are problems somewhere
+                    eq = false;
+                }
+            }
+            else
+            {
+                eq = false;
+            }  
+            it++;
+        }
+
+        return eq;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     void annotation::replace_annotation(std::string const& key,
         annotation&& data, std::string const& name, std::string const& codename)
