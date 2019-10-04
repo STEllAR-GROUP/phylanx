@@ -430,9 +430,10 @@ class PhySL:
             if PhySLFunction.functions:
                 PhySLFunction.compile()
             else:
-            phylanx.execution_tree.compile(
-                   PhySL.compiler_state, self.file_name,
-                   self.wrapped_function.__name__, self.__src__) 
+                phylanx.execution_tree.compile(PhySL.compiler_state,
+                                               self.file_name,
+                                               self.wrapped_function.__name__,
+                                               self.__src__)
 
             self.is_compiled = True
         else:
@@ -510,9 +511,7 @@ class PhySL:
                     PhySL.compiler_state, self.outer.file_name, self.func_name)
                 self.outer.__perfdata__ = (
                     phylanx.execution_tree.retrieve_counter_data(
-                        PhySL.compiler_state),
-                    treedata[0], treedata[1]
-                )
+                        PhySL.compiler_state), treedata[0], treedata[1])
 
             return result
 
@@ -529,8 +528,9 @@ class PhySL:
 
         if isinstance(val, self.eval_wrapper):
             if len(val.args) == 0:
-                return phylanx.execution_tree.code_for(
-                    PhySL.compiler_state, self.file_name, val.func_name)
+                return phylanx.execution_tree.code_for(PhySL.compiler_state,
+                                                       self.file_name,
+                                                       val.func_name)
 
             args = tuple(map(self.map_wrapped, val.args))
             return phylanx.execution_tree.bound_code_for(
@@ -553,9 +553,10 @@ class PhySL:
                 PhySL.compiler_state = phylanx.execution_tree.compiler_state(
                     self.file_name)
 
-            phylanx.execution_tree.compile(
-                PhySL.compiler_state, self.file_name,
-                self.wrapped_function.__name__, self.__src__)
+            phylanx.execution_tree.compile(PhySL.compiler_state,
+                                           self.file_name,
+                                           self.wrapped_function.__name__,
+                                           self.__src__)
 
             self.is_compiled = True
 
@@ -616,7 +617,7 @@ class PhySL:
 
         defaults = tuple(map(self.apply_rule, node.defaults))
         result = tuple()
-        padded_defaults = (None,) * (len(node.args) - len(defaults)) + defaults
+        padded_defaults = (None, ) * (len(node.args) - len(defaults)) + defaults
         for arg, default in zip(node.args, padded_defaults):
             a = self.apply_rule(arg)
             symbol_name = re.sub(r'\$\d+', '', a)
