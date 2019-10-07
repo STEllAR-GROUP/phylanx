@@ -20,7 +20,7 @@ def test_arange():
         for k in WITH_NP:
             t = k.arange(test_value)
             a = k.eval(t)
-            r = (a, np.arange(test_value))
+            r = (a, np.arange(test_value), k, test_value)
             assert np.array_equal(a, np.arange(test_value)), r
             dtype_list.append(k.dtype(t))
             a_list.append(a)
