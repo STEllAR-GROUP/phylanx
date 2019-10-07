@@ -207,7 +207,6 @@ namespace phylanx { namespace execution_tree
         // ->std::vector<primitive_argument_type>
         ir::range l_data = lhs.get_data();
         bool eq = true;
-        int i = 0;
         ir::range_iterator it = l_data.begin();
         while (it != l_data.end())
         {
