@@ -436,26 +436,8 @@ namespace phylanx {
             return result;
         }
 
-        /*
-    */
-        template <typename Matrix1, typename Matrix2>
-        execution_tree::primitive_argument_type dist_dot_operation::dot2d2d(
-            Matrix1&& lhs, Matrix2&& rhs) const
-        {
-            if (lhs.columns() != rhs.rows())
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_dot_operation::dot2d2d",
-                    generate_error_message(
-                        "the operands have incompatible number of dimensions"));
-            }
-            using T = blaze::ElementType_t<typename std::decay<Matrix1>::type>;
-            blaze::DynamicMatrix<T> result = lhs * rhs;
-            return execution_tree::primitive_argument_type{std::move(result)};
-        }
-
         template <typename T>
-        execution_tree::primitive_argument_type dist_dot_operation::dot2d2d_par(
+        execution_tree::primitive_argument_type dist_dot_operation::dot2d2d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
             execution_tree::localities_information&& lhs_localities,
             execution_tree::localities_information const& rhs_localities) const
@@ -524,7 +506,8 @@ namespace phylanx {
                 // project global coordinates onto local ones
                 execution_tree::tiling_span lhs_intersection =
                     lhs_localities.project_coords(
-                        lhs_localities.locality_.locality_id_, 0, intersection);
+                        lhs_localities.locality_.locality_id_,
+                        0, intersection);
                 // What does this end up looking like? Does it start at 0?
                 execution_tree::tiling_span rhs_intersection =
                     rhs_localities.project_coords(
@@ -567,9 +550,9 @@ namespace phylanx {
             {
                 if (lhs.dimension(1) == lhs_localities.columns())
                 {
-                    // If the lhs number of columns is equal to the overall number
-                    // of columns we don't have to all_reduce the result. Instead,
-                    // the overall result is a tiled vector.
+                    // If the lhs number of columns is equal to the overall
+                    // number of columns we don't have to all_reduce the
+                    // result. Instead, the overall result is a tiled vector.
                     //result = execution_tree::primitive_argument_type{
                     //std::move(dot_result)};
                     result = execution_tree::primitive_argument_type{
@@ -611,12 +594,13 @@ namespace phylanx {
             {
                 // the result is completely local, no need to all_reduce it
                 //result =
-                // execution_tree::primitive_argument_type{std::move(dot_result)};
+                // execution_tree::primitive_argument_type{
+                // std::move(dot_result)};
                 result = execution_tree::primitive_argument_type{
                     std::move(result_matrix)};
                 // if the rhs is distributed we should synchronize with all
-                // connected localities however to avoid for the distributed vector
-                // going out of scope
+                // connected localities however to avoid for the distributed
+                // vector going out of scope
                 if (rhs_localities.locality_.num_localities_ > 1)
                 {
                     hpx::lcos::barrier b(
@@ -679,7 +663,7 @@ namespace phylanx {
 
                 case 2:
                     // If is_matrix(lhs) && is_matrix(rhs)
-                    return dot2d2d_par(std::move(lhs), std::move(rhs),
+                    return dot2d2d(std::move(lhs), std::move(rhs),
                         std::move(lhs_localities), rhs_localities);
 
                 case 3:

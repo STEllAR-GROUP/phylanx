@@ -76,13 +76,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             execution_tree::localities_information&& lhs_localities,
             execution_tree::localities_information const& rhs_localities) const;
         template <typename T>
-        execution_tree::primitive_argument_type dot2d2d_par(ir::node_data<T>&& lhs,
+        execution_tree::primitive_argument_type dot2d2d(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs,
             execution_tree::localities_information&& lhs_localities,
             execution_tree::localities_information const& rhs_localities) const;
-        template <typename Matrix1, typename Matrix2>
-        execution_tree::primitive_argument_type dot2d2d(
-            Matrix1&& lhs, Matrix2&& rhs) const;
         template <typename T>
         execution_tree::primitive_argument_type dot2d3d(
             ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
