@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 
 #include <hpx/hashing/jenkins_hash.hpp>
-#include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/serialization/serialization_fwd.hpp>
 
 #include <iosfwd>
 #include <string>

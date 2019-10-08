@@ -11,7 +11,7 @@
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/serialization/serialization_fwd.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
 #include <array>
