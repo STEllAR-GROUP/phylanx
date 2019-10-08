@@ -32,6 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         using arg_type = ir::node_data<double>;
         using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
+        using storage0d_type = typename arg_type::storage0d_type;
         using storage1d_type = typename arg_type::storage1d_type;
         using storage2d_type = typename arg_type::storage2d_type;
 

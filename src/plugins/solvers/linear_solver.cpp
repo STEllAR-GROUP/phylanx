@@ -362,6 +362,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         A, b, tag, "Symmetric_Gauss_Seidel");
                     return arg_type{std::move(b)};
                 }}
+//            {"iterative_solver_lanczos",
+//                // Iterative Lanczos solver for eigenvalues
+//                // Note: Relies on BlazeIterative library and
+//                // need to be explicitly enabled
+//                [](args_type&& args) -> arg_type {
+//                    storage2d_type A{blaze::trans(args[0].matrix())};
+//                    storage1d_type b{args[1].vector()};
+//                    storage0d_type n{args[2].scalar()};
+//                    storage1d_type x{args[3].vector()};
+//                    blaze::iterative::LanczosTag tag;
+//                    x = blaze::iterative::solve(
+//                        A, b, tag, n);
+//                    return arg_type{std::move(x)};
+//                }}
 #endif
         };
         return lin_solver[name];
