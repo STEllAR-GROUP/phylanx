@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Shahrzad Shirzad
 //               2018 Patrick Diehl
-//
+//               2019 Nanmiao Wu
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -209,6 +209,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
          A matrix `x` such that `a x = b`, solved using the
          CG solver utilizing the Symmetric Gauss Seidel as
          its preconditioner.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_lanczos",
+                               R"(a, b, n, x
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+             n (scalar) : a scalar
+             x (vector) : a vector
+
+         Returns:
+
+         A vector of eigenvalues approximate the matrix `a`, whose dimention is decided
+         by n, solved using the Lanczos solver.)"
         )
 #endif
     };
@@ -362,36 +376,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         A, b, tag, "Symmetric_Gauss_Seidel");
                     return arg_type{std::move(b)};
                 }}
-//            {"iterative_solver_lanczos",
-//                // Iterative Lanczos solver for eigenvalues
-//                // Note: Relies on BlazeIterative library and
-//                // need to be explicitly enabled
-//                [](args_type&& args) -> arg_type {
-//                    storage2d_type A{blaze::trans(args[0].matrix())};
-//                    storage1d_type b{args[1].vector()};
-//                    storage0d_type n{args[2].scalar()};
-//                    storage1d_type x{args[3].vector()};
-//                    blaze::iterative::LanczosTag tag;
-//                    x = blaze::iterative::solve(
-//                        A, b, tag, n);
-//                    return arg_type{std::move(x)};
-//                }}
 #endif
         };
         return lin_solver[name];
     }
 
-    linear_solver::vector_function_ptr_ul linear_solver::get_lin_solver_map_ul(
+    linear_solver::vector_function_ptr_uln linear_solver::get_lin_solver_map_uln(
         std::string const& name) const
     {
-        static std::map<std::string, vector_function_ptr_ul> lin_solver = {
+        static std::map<std::string, vector_function_ptr_uln> lin_solver = {
             {"linear_solver_ldlt",
                 // Linear solver based on LDLT decomposition of a symmetric
                 // indefinite matrix
-                [](arg_type&& arg_0, arg_type&& rhs,
-                    std::string ul) -> arg_type {
+                [](arg_type&& arg_0, arg_type&& arg_1,
+                    primitive_argument_type&& arg_2) -> arg_type {
+                    std::string ul = extract_string_value_strict(arg_2);
+                    if (ul != "L" && ul != "U")
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "linear_solver::eval",
+                            util::generate_error_message(
+                                "the linear_solver primitive requires for "
+                                "the third argument to be either 'L' or 'U'"));
+                    }
                     storage2d_type A{blaze::trans(arg_0.matrix())};
-                    storage1d_type b{rhs.vector()};
+                    storage1d_type b{arg_1.vector()};
                     const std::unique_ptr<int[]> ipiv(new int[b.size()]);
                     blaze::sysv(A, b, ul == "L" ? 'L' : 'U', ipiv.get());
                     return arg_type{std::move(b)};
@@ -399,14 +408,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"linear_solver_cholesky",
                 // Linear solver based on cholesky(LLH) decomposition of a
                 // positive definite matrix
-                [](arg_type&& arg_0, arg_type&& rhs,
-                    std::string ul) -> arg_type {
+                [](arg_type&& arg_0, arg_type&& arg_1,
+                   primitive_argument_type&& arg_2) -> arg_type {
+                    std::string ul = extract_string_value_strict(std::move(arg_2));
+                    if (ul != "L" && ul != "U")
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "linear_solver::eval",
+                            util::generate_error_message(
+                                "the linear_solver primitive requires for "
+                                "the third argument to be either 'L' or 'U'"));
+                    }
                     storage2d_type A{blaze::trans(arg_0.matrix())};
-                    storage1d_type b{rhs.vector()};
+                    storage1d_type b{arg_1.vector()};
                     blaze::posv(A, b, ul == "L" ? 'L' : 'U');
                     return arg_type{std::move(b)};
-                }}};
-        return lin_solver[name];
+                }},
+#ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
+           {"iterative_solver_lanczos",
+                // Iterative Lanczos solver for eigenvalues
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](arg_type&& arg_0, arg_type&& arg_1,
+                    primitive_argument_type&& arg_2) -> arg_type {
+                    std::int64_t n = extract_scalar_integer_value_strict(std::move(arg_2));
+                    storage2d_type A{blaze::trans(arg_0.matrix())};
+                    storage1d_type b{arg_1.vector()};
+                    storage1d_type x;
+                    blaze::iterative::LanczosTag tag;
+                    x = blaze::iterative::solve(A, b, tag, n);
+                    return arg_type{std::move(x)};
+                }},
+
+        };
+                return lin_solver[name];
+#endif
+
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -417,9 +454,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string func_name = extract_function_name(name);
 
         func_ = get_lin_solver_map(func_name);
-        func_ul_ = get_lin_solver_map_ul(func_name);
+        func_uln_ = get_lin_solver_map_uln(func_name);
 
-        HPX_ASSERT(func_ != nullptr || func_ul_ != nullptr);
+        HPX_ASSERT(func_ != nullptr || func_uln_ != nullptr);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -438,9 +475,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type linear_solver::calculate_linear_solver(
-        arg_type && lhs, arg_type && rhs, std::string ul) const
+        arg_type && lhs, arg_type && rhs, primitive_argument_type&& uln) const
     {
-        if (func_ul_ == nullptr)
+        if (func_uln_ == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
@@ -448,8 +485,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "this linear_solver primitive requires exactly two operands",
                     name_, codename_));
         }
-        return primitive_argument_type{
-            func_ul_(std::move(lhs), std::move(rhs), std::move(ul))};
+
+            return primitive_argument_type{
+                    func_uln_(std::move(lhs), std::move(rhs), std::move(uln))};
     }
 
     hpx::future<primitive_argument_type> linear_solver::eval(
@@ -479,7 +517,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_)](
-                    arg_type&& lhs, arg_type&& rhs, std::string && ul)
+                    arg_type&& lhs, arg_type&& rhs, primitive_argument_type && uln)
                 -> primitive_argument_type
                 {
                     if (lhs.num_dimensions() != 2 || rhs.num_dimensions() != 1)
@@ -491,21 +529,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "that first operand to be a matrix and "
                                 "the second operand to be a vector"));
                     }
-                    if (ul != "L" && ul != "U")
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "linear_solver::eval",
-                            this_->generate_error_message(
-                                "the linear_solver primitive requires for "
-                                "the third argument to be either 'L' or 'U'"));
-                    }
 
                     return this_->calculate_linear_solver(
-                        std::move(lhs), std::move(rhs), std::move(ul));
+                        std::move(lhs), std::move(rhs), std::move(uln));
                 }),
                 numeric_operand(operands[0], args, name_, codename_, ctx),
                 numeric_operand(operands[1], args, name_, codename_, ctx),
-                string_operand(operands[2], args, name_, codename_, ctx));
+                value_operand(operands[2], args, name_, codename_, ctx));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(

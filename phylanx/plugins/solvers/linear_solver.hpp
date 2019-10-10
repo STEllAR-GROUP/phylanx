@@ -44,23 +44,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         using vector_function = arg_type(args_type&&);
-        using vector_function_ul = arg_type(
-            arg_type&&, arg_type&&, std::string);
+        using vector_function_uln = arg_type(
+                arg_type&&, arg_type&&, primitive_argument_type&&);
 
         using vector_function_ptr = vector_function*;
-        using vector_function_ptr_ul = vector_function_ul*;
+        using vector_function_ptr_uln = vector_function_uln*;
 
     private:
         vector_function_ptr get_lin_solver_map(std::string const& name) const;
-        vector_function_ptr_ul get_lin_solver_map_ul(
+        vector_function_ptr_uln get_lin_solver_map_uln(
             std::string const& name) const;
 
         vector_function_ptr func_;
-        vector_function_ptr_ul func_ul_;
+        vector_function_ptr_uln func_uln_;
 
         primitive_argument_type calculate_linear_solver(args_type&& args) const;
         primitive_argument_type calculate_linear_solver(
-            arg_type&& lhs, arg_type&& rhs, std::string ul) const;
+            arg_type&& lhs, arg_type&& rhs, primitive_argument_type&& ul) const;
     };
 
     inline primitive create_linear_solver(hpx::id_type const& locality,
