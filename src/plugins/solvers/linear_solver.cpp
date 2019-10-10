@@ -381,8 +381,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return lin_solver[name];
     }
 
-    linear_solver::vector_function_ptr_uln linear_solver::get_lin_solver_map_uln(
-        std::string const& name) const
+    linear_solver::vector_function_ptr_uln
+    linear_solver::get_lin_solver_map_uln(std::string const& name) const
     {
         static std::map<std::string, vector_function_ptr_uln> lin_solver = {
             {"linear_solver_ldlt",
@@ -409,8 +409,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Linear solver based on cholesky(LLH) decomposition of a
                 // positive definite matrix
                 [](arg_type&& arg_0, arg_type&& arg_1,
-                   primitive_argument_type&& arg_2) -> arg_type {
-                    std::string ul = extract_string_value_strict(std::move(arg_2));
+                    primitive_argument_type&& arg_2) -> arg_type {
+                    std::string ul =
+                        extract_string_value_strict(std::move(arg_2));
                     if (ul != "L" && ul != "U")
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -425,13 +426,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return arg_type{std::move(b)};
                 }},
 #ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
-           {"iterative_solver_lanczos",
+            {"iterative_solver_lanczos",
                 // Iterative Lanczos solver for eigenvalues
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](arg_type&& arg_0, arg_type&& arg_1,
                     primitive_argument_type&& arg_2) -> arg_type {
-                    std::int64_t n = extract_scalar_integer_value_strict(std::move(arg_2));
+                    std::int64_t n =
+                        extract_scalar_integer_value_strict(std::move(arg_2));
                     storage2d_type A{blaze::trans(arg_0.matrix())};
                     storage1d_type b{arg_1.vector()};
                     storage1d_type x;
@@ -441,9 +443,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }},
 
         };
-                return lin_solver[name];
+        return lin_solver[name];
 #endif
-
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -498,8 +499,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
-                generate_error_message(
-                    "the linear_solver primitive requires exactly two operands"));
+                generate_error_message("the linear_solver primitive requires "
+                                       "exactly two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]) ||
@@ -515,11 +516,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 3)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    arg_type&& lhs, arg_type&& rhs, primitive_argument_type && uln)
-                -> primitive_argument_type
-                {
+            return hpx::dataflow(hpx::launch::sync,
+                hpx::util::unwrapping([this_ = std::move(this_)](arg_type&& lhs,
+                                          arg_type&& rhs,
+                                          primitive_argument_type&& uln)
+                                          -> primitive_argument_type {
                     if (lhs.num_dimensions() != 2 || rhs.num_dimensions() != 1)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

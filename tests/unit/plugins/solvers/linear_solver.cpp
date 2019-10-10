@@ -195,17 +195,19 @@ void test_linear_solver_cg_symmetric_gauss_seidel_PhySL()
 void test_linear_solver_lanczos_PhySL()
 {
     std::string const code = R"(block(
-        define(a, [[0, 0, 0, 0, 0, 0],[0, 1, 0, 0, 0, 0],[0, 0, 2, 0, 0, 0],[0, 0, 0, 3, 0, 0],[0, 0, 0, 0, 4, 0],[0, 0, 0, 0, 0, 100000]]),
+        define(a, [[0, 0, 0, 0, 0, 0],[0, 1, 0, 0, 0, 0],[0, 0, 2, 0, 0, 0],
+              [0, 0, 0, 3, 0, 0],[0, 0, 0, 0, 4, 0],[0, 0, 0, 0, 0, 100000]]),
         define(b, [1, 1, 1, 1, 1, 1]),
         define(n, 6),
         iterative_solver_lanczos(a, b, n))
     )";
 
     auto result =
-            phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
-                phylanx::ir::node_data<double>(blaze::DynamicVector<double>{100000, 0, 4, 1, 2, 3}));
+        phylanx::ir::node_data<double>(
+            blaze::DynamicVector<double>{100000, 0, 4, 1, 2, 3}));
 }
 
 void test_linear_solver_lu(std::string const& func_name)
@@ -320,8 +322,10 @@ void test_linear_solver_n(std::string const& func_name)
 {
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
-            phylanx::ir::node_data<double>{blaze::DynamicMatrix<double>{
-                {0, 0, 0, 0, 0, 0}, {0, 1, 0, 0, 0, 0}, {0, 0, 2, 0, 0, 0},{0, 0, 0, 3, 0, 0}, {0, 0, 0, 0, 4, 0}, {0, 0, 0, 0, 0, 100000}}});
+            phylanx::ir::node_data<double>{
+                blaze::DynamicMatrix<double>{{0, 0, 0, 0, 0, 0},
+                    {0, 1, 0, 0, 0, 0}, {0, 0, 2, 0, 0, 0}, {0, 0, 0, 3, 0, 0},
+                    {0, 0, 0, 0, 4, 0}, {0, 0, 0, 0, 0, 100000}}});
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
@@ -342,7 +346,8 @@ void test_linear_solver_n(std::string const& func_name)
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         linear_solver.eval();
     HPX_TEST_EQ(f.get(),
-        phylanx::ir::node_data<double>(blaze::DynamicVector<double>{100000, 0, 4, 1, 2, 3}));
+        phylanx::ir::node_data<double>(
+            blaze::DynamicVector<double>{100000, 0, 4, 1, 2, 3}));
 }
 
 int main()
