@@ -53,6 +53,7 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
     private:
         primitive_argument_type softmax0d() const;
         primitive_argument_type softmax1d(arg_type&& arg) const;
+
         primitive_argument_type softmax2d(
             arg_type&& arg, std::int64_t axis) const;
         primitive_argument_type softmax2d_axis0(arg_type&& arg) const;
@@ -62,6 +63,13 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
         primitive_argument_type softmax3d_axis1(arg_type&& arg) const;
         primitive_argument_type softmax3d_axis2(arg_type&& arg) const;
         primitive_argument_type softmax3d(
+            arg_type&& arg, std::int64_t axis) const;
+
+        primitive_argument_type softmax4d_axis0(arg_type&& arg) const;
+        primitive_argument_type softmax4d_axis1(arg_type&& arg) const;
+        primitive_argument_type softmax4d_axis2(arg_type&& arg) const;
+        primitive_argument_type softmax4d_axis3(arg_type&& arg) const;
+        primitive_argument_type softmax4d(
             arg_type&& arg, std::int64_t axis) const;
     };
 
