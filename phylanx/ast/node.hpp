@@ -12,7 +12,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
-#include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/serialization/serialization_fwd.hpp>
 
 #include <boost/spirit/include/support_extended_variant.hpp>
 #include <boost/spirit/include/support_attributes.hpp>
