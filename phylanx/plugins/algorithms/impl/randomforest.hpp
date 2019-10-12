@@ -94,7 +94,8 @@ struct randomforest_impl {
             , blaze::DynamicVector<std::int64_t> > const& groups
         , std::unordered_map<double, std::int64_t> & classes) {
 
-        std::vector<std::int64_t> groups_len{static_cast<std::int64_t>(std::get<0>(groups).size())
+        std::vector<std::int64_t> groups_len{
+            static_cast<std::int64_t>(std::get<0>(groups).size())
             , static_cast<std::int64_t>(std::get<1>(groups).size())};
 
         std::vector< blaze::DynamicVector<std::int64_t> > groups_vec{std::get<0>(groups)
@@ -330,7 +331,7 @@ struct randomforest_impl {
             node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}] =
                 std::move(left_node);
         }
-        
+
         if(right.size() <= min_size) {
             auto rterm = to_terminal(train_labels, right, classes);
             node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =

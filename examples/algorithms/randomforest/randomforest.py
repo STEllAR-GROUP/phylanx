@@ -34,7 +34,7 @@ def test_split(idx, val, dataset):
 
 
 def gini_index(groups, classes):
-    groups_len = list([ len(x) for x in groups ])
+    groups_len = list([len(x) for x in groups])
     n_instances = float64(sum(groups_len))
     gini = 0.0
 
