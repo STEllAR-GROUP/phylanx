@@ -33,11 +33,15 @@ macro(phylanx_setup_hpx)
     include_directories(${HPX_INCLUDE_DIRS})
     link_directories(${HPX_LIBRARY_DIR})
 
+    if(HPX_CXX_STANDARD)
+      set(__hpx_standard "using C++${HPX_CXX_STANDARD}")
+    endif()
+
     if (HPX_GIT_COMMIT)
       string(SUBSTRING ${HPX_GIT_COMMIT} 0 10 __hpx_git_commit)
-      phylanx_info("HPX version: " ${HPX_VERSION_STRING} "(${__hpx_git_commit})")
+      phylanx_info("HPX version: " ${HPX_VERSION_STRING} "(${__hpx_git_commit})" ${__hpx_standard})
     else()
-      phylanx_info("HPX version: " ${HPX_VERSION_STRING})
+      phylanx_info("HPX version: " ${HPX_VERSION_STRING} ${__hpx_standard})
     endif()
 
     # make sure that HPX is not configured with jemalloc

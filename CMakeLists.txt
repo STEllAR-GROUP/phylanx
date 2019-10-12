@@ -64,9 +64,14 @@ if(NOT PHYLANX_CMAKE_LOGLEVEL)
   set(PHYLANX_CMAKE_LOGLEVEL "WARN")
 endif()
 
+################################################################################
 # print initial diagnostics
 phylanx_info("CMake version: " ${CMAKE_VERSION})
 phylanx_info("Phylanx version: " ${PHYLANX_VERSION})
+
+################################################################################
+# Locate HPX as we need to ensure to use at least the same C++ dialect as HPX uses
+phylanx_setup_hpx()
 
 ################################################################################
 # Special compiler flags
@@ -141,11 +146,10 @@ else()
     ON CATEGORY "Build Targets")
 endif()
 
-# Locate dependencies
+# Locate remaining dependencies
 phylanx_setup_blaze()
 phylanx_setup_pybind11()
 phylanx_setup_highfive()
-phylanx_setup_hpx()
 
 phylanx_include(GitCommit)
 

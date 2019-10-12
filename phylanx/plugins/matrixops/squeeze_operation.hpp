@@ -84,6 +84,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type squeeze3d(ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> axis) const;
+
+        primitive_argument_type squeeze4d(primitive_argument_type&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
+
+        template <typename T>
+        primitive_argument_type squeeze4d_axis0(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze4d_axis1(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze4d_axis2(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze4d_axis3(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze4d_all_axes(
+            ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type squeeze4d(ir::node_data<T>&& arg,
+            hpx::util::optional<std::int64_t> axis) const;
     };
 
     inline primitive create_squeeze_operation(hpx::id_type const& locality,

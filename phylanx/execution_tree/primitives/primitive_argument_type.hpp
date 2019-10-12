@@ -19,7 +19,7 @@
 #include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/runtime.hpp>
-#include <hpx/runtime/serialization/serialization_fwd.hpp>
+#include <hpx/serialization/serialization_fwd.hpp>
 
 #include <cstdint>
 #include <iosfwd>

@@ -10,6 +10,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/variant.hpp>
 
+#include <hpx/serialization/unordered_map.hpp>
+
 #include <cstddef>
 #include <functional>
 #include <unordered_map>

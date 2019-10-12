@@ -16,19 +16,19 @@ integration service tracks the current build status for the master branch:
 [![CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx.svg?style=svg)](https://circleci.com/gh/STEllAR-GROUP/phylanx).
 
 
-The [Buildbot](http://ktau.nic.uoregon.edu:8020/tgrid) continuous integration
+The [Buildbot](http://omega.nic.uoregon.edu:8020/tgrid) continuous integration
 service tracks the current build status on several platforms and compilers:
-[![x86_64 release build status](http://ktau.nic.uoregon.edu:8020/badges/x86_64-gcc7-release.svg?left_text=x86_64-gcc7-release)](http://ktau.nic.uoregon.edu:8020/#/)
-[![KNL release build status](http://ktau.nic.uoregon.edu:8020/badges/knl-gcc7-release.svg?left_text=KNL-gcc7-release)](http://ktau.nic.uoregon.edu:8020/#/)
-[![POWER8 release build status](http://ktau.nic.uoregon.edu:8020/badges/ppc64le-clang5-release.svg?left_text=POWER8-clang5-release)](http://ktau.nic.uoregon.edu:8020/#/)
+[![x86_64 release build status](http://omega.nic.uoregon.edu:8020/badges/x86_64-gcc7-release.svg?left_text=x86_64-gcc7-release)](http://omega.nic.uoregon.edu:8020/#/)
+[![KNL release build status](http://omega.nic.uoregon.edu:8020/badges/knl-gcc7-release.svg?left_text=KNL-gcc7-release)](http://omega.nic.uoregon.edu:8020/#/)
+[![POWER8 release build status](http://omega.nic.uoregon.edu:8020/badges/ppc64le-clang5-release.svg?left_text=POWER8-clang5-release)](http://omega.nic.uoregon.edu:8020/#/)
 
-[![x86_64 release build status](http://ktau.nic.uoregon.edu:8020/badges/x86_64-gcc7-relwithdebinfo.svg?left_text=x86_64-gcc7-relwithdebinfo)](http://ktau.nic.uoregon.edu:8020/#/)
-[![KNL release build status](http://ktau.nic.uoregon.edu:8020/badges/knl-gcc7-relwithdebinfo.svg?left_text=KNL-gcc7-relwithdebinfo)](http://ktau.nic.uoregon.edu:8020/#/)
-[![POWER8 release build status](http://ktau.nic.uoregon.edu:8020/badges/ppc64le-clang5-relwithdebinfo.svg?left_text=POWER8-clang5-relwithdebinfo)](http://ktau.nic.uoregon.edu:8020/#/)
+[![x86_64 release build status](http://omega.nic.uoregon.edu:8020/badges/x86_64-gcc7-relwithdebinfo.svg?left_text=x86_64-gcc7-relwithdebinfo)](http://omega.nic.uoregon.edu:8020/#/)
+[![KNL release build status](http://omega.nic.uoregon.edu:8020/badges/knl-gcc7-relwithdebinfo.svg?left_text=KNL-gcc7-relwithdebinfo)](http://omega.nic.uoregon.edu:8020/#/)
+[![POWER8 release build status](http://omega.nic.uoregon.edu:8020/badges/ppc64le-clang5-relwithdebinfo.svg?left_text=POWER8-clang5-relwithdebinfo)](http://omega.nic.uoregon.edu:8020/#/)
 
-[![x86_64 debug build status](http://ktau.nic.uoregon.edu:8020/badges/x86_64-gcc7-debug.svg?left_text=x86_64-gcc7-debug)](http://ktau.nic.uoregon.edu:8020/#/)
-[![KNL debug build status](http://ktau.nic.uoregon.edu:8020/badges/knl-gcc7-debug.svg?left_text=KNL-gcc7-debug)](http://ktau.nic.uoregon.edu:8020/#/)
-[![POWER8 debug build status](http://ktau.nic.uoregon.edu:8020/badges/ppc64le-clang5-debug.svg?left_text=POWER8-clang5-debug)](http://ktau.nic.uoregon.edu:8020/#/)
+[![x86_64 debug build status](http://omega.nic.uoregon.edu:8020/badges/x86_64-gcc7-debug.svg?left_text=x86_64-gcc7-debug)](http://omega.nic.uoregon.edu:8020/#/)
+[![KNL debug build status](http://omega.nic.uoregon.edu:8020/badges/knl-gcc7-debug.svg?left_text=KNL-gcc7-debug)](http://omega.nic.uoregon.edu:8020/#/)
+[![POWER8 debug build status](http://omega.nic.uoregon.edu:8020/badges/ppc64le-clang5-debug.svg?left_text=POWER8-clang5-debug)](http://omega.nic.uoregon.edu:8020/#/)
 
 ### Acknowledgements
 
