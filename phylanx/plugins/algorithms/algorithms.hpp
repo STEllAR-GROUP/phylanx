@@ -8,5 +8,6 @@
 
 #include <phylanx/plugins/algorithms/als.hpp>
 #include <phylanx/plugins/algorithms/lra.hpp>
+#include <phylanx/plugins/algorithms/randomforest.hpp>
 
 #endif

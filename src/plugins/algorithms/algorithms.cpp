@@ -15,3 +15,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(als_plugin,
     phylanx::execution_tree::primitives::als::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(lra_plugin,
     phylanx::execution_tree::primitives::lra::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(randomforest_fit_plugin,
+    phylanx::execution_tree::primitives::randomforest_fit::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(randomforest_predict_plugin,
+    phylanx::execution_tree::primitives::randomforest_predict::match_data);

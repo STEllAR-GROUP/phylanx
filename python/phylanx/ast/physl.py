@@ -29,7 +29,6 @@ def physl_zip(loop):
     iterators = tuple(define(i, idx) for idx, i in enumerate(targets))
     return (fmap, iterators)
 
-
 mapped_methods = {
     "add": "__add",
     "array": "hstack",
@@ -638,7 +637,7 @@ class PhySL:
             raise Exception("Phylanx does not support chain assignments.")
         if isinstance(node.targets[0], ast.Tuple):
             raise Exception(
-                "Phylanx does not support multi-target assignments.")
+                "Phylanx does not support multi-target assignments. Line #%d." % node.lineno )
 
         symbol = self.apply_rule(node.targets[0])
         # if lhs is not indexed.
