@@ -296,55 +296,61 @@ struct randomforest_impl {
                 , [&joint, &jsz](auto rval) { joint[jsz] = rval; ++jsz; });
 
             auto term = to_terminal(train_labels, joint, classes);
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
-                phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::node_data<std::int64_t>{term}};
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
-                phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::node_data<std::int64_t>{term}};
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("lw")}] =
+                    phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::node_data<std::int64_t>{term}};
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("rw")}] =
+                    phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::node_data<std::int64_t>{term}};
             return;
         }
 
         if(depth >= max_depth) {
             auto lterm = to_terminal(train_labels, left, classes);
             auto rterm = to_terminal(train_labels, right, classes);
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
-                phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::node_data<std::int64_t>{lterm}};
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
-                phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::node_data<std::int64_t>{rterm}};
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("lw")}] =
+                    phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::node_data<std::int64_t>{lterm}};
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("rw")}] =
+                    phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::node_data<std::int64_t>{rterm}};
             return;
         }
 
         if(left.size() <= min_size) {
              auto lterm = to_terminal(train_labels, left, classes);
-             node_[phylanx::execution_tree::primitive_argument_type{std::string("lw")}] =
-                phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::node_data<std::int64_t>{lterm}};
+             node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("lw")}] =
+                    phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::node_data<std::int64_t>{lterm}};
         }
         else {
             randomforest_node left_node{};
             get_split(train, train_labels, left, n_features, classes, left_node);
             split(left_node, train, train_labels, max_depth, min_size, n_features
                 , depth + 1, classes);
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("left")}] =
-                std::move(left_node);
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("left")}] = std::move(left_node);
         }
 
         if(right.size() <= min_size) {
             auto rterm = to_terminal(train_labels, right, classes);
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("rw")}] =
-                phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::node_data<std::int64_t>{rterm}};
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("rw")}] =
+                    phylanx::execution_tree::primitive_argument_type{
+                        phylanx::ir::node_data<std::int64_t>{rterm}};
         }
         else {
             randomforest_node right_node{};
             get_split(train, train_labels, right, n_features, classes, right_node);
             split(right_node, train, train_labels, max_depth, min_size, n_features
                 , depth + 1, classes);
-            node_[phylanx::execution_tree::primitive_argument_type{std::string("right")}] =
-                std::move(right_node);
+            node_[phylanx::execution_tree::primitive_argument_type{
+                std::string("right")}] = std::move(right_node);
         }
     }
 
@@ -502,7 +508,7 @@ struct randomforest_impl {
         std::int64_t const n_features = static_cast<std::int64_t>(
             std::floor(std::sqrt(train.rows()))
         );
-        
+
         std::vector< blaze::DynamicVector<std::int64_t> > subsample_indices(ntrees);
         auto tree_indices = boost::irange<std::int64_t>(0, ntrees);
 
