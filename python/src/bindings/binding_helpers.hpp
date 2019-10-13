@@ -190,7 +190,8 @@ namespace phylanx { namespace bindings
     // evaluate compiled expression
     phylanx::execution_tree::primitive_argument_type expression_evaluator(
         compiler_state& state, std::string const& file_name,
-        std::string const& xexpr_str, pybind11::args args);
+        std::string const& xexpr_str, pybind11::args args,
+        pybind11::kwargs kwargs);
 
     // extract pre-compiled code for given function name
     phylanx::execution_tree::primitive code_for(

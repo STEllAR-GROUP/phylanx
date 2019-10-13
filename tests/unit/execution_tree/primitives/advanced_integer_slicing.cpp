@@ -23,7 +23,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
         phylanx::execution_tree::compiler::default_environment();
 
     auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
-    return code.run();
+    return code.run().arg_;
 }
 
 void test_integer_slicing(char const* code, char const* expected)

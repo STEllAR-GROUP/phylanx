@@ -44,7 +44,7 @@ phylanx::execution_tree::compiler::function compile_and_run(
         phylanx::execution_tree::compiler::default_environment(there);
 
     auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
-    return code.run();
+    return code.run().arg_;
 }
 
 void test_remote_add(hpx::id_type const& here, hpx::id_type const& there)

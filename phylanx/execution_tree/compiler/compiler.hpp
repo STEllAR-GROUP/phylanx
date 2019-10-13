@@ -376,8 +376,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 auto p = create_primitive_component(this->locality_,
                     name_parts.primitive, f_.get().arg_, full_name, codename);
 
-                return function{
-                    primitive_argument_type{std::move(p)}, full_name};
+                auto f =
+                    function{primitive_argument_type{std::move(p)}, full_name};
+                f.set_named_args(f_.get().named_args_, f_.get().num_named_args_);
+
+                return f;
             }
 
             primitive_arguments_type fargs;
@@ -392,7 +395,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
             auto p = create_primitive_component(this->locality_,
                 name_parts.primitive, std::move(fargs), full_name, codename);
 
-            return function{primitive_argument_type{std::move(p)}, full_name};
+            auto f = function{primitive_argument_type{std::move(p)}, full_name};
+            f.set_named_args(f_.get().named_args_, f_.get().num_named_args_);
+
+            return f;
         }
     };
 

@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <iterator>
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
@@ -62,12 +63,15 @@ namespace phylanx { namespace bindings
 
     phylanx::execution_tree::primitive_argument_type expression_evaluator(
         compiler_state& state, std::string const& file_name,
-        std::string const& xexpr_str, pybind11::args args)
+        std::string const& xexpr_str, pybind11::args args,
+        pybind11::kwargs kwargs)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
+        using phylanx::execution_tree::primitive_argument_type;
+
         return hpx::threads::run_as_hpx_thread(
-            [&]() -> phylanx::execution_tree::primitive_argument_type
+            [&]() -> primitive_argument_type
             {
                 // Make sure None is printed as "None"
                 phylanx::util::none_wrapper wrap_cout(hpx::cout);
@@ -91,18 +95,30 @@ namespace phylanx { namespace bindings
                 auto x = code_x.run(state.eval_ctx);
 
                 phylanx::execution_tree::primitive_arguments_type fargs;
-                fargs.reserve(args.size());
+                fargs.reserve(args.size() + kwargs.size());
+
+                std::map<std::string, primitive_argument_type> fkwargs;
 
                 {
                     pybind11::gil_scoped_acquire acquire;
                     for (auto const& item : args)
                     {
-                        using phylanx::execution_tree::primitive_argument_type;
                         fargs.emplace_back(item.cast<primitive_argument_type>());
+                    }
+
+                    if (kwargs)
+                    {
+                        fkwargs = kwargs.cast<
+                            std::map<std::string, primitive_argument_type>>();
                     }
                 }
 
-                return x(std::move(fargs), state.eval_ctx);
+                // potentially handle keyword arguments
+                if (!kwargs)
+                {
+                    return x(std::move(fargs), state.eval_ctx);
+                }
+                return x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
             });
     }
 

@@ -162,7 +162,7 @@ void test_als_physl()
     auto const& code = phylanx::execution_tree::compile(als_test, snippets);
     auto als = code.run();
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(als),
+    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(als()),
         phylanx::ir::node_data<uint8_t>{1});
 }
 

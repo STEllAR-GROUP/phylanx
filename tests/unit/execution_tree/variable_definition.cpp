@@ -98,7 +98,7 @@ void test_define_local_global_variable()
     auto result = def.run(ctx);
 
     HPX_TEST_EQ(
-        42.0, phylanx::execution_tree::extract_scalar_numeric_value(result));
+        42.0, phylanx::execution_tree::extract_scalar_numeric_value(result()));
 }
 
 void test_define_local_hidden_global_variable()
@@ -122,7 +122,7 @@ void test_define_local_hidden_global_variable()
     auto result = def.run(ctx);
 
     HPX_TEST_EQ(
-        41.0, phylanx::execution_tree::extract_scalar_numeric_value(result));
+        41.0, phylanx::execution_tree::extract_scalar_numeric_value(result()));
 }
 
 void test_local_variable_repeated_call()
@@ -152,7 +152,7 @@ void test_local_variable_repeated_call()
     auto result = def.run(ctx);
 
     HPX_TEST_EQ(
-        0, phylanx::execution_tree::extract_scalar_integer_value(result));
+        0, phylanx::execution_tree::extract_scalar_integer_value(result()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
