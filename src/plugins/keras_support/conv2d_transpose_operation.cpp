@@ -222,39 +222,49 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto in_width  = static_cast<std::int64_t>(q.rows());
         std::size_t batch = q.quats();
         std::size_t in_channels = q.columns();
-        std::size_t out_channels = k.columns();
+        std::size_t out_channels = k.rows();
 
-        std::int64_t res_height =
-            in_height - dilation_height * (filter_height - 1);
-        std::int64_t res_width = in_width - dilation_width * (filter_width - 1);
+        std::int64_t pad_top = dilation_height * (filter_height - 1);
+        std::int64_t pad_left = dilation_width * (filter_width - 1);
 
-        if(res_height <= 0 || res_width <= 0)
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "conv2d_transpose_operation::eval",
-                generate_error_message("this dilation_rate causes non-positive "
-                                       "result_length where padding is valid"));
-
-        blaze::DynamicArray<4UL, double> result(
+        blaze::DynamicArray<4UL, double> result(blaze::init_from_value, 0.0,
             batch, res_height, res_width, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
+        for (std::size_t l = 0; l != batch; ++l)
         {
-            auto k_tensor = blaze::quatslice(blaze::trans(k, {3, 0, 1, 2}), c);
-            auto res_tensor =
-                blaze::quatslice(blaze::trans(result, {3, 0, 1, 2}), c);
-            for (std::size_t l = 0; l != batch; ++l)
+            auto a_tensor = blaze::quatslice(q, l);
+            auto res_tensor = blaze::quatslice(result, l);
+
+            for (std::size_t o = 0; o != out_channels; ++o)
             {
-                auto a_tensor = blaze::quatslice(q, l);
-                auto res_slice = blaze::pageslice(res_tensor, l);
+                auto res_slice = blaze::columnslice(res_tensor, o);
+                auto k_tensor =
+                    blaze::quatslice(blaze::trans(k, {2, 0, 1, 3}), o);
+
+                blaze::DynamicTensor<double> flipped_kernel = k_tensor;
+                flip_kernel(flipped_kernel);
+
                 for (std::size_t i = 0; i != res_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes_dilated(
+                        in_height, filter_height, i - pad_top, dilation_height);
                     for (std::size_t j = 0; j != res_width; ++j)
                     {
+                        auto sub_width =
+                            conv_indices::get_subsizes_dilated(in_width,
+                                filter_width, j - pad_left, dilation_width);
+                        if (sub_height.size_ == 0 || sub_width.size_ == 0)
+                            continue;
+
                         auto schur_product =
-                            blaze::dilatedsubtensor(a_tensor, i, j, 0,
-                                filter_height, filter_width, in_channels,
+                            blaze::dilatedsubtensor(a_tensor,
+                                sub_height.image_beg_, sub_width.image_beg_, 0,
+                                sub_height.size_, sub_width.size_, in_channels,
                                 dilation_height, dilation_width, 1) %
-                            k_tensor;
+                            blaze::subtensor(flipped_kernel,
+                                sub_height.kernel_beg_, sub_width.kernel_beg_,
+                                0, sub_height.size_, sub_width.size_,
+                                in_channels);
 
                         res_slice(i, j) = blaze::sum(schur_product);
                     }
@@ -398,62 +408,73 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    //primitive_argument_type conv2d_transpose_operation::conv2d_transpose_same_dilation(
-    //    ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-    //    std::int64_t dilation_height, std::int64_t dilation_width) const
-    //{
-    //    auto q = arg.quatern();
-    //    auto k = kernel.quatern();
-    //    auto filter_height = static_cast<std::int64_t>(k.quats());
-    //    auto filter_width= static_cast<std::int64_t>(k.pages());
-    //    auto in_height = static_cast<std::int64_t>(q.pages());
-    //    auto in_width  = static_cast<std::int64_t>(q.rows());
-    //    std::size_t batch = q.quats();
-    //    std::size_t in_channels = q.columns();
-    //    std::size_t out_channels = k.columns();
+    primitive_argument_type
+    conv2d_transpose_operation::conv2d_transpose_same_dilation(
+        ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+        std::size_t res_height, std::size_t res_width,
+        std::int64_t dilation_height, std::int64_t dilation_width) const
+    {
+        auto q = arg.quatern();
+        auto k = kernel.quatern();
+        auto filter_height = static_cast<std::int64_t>(k.quats());
+        auto filter_width= static_cast<std::int64_t>(k.pages());
+        auto in_height = static_cast<std::int64_t>(q.pages());
+        auto in_width  = static_cast<std::int64_t>(q.rows());
+        std::size_t batch = q.quats();
+        std::size_t in_channels = q.columns();
+        std::size_t out_channels = k.rows();
 
-    //    std::int64_t pad_top = (dilation_height * (filter_height - 1)) / 2;
-    //    std::int64_t pad_left = (dilation_width * (filter_width - 1)) / 2;
+        std::int64_t pad_top = blaze::ceil(
+            static_cast<double>(dilation_height * (filter_height - 1)) / 2.);
+        std::int64_t pad_left = blaze::ceil(
+            static_cast<double>(dilation_width * (filter_width - 1)) / 2.);
 
-    //    blaze::DynamicArray<4UL, double> result(blaze::init_from_value, 0.0,
-    //        batch, in_height, in_width, out_channels);
+        blaze::DynamicArray<4UL, double> result(blaze::init_from_value, 0.0,
+            batch, res_height, res_width, out_channels);
 
-    //    for (std::size_t c = 0; c != out_channels; ++c)
-    //    {
-    //        auto k_tensor = blaze::quatslice(blaze::trans(k, {3, 0, 1, 2}), c);
-    //        auto res_tensor =
-    //            blaze::quatslice(blaze::trans(result, {3, 0, 1, 2}), c);
-    //        for (std::size_t l = 0; l != batch; ++l)
-    //        {
-    //            auto a_tensor = blaze::quatslice(q, l);
-    //            auto res_slice = blaze::pageslice(res_tensor, l);
-    //            for (std::size_t i = 0; i != in_height; ++i)
-    //            {
-    //                for (std::size_t j = 0; j != in_width; ++j)
-    //                {
-    //                    auto sub_height = conv_indices::get_subsizes_dilated(
-    //                        in_height, filter_height, i - pad_top,dilation_height);
-    //                    auto sub_width = conv_indices::get_subsizes_dilated(
-    //                        in_width, filter_width, j - pad_left,dilation_width);
-    //                    if (sub_height.size_ == 0 || sub_width.size_ == 0)
-    //                        continue;
+        for (std::size_t l = 0; l != batch; ++l)
+        {
+            auto a_tensor = blaze::quatslice(q, l);
+            auto res_tensor = blaze::quatslice(result, l);
 
-    //                    auto schur_product =
-    //                        blaze::dilatedsubtensor(a_tensor,
-    //                            sub_height.image_beg_, sub_width.image_beg_, 0,
-    //                            sub_height.size_, sub_width.size_, in_channels,
-    //                            dilation_height, dilation_width, 1) %
-    //                        blaze::subtensor(k_tensor, sub_height.kernel_beg_,
-    //                            sub_width.kernel_beg_, 0, sub_height.size_,
-    //                            sub_width.size_, in_channels);
+            for (std::size_t o = 0; o != out_channels; ++o)
+            {
+                auto res_slice = blaze::columnslice(res_tensor, o);
+                auto k_tensor =
+                    blaze::quatslice(blaze::trans(k, {2, 0, 1, 3}), o);
 
-    //                    res_slice(i, j) = blaze::sum(schur_product);
-    //                }
-    //            }
-    //        }
-    //    }
-    //    return primitive_argument_type{std::move(result)};
-    //}
+                blaze::DynamicTensor<double> flipped_kernel = k_tensor;
+                flip_kernel(flipped_kernel);
+
+                for (std::size_t i = 0; i != res_height; ++i)
+                {
+                    auto sub_height = conv_indices::get_subsizes_dilated(
+                        in_height, filter_height, i - pad_top, dilation_height);
+                    for (std::size_t j = 0; j != res_width; ++j)
+                    {
+                        auto sub_width =
+                            conv_indices::get_subsizes_dilated(in_width,
+                                filter_width, j - pad_left, dilation_width);
+                        if (sub_height.size_ == 0 || sub_width.size_ == 0)
+                            continue;
+
+                        auto schur_product =
+                            blaze::dilatedsubtensor(a_tensor,
+                                sub_height.image_beg_, sub_width.image_beg_, 0,
+                                sub_height.size_, sub_width.size_, in_channels,
+                                dilation_height, dilation_width, 1) %
+                            blaze::subtensor(flipped_kernel,
+                                sub_height.kernel_beg_, sub_width.kernel_beg_,
+                                0, sub_height.size_, sub_width.size_,
+                                in_channels);
+
+                        res_slice(i, j) = blaze::sum(schur_product);
+                    }
+                }
+            }
+        }
+        return primitive_argument_type{std::move(result)};
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type
@@ -504,8 +525,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // padding == "same"
-        //return conv2d_transpose_same_dilation(
-        //    std::move(arg), std::move(kernel), dilation_height, dilation_width);
+        return conv2d_transpose_same_dilation(std::move(arg), std::move(kernel),
+            res_height, res_width, dilation_height, dilation_width);
     }
 
     ///////////////////////////////////////////////////////////////////////////

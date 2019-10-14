@@ -50,7 +50,7 @@ namespace conv_indices
             std::int64_t remainder = relative_position % dilation_rate;
             remainder = remainder >= 0 ? remainder : dilation_rate + remainder;
             std::int64_t corrected_kernel_size = 0;
-            if (dilation_rate - remainder <= image_size)
+            if (dilation_rate - remainder <= image_size || remainder == 0)
             {
                 if ((kernel_size - 1) * dilation_rate + relative_position >=
                     image_size)
@@ -83,7 +83,7 @@ namespace conv_indices
         return sizes{relative_position, 0, kernel_size};
     }
 
-     inline sizes get_subsizes_transpose(std::int64_t image_size,
+    inline sizes get_subsizes_transpose(std::int64_t image_size,
         std::int64_t kernel_size, std::int64_t relative_position,
         std::int64_t dilation_rate)
     {

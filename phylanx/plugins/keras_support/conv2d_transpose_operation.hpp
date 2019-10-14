@@ -74,6 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::int64_t stride_height, std::int64_t stride_width) const;
         primitive_argument_type conv2d_transpose_same_dilation(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
+            std::size_t res_height, std::size_t res_width,
             std::int64_t dilation_height, std::int64_t dilation_width) const;
 
         primitive_argument_type conv2d_transpose_any_pad(
