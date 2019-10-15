@@ -50,6 +50,21 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
+        bool validate_out_shape(std::size_t res_height, std::size_t res_width,
+            std::size_t in_height, std::size_t in_width,
+            std::size_t filter_height, std::size_t filter_width,
+            std::string&& padding) const;
+        bool validate_out_shape_strided(std::size_t res_height,
+            std::size_t res_width, std::size_t in_height, std::size_t in_width,
+            std::size_t filter_height, std::size_t filter_width,
+            std::string&& padding, std::int64_t stride_height,
+            std::int64_t stride_width) const;
+        bool validate_out_shape_dilated(std::size_t res_height,
+            std::size_t res_width, std::size_t in_height, std::size_t in_width,
+            std::size_t filter_height, std::size_t filter_width,
+            std::string&& padding, std::int64_t dilation_height,
+            std::int64_t dilation_width) const;
+
         template <typename Tensor>
         void flip_kernel(Tensor& m) const;
 
@@ -59,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type conv2d_transpose_valid(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             std::size_t res_height, std::size_t res_width,
-            std::size_t stride_height, std::size_t stride_width) const;
+            std::int64_t stride_height, std::int64_t stride_width) const;
         primitive_argument_type conv2d_transpose_valid_dilation(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             std::size_t res_height, std::size_t res_width,
@@ -84,8 +99,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type conv2d_transpose_any_pad(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             std::string&& padding, std::size_t res_height,
-            std::size_t res_width, std::size_t stride_height,
-            std::size_t stride_width) const;
+            std::size_t res_width, std::int64_t stride_height,
+            std::int64_t stride_width) const;
         primitive_argument_type conv2d_transpose_any_pad_dilation(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             std::string&& padding, std::size_t res_height,

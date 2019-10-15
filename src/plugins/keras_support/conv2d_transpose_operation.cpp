@@ -16,6 +16,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -77,6 +78,114 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    bool conv2d_transpose_operation::validate_out_shape(std::size_t res_height,
+        std::size_t res_width, std::size_t in_height, std::size_t in_width,
+        std::size_t filter_height, std::size_t filter_width,
+        std::string&& padding) const
+    {
+        if (padding == "valid")
+        {
+            if (res_height == in_height + filter_height - 1 &&
+                res_width == in_width + filter_width - 1)
+                return true;
+        }
+        else if (padding == "same")
+        {
+            if (res_height == in_height && res_width == in_width)
+                return true;
+        }
+
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "conv2d_transpose_operation::validate_out_shape",
+            generate_error_message(
+                "the specified output_shape is invalid for the "
+                "conv2d_transpose"));
+    }
+
+    bool conv2d_transpose_operation::validate_out_shape_strided(
+        std::size_t res_height, std::size_t res_width, std::size_t in_height,
+        std::size_t in_width, std::size_t filter_height,
+        std::size_t filter_width, std::string&& padding,
+        std::int64_t stride_height, std::int64_t stride_width) const
+    {
+        if (padding == "valid")
+        {
+            if (res_height == (in_height - 1) * stride_height + filter_height &&
+                res_width == (in_width - 1) * stride_width + filter_width)
+                return true;
+        }
+        else if (padding == "same")
+        {
+            std::int64_t pad_height;
+            std::int64_t pad_width;
+            if (in_height % stride_height == 0)
+            {
+                pad_height = filter_height > stride_height ?
+                    filter_height - stride_height :
+                    static_cast<std::int64_t>(0);
+            }
+            else
+            {
+                pad_height = filter_height > (in_height % stride_height) ?
+                    filter_height - (in_height % stride_height) :
+                    static_cast<std::int64_t>(0);
+            }
+            if (in_width % stride_width == 0)
+            {
+                pad_width = filter_width > stride_width ?
+                    filter_width - stride_width :
+                    static_cast<std::int64_t>(0);
+            }
+            else
+            {
+                pad_width = filter_width > (in_width % stride_width) ?
+                    filter_width - (in_width % stride_width) :
+                    static_cast<std::int64_t>(0);
+            }
+
+            if (res_height ==
+                    (in_height - 1) * stride_height + filter_height -
+                        pad_height &&
+                res_width ==
+                    (in_width - 1) * stride_width + filter_width - pad_width)
+                return true;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "conv2d_transpose_operation::validate_out_shape",
+            generate_error_message(
+                "the specified output_shape is invalid for the "
+                "conv2d_transpose in presence of strides"));
+    }
+
+    bool conv2d_transpose_operation::validate_out_shape_dilated(
+        std::size_t res_height, std::size_t res_width, std::size_t in_height,
+        std::size_t in_width, std::size_t filter_height,
+        std::size_t filter_width, std::string&& padding,
+        std::int64_t dilation_height, std::int64_t dilation_width) const
+    {
+        if (padding == "valid")
+        {
+            if (res_height ==
+                    in_height + dilation_height * (filter_height - 1) &&
+                res_width == in_width + dilation_width * (filter_width - 1))
+                return true;
+        }
+        else if (padding == "same")
+        {
+            if (res_height == in_height && res_width == in_width)
+                return true;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "conv2d_transpose_operation::validate_out_shape",
+            generate_error_message(
+                "the specified output_shape is invalid for the "
+                "conv2d_transpose in presence of dilation"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Tensor>
     void conv2d_transpose_operation::flip_kernel(Tensor& t) const
     {
@@ -97,11 +206,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto q = arg.quatern();
         auto k = kernel.quatern();
         std::size_t batch = q.quats();
-        std::size_t in_height = q.pages();
-        std::size_t in_width = q.rows();
         std::size_t in_channels = q.columns();
-        std::size_t filter_height = k.quats();
-        std::size_t filter_width = k.pages();
+        auto in_height = static_cast<std::int64_t>(q.pages());
+        auto in_width  = static_cast<std::int64_t>(q.rows());
+        auto filter_height = static_cast<std::int64_t>(k.quats());
+        auto filter_width= static_cast<std::int64_t>(k.pages());
         std::size_t out_channels = k.rows();
 
         std::int64_t pad_top  = filter_height - 1;
@@ -123,13 +232,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicTensor<double> flipped_kernel = k_tensor;
                 flip_kernel(flipped_kernel);
 
-                for (std::size_t i = 0; i != res_height; ++i)
+                for (std::int64_t i = 0; i != res_height; ++i)
                 {
                     auto sub_height = conv_indices::get_subsizes(
                             in_height, filter_height, i - pad_top);
-                    for (std::size_t j = 0; j != res_width; ++j)
+                    for (std::int64_t j = 0; j != res_width; ++j)
                     {
-
                         auto sub_width = conv_indices::get_subsizes(
                             in_width, filter_width, j - pad_left);
                         auto schur_product =
@@ -152,16 +260,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type conv2d_transpose_operation::conv2d_transpose_valid(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::size_t res_height, std::size_t res_width,
-        std::size_t stride_height, std::size_t stride_width) const
+        std::int64_t stride_height, std::int64_t stride_width) const
     {
         auto q = arg.quatern();
         auto k = kernel.quatern();
         std::size_t batch = q.quats();
-        std::size_t in_height = q.pages();
-        std::size_t in_width = q.rows();
         std::size_t in_channels = q.columns();
-        std::size_t filter_height = k.quats();
-        std::size_t filter_width = k.pages();
+        auto in_height = static_cast<std::int64_t>(q.pages());
+        auto in_width  = static_cast<std::int64_t>(q.rows());
+        auto filter_height = static_cast<std::int64_t>(k.quats());
+        auto filter_width= static_cast<std::int64_t>(k.pages());
         std::size_t out_channels = k.rows();
 
         std::int64_t pad_top  = filter_height - 1;
@@ -183,11 +291,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicTensor<double> flipped_kernel = k_tensor;
                 flip_kernel(flipped_kernel);
 
-                for (std::size_t i = 0; i != res_height; ++i)
+                for (std::int64_t i = 0; i != res_height; ++i)
                 {
                     auto sub_height = conv_indices::get_subsizes_transpose(
                         in_height, filter_height, i - pad_top, stride_height);
-                    for (std::size_t j = 0; j != res_width; ++j)
+                    for (std::int64_t j = 0; j != res_width; ++j)
                     {
                         auto sub_width = conv_indices::get_subsizes_transpose(
                             in_width, filter_width, j - pad_left, stride_width);
@@ -244,11 +352,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicTensor<double> flipped_kernel = k_tensor;
                 flip_kernel(flipped_kernel);
 
-                for (std::size_t i = 0; i != res_height; ++i)
+                for (std::int64_t i = 0; i != res_height; ++i)
                 {
                     auto sub_height = conv_indices::get_subsizes_dilated(
                         in_height, filter_height, i - pad_top, dilation_height);
-                    for (std::size_t j = 0; j != res_width; ++j)
+                    for (std::int64_t j = 0; j != res_width; ++j)
                     {
                         auto sub_width =
                             conv_indices::get_subsizes_dilated(in_width,
@@ -281,26 +389,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto q = arg.quatern();
         auto k = kernel.quatern();
-        std::size_t in_height = q.pages();
-        std::size_t in_width = q.rows();
-
-        if (in_height != res_height || in_width != res_width)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "conv2d_transpose_operation::conv2d_transpose_same",
-                generate_error_message(
-                    "At least one of the output height or width are not the "
-                    "same as the height or width of the input array"));
-        }
         std::size_t batch = q.quats();
         std::size_t in_channels = q.columns();
-        std::size_t filter_height = k.quats();
-        std::size_t filter_width = k.pages();
+        auto in_height = static_cast<std::int64_t>(q.pages());
+        auto in_width  = static_cast<std::int64_t>(q.rows());
+        auto filter_height = static_cast<std::int64_t>(k.quats());
+        auto filter_width = static_cast<std::int64_t>(k.pages());
         std::size_t out_channels = k.rows();
 
-        std::size_t pad_top =
+        std::int64_t pad_top =
             blaze::ceil(static_cast<double>(filter_height - 1) / 2.);
-        std::size_t pad_left =
+        std::int64_t pad_left =
             blaze::ceil(static_cast<double>(filter_width - 1) / 2.);
         blaze::DynamicArray<4UL, double> result(
             batch, res_height, res_width, out_channels);
@@ -319,11 +418,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicTensor<double> flipped_kernel = k_tensor;
                 flip_kernel(flipped_kernel);
 
-                for (std::size_t i = 0; i != res_height; ++i)
+                for (std::int64_t i = 0; i != res_height; ++i)
                 {
                     auto sub_height = conv_indices::get_subsizes(
                             in_height, filter_height, i - pad_top);
-                    for (std::size_t j = 0; j != res_width; ++j)
+                    for (std::int64_t j = 0; j != res_width; ++j)
                     {
 
                         auto sub_width = conv_indices::get_subsizes(
@@ -353,18 +452,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto q = arg.quatern();
         auto k = kernel.quatern();
         std::size_t batch = q.quats();
-        std::size_t in_height = q.pages();
-        std::size_t in_width = q.rows();
         std::size_t in_channels = q.columns();
-        std::size_t filter_height = k.quats();
-        std::size_t filter_width = k.pages();
+        auto filter_height = static_cast<std::int64_t>(k.quats());
+        auto filter_width = static_cast<std::int64_t>(k.pages());
+        auto in_height = static_cast<std::int64_t>(q.pages());
+        auto in_width  = static_cast<std::int64_t>(q.rows());
         std::size_t out_channels = k.rows();
         std::int64_t pad_height =
             res_height - (in_height - 1) * stride_height + filter_height - 2;
         std::int64_t pad_width =
             res_width - (in_width - 1) * stride_width + filter_width - 2;
-        std::size_t pad_top = blaze::ceil(static_cast<double>(pad_height) / 2.);
-        std::size_t pad_left = blaze::ceil(static_cast<double>(pad_width) / 2.);
+        std::int64_t pad_top =
+            blaze::ceil(static_cast<double>(pad_height) / 2.);
+        std::int64_t pad_left =
+            blaze::ceil(static_cast<double>(pad_width) / 2.);
 
         blaze::DynamicArray<4UL, double> result(
             batch, res_height, res_width, out_channels);
@@ -383,11 +484,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicTensor<double> flipped_kernel = k_tensor;
                 flip_kernel(flipped_kernel);
 
-                for (std::size_t i = 0; i != res_height; ++i)
+                for (std::int64_t i = 0; i != res_height; ++i)
                 {
                     auto sub_height = conv_indices::get_subsizes_transpose(
                         in_height, filter_height, i - pad_top, stride_height);
-                    for (std::size_t j = 0; j != res_width; ++j)
+                    for (std::int64_t j = 0; j != res_width; ++j)
                     {
                         auto sub_width = conv_indices::get_subsizes_transpose(
                             in_width, filter_width, j - pad_left, stride_width);
@@ -417,7 +518,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto q = arg.quatern();
         auto k = kernel.quatern();
         auto filter_height = static_cast<std::int64_t>(k.quats());
-        auto filter_width= static_cast<std::int64_t>(k.pages());
+        auto filter_width = static_cast<std::int64_t>(k.pages());
         auto in_height = static_cast<std::int64_t>(q.pages());
         auto in_width  = static_cast<std::int64_t>(q.rows());
         std::size_t batch = q.quats();
@@ -446,11 +547,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicTensor<double> flipped_kernel = k_tensor;
                 flip_kernel(flipped_kernel);
 
-                for (std::size_t i = 0; i != res_height; ++i)
+                for (std::int64_t i = 0; i != res_height; ++i)
                 {
                     auto sub_height = conv_indices::get_subsizes_dilated(
                         in_height, filter_height, i - pad_top, dilation_height);
-                    for (std::size_t j = 0; j != res_width; ++j)
+                    for (std::int64_t j = 0; j != res_width; ++j)
                     {
                         auto sub_width =
                             conv_indices::get_subsizes_dilated(in_width,
@@ -498,7 +599,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     conv2d_transpose_operation::conv2d_transpose_any_pad(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
         std::string&& padding, std::size_t res_height, std::size_t res_width,
-        std::size_t stride_height, std::size_t stride_width) const
+        std::int64_t stride_height, std::int64_t stride_width) const
     {
         if (padding == "valid")
         {
@@ -578,10 +679,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "kernel to be 4d arrays"));
                 }
 
-                std::size_t batch;
-                std::size_t out_height;
-                std::size_t out_width;
-                std::size_t out_channels;
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>&& kernel_dims =
+                    extract_numeric_value_dimensions(
+                        args[1], this_->name_, this_->codename_);
+
+                if (dims[3] != kernel_dims[3])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv2d_transpose_operation::eval",
+                        this_->generate_error_message(
+                            "image's input channels does not match filters' "
+                            "input channels"));
+                }
+
                 ir::range out_shape = extract_list_value_strict(
                     args[2], this_->name_, this_->codename_);
                 if (out_shape.size() != 4)
@@ -594,12 +704,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto it_o = out_shape.begin();
-                batch = extract_scalar_positive_integer_value_strict(*it_o);
-                out_height =
+                std::size_t batch =
+                    extract_scalar_positive_integer_value_strict(*it_o);
+                std::size_t out_height =
                     extract_scalar_positive_integer_value_strict(*++it_o);
-                out_width =
+                std::size_t out_width =
                     extract_scalar_positive_integer_value_strict(*++it_o);
-                out_channels =
+                std::size_t out_channels =
                     extract_scalar_positive_integer_value_strict(*++it_o);
 
                 if (batch != dims[0] || out_channels == dims[3])
@@ -629,28 +740,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
 
-                //if (padding == "valid")
-                //{
-                //    if (extract_numeric_value_dimensions(
-                //            args[0], this_->name_, this_->codename_)[1] <
-                //        extract_numeric_value_dimensions(
-                //            args[1], this_->name_, this_->codename_)[0] ||
-                //        extract_numeric_value_dimensions(
-                //            args[0], this_->name_, this_->codename_)[2] <
-                //        extract_numeric_value_dimensions(
-                //            args[1], this_->name_, this_->codename_)[1])
-                //    {
-                //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                //            "conv2d_transpose_operation::eval",
-                //            this_->generate_error_message(
-                //                "the kernel size cannot be greater than the "
-                //                "array size in the valid padding mode"));
-                //    }
-                //}
-
                 ir::range strides(0); // an empty range
-                std::size_t stride_height;
-                std::size_t stride_width;
+                std::int64_t stride_height;
+                std::int64_t stride_width;
                 if (args.size() > 4)
                 {
                     strides = extract_list_value_strict(
@@ -677,8 +769,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ir::range dilation_rate(0); // an empty range
-                std::size_t dilation_height;
-                std::size_t dilation_width;
+                std::int64_t dilation_height;
+                std::int64_t dilation_width;
                 if (args.size() > 5)
                 {
                     dilation_rate = extract_list_value_strict(
@@ -704,43 +796,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
-                if (!strides.empty() && !dilation_rate.empty())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "conv2d_transpose_operation::eval",
-                        this_->generate_error_message(
-                            "strides > 1 not supported in conjunction with "
-                            "dilation_rate > 1"));
-                }
-
                 if (strides.empty() && dilation_rate.empty())
                 {
-                    return this_->conv2d_transpose_any_pad(
-                        extract_numeric_value(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_numeric_value(
-                            std::move(args[1]), this_->name_, this_->codename_),
-                        std::move(padding), out_height, out_width);
+                    if (this_->validate_out_shape(out_height, out_width,
+                            dims[1], dims[2], kernel_dims[0], kernel_dims[1],
+                            std::move(padding)))
+                        return this_->conv2d_transpose_any_pad(
+                            extract_numeric_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            extract_numeric_value(std::move(args[1]),
+                                this_->name_, this_->codename_),
+                            std::move(padding), out_height, out_width);
                 }
                 if (dilation_rate.empty()) // strides != (1,1)
                 {
-                    return this_->conv2d_transpose_any_pad(
-                        extract_numeric_value(
-                            std::move(args[0]), this_->name_, this_->codename_),
-                        extract_numeric_value(
-                            std::move(args[1]), this_->name_, this_->codename_),
-                        std::move(padding), out_height, out_width,
-                        stride_height, stride_width);
+                    if (this_->validate_out_shape_strided(out_height, out_width,
+                            dims[1], dims[2], kernel_dims[0], kernel_dims[1],
+                            std::move(padding), stride_height, stride_width))
+                        return this_->conv2d_transpose_any_pad(
+                            extract_numeric_value(std::move(args[0]),
+                                this_->name_, this_->codename_),
+                            extract_numeric_value(std::move(args[1]),
+                                this_->name_, this_->codename_),
+                            std::move(padding), out_height, out_width,
+                            stride_height, stride_width);
                 }
 
-                // strides == (1,1) and dilation_rate != (1,1)
-                return this_->conv2d_transpose_any_pad_dilation(
-                    extract_numeric_value(
-                        std::move(args[0]), this_->name_, this_->codename_),
-                    extract_numeric_value(
-                        std::move(args[1]), this_->name_, this_->codename_),
-                    std::move(padding), out_height, out_width, dilation_height,
-                    dilation_width);
+                if (strides.empty()) // dilation_rate != (1,1)
+                {
+                    if (this_->validate_out_shape_dilated(out_height, out_width,
+                        dims[1], dims[2], kernel_dims[0], kernel_dims[1],
+                        std::move(padding), dilation_height, dilation_width))
+                        return this_->conv2d_transpose_any_pad_dilation(
+                            extract_numeric_value(
+                                std::move(args[0]), this_->name_, this_->codename_),
+                            extract_numeric_value(
+                                std::move(args[1]), this_->name_, this_->codename_),
+                            std::move(padding), out_height, out_width,
+                            dilation_height, dilation_width);
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "conv2d_transpose_operation::eval",
+                    this_->generate_error_message(
+                        "strides > 1 not supported in conjunction with "
+                        "dilation_rate > 1"));
             }),
             detail::map_operands(operands, functional::value_operand{},
                 args, name_, codename_, std::move(ctx)));
