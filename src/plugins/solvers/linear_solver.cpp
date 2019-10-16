@@ -553,7 +553,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "the linear_solver_operation primitive "
                             "requires "
                             "that first operand to be a matrix and "
-                            "the secotond "
+                            "the second "
                             "operand to be a vector",
                             this_->name_, this_->codename_));
                 }
