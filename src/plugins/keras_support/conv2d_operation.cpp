@@ -249,10 +249,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto res_slice = blaze::pageslice(res_tensor, l);
                 for (std::size_t i = 0; i != in_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes(
+                        in_height, filter_height, i - pad_top);
                     for (std::size_t j = 0; j != in_width; ++j)
                     {
-                        auto sub_height = conv_indices::get_subsizes(
-                            in_height, filter_height, i - pad_top);
                         auto sub_width = conv_indices::get_subsizes(
                             in_width, filter_width, j - pad_left);
                         auto schur_product =
@@ -322,8 +322,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicArray<4UL, double> result(
             batch, res_height, res_width, out_channels);
-        std::size_t pad_top  = pad_height / 2;
-        std::size_t pad_left = pad_width / 2;
+        std::int64_t pad_top  = pad_height / 2;
+        std::int64_t pad_left = pad_width / 2;
 
         for (std::size_t c = 0; c != out_channels; ++c)
         {
@@ -336,10 +336,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto res_slice = blaze::pageslice(res_tensor, l);
                 for (std::size_t i = 0; i != res_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes(
+                        in_height, filter_height, i * stride_height - pad_top);
                     for (std::size_t j = 0; j != res_width; ++j)
                     {
-                        auto sub_height = conv_indices::get_subsizes(in_height,
-                            filter_height, i * stride_height - pad_top);
                         auto sub_width = conv_indices::get_subsizes(in_width,
                             filter_width, j * stride_width - pad_left);
                         auto schur_product =
@@ -389,12 +389,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto res_slice = blaze::pageslice(res_tensor, l);
                 for (std::size_t i = 0; i != in_height; ++i)
                 {
+                    auto sub_height = conv_indices::get_subsizes_dilated(
+                        in_height, filter_height, i - pad_top, dilation_height);
                     for (std::size_t j = 0; j != in_width; ++j)
                     {
-                        auto sub_height = conv_indices::get_subsizes_dilated(
-                            in_height, filter_height, i - pad_top,dilation_height);
-                        auto sub_width = conv_indices::get_subsizes_dilated(
-                            in_width, filter_width, j - pad_left,dilation_width);
+                        auto sub_width =
+                            conv_indices::get_subsizes_dilated(in_width,
+                                filter_width, j - pad_left, dilation_width);
                         if (sub_height.size_ == 0 || sub_width.size_ == 0)
                             continue;
 
@@ -506,6 +507,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "4d arrays"));
                 }
 
+                if (extract_numeric_value_dimensions(
+                        args[0], this_->name_, this_->codename_)[3] !=
+                    extract_numeric_value_dimensions(
+                        args[1], this_->name_, this_->codename_)[2])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "conv2d_transpose_operation::eval",
+                        this_->generate_error_message(
+                            "image's input channels does not match filters' "
+                            "input channels"));
+                }
+
                 std::string padding = "valid";
                 if (args.size() > 2)
                 {
@@ -571,8 +584,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ir::range dilation_rate(0); // an empty range
-                std::size_t dilation_height;
-                std::size_t dilation_width;
+                std::int64_t dilation_height;
+                std::int64_t dilation_width;
                 if (args.size() > 4)
                 {
                     dilation_rate = extract_list_value_strict(
