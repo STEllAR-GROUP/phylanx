@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         R"(x, kernel, padding, strides, dilation_rate
         Args:
 
-            x (array) : a 4d array consiting of batch, in_height, in_width and
+            x (array) : a 4d array consisting of batch, in_height, in_width and
                 in_channels dimensions.
             kernel (array) : a 4d array consisting of filter_height,
                 filter_width, out_channels and in_channels dimension. Note that
@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             output_shape (vector of 4 integers): shape of the output consisting
                 of batch, output_height, output_width, out_channels
             padding (optional, string) : padding mode, `valid` by default. It
-                can be either `valid` or `same`. `vaild` means no padding.
+                can be either `valid` or `same`. `valid` means no padding.
                 `same` results the output with the same shape as original array
                 in case of unit strides.
             strides (optional, a tuple of two integers) : the steps to apply
@@ -133,7 +133,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             if (in_width % stride_width == 0)
             {
-                pad_width = filter_width > stride_width ?
+                pad_width =
+                    static_cast<std::int64_t>(filter_width) > stride_width ?
                     filter_width - stride_width :
                     static_cast<std::int64_t>(0);
             }
