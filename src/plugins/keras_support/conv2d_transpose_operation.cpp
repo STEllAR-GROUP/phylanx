@@ -121,7 +121,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t pad_width;
             if (in_height % stride_height == 0)
             {
-                pad_height = filter_height > stride_height ?
+                pad_height =
+                    static_cast<std::int64_t>(filter_width) > stride_height ?
                     filter_height - stride_height :
                     static_cast<std::int64_t>(0);
             }
