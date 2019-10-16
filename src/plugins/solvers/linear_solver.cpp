@@ -441,11 +441,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::iterative::LanczosTag tag;
                     x = blaze::iterative::solve(A, b, tag, n);
                     return arg_type{std::move(x)};
-                }},
-
+                }}
+#endif
         };
         return lin_solver[name];
-#endif
     }
 
     ///////////////////////////////////////////////////////////////////////////
