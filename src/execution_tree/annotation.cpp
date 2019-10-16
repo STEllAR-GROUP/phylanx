@@ -23,8 +23,7 @@
 #include <string>
 #include <utility>
 
-namespace phylanx { namespace execution_tree
-{
+namespace phylanx { namespace execution_tree {
     ////////////////////////////////////////////////////////////////////////////
     primitive_argument_type as_primitive_argument_type(annotation&& ann)
     {
@@ -97,8 +96,8 @@ namespace phylanx { namespace execution_tree
         return true;
     }
 
-    bool annotation::has_key(std::string const& key,
-        std::string const& name, std::string const& codename) const
+    bool annotation::has_key(std::string const& key, std::string const& name,
+        std::string const& codename) const
     {
         auto it = data_.begin();
         auto end = data_.end();
@@ -162,8 +161,8 @@ namespace phylanx { namespace execution_tree
         }
     }
 
-    void annotation::add_annotation(annotation&& data,
-        std::string const& name, std::string const& codename)
+    void annotation::add_annotation(
+        annotation&& data, std::string const& name, std::string const& codename)
     {
         if (has_key(data.get_type(), name, codename))
         {
@@ -216,8 +215,8 @@ namespace phylanx { namespace execution_tree
 
             ir::range l_meta_level_list_with_key =
                 phylanx::execution_tree::extract_list_value_strict(*it);
-            std::string key = extract_string_value(
-                *l_meta_level_list_with_key.begin());
+            std::string key =
+                extract_string_value(*l_meta_level_list_with_key.begin());
 
             annotation r_meta_level_ann;
             if (lhs.find(key, r_meta_level_ann))
@@ -225,10 +224,8 @@ namespace phylanx { namespace execution_tree
                 ir::range_iterator tmp = l_meta_level_list_with_key.begin();
                 tmp++;
                 ir::range l_meta_level_data_list(
-                    tmp,
-                    l_meta_level_list_with_key.end());
-                ir::range r_meta_level_data_list =
-                    r_meta_level_ann.get_data();
+                    tmp, l_meta_level_list_with_key.end());
+                ir::range r_meta_level_data_list = r_meta_level_ann.get_data();
                 if (key.substr(0, 4) == "meta")
                 {
                     ir::range l_tile_level_list =
@@ -264,10 +261,8 @@ namespace phylanx { namespace execution_tree
                 }
                 else if (key == "locality")
                 {
-                    ir::range_iterator l_it =
-                        l_meta_level_data_list.begin();
-                    ir::range_iterator r_it =
-                        r_meta_level_data_list.begin();
+                    ir::range_iterator l_it = l_meta_level_data_list.begin();
+                    ir::range_iterator r_it = r_meta_level_data_list.begin();
 
                     if (*l_it != *r_it || *(l_it++) != *(r_it++))
                         eq = false;
@@ -316,8 +311,8 @@ namespace phylanx { namespace execution_tree
 
         for (auto&& val : get_data())
         {
-            auto&& list = execution_tree::extract_list_value_strict(
-                val, name, codename);
+            auto&& list =
+                execution_tree::extract_list_value_strict(val, name, codename);
 
             if (extract_string_value(*list.begin(), name, codename) == key)
             {
@@ -332,8 +327,8 @@ namespace phylanx { namespace execution_tree
         data_ = std::move(newdata);
     }
 
-    void annotation::replace_annotation(annotation&& data,
-        std::string const& name, std::string const& codename)
+    void annotation::replace_annotation(
+        annotation&& data, std::string const& name, std::string const& codename)
     {
         std::string key = data.get_type();
         replace_annotation(key, std::move(data), name, codename);
@@ -372,8 +367,9 @@ namespace phylanx { namespace execution_tree
 
     ////////////////////////////////////////////////////////////////////////////
     annotation_wrapper::annotation_wrapper(primitive_argument_type const& op)
-        : ann_(op.annotation())
-    {}
+      : ann_(op.annotation())
+    {
+    }
 
     annotation_wrapper::annotation_wrapper(primitive_argument_type const& op1,
         primitive_argument_type const& op2)
@@ -429,7 +425,7 @@ namespace phylanx { namespace execution_tree
     }
 
     annotation_information::annotation_information(
-            std::string name, std::int64_t generation)
+        std::string name, std::int64_t generation)
       : name_(std::move(name))
       , generation_(generation)
     {
@@ -457,9 +453,8 @@ namespace phylanx { namespace execution_tree
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    annotation_information extract_annotation_information(
-        annotation const& ann, std::string const& name,
-        std::string const& codename)
+    annotation_information extract_annotation_information(annotation const& ann,
+        std::string const& name, std::string const& codename)
     {
         execution_tree::annotation name_ann;
         if (!ann.get_if("name", name_ann, name, codename) &&
@@ -473,4 +468,3 @@ namespace phylanx { namespace execution_tree
         return annotation_information(name_ann, name, codename);
     }
 }}
-

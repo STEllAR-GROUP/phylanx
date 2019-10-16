@@ -32,7 +32,8 @@ void test_annotation_equality_0()
                 list("tile", list("rows", 0, 1), list("columns", 0, 2)))
         )";
 
-    HPX_TEST_EQ(compile_and_run("annotation_0", annotation_0), compile_and_run("annotation_1", annotation_1));
+    HPX_TEST_EQ(compile_and_run("annotation_0", annotation_0),
+        compile_and_run("annotation_1", annotation_1));
 }
 
 int main(int argc, char* argv[])
