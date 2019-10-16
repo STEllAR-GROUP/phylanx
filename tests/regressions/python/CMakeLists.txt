@@ -43,6 +43,7 @@ set(tests
     936_arithmetic_operations
     956_named_argument_underscore
     962_broadcast_logical_operations
+    966_named_arguments
     979_lazy_compilation
     979_lazy_compilation_with_init
     array_len_494

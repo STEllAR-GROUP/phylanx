@@ -8,7 +8,7 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
-#include <hpx/util/lightweight_test.hpp>
+#include <hpx/testing.hpp>
 
 #include <cstdint>
 #include <string>
@@ -25,7 +25,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 
     auto const& code =
         phylanx::execution_tree::compile(name, codestr, snippets, env);
-    return code.run();
+    return code.run().arg_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

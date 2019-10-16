@@ -13,6 +13,7 @@
 #include <phylanx/plugins/keras_support/binary_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/categorical_crossentropy_operation.hpp>
 #include <phylanx/plugins/keras_support/conv1d_operation.hpp>
+#include <phylanx/plugins/keras_support/conv2d_operation.hpp>
 #include <phylanx/plugins/keras_support/ctc_decode_operation.hpp>
 #include <phylanx/plugins/keras_support/elu_operation.hpp>
 #include <phylanx/plugins/keras_support/hard_sigmoid_operation.hpp>

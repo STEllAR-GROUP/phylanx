@@ -76,7 +76,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
-            HPX_ASSERT(operands_.size() > 1 && valid(operands_[1]));
+            HPX_ASSERT(operands_.size() > 1 &&
+                (valid(operands_[1]) || is_explicit_nil(operands_[1])));
             target = extract_ref_value(operands_[1], name_, codename_);
         }
 
@@ -206,7 +207,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
-            HPX_ASSERT(operands_.size() > 1 && valid(operands_[1]));
+            HPX_ASSERT(operands_.size() > 1 &&
+                (valid(operands_[1]) || is_explicit_nil(operands_[1])));
             target = extract_ref_value(operands_[1], name_, codename_);
         }
 
@@ -312,7 +314,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
-            HPX_ASSERT(operands_.size() > 1 && valid(operands_[1]));
+            HPX_ASSERT(operands_.size() > 1 &&
+                (valid(operands_[1]) || is_explicit_nil(operands_[1])));
             target = extract_ref_value(operands_[1], name_, codename_);
         }
 

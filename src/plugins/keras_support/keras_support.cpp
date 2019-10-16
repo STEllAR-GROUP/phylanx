@@ -27,6 +27,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(cat_cross_operation_plugin,
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(conv1d_operation_plugin,
     phylanx::execution_tree::primitives::conv1d_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(conv2d_operation_plugin,
+    phylanx::execution_tree::primitives::conv2d_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(ctc_decode_operation_plugin,
     phylanx::execution_tree::primitives::ctc_decode_operation::match_data);
 

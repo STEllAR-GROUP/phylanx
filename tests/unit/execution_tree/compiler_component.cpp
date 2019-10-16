@@ -561,7 +561,7 @@ void test_define_variable_function_call()
     auto const& pts = comp.compile(hpx::launch::sync, "[[1, 2], [3, 4]]");
 
     auto const& def = comp.define_variable(
-        hpx::launch::sync, "<unknown>", "sys_argv", pts.run(ctx));
+        hpx::launch::sync, "<unknown>", "sys_argv", pts.run(ctx).arg_);
     def.run(ctx);
 
     auto expr = phylanx::ast::generate_ast(R"(
@@ -576,7 +576,7 @@ void test_define_variable_function_call()
 
     blaze::DynamicVector<double> expected{0, 0};
     auto result =
-        phylanx::execution_tree::extract_numeric_value(f.run(ctx));
+        phylanx::execution_tree::extract_numeric_value(f.run(ctx).arg_);
     HPX_TEST_EQ(expected, result.vector());
 }
 
