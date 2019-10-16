@@ -429,13 +429,14 @@ class PhySL:
 
             if PhySLFunction.functions:
                 PhySLFunction.compile()
-            else:
+
+            if not self.is_compiled:
                 phylanx.execution_tree.compile(PhySL.compiler_state,
                                                self.file_name,
                                                self.wrapped_function.__name__,
                                                self.__src__)
+                self.is_compiled = True
 
-            self.is_compiled = True
         else:
             func_name = self.wrapped_function.__name__
             func = PhySLFunction(self.file_name, func_name, self.__src__)
@@ -546,7 +547,9 @@ class PhySL:
             PhylanxSession.init(1)
 
         if not self.is_compiled:
-            PhySLFunction.compile()
+            if not self.is_compiled:
+                PhySLFunction.compile()
+
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             elif PhySL.compiler_state is None:
@@ -557,7 +560,6 @@ class PhySL:
                                            self.file_name,
                                            self.wrapped_function.__name__,
                                            self.__src__)
-
             self.is_compiled = True
 
         mapped_args = tuple(map(self.map_wrapped, args))
