@@ -40,12 +40,14 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
     execution_tree.def("eval", phylanx::bindings::expression_evaluator,
         "compile and evaluate a numerical expression in PhySL");
 
-    execution_tree.def("eval",
-        [](compiler_state& state, std::string const& xexpr, pybind11::args args)
-        ->  phylanx::execution_tree::primitive_argument_type
+    execution_tree.def(
+        "eval",
+        [](compiler_state& state, std::string const& xexpr, pybind11::args args,
+            pybind11::kwargs kwargs)
+            -> phylanx::execution_tree::primitive_argument_type
         {
             return phylanx::bindings::expression_evaluator(
-                state, state.codename_, xexpr, args);
+                state, state.codename_, xexpr, args, kwargs);
         },
         "compile and evaluate a numerical expression in PhySL");
 

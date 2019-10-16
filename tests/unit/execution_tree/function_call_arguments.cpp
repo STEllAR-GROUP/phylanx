@@ -28,7 +28,7 @@ phylanx::execution_tree::compiler::function compile_and_run(
     auto const& code =
         phylanx::execution_tree::compile("<unknown>", "<unknown>",
             phylanx::ast::generate_ast(codestr), snippets, env, patterns);
-    return code.run();
+    return code.run().arg_;
 }
 
 void test_function(

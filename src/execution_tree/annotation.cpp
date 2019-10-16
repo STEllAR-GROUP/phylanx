@@ -14,7 +14,7 @@
 
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/format.hpp>
-#include <hpx/runtime/serialization/serialize.hpp>
+#include <hpx/serialization/serialize.hpp>
 
 #include <cctype>
 #include <cstdint>

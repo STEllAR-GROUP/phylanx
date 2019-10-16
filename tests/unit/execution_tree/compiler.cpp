@@ -794,14 +794,14 @@ void test_define_variable_function_call()
     auto def = phylanx::execution_tree::define_variable("<unknown>",
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
-        snippets, env, pts.run());
+        snippets, env, (pts.run())());
 
     def.run(ctx);
 
     auto const& f = phylanx::execution_tree::compile(expr, snippets, env);
 
     blaze::DynamicVector<double> expected{0, 0};
-    auto result = phylanx::execution_tree::extract_numeric_value(f.run(ctx));
+    auto result = phylanx::execution_tree::extract_numeric_value((f.run(ctx))());
     HPX_TEST_EQ(expected, result.vector());
 }
 

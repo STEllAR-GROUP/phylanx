@@ -41,6 +41,7 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 #include <utility>
@@ -631,6 +632,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::vector<ast::expression> const& args,
             ast::expression const& body, hpx::id_type const& locality) const
         {
+            std::shared_ptr<std::string[]> named_args;
             std::size_t base_arg_num = env_.base_arg_num();
 
             bool has_default_value = false;
@@ -656,6 +658,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
                 else if (ast::detail::is_function_call(args[i]))
                 {
+                    if (!named_args)
+                    {
+                        named_args.reset(new std::string[args.size()]);
+                    }
+
                     if (ast::detail::function_name(args[i]) != "__arg")
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -670,6 +677,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     // returns pair<name, value>
                     auto default_value = extract_default_argument_value(
                         args[i], locality, id);
+
+                    named_args[i] = default_value.first;
 
                     env.define(std::move(default_value.first),
                         access_argument(i + base_arg_num,
@@ -690,7 +699,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
                             name_, id));
                 }
             }
-            return compile(name_, body, snippets_, env, patterns_, locality);
+
+            // compose the compiled function representing the default arguments
+            // and the body
+            function f =
+                compile(name_, body, snippets_, env, patterns_, locality);
+            if (named_args)
+            {
+                f.set_named_args(std::move(named_args), args.size());
+            }
+
+            return f;
         }
 
         function compile_lambda(std::vector<ast::expression> const& args,
@@ -712,10 +731,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         primitive_argument_type{}, lambda_name, name_)},
                     lambda_name};
 
-            auto p = primitive_operand(f.arg_, lambda_name, name_);
+            function body_f = compile_body(args, body, locality);
+            f.set_named_args(
+                std::move(body_f.named_args_), body_f.num_named_args_);
 
-            p.store(hpx::launch::sync,
-                std::move(compile_body(args, body, locality).arg_), {});
+            auto p = primitive_operand(f.arg_, lambda_name, name_);
+            p.store(hpx::launch::sync, std::move(body_f.arg_), {});
 
             return f;
         }
@@ -801,6 +822,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                             default_locality_, "variable-factory",
                             primitive_argument_type{}, variable_name, name_)
                     }, variable_name};
+                f.set_named_args(
+                    std::move(body_f.named_args_), body_f.num_named_args_);
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
                 var.store(hpx::launch::sync, std::move(body_f.arg_), {});
@@ -825,10 +848,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
                             primitive_argument_type{}, variable_name, name_)
                     }, variable_name};
 
+                function body_f = compile_lambda(args, body, id, locality);
+                f.set_named_args(
+                    std::move(body_f.named_args_), body_f.num_named_args_);
+
                 auto var = primitive_operand(f.arg_, variable_name, name_);
-                var.store(hpx::launch::sync,
-                    std::move(compile_lambda(args, body, id, locality).arg_),
-                    {});
+                var.store(hpx::launch::sync, std::move(body_f.arg_), {});
             }
 
             // the define-variable object is invoked whenever a define() is
@@ -840,8 +865,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
             name_parts.primitive = std::move(define_variable);
 
             function variable_ref = f;      // copy f as we need to move it
-            return define_operation{default_locality_}(
+
+            function define_f = define_operation{default_locality_}(
                 std::move(variable_ref.arg_), std::move(name_parts), name_);
+            define_f.set_named_args(f.named_args_, f.num_named_args_);
+
+            return define_f;
         }
 
         bool handle_sliced_variable_reference(std::string name,
