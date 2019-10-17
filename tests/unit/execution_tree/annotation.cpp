@@ -18,7 +18,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 
     auto const& code =
         phylanx::execution_tree::compile(name, codestr, snippets, env);
-    return code.run();
+    return code.run().arg_;
 }
 
 void test_annotation_equality_0()
