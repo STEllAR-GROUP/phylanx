@@ -9,6 +9,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/testing.hpp>
 
+#include <string>
+
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& name, std::string const& codestr)
 {
