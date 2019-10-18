@@ -107,6 +107,11 @@ namespace phylanx { namespace execution_tree
         return dtype_;
     }
 
+    void variable::dtype(pybind11::dtype dt)
+    {
+        dtype_ = dt;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {

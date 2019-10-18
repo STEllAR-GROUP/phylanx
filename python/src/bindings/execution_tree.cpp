@@ -130,10 +130,13 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                         [&]() { return var.eval(std::move(args)); });
                 },
                 "evaluate execution tree")
-            .def_property_readonly(
+            .def_property(
                 "dtype",
                 [](phylanx::execution_tree::variable const& var) {
                     return var.dtype();
+                },
+                [](phylanx::execution_tree::variable& var, pybind11::dtype dt) {
+                    var.dtype(dt);
                 },
                 "return the dtype of the value stored by the variable")
             .def_property_readonly(
