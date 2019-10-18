@@ -228,6 +228,10 @@ namespace phylanx { namespace bindings
     // extract the dtype of the given variable/expression
     pybind11::dtype extract_dtype(
         phylanx::execution_tree::primitive_argument_type const& p);
+
+    // extract the shape of the given variable/expression
+    pybind11::tuple extract_shape(
+        phylanx::execution_tree::primitive_argument_type const& p);
 }}
 
 #endif
