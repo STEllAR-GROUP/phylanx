@@ -18,8 +18,7 @@
 #include <string>
 #include <utility>
 
-namespace phylanx { namespace execution_tree
-{
+namespace phylanx { namespace execution_tree {
     ////////////////////////////////////////////////////////////////////////////
     struct annotation;
 
@@ -27,6 +26,11 @@ namespace phylanx { namespace execution_tree
         annotation&& ann);
     PHYLANX_EXPORT primitive_argument_type as_primitive_argument_type(
         annotation const& ann);
+
+    PHYLANX_EXPORT bool operator==(
+        annotation const& lhs, annotation const& rhs);
+    bool operator!=(
+        annotation const& lhs, annotation const& rhs);
 
     ////////////////////////////////////////////////////////////////////////////
     struct annotation
@@ -44,12 +48,12 @@ namespace phylanx { namespace execution_tree
         }
 
         template <typename... Ts>
-        annotation(char const* key, Ts&& ... ts)
+        annotation(char const* key, Ts&&... ts)
           : data_(key, as_primitive_argument_type(std::forward<Ts>(ts))...)
         {
         }
         template <typename... Ts>
-        annotation(std::string const& key, Ts&& ... ts)
+        annotation(std::string const& key, Ts&&... ts)
           : data_(key, as_primitive_argument_type(std::forward<Ts>(ts))...)
         {
         }
@@ -106,10 +110,8 @@ namespace phylanx { namespace execution_tree
             execution_tree::annotation& ann, std::string const& name = "",
             std::string const& codename = "<unknown>") const;
 
-        friend bool operator==(annotation const& lhs, annotation const& rhs)
-        {
-            return lhs.data_ == rhs.data_;
-        }
+        PHYLANX_EXPORT friend bool operator==(annotation const& lhs,
+            annotation const& rhs);
 
         friend bool operator!=(annotation const& lhs, annotation const& rhs)
         {
@@ -151,9 +153,8 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT annotation_information(
             std::string name, std::int64_t generation);
 
-        PHYLANX_EXPORT annotation_information(
-            annotation const& ann, std::string const& name,
-            std::string const& codename);
+        PHYLANX_EXPORT annotation_information(annotation const& ann,
+            std::string const& name, std::string const& codename);
 
         PHYLANX_EXPORT std::string generate_name() const;
         PHYLANX_EXPORT annotation as_annotation() const;

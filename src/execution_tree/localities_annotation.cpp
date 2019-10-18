@@ -258,6 +258,7 @@ namespace phylanx { namespace execution_tree
         }
     }
 
+    // Is this helpful? It may only introduce confusion
     std::size_t localities_information::size() const
     {
         return detail::dimension<0>(tiles_);

@@ -4,6 +4,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/util/generate_error_message.hpp>
@@ -150,5 +152,23 @@ namespace phylanx { namespace execution_tree
             return false;
         }
         return annotation_->find(key, ann, name, codename);
+    }
+
+    bool operator==(primitive_argument_type const& lhs,
+        primitive_argument_type const& rhs)
+    {
+        if (lhs.variant() == rhs.variant())
+        {
+            if (!!lhs.annotation() && !!rhs.annotation())
+            {
+                return *lhs.annotation() == *rhs.annotation();
+            }
+            else if (!!lhs.annotation() || !!rhs.annotation())
+            {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 }}

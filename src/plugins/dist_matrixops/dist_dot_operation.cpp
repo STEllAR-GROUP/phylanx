@@ -272,7 +272,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                        "number of dimensions"));
         }
     }
-
     ////////////////////////////////////////////////////////////////////////////
     hpx::future<execution_tree::primitive_argument_type>
     dist_dot_operation::eval(
