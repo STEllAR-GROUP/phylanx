@@ -484,7 +484,39 @@ namespace phylanx { namespace bindings
             });
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    template <pybind11::return_value_policy policy =
+                  pybind11::return_value_policy::automatic_reference>
+    pybind11::tuple make_tuple(phylanx::ir::range&& r)
+    {
+        using namespace phylanx::execution_tree;
+
+        std::vector<pybind11::object> args;
+        args.reserve(r.size());
+        for (auto&& item : std::move(r))
+        {
+            args.emplace_back(pybind11::reinterpret_steal<pybind11::object>(
+                pybind11::detail::make_caster<primitive_argument_type>::cast(
+                    std::move(item), policy, nullptr)));
+            if (!args.back())
+            {
+                throw pybind11::cast_error(
+                    "make_tuple(): unable to convert arguments to Python "
+                    "object");
+            }
+        }
+
+        pybind11::tuple result(args.size());
+        int counter = 0;
+        for (auto& arg_value : args)
+        {
+            PyTuple_SET_ITEM(
+                result.ptr(), counter++, arg_value.release().ptr());
+        }
+        return result;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     pybind11::dtype extract_dtype(
         phylanx::execution_tree::primitive_argument_type const& p)
     {
@@ -543,6 +575,48 @@ namespace phylanx { namespace bindings
                     break;
                 }
                 return pybind11::dtype("");
+            };
+
+        pybind11::gil_scoped_release release;       // release GIL
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::threads::run_as_hpx_thread(std::move(f));
+        }
+        return f();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    pybind11::tuple extract_shape(
+        phylanx::execution_tree::primitive_argument_type const& p)
+    {
+        auto f =
+            [&]() -> pybind11::tuple
+            {
+                using namespace phylanx::execution_tree;
+
+                phylanx::ir::range r;
+
+                if (p.index() == primitive_argument_type::primitive_index)
+                {
+                    primitive_arguments_type args;
+                    args.emplace_back(value_operand_sync(
+                        p, primitive_arguments_type{}, "shape", "<unknown>"));
+
+                    primitive shape = primitives::create_extract_shape(
+                        hpx::find_here(), std::move(args), "shape", "<unknown>");
+
+                    r = extract_list_value_strict(
+                        shape.eval(hpx::launch::sync), "shape", "<unknown>");
+                }
+                else
+                {
+                    r = extract_list_value_strict(
+                        std::move(p), "shape", "<unknown>");
+                }
+
+                pybind11::gil_scoped_acquire acquire;
+
+                return make_tuple(std::move(r));
             };
 
         pybind11::gil_scoped_release release;       // release GIL

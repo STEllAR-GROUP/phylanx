@@ -99,6 +99,12 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
                 pybind11::arg("constraint") = pybind11::none())
+            .def(pybind11::init<pybind11::tuple, pybind11::object,
+                     pybind11::object, pybind11::object>(),
+                pybind11::arg("shape"),
+                pybind11::arg("dtype") = pybind11::none(),
+                pybind11::arg("name") = pybind11::none(),
+                pybind11::arg("constraint") = pybind11::none())
             .def(pybind11::init<std::string, pybind11::object, pybind11::object,
                      pybind11::object>(),
                 pybind11::arg("value"),
@@ -136,6 +142,15 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                     return var.dtype();
                 },
                 "return the dtype of the value stored by the variable")
+            .def_property(
+                "_keras_shape",
+                [](phylanx::execution_tree::variable const& var) {
+                    return var.shape();
+                },
+                [](phylanx::execution_tree::variable& var, pybind11::tuple sh) {
+                    var.shape(sh);
+                },
+                "return the shape of the value stored by the variable")
             .def_property_readonly(
                 "name",
                 [](phylanx::execution_tree::variable const& var) {

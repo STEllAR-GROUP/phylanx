@@ -46,6 +46,7 @@ set(tests
     966_named_arguments
     979_lazy_compilation
     979_lazy_compilation_with_init
+    1054_variable_shape
     array_len_494
     array_shape_486
     array_subscript_403
