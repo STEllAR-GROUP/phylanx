@@ -67,6 +67,7 @@ namespace phylanx { namespace execution_tree
         pybind11::object eval(pybind11::args args) const;
 
         pybind11::dtype dtype() const;
+        void dtype(pybind11::dtype dt);
 
         pybind11::tuple shape() const;
         void shape(pybind11::tuple sh);
