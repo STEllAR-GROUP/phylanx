@@ -24,6 +24,8 @@ namespace phylanx { namespace execution_tree
     private:
         static primitive create_variable(
             primitive_argument_type&& value, std::string const& name);
+        static primitive create_variable(std::string const& name);
+
         static std::size_t variable_count;
 
     public:
@@ -36,6 +38,10 @@ namespace phylanx { namespace execution_tree
             pybind11::object constraint = pybind11::none());
 
         variable(pybind11::array value, pybind11::object dtype,
+            pybind11::object name,
+            pybind11::object constraint = pybind11::none());
+
+        variable(pybind11::tuple shape, pybind11::object dtype,
             pybind11::object name,
             pybind11::object constraint = pybind11::none());
 
@@ -63,6 +69,9 @@ namespace phylanx { namespace execution_tree
         pybind11::dtype dtype() const;
         void dtype(pybind11::dtype dt);
 
+        pybind11::tuple shape() const;
+        void shape(pybind11::tuple sh);
+
         std::string name() const
         {
             return name_;
@@ -75,6 +84,12 @@ namespace phylanx { namespace execution_tree
         void value(primitive new_value)
         {
             value_ = std::move(new_value);
+
+            if (!shape_.is_none())
+            {
+                pybind11::gil_scoped_acquire acquire;
+                shape_ = pybind11::none();
+            }
         }
 
     protected:
@@ -98,6 +113,7 @@ namespace phylanx { namespace execution_tree
         std::string name_;
         primitive value_;
         pybind11::object constraint_;
+        pybind11::object shape_;
     };
 
 #define PHYLANX_VARIABLE_OPERATION_DECLARATION(op)                             \

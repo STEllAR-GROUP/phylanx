@@ -32,6 +32,7 @@ namespace phylanx { namespace execution_tree
               name.cast<std::string>())
       , value_(std::move(value))
       , constraint_(std::move(constraint))
+      , shape_(pybind11::none())
     {
     }
 
@@ -44,6 +45,18 @@ namespace phylanx { namespace execution_tree
       , value_(create_variable(
             pybind11::cast<primitive_argument_type>(std::move(value)), name_))
       , constraint_(std::move(constraint))
+      , shape_(pybind11::none())
+    {}
+
+    variable::variable(pybind11::tuple shape, pybind11::object dtype,
+        pybind11::object name, pybind11::object constraint)
+      : dtype_(std::move(dtype))
+      , name_(name.is_none() ?
+                hpx::util::format("Variable_{}", ++variable_count) :
+                name.cast<std::string>())
+      , value_(create_variable(name_))
+      , constraint_(std::move(constraint))
+      , shape_(std::move(shape))
     {}
 
     variable::variable(std::string value, pybind11::object dtype,
@@ -55,6 +68,7 @@ namespace phylanx { namespace execution_tree
       , value_(
             create_variable(primitive_argument_type(std::move(value)), name_))
       , constraint_(std::move(constraint))
+      , shape_(pybind11::none())
     {}
 
     variable::variable(primitive_argument_type value, pybind11::object dtype,
@@ -67,6 +81,7 @@ namespace phylanx { namespace execution_tree
               primitive_operand(std::move(value)) :
               create_variable(std::move(value), name_))
       , constraint_(std::move(constraint))
+      , shape_(pybind11::none())
     {}
 
     variable::variable(primitive value, pybind11::object dtype,
@@ -75,6 +90,7 @@ namespace phylanx { namespace execution_tree
       , name_(hpx::util::format("{}_{}", name, ++variable_count))
       , value_(std::move(value))
       , constraint_(std::move(constraint))
+      , shape_(pybind11::none())
     {}
 
     variable::variable(primitive_argument_type value, pybind11::object dtype,
@@ -85,6 +101,7 @@ namespace phylanx { namespace execution_tree
               primitive_operand(std::move(value)) :
               create_variable(std::move(value), name_))
       , constraint_(std::move(constraint))
+      , shape_(pybind11::none())
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -93,6 +110,12 @@ namespace phylanx { namespace execution_tree
     {
         return create_primitive_component(
             hpx::find_here(), "variable", std::move(value), name, "", false);
+    }
+
+    primitive variable::create_variable(std::string const& name)
+    {
+        return create_primitive_component(hpx::find_here(), "variable",
+            primitive_argument_type{}, name, "", false);
     }
 
     std::size_t variable::variable_count = 0;
@@ -110,6 +133,21 @@ namespace phylanx { namespace execution_tree
     void variable::dtype(pybind11::dtype dt)
     {
         dtype_ = dt;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    pybind11::tuple variable::shape() const
+    {
+        if (shape_.is_none())
+        {
+            return bindings::extract_shape(primitive_argument_type{value_});
+        }
+        return pybind11::tuple(shape_);
+    }
+
+    void variable::shape(pybind11::tuple sh)
+    {
+        shape_ = sh;
     }
 
     ///////////////////////////////////////////////////////////////////////////
