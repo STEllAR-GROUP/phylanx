@@ -373,7 +373,7 @@ namespace phylanx { namespace execution_tree
     {
         // handle single value page-slicing result
         auto pageslice = blaze::pageslice(
-            t, detail::check_index(pages[0], pages.size(), name, codename));
+            t, detail::check_index(pages[0], t.pages(), name, codename));
 
         return f.matrix(t, std::move(pageslice));
     }

@@ -24,9 +24,9 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const extract_shape::match_data =
+    std::vector<match_pattern_type> const extract_shape::match_data =
     {
-        hpx::util::make_tuple("shape",
+        match_pattern_type{"shape",
             std::vector<std::string>{"shape(_1, _2)", "shape(_1)"},
             &create_extract_shape, &create_primitive<extract_shape>, R"(
             a, dim
@@ -40,14 +40,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             Without the optional argument, it returns a list of integers
             corresponding to the size of each dimension of the array `a`. If the
             optional `dim` argument is supplied, then the
-            size for that dimension is returned as an integer.)")
+            size for that dimension is returned as an integer.)"},
+
+        match_pattern_type{"__len",
+            std::vector<std::string>{"__len(_1)"},
+            &create_extract_shape, &create_primitive<extract_shape>,
+            "Internal"}
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        bool extract_shape_mode(std::string const& name)
+        {
+            return name.find("__len") != std::string::npos;
+        }
+    }
+
     extract_shape::extract_shape(
             primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , len_mode_(detail::extract_shape_mode(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -308,19 +322,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         arg, this_->name_, this_->codename_))
                     {
                     case 0:
-                        return this_->shape0d(std::move(arg));
+                        return this_->len_mode_ ?
+                            this_->shape0d(std::move(arg), 0) :
+                            this_->shape0d(std::move(arg));
 
                     case 1:
-                        return this_->shape1d(std::move(arg));
+                        return this_->len_mode_ ?
+                            this_->shape1d(std::move(arg), 0) :
+                            this_->shape1d(std::move(arg));
 
                     case 2:
-                        return this_->shape2d(std::move(arg));
+                        return this_->len_mode_ ?
+                            this_->shape2d(std::move(arg), 0) :
+                            this_->shape2d(std::move(arg));
 
                     case 3:
-                        return this_->shape3d(std::move(arg));
+                        return this_->len_mode_ ?
+                            this_->shape3d(std::move(arg), 0) :
+                            this_->shape3d(std::move(arg));
 
                     case 4:
-                        return this_->shape4d(std::move(arg));
+                        return this_->len_mode_ ?
+                            this_->shape4d(std::move(arg), 0) :
+                            this_->shape4d(std::move(arg));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

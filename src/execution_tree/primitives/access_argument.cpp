@@ -89,8 +89,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 3: HPX_FALLTHROUGH;
         case 4:
             {
-                // one slicing parameter
-                if (is_primitive_operand(target))
+                // if no additional params are given , we can forward this
+                // request to the underlying expression
+                if (is_primitive_operand(target) && params.empty())
                 {
                     primitive_arguments_type fargs;
                     fargs.reserve(operands_.size() - 2);
@@ -107,6 +108,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         name_, codename_, std::move(ctx));
                 }
 
+                if (is_primitive_operand(target))
+                {
+                    target = value_operand_sync(
+                        std::move(target), params, name_, codename_, ctx);
+                }
+
+                // otherwise we have to evaluate the target expression and apply
+                // the slicing here
                 auto this_ = this->shared_from_this();
                 if (operands_.size() == 4)
                 {
@@ -170,8 +179,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // evaluate the argument
         ctx.add_mode(eval_dont_evaluate_partials);
-        return value_operand(
-            target, this->noargs, name_, codename_, std::move(ctx));
+        return value_operand(target, params, name_, codename_, std::move(ctx));
     }
 
     void access_argument::store(primitive_arguments_type&& data,

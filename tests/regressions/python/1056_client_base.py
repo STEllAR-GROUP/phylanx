@@ -16,9 +16,6 @@ PhylanxSession.init(1)
 def variable(value, dtype=None, name=None):
     if dtype is None:
         dtype = "float64"
-    from phylanx.ast.physl import PhySL
-    if isinstance(value, PhySL.eval_wrapper):
-        return execution_tree.variable(value.code(), dtype)
     if isinstance(value, execution_tree.variable):
         return value
     return execution_tree.variable(value, dtype=dtype, name=name)

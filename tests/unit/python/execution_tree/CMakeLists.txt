@@ -5,11 +5,13 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    dictionary
+    binary_crossentropy
+    categorical_crossentropy
     config_hpx
+    dictionary
     dynamic_init
-    for
     eval
+    for
     lazy_eval
     make_array
     map_numpy
@@ -19,8 +21,7 @@ set(tests
     parallel
     set_operation
     slice
-    categorical_crossentropy
-    binary_crossentropy
+    variable_iteration
    )
 
 foreach(test ${tests})

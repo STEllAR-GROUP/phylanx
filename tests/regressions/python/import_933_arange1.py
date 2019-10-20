@@ -23,18 +23,12 @@ def variable(value, dtype=None, name=None, constraint=None):
     if constraint is not None:
         raise TypeError("Constraint is the projection function to be "
                         "applied to the variable after an optimizer update")
-    from phylanx.ast.physl import PhySL
-    if isinstance(value, PhySL.eval_wrapper):
-        return execution_tree.variable(value.code(), dtype)
     if isinstance(value, execution_tree.variable):
         return value
     return execution_tree.variable(value, dtype=dtype, name=name)
 
 
 def dtype(x):
-    from phylanx.ast.physl import PhySL
-    if isinstance(x, PhySL.eval_wrapper):
-        return execution_tree.variable(x.code(), dtype).dtype
     if isinstance(x, execution_tree.variable):
         return x.dtype
     return execution_tree.variable(x, dtype).dtype

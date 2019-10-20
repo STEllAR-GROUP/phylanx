@@ -1579,6 +1579,33 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    function bind_arguments(std::string const& codename,
+        std::string const& func_name, function_list& snippets,
+        primitive_argument_type&& func, primitive_arguments_type&& args,
+        hpx::id_type const& default_locality)
+    {
+        function& f = snippets.program_.add_empty(codename);
+
+        // now create the target-reference object
+        primitive_arguments_type params;
+        params.reserve(args.size() + 1);
+
+        params.emplace_back(std::move(func));
+        for (auto&& arg : std::move(args))
+        {
+            params.push_back(std::move(arg));
+        }
+
+        f = function{primitive_argument_type{
+                create_primitive_component(
+                    default_locality, "target-reference",
+                    std::move(params), func_name, codename)
+            }, func_name};
+
+        return f;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     function define_variable(std::string const& codename,
         primitive_name_parts name_parts, function_list& snippets,
         environment& env, primitive_argument_type body,

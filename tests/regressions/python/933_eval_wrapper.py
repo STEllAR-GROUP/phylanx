@@ -14,8 +14,8 @@ PhylanxSession.init(1)
 
 def dtype(x, dtype=None):
     from phylanx.ast.physl import PhySL
-    if isinstance(x, PhySL.eval_wrapper):
-        return execution_tree.variable(x.code(), dtype).dtype
+    if isinstance(x, execution_tree.variable):
+        return x.dtype
     return execution_tree.variable(x, dtype).dtype
 
 

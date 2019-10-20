@@ -222,6 +222,17 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    /// Bind the given arguments to the function
+    compiler::function bind_arguments(std::string const& codename,
+        std::string const& func_name, compiler::function_list& snippets,
+        primitive_argument_type func, primitive_arguments_type args,
+        hpx::id_type const& default_locality)
+    {
+        return compiler::bind_arguments(codename, func_name, snippets,
+            std::move(func), std::move(args), default_locality);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     namespace compiler { namespace detail
     {
         void insert_pattern(expression_pattern_list& result,

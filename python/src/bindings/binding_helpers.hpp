@@ -58,9 +58,22 @@ namespace phylanx { namespace bindings
 #endif
         }
 
+        static phylanx::execution_tree::compiler::environment
+        construct_default_environment()
+        {
+            pybind11::gil_scoped_release release;    // release GIL
+
+            using namespace phylanx::execution_tree::compiler;
+            return hpx::threads::run_as_hpx_thread(
+                [&]() -> environment
+                {
+                    return default_environment();
+                });
+        }
+
         compiler_state(std::string codename)
           : m(import_phylanx())
-          , eval_env(phylanx::execution_tree::compiler::default_environment())
+          , eval_env(construct_default_environment())
           , eval_snippets()
           , codename_(std::move(codename))
           , enable_measurements(false)

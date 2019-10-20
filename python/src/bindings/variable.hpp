@@ -8,6 +8,8 @@
 
 #include <phylanx/phylanx.hpp>
 
+#include <bindings/binding_helpers.hpp>
+
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
@@ -29,32 +31,44 @@ namespace phylanx { namespace execution_tree
         static std::size_t variable_count;
 
     public:
-        variable(primitive value, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            primitive value, pybind11::object dtype,
             pybind11::object name = pybind11::none(),
             pybind11::object constraint = pybind11::none());
 
-        variable(primitive value, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            primitive value, pybind11::object dtype,
             char const* name = "Variable",
             pybind11::object constraint = pybind11::none());
 
-        variable(pybind11::array value, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            pybind11::array value, pybind11::object dtype,
             pybind11::object name,
             pybind11::object constraint = pybind11::none());
 
-        variable(pybind11::tuple shape, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            pybind11::tuple shape, pybind11::object dtype,
             pybind11::object name,
             pybind11::object constraint = pybind11::none());
 
-        variable(std::string value, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            std::string value, pybind11::object dtype,
             pybind11::object name,
             pybind11::object constraint = pybind11::none());
 
-        variable(primitive_argument_type value, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            primitive_argument_type value, pybind11::object dtype,
             pybind11::object name,
             pybind11::object constraint = pybind11::none());
 
-        variable(primitive_argument_type value, pybind11::object dtype,
+        variable(bindings::compiler_state& state,
+            primitive_argument_type value, pybind11::object dtype,
             char const* name = "Variable",
+            pybind11::object constraint = pybind11::none());
+
+        variable(bindings::compiler_state& state,
+            primitive_argument_type value, pybind11::object dtype,
+            std::string const& name,
             pybind11::object constraint = pybind11::none());
 
         ~variable()
@@ -92,6 +106,15 @@ namespace phylanx { namespace execution_tree
             }
         }
 
+        bindings::compiler_state& state()
+        {
+            return state_;
+        }
+        bindings::compiler_state const& state() const
+        {
+            return state_;
+        }
+
     protected:
         pybind11::object handle_return_f(
             primitive_argument_type&& result, pybind11::ssize_t itemsize) const;
@@ -109,6 +132,7 @@ namespace phylanx { namespace execution_tree
             primitive_argument_type&& result) const;
 
     private:
+        bindings::compiler_state& state_;
         pybind11::dtype dtype_;
         std::string name_;
         primitive value_;
@@ -119,16 +143,16 @@ namespace phylanx { namespace execution_tree
 #define PHYLANX_VARIABLE_OPERATION_DECLARATION(op)                             \
     /* forward operation */                                                    \
     phylanx::execution_tree::variable op##_variables(                          \
-        phylanx::execution_tree::variable const& lhs,                          \
+        phylanx::execution_tree::variable& lhs,                                \
         phylanx::execution_tree::variable const& rhs);                         \
                                                                                \
     phylanx::execution_tree::variable op##_variables_gen(                      \
-        phylanx::execution_tree::variable const& lhs,                          \
+        phylanx::execution_tree::variable& lhs,                                \
         phylanx::execution_tree::primitive_argument_type const& rhs);          \
                                                                                \
     /* reverse operation */                                                    \
     phylanx::execution_tree::variable r##op##_variables_gen(                   \
-        phylanx::execution_tree::variable const& rhs,                          \
+        phylanx::execution_tree::variable& rhs,                                \
         phylanx::execution_tree::primitive_argument_type const& lhs);          \
     /**/
 
@@ -156,9 +180,9 @@ namespace phylanx { namespace execution_tree
 #undef PHYLANX_VARIABLE_OPERATION_DECLARATION
 #undef PHYLANX_VARIABLE_INPLACE_OPERATION_DECLARATION
 
-    ///////////////////////////////////////////////////////////////////////////
-    phylanx::execution_tree::variable unary_minus_variables(    // __neg__
-        phylanx::execution_tree::variable const& lhs);
+    ////////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::variable unary_minus_variables_gen(    // __neg__
+        phylanx::execution_tree::variable& lhs);
 
     phylanx::execution_tree::variable moving_average_variables(
         phylanx::execution_tree::variable& var,
@@ -169,6 +193,17 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::variable& var,
         phylanx::execution_tree::primitive_argument_type const& value,
         phylanx::execution_tree::primitive_argument_type const& momentum);
+
+    ////////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::variable get_variable_size(    // __len__
+        phylanx::execution_tree::variable& var);
+
+    phylanx::execution_tree::variable get_variable_item(    // __get_item__
+        phylanx::execution_tree::variable& var, std::size_t i);
+
+    phylanx::execution_tree::variable set_variable_item(    // __set_item__
+        phylanx::execution_tree::variable& var, std::size_t i,
+        phylanx::execution_tree::primitive_argument_type const& value);
 }}
 
 #endif
