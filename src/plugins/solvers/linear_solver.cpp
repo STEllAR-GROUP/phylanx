@@ -222,8 +222,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
          Returns:
 
-         A vector of eigenvalues approximate the matrix `a`, whose dimention is decided
+         A vector of eigenvalues approximate the matrix `a`, whose dimension is decided
          by n, solved using the Lanczos solver.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_arnoldi",
+                               R"(a, b, n, x
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+             n (scalar) : a scalar
+             x (vector) : a vector
+
+         Returns:
+
+         A vector of eigenvalues approximate the matrix `a`, whose dimension is decided
+         by n, solved using the Arnoldi solver.)"
         )
 #endif
     };
@@ -441,7 +455,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::iterative::LanczosTag tag;
                     x = blaze::iterative::solve(A, b, tag, n);
                     return arg_type{std::move(x)};
-                }}
+                }},
+            {"iterative_solver_arnoldi",
+                    // Iterative Arnoldi solver for eigenvalues
+                    // Note: Relies on BlazeIterative library and
+                    // need to be explicitly enabled
+             [](arg_type&& arg_0, arg_type&& arg_1,
+                primitive_argument_type&& arg_2) -> arg_type {
+                 std::int64_t n =
+                         extract_scalar_integer_value_strict(std::move(arg_2));
+                 storage2d_type A{blaze::trans(arg_0.matrix())};
+                 storage1d_type b{arg_1.vector()};
+                 storage1d_type x;
+                 blaze::iterative::ArnoldiTag tag;
+                 x = blaze::iterative::solve(A, b, tag, n);
+                 return arg_type{std::move(x)};
+             }}
 #endif
         };
         return lin_solver[name];
