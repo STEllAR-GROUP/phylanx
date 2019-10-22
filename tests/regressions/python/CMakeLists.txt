@@ -48,6 +48,7 @@ set(tests
     979_lazy_compilation_with_init
     1052_variable_set_dtype
     1054_variable_shape
+    1056_client_base
     array_len_494
     array_shape_486
     array_subscript_403

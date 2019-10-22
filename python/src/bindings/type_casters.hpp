@@ -1108,6 +1108,10 @@ namespace pybind11 { namespace detail
             handle src, bool convert, type_list<U, Us...>);
 
         template <typename... Us>
+        bool load_alternative(handle src, bool convert,
+            type_list<phylanx::execution_tree::primitive, Us...>);
+
+        template <typename... Us>
         bool load_alternative(
             handle src, bool convert, type_list<phylanx::ast::nil, Us...>);
 
@@ -1284,6 +1288,21 @@ namespace pybind11 { namespace detail
         if (caster.load(src, convert))
         {
             value = Derived{std::move(cast_op<U>(caster))};
+            return true;
+        }
+        return load_alternative(src, convert, type_list<Us...>{});
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename... Us>
+    bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
+        bool convert, type_list<phylanx::execution_tree::primitive, Us...>)
+    {
+        auto caster = make_caster<phylanx::execution_tree::primitive>();
+        if (caster.load(src, convert))
+        {
+            value =
+                Derived{cast_op<phylanx::execution_tree::primitive>(caster)};
             return true;
         }
         return load_alternative(src, convert, type_list<Us...>{});
