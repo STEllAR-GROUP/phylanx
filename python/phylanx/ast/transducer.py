@@ -102,10 +102,14 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                lambda into Physl and pass along the compiled tree.
             """
 
-            if type(val).__name__ == "_PhylanxDecorator":
+            typename = type(val).__name__
+            if typename == "_PhylanxDecorator":
                 return val.backend.lazy()
 
-            elif isinstance(val, types.FunctionType):
+            if typename == "_PhylanxLazyDecorator":
+                return val()
+
+            if isinstance(val, types.FunctionType):
                 fn_src = inspect.getsource(val)
                 fn_src = fn_src.strip()
                 fn_ast = ast.parse(fn_src)
@@ -156,6 +160,26 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
         def generate_ast(self):
             return generate_phylanx_ast(self.__src__)
+
+    class _PhylanxLazyDecorator:
+        def __init__(self, decorator):
+            """
+            :function:decorator the decorated funtion.
+            """
+            self.decorator = decorator
+
+        def __call__(self, *args, **kwargs):
+            """Invoke this decorator using the given arguments"""
+
+            return self.decorator.lazy(*args, **kwargs)
+
+    # expose lazy version of the decorator
+    def lazy(decorator):
+        if type(decorator).__name__ != "_PhylanxDecorator":
+            raise InvalidDecoratorArgumentError
+        return _PhylanxLazyDecorator(decorator)
+
+    setattr(Phylanx, 'lazy', lazy)
 
     if callable(__phylanx_arg):
         return _PhylanxDecorator(__phylanx_arg)

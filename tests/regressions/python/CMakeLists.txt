@@ -41,6 +41,7 @@ set(tests
     933_arange
     933_eval_wrapper
     936_arithmetic_operations
+    942_lazy_fmap
     956_named_argument_underscore
     962_broadcast_logical_operations
     966_named_arguments
