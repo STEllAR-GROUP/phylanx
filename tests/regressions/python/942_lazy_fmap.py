@@ -51,11 +51,11 @@ def sum_eager(x, axis=None, keepdims=False):
 sum = Phylanx.lazy(sum_eager)
 
 
-def test_map():
-    x = [1, 2, 3]
+def test_map(x):
     vx = variable(x)
     kx = eval(map_fn(sum, vx))
     return kx
 
 
-assert(test_map() == [1, 2, 3])
+assert(np.all(test_map(np.array([[1, 2, 3]])) == [6]))
+assert(np.all(test_map(np.array([1, 2, 3])) == [1, 2, 3]))
