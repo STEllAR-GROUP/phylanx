@@ -34,11 +34,12 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 void test_cannon_product(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
-    phylanx::execution_tree::primitive_argument_type cannon_result = compile_and_run(name, code);
+    phylanx::execution_tree::primitive_argument_type cannon_result =
+        compile_and_run(name, code);
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
     hpx::cout << cannon_result << " : " << comparison << hpx::endl;
-    HPX_TEST_EQ(cannon_result, comparison );
+    HPX_TEST_EQ(cannon_result, comparison);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -186,7 +187,6 @@ void test_cannon_product_2()
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-
     test_cannon_product_0();
     test_cannon_product_1();
     test_cannon_product_2();
