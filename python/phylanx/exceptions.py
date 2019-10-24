@@ -6,6 +6,7 @@
 
 
 class InvalidDecoratorArgumentError(Exception):
+    """Phylanx decorator or Phylanx.lazy used with invalid arguments"""
     pass
 
 

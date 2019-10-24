@@ -60,8 +60,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return p->eval(hpx::launch::sync, std::move(arg), std::move(ctx));
     }
 
-    namespace detail
-    {
+    namespace detail {
+
         template <typename T>
         struct fmap_1_vector
         {
@@ -104,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return result;
             }
         };
-    }
+    }    // namespace detail
 
     primitive_argument_type fmap_operation::fmap_1_vector(primitive const* p,
         primitive_argument_type&& arg, eval_context ctx) const
@@ -141,54 +141,94 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message("unexpected numeric type"));
     }
 
-    namespace detail
-    {
+    namespace detail {
+
+        template <typename T>
+        ir::node_data<T> to_array_type_2d(
+            std::vector<ir::node_data<T>>&& results, std::size_t size,
+            std::string const& name, std::string const& codename)
+        {
+            std::size_t dims = 0;
+            for (auto const& elem : results)
+            {
+                dims = (std::max)(dims, elem.num_dimensions());
+            }
+
+            if (dims >= 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "detail::to_array_type_2d",
+                    util::generate_error_message(
+                        "unexpected numeric type, expecting scalars or vectors",
+                        name, codename));
+            }
+
+            // handle case where lambda returns 0d values
+            if (dims == 0)
+            {
+                using vector_type = typename ir::node_data<T>::storage1d_type;
+                vector_type result(results.size(), T{0});
+
+                for (std::size_t i = 0; i != results.size(); ++i)
+                {
+                    result[i] = results[i].scalar();
+                }
+
+                return ir::node_data<T>{std::move(result)};
+            }
+
+            // handle case where lambda returns 1d values
+            using matrix_type = typename ir::node_data<T>::storage2d_type;
+            matrix_type result(results.size(), size, T{0});
+
+            for (std::size_t i = 0; i != results.size(); ++i)
+            {
+                if (dims != results[i].num_dimensions())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "detail::to_array_type_2d",
+                        util::generate_error_message(
+                            "inconsistent numeric type, expecting vectors",
+                            name, codename));
+                }
+                else
+                {
+                    blaze::row(result, i) = blaze::trans(results[i].vector());
+                }
+            }
+
+            return ir::node_data<T>{std::move(result)};
+        }
+
         template <typename T>
         struct fmap_1_matrix
         {
-            using vector_type = typename ir::node_data<T>::storage1d_type;
-
-            using matrix_type = typename ir::node_data<T>::storage2d_type;
             using matrix_view_type =
                 typename ir::node_data<T>::custom_storage2d_type;
 
-            static matrix_type call(primitive const* p,
+            static ir::node_data<T> call(primitive const* p,
                 matrix_view_type const& m, std::string const& name,
                 std::string const& codename, eval_context ctx)
             {
-                matrix_type result(m.rows(), m.columns(), T{0});
+                std::vector<ir::node_data<T>> result;
+                result.reserve(m.rows());
 
+                using vector_type = typename ir::node_data<T>::storage1d_type;
                 for (std::size_t i = 0; i != m.rows(); ++i)
                 {
                     vector_type row{blaze::trans(blaze::row(m, i))};
 
-                    auto r = p->eval(hpx::launch::sync,
-                        primitive_argument_type{std::move(row)}, ctx);
-
-                    if (valid(r))
-                    {
-                        auto num_result =
-                            extract_numeric_value(std::move(r), name, codename);
-
-                        if (num_result.num_dimensions() != 1)
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "detail::fmap_1_matrix::call",
-                                util::generate_error_message(
-                                    "the invoked lambda returned an unexpected "
-                                    "type (should be a vector value)",
-                                    name, codename));
-                        }
-
-                        blaze::row(result, i) =
-                            blaze::trans(num_result.vector());
-                    }
+                    result.emplace_back(extract_numeric_value(
+                        p->eval(hpx::launch::sync,
+                            primitive_argument_type{std::move(row)}, ctx),
+                        name, codename));
                 }
 
-                return result;
+                return to_array_type_2d(
+                    std::move(result), m.columns(), name, codename);
             }
         };
-    }
+    }    // namespace detail
 
     primitive_argument_type fmap_operation::fmap_1_matrix(primitive const* p,
         primitive_argument_type&& arg, eval_context ctx) const
@@ -197,27 +237,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             auto m = extract_integer_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
-            return primitive_argument_type{ir::node_data<std::int64_t>{
+            return primitive_argument_type{
                 detail::fmap_1_matrix<std::int64_t>::call(
-                    p, m.matrix(), name_, codename_, std::move(ctx))}};
+                    p, m.matrix(), name_, codename_, std::move(ctx))};
         }
 
         if (is_boolean_operand_strict(arg))
         {
             auto m = extract_boolean_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
-            return primitive_argument_type{ir::node_data<std::uint8_t>{
+            return primitive_argument_type{
                 detail::fmap_1_matrix<std::uint8_t>::call(
-                    p, m.matrix(), name_, codename_, std::move(ctx))}};
+                    p, m.matrix(), name_, codename_, std::move(ctx))};
         }
 
         if (is_numeric_operand(arg))
         {
             auto m = extract_numeric_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
-            return primitive_argument_type{
-                ir::node_data<double>{detail::fmap_1_matrix<double>::call(
-                    p, m.matrix(), name_, codename_, std::move(ctx))}};
+            return primitive_argument_type{detail::fmap_1_matrix<double>::call(
+                p, m.matrix(), name_, codename_, std::move(ctx))};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
