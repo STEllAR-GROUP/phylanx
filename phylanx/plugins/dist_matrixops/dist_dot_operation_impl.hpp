@@ -516,7 +516,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             else
             {
                 // calculate the dot product with remote tile
-                // TODO ensure that this is generating a sub-matrix
                 //dot_result += blaze::DynamicVector<T>{1};
                 result_matrix +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
