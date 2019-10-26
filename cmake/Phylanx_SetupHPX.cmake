@@ -20,7 +20,9 @@ macro(phylanx_setup_hpx)
     endif()
 
     # make sure that configured build type for Phylanx matches the one used for HPX
-    if(NOT (${HPX_BUILD_TYPE} STREQUAL ${CMAKE_BUILD_TYPE}))
+    get_property(_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if (NOT _GENERATOR_IS_MULTI_CONFIG AND
+        NOT (${HPX_BUILD_TYPE} STREQUAL ${CMAKE_BUILD_TYPE}))
       list(FIND ${CMAKE_BUILD_TYPE} ${HPX_BUILD_TYPE} __pos)
       if(${__pos} EQUAL -1)
         phylanx_warn(

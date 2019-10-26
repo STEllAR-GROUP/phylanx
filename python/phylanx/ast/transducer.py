@@ -93,6 +93,11 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             assert len(tree.body) == 1
             return tree
 
+        def get_physl_source(self):
+            """Return generated PhySL source string"""
+
+            return self.backend.get_physl_source()
+
         def compile_function(self, func):
             fn_src = inspect.getsource(func).strip()
             fn_ast = ast.parse(fn_src)
