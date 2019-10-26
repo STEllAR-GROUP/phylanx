@@ -469,7 +469,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::size_t count = 0;
             for (auto it = first; it != last; ++it, ++count)
             {
-                if (count != 0 && count != size-1 &&
+                if (count != 0 && count != std::size_t(size)-1 &&
                     !ast::detail::is_identifier(it->second) &&
                     !ast::detail::is_function_call(it->second))
                 {
@@ -511,7 +511,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::size_t count = 0;
             for (auto it = first; it != last; ++it, ++count)
             {
-                if (count != 0 && count != size-1 &&
+                if (count != 0 && count != std::size_t(size)-1 &&
                     !ast::detail::is_identifier(it->second) &&
                     !ast::detail::is_function_call(it->second))
                 {

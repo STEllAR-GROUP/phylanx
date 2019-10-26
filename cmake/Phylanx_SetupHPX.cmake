@@ -30,8 +30,16 @@ macro(phylanx_setup_hpx)
       endif()
     endif()
 
-    include_directories(${HPX_INCLUDE_DIRS})
-    link_directories(${HPX_LIBRARY_DIR})
+    if(HPX_LIBRARIES)
+        include_directories(${HPX_INCLUDE_DIRS})
+        link_directories(${HPX_LIBRARY_DIR})
+    elseif(TARGET hpx)
+        set(HPX_LIBRARIES hpx)
+    else()
+        phylanx_error(
+          "Could not properly setup HPX dependency "
+          "(HPX_LIBRARIES is not set and target 'hpx' does not exist)")
+    endif()
 
     if(HPX_CXX_STANDARD)
       set(__hpx_standard "using C++${HPX_CXX_STANDARD}")

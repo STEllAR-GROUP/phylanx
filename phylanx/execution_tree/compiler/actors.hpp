@@ -423,8 +423,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         entry_point() = default;        // needed for serialization
 
         entry_point(std::string const& func_name, std::string const& name)
-          : func_name_(func_name)
-          , name_(name)
+          : name_(name)
+          , func_name_(func_name)
         {
         }
 

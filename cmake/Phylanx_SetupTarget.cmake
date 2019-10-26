@@ -66,6 +66,11 @@ function(phylanx_setup_target target)
     set(name "${target}")
   endif()
 
+  set(nohpxinit OFF)
+  if(target_NOHPX_INIT)
+    set(nohpxinit ON)
+  endif()
+
   set(target_STATIC_LINKING OFF)
   if(PHYLANX_WITH_STATIC_LINKING)
     set(target_STATIC_LINKING ON)
@@ -97,6 +102,10 @@ function(phylanx_setup_target target)
 
     if(MSVC)
       string(REPLACE ";" ":" _prefix "${_prefix}")
+    endif()
+
+    if(NOT target_STATIC_LINKING AND NOT nohpxinit)
+      set(phylanx_libs ${phylanx_libs} hpx_init)
     endif()
 
     set_property(TARGET ${target} APPEND
@@ -168,10 +177,10 @@ function(phylanx_setup_target target)
 
   # linker instructions
   if(TARGET blaze::blaze)
-    set(phylanx_libs blaze::blaze)
+    set(phylanx_libs ${phylanx_libs} blaze::blaze)
   endif()
   if(TARGET BlazeTensor::BlazeTensor)
-    set(phylanx_libs BlazeTensor::BlazeTensor)
+    set(phylanx_libs ${phylanx_libs} BlazeTensor::BlazeTensor)
   endif()
 
   if(NOT target_NOLIBS)
@@ -189,14 +198,17 @@ function(phylanx_setup_target target)
     endif()
     if(HPX_WITH_DYNAMIC_HPX_MAIN AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND ("${_type}" STREQUAL "EXECUTABLE"))
       set_target_properties(${target} PROPERTIES LINK_FLAGS "${HPX_LINKER_FLAGS}")
-      set(phylanx_libs "${HPX_LINK_LIBRARIES}${phylanx_libs}")
+      set(phylanx_libs "${HPX_LINK_LIBRARIES} ${phylanx_libs}")
     endif()
   else()
     target_compile_options(${target} PUBLIC ${CXX_FLAG})
   endif()
 
-  phylanx_debug("phylanx_setup_target.${target}: phylanx_libs:" ${phylanx_libs})
-  target_link_libraries(${target} ${PHYLANX_TLL_PUBLIC} ${phylanx_libs} ${target_DEPENDENCIES})
+  if(phylanx_libs)
+    string(STRIP "${phylanx_libs}" __phylanx_libs)
+  endif()
+  phylanx_debug("phylanx_setup_target.${target}: phylanx_libs:" ${__phylanx_libs})
+  target_link_libraries(${target} ${PHYLANX_TLL_PUBLIC} ${__phylanx_libs} ${target_DEPENDENCIES})
 
   get_target_property(target_EXCLUDE_FROM_ALL ${target} EXCLUDE_FROM_ALL)
 
