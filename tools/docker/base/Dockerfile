@@ -57,6 +57,7 @@ RUN apt-get update &&                                                           
                                                                                     \
     git clone --depth=1 https://github.com/BlueBrain/HighFive.git /highfive-src  && \
     cmake -H/highfive-src -B/highfive-build -DHIGHFIVE_UNIT_TESTS=OFF               \
+        -DHIGHFIVE_EXAMPLES=OFF                                                     \
         -DUSE_BOOST=OFF                                                          && \
     cmake --build /highfive-build --target install                               && \
     rm -rf /highfive-{src,build}
