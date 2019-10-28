@@ -149,12 +149,11 @@ jobs:
                         -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1}    \
                         -DPHYLANX_WITH_GIT_BRANCH="${CIRCLE_BRANCH}"\
                         -DPHYLANX_WITH_GIT_TAG="${CIRCLE_TAG}"      \
-                        -DPHYLANX_WITH_TOOLS=On                     \
-                        -DPHYLANX_WITH_BLAZE_TENSOR=ON              \
+                        -DPHYLANX_WITH_TOOLS=ON                     \
                         -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
-                        -DPHYLANX_WITH_DOCUMENTATION=On             \
-                        -DPHYLANX_WITH_HIGHFIVE=On                  \
-                        -DPHYLANX_WITH_CXX14=On
+                        -DPHYLANX_WITH_DOCUMENTATION=ON             \
+                        -DPHYLANX_WITH_HIGHFIVE=ON                  \
+                        -DPHYLANX_WITH_CXX14=ON
             - persist_to_workspace:
                 root: /
                 paths:
