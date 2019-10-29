@@ -489,6 +489,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // this must be a list to ensure stable references
     struct program
     {
+    private:
+        struct sort_entry_points
+        {
+            bool operator()(compiler::entry_point const& lhs,
+                compiler::entry_point const& rhs) const
+            {
+                return lhs.func_name_ < rhs.func_name_;
+            }
+        };
+
+        using entry_point_set =
+            std::set<compiler::entry_point, sort_entry_points>;
+
+    public:
         program() = default;
 
         ///////////////////////////////////////////////////////////////////////
@@ -527,18 +541,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         compiler::entry_point const& add_entry_point(compiler::entry_point&& ep)
         {
-            entrypoints_.emplace_back(std::move(ep));
-            return entrypoints_.back();
+            last_inserted_ = entrypoints_.emplace(std::move(ep)).first;
+            return *last_inserted_;
         }
 
         compiler::entry_point entry_point() const
         {
-            return entrypoints_.back();
+            return *last_inserted_;
         }
 
         bool has_entry_points() const
         {
-            return !entrypoints_.back().functions().empty();
+            return !entrypoints_.empty() &&
+                !last_inserted_->functions().empty();
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -547,7 +562,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return scratchpad_;
         }
 
-        std::list<compiler::entry_point> const& entry_points() const
+        entry_point_set const& entry_points() const
         {
             return entrypoints_;
         }
@@ -557,21 +572,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             HPX_ASSERT(has_entry_points());
             std::set<std::string> functions;
-            return entrypoints_.back().get_expression_topology(
+            return last_inserted_->get_expression_topology(
                 std::move(functions));
         }
         topology get_expression_topology(
             std::set<std::string>&& functions) const
         {
             HPX_ASSERT(has_entry_points());
-            return entrypoints_.back().get_expression_topology(
+            return last_inserted_->get_expression_topology(
                 std::move(functions));
         }
         topology get_expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const
         {
             HPX_ASSERT(has_entry_points());
-            return entrypoints_.back().get_expression_topology(
+            return last_inserted_->get_expression_topology(
                 std::move(functions), std::move(resolve_children));
         }
 
@@ -585,7 +600,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             unsigned);
 
         std::map<std::string, std::list<function>> scratchpad_;
-        std::list<compiler::entry_point> entrypoints_;
+        entry_point_set entrypoints_;
+        entry_point_set::iterator last_inserted_;
     };
 
     struct function_list

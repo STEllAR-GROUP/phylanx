@@ -203,7 +203,7 @@ namespace phylanx { namespace bindings
     phylanx::execution_tree::primitive bound_code_for(
         phylanx::bindings::compiler_state& state,
         std::string const& file_name, std::string const& func_name,
-        pybind11::args args);
+        pybind11::args args, pybind11::kwargs kwargs);
 
     ///////////////////////////////////////////////////////////////////////////
     // initialize measurements for tree evaluations
