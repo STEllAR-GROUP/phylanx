@@ -84,20 +84,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // What row of RHS tiles am I?
         // What col of LHS tiles am I?
-        std::size_t lhs_tile_width = lhs_num_cols / lhs_col_span.size();
-        std::size_t rhs_tile_height = rhs_num_rows / rhs_row_span.size();
+        std::size_t lhs_size_of_tile_row = lhs_num_cols / lhs_col_span.size();
+        std::size_t rhs_size_of_tile_col = rhs_num_rows / rhs_row_span.size();
         // Maybe this error should be split to be more descriptive
         if (lhs_num_cols % lhs_col_span.size() != 0 ||
             rhs_num_rows % rhs_row_span.size() != 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_cannon_product::confirm_tile_validity",
+                "dist_cannon_product::product",
                 generate_error_message(
                     "All tiles in the tile row/column do not have "
                     "equal height/width"));
         }
-        std::vector<std::size_t> lhs_tile_row(lhs_tile_width);
-        std::vector<std::size_t> rhs_tile_col(rhs_tile_height);
+        std::vector<std::size_t> lhs_tile_row;
+        std::vector<std::size_t> rhs_tile_col;
         std::size_t count = 0;
         // This could maybe be replaced with a std::copy_if
         if (lhs_localities.tiles_.size() != rhs_localities.tiles_.size() &&
@@ -105,7 +105,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             rhs_localities.tiles_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_cannon_product::confirm_tile_validity",
+                "dist_cannon_product::product",
                 generate_error_message(
                     "number of tiles in lhs and rhs must be equal"));
         }
@@ -115,17 +115,27 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // guaranteed to be sorted by locality index
             auto const& tmp_lhs_tile = lhs_localities.tiles_[i];
             auto const& tmp_rhs_tile = rhs_localities.tiles_[i];
-            if (tmp_lhs_tile.spans_[0].start_ == lhs_row_span.start_ &&
-                tmp_lhs_tile.spans_[0].size() == lhs_row_span.size())
+            if (tmp_lhs_tile.spans_[1].start_ == lhs_row_span.start_ &&
+                tmp_lhs_tile.spans_[1].size() == lhs_row_span.size())
             {
                 lhs_tile_row.push_back(count);
             }
-            if (tmp_rhs_tile.spans_[1].start_ == rhs_col_span.start_ &&
-                tmp_rhs_tile.spans_[1].size() == rhs_col_span.size())
+            if (tmp_rhs_tile.spans_[0].start_ == rhs_col_span.start_ &&
+                tmp_rhs_tile.spans_[0].size() == rhs_col_span.size())
             {
                 rhs_tile_col.push_back(count);
             }
             count++;
+        }
+        if (lhs_tile_row.size() < 2 || rhs_tile_col.size() < 2)
+        {
+            // This is debateable, maybe we should allow single tile
+            // rows or columns
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_cannon_product::product",
+                generate_error_message(
+                    "cannon_product requires tile rows and columns of size at "
+                    "least 2"));
         }
         std::int64_t max_start_col = 0;
         std::int64_t max_start_row = 0;
@@ -134,15 +144,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::size_t lhs_tile_idx = lhs_tile_row[i];
             std::size_t rhs_tile_idx = rhs_tile_col[i];
             std::size_t lhs_local_width =
-                lhs_localities.tiles_[lhs_tile_idx].spans_[1].size();
+                lhs_localities.tiles_[lhs_tile_idx].spans_[0].size();
             std::size_t rhs_local_height =
-                rhs_localities.tiles_[rhs_tile_idx].spans_[0].size();
-            if (lhs_localities.tiles_[lhs_tile_idx].spans_[1].start_ <
+                rhs_localities.tiles_[rhs_tile_idx].spans_[1].size();
+            if (lhs_localities.tiles_[lhs_tile_idx].spans_[0].start_ <
                     max_start_col ||
-                lhs_local_width != lhs_tile_width ||
-                rhs_localities.tiles_[rhs_tile_idx].spans_[0].start_ <
+                lhs_local_width != lhs_col_span.size() ||
+                rhs_localities.tiles_[rhs_tile_idx].spans_[1].start_ <
                     max_start_row ||
-                rhs_local_height != rhs_tile_height)
+                rhs_local_height != rhs_row_span.size())
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "dist_cannon_product::confirm_tile_validity",
@@ -150,9 +160,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         "tiles not sorted in order of locality"));
             }
             max_start_col =
-                lhs_localities.tiles_[lhs_tile_idx].spans_[1].start_;
+                lhs_localities.tiles_[lhs_tile_idx].spans_[0].start_;
             max_start_row =
-                rhs_localities.tiles_[rhs_tile_idx].spans_[0].start_;
+                rhs_localities.tiles_[rhs_tile_idx].spans_[1].start_;
         }
 
         // construct a distributed matrix object for both tiles
@@ -180,20 +190,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message(
                     "This locality not present in locality list"));
         }
-
-        blaze::DynamicMatrix<T> result_matrix(lhs.dimension(0), rhs.dimension(1), T{0});
+        // This needs greater granularity to determine this
+        blaze::DynamicMatrix<T> result_matrix(
+            lhs.dimension(0), rhs.dimension(1), T{0});
 
         // 2d2d doesn't use every tile of the RHS, only those that contain
         // the rows with the same index as the columns the LHS has
 
-        std::size_t lhs_iter_idx = (lhs_local_tile_index++)%lhs_tile_row.size();
-        std::size_t rhs_iter_idx = (rhs_local_tile_index++)&rhs_tile_col.size();
+        std::size_t lhs_iter_idx =
+            (lhs_local_tile_index + 1) % lhs_tile_row.size();
+        std::size_t rhs_iter_idx =
+            (rhs_local_tile_index + 1) % rhs_tile_col.size();
         for (int i = 0; i < lhs_tile_row.size(); i++)
         {
             result_matrix += lhs_data.fetch(lhs_tile_row[lhs_iter_idx]).get() *
                 rhs_data.fetch(rhs_tile_col[rhs_iter_idx]).get();
-            lhs_iter_idx = (lhs_iter_idx++) % lhs_tile_row.size();
-            rhs_iter_idx = (rhs_iter_idx++) % rhs_tile_col.size();
+            lhs_iter_idx = (lhs_iter_idx + 1) % lhs_tile_row.size();
+            rhs_iter_idx = (rhs_iter_idx + 1) % rhs_tile_col.size();
         }
 
         // collect overall result if left hand side vector is distributed
