@@ -11,10 +11,10 @@
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/errors/throw_exception.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -24,12 +24,11 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace execution_tree { namespace primitives {
     ////////////////////////////////////////////////////////////////////////////
     primitive create_annotate(hpx::id_type const& locality,
-        primitive_arguments_type&& operands,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type&& operands, std::string const& name,
+        std::string const& codename)
     {
         static std::string type("annotate");
         return create_primitive_component(
@@ -49,15 +48,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         The `target` annotated with the list of values given by `*args`.)";
 
-    match_pattern_type const annotate_primitive::match_data_annotate =
-    {
+    match_pattern_type const annotate_primitive::match_data_annotate = {
         hpx::util::make_tuple("annotate",
             std::vector<std::string>{
-                "annotate(_1_target, __arg(_2_args, nil))"
-            },
+                "annotate(_1_target, __arg(_2_args, nil))"},
             &create_annotate, &create_primitive<annotate_primitive>,
-            annotate_helpstring)
-    };
+            annotate_helpstring)};
 
     constexpr const char* const annotate_d_helpstring = R"(
         target, name, args
@@ -74,15 +70,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         The `target` annotated with the list of values given by `*args`. The
         `target` is also identified by the given `name` across localities.)";
 
-    match_pattern_type const annotate_primitive::match_data_annotate_d =
-    {
+    match_pattern_type const annotate_primitive::match_data_annotate_d = {
         hpx::util::make_tuple("annotate_d",
             std::vector<std::string>{
-                "annotate_d(_1_target, _2_name, __arg(_3_args, nil))"
-            },
+                "annotate_d(_1_target, _2_name, __arg(_3_args, nil))"},
             &create_annotate, &create_primitive<annotate_primitive>,
-            annotate_d_helpstring)
-    };
+            annotate_d_helpstring)};
 
     ////////////////////////////////////////////////////////////////////////////
     annotate_primitive::annotate_primitive(primitive_arguments_type&& operands,
@@ -108,10 +101,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         // retrieve local annotation and generate the overall annotation
         annotation_information ann_info{std::move(ann_name), 0ll};
-        annotation locality_ann;
-        auto localities = localities_annotation(locality_ann,
-            annotation{std::move(args)}, ann_info, name_, codename_);
-
+        annotation localities;
+        if (phylanx::execution_tree::extract_string_value(*args.begin()) ==
+            "args")
+        {
+            annotation tmp(args);
+            annotation locality_ann;
+            if (tmp.find("locality", locality_ann))
+            {
+                annotation tiles_ann;
+                if (tmp.find("tile", tiles_ann))
+                {
+                    ir::range tmp = tiles_ann.get_range();
+                    localities = localities_annotation(locality_ann,
+                        annotation{std::move(tmp)}, ann_info, name_, codename_);
+                }
+                else
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "annotate_primitive::annotate_d",
+                        generate_error_message("tiles annotation not found"));
+                }
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "annotate_primitive::annotate_d",
+                    generate_error_message("locality annotation not found"));
+            }
+        }
+        else
+        {
+            if (phylanx::execution_tree::extract_string_value(*args.begin()) ==
+                "tiles")
+            {
+                annotation locality_ann;
+                localities = localities_annotation(locality_ann,
+                    annotation{std::move(args)}, ann_info, name_, codename_);
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "annotate_primitive::annotate_d",
+                    generate_error_message(
+                        "no args annotation and tiles annotation not first"));
+            }
+        }
         target.set_annotation(std::move(localities), name_, codename_);
         return std::move(target);
     }
@@ -132,12 +167,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto f = value_operand(operands[0], args, name_, codename_, ctx);
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
+        return hpx::dataflow(
+            hpx::launch::sync,
             [this_ = std::move(this_)](
-                    hpx::future<primitive_argument_type>&& target,
-                    hpx::future<ir::range>&& args)
-            ->  primitive_argument_type
-            {
+                hpx::future<primitive_argument_type>&& target,
+                hpx::future<ir::range>&& args) -> primitive_argument_type {
                 return this_->annotate(target.get(), args.get());
             },
             std::move(f),
@@ -160,13 +194,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto fname = string_operand(operands[1], args, name_, codename_, ctx);
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
+        return hpx::dataflow(
+            hpx::launch::sync,
             [this_ = std::move(this_)](
-                    hpx::future<primitive_argument_type>&& target,
-                    hpx::future<std::string>&& name,
-                    hpx::future<ir::range>&& args)
-            ->  primitive_argument_type
-            {
+                hpx::future<primitive_argument_type>&& target,
+                hpx::future<std::string>&& name,
+                hpx::future<ir::range>&& args) -> primitive_argument_type {
                 return this_->annotate_d(target.get(), name.get(), args.get());
             },
             std::move(ftarget), std::move(fname),
@@ -188,4 +221,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return eval_annotate(operands, args, std::move(ctx));
     }
 }}}
-

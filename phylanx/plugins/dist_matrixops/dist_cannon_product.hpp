@@ -72,7 +72,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::string const& name = "", std::string const& codename = "")
     {
         return execution_tree::create_primitive_component(
-            locality, "dot_d", std::move(operands), name, codename);
+            locality, "cannon_product", std::move(operands), name, codename);
     }
 }}}
 #endif
