@@ -43,10 +43,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
-
         template <typename T>
-        execution_tree::primitive_argument_type product(
-            ir::node_data<T>&& lhs,
+        execution_tree::primitive_argument_type product(ir::node_data<T>&& lhs,
             ir::node_data<T>&& rhs,
             execution_tree::localities_information&& lhs_localities,
             execution_tree::localities_information const& rhs_localities) const;
