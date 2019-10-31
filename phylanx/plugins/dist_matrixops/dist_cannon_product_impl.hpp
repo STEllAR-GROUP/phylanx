@@ -82,10 +82,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::tiling_span const& rhs_row_span =
             rhs_localities.get_span(1);
 
-        // What row of RHS tiles am I?
-        // What col of LHS tiles am I?
-        std::size_t lhs_size_of_tile_row = lhs_num_cols / lhs_col_span.size();
-        std::size_t rhs_size_of_tile_col = rhs_num_rows / rhs_row_span.size();
         // Maybe this error should be split to be more descriptive
         if (lhs_num_cols % lhs_col_span.size() != 0 ||
             rhs_num_rows % rhs_row_span.size() != 0)
