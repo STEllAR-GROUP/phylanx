@@ -42,7 +42,6 @@ phylanx_include(
 )
 
 phylanx_include(
-  SetupHPX
   SetupBlaze
   SetupPybind11
 )

@@ -104,9 +104,9 @@ function(phylanx_setup_target target)
       string(REPLACE ";" ":" _prefix "${_prefix}")
     endif()
 
-    if(NOT target_STATIC_LINKING AND NOT nohpxinit)
-      set(phylanx_libs ${phylanx_libs} hpx_init)
-    endif()
+    # if(NOT target_STATIC_LINKING AND NOT nohpxinit)
+    #   set(phylanx_libs ${phylanx_libs} hpx_init)
+    # endif()
 
     set_property(TARGET ${target} APPEND
                  PROPERTY COMPILE_DEFINITIONS
@@ -196,10 +196,10 @@ function(phylanx_setup_target target)
     if(DEFINED PHYLANX_LIBRARIES)
       set(phylanx_libs ${phylanx_libs} ${PHYLANX_LIBRARIES})
     endif()
-    if(HPX_WITH_DYNAMIC_HPX_MAIN AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND ("${_type}" STREQUAL "EXECUTABLE"))
-      set_target_properties(${target} PROPERTIES LINK_FLAGS "${HPX_LINKER_FLAGS}")
-      set(phylanx_libs "${HPX_LINK_LIBRARIES} ${phylanx_libs}")
-    endif()
+    # if(HPX_WITH_DYNAMIC_HPX_MAIN AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND ("${_type}" STREQUAL "EXECUTABLE"))
+    #   set_target_properties(${target} PROPERTIES LINK_FLAGS "${HPX_LINKER_FLAGS}")
+    #   set(phylanx_libs "${HPX_LINK_LIBRARIES} ${phylanx_libs}")
+    # endif()
   else()
     target_compile_options(${target} PUBLIC ${CXX_FLAG})
   endif()
@@ -217,9 +217,16 @@ function(phylanx_setup_target target)
     set(install_export EXPORT PhylanxTargets)
   endif()
 
-  if(target_INSTALL AND NOT target_EXCLUDE_FROM_ALL)
-    install(TARGETS ${target} ${target_INSTALL_FLAGS} ${install_export})
-  endif()
+  hpx_setup_target(
+    ${target}
+    TYPE ${_type}
+    FOLDER ${target_FOLDER}
+  )
+  # if(target_INSTALL AND NOT target_EXCLUDE_FROM_ALL)
+  #   install(TARGETS ${target} ${target_INSTALL_FLAGS} ${install_export})
+  # endif()
+
+
 endfunction()
 
 cmake_policy(POP)
