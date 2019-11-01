@@ -6,6 +6,7 @@
 set(tests
     file_primitives
     file_csv_primitives
+	file_csv_d_primitives
    )
 
 if(PHYLANX_WITH_HIGHFIVE)
