@@ -107,27 +107,18 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         {
             annotation tmp(args);
             annotation locality_ann;
-            if (tmp.find("locality", locality_ann))
+            annotation tiles_ann;
+            if (tmp.find("locality", locality_ann) && tmp.find("tile", tiles_ann))
             {
-                annotation tiles_ann;
-                if (tmp.find("tile", tiles_ann))
-                {
-                    ir::range tmp = tiles_ann.get_range();
-                    localities = localities_annotation(locality_ann,
-                        annotation{std::move(tmp)}, ann_info, name_, codename_);
-                }
-                else
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "annotate_primitive::annotate_d",
-                        generate_error_message("tiles annotation not found"));
-                }
+                ir::range tmp = tiles_ann.get_range();
+                localities = localities_annotation(locality_ann,
+                    annotation{std::move(tmp)}, ann_info, name_, codename_);
             }
             else
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "annotate_primitive::annotate_d",
-                    generate_error_message("locality annotation not found"));
+                    generate_error_message("locality and/or tile annotation not found"));
             }
         }
         else
