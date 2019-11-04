@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
 #include <hpx/assertion.hpp>
+#include <hpx/errors.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/serialization/serialization_fwd.hpp>
@@ -541,6 +542,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         compiler::entry_point const& add_entry_point(compiler::entry_point&& ep)
         {
+//             auto it = entrypoints_.find(ep);
+//             if (it != entrypoints_.end())
+//             {
+//                 // make sure functions are not being redefined
+//                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
+//                     "program::add_entry_point",
+//                     hpx::util::format(
+//                         "duplicate function definition: {}", ep.func_name_));
+//             }
+
             last_inserted_ = entrypoints_.emplace(std::move(ep)).first;
             return *last_inserted_;
         }

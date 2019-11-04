@@ -16,6 +16,7 @@
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <list>

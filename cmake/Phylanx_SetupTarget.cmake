@@ -185,9 +185,6 @@ function(phylanx_setup_target target)
 
   if(NOT target_NOLIBS)
     set(phylanx_libs ${phylanx_libs} "general;phylanx_component")
-#    if(NOT target_STATIC_LINKING)
-#      set(phylanx_libs ${phylanx_libs})
-#    endif()
     phylanx_handle_component_dependencies(target_COMPONENT_DEPENDENCIES)
     set(phylanx_libs ${phylanx_libs} ${target_COMPONENT_DEPENDENCIES})
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -196,10 +193,6 @@ function(phylanx_setup_target target)
     if(DEFINED PHYLANX_LIBRARIES)
       set(phylanx_libs ${phylanx_libs} ${PHYLANX_LIBRARIES})
     endif()
-    # if(HPX_WITH_DYNAMIC_HPX_MAIN AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND ("${_type}" STREQUAL "EXECUTABLE"))
-    #   set_target_properties(${target} PROPERTIES LINK_FLAGS "${HPX_LINKER_FLAGS}")
-    #   set(phylanx_libs "${HPX_LINK_LIBRARIES} ${phylanx_libs}")
-    # endif()
   else()
     target_compile_options(${target} PUBLIC ${CXX_FLAG})
   endif()
@@ -217,15 +210,33 @@ function(phylanx_setup_target target)
     set(install_export EXPORT PhylanxTargets)
   endif()
 
+  if(target_INSTALL AND NOT target_EXCLUDE_FROM_ALL)
+    install(TARGETS ${target} ${install_export} ${target_INSTALL_FLAGS})
+  endif()
+
+  # propagate all remaining options
+  set(hpx_options)
+  foreach(option ${options})
+    if(target_${option} AND
+       (NOT ${option} STREQUAL "TYPE") AND
+       (NOT ${option} STREQUAL "INSTALL") AND
+       (NOT ${option} STREQUAL "EXPORT"))
+      set(hpx_options ${hpx_options} ${option})
+    endif()
+  endforeach()
+
+  foreach(option ${one_value_args})
+    if(target_${option})
+      set(hpx_options ${hpx_options} ${option} ${target_${option}})
+    endif()
+  endforeach()
+
   hpx_setup_target(
     ${target}
+    ${hpx_options}
     TYPE ${_type}
-    FOLDER ${target_FOLDER}
+    NONAMEPREFIX
   )
-  # if(target_INSTALL AND NOT target_EXCLUDE_FROM_ALL)
-  #   install(TARGETS ${target} ${target_INSTALL_FLAGS} ${install_export})
-  # endif()
-
 
 endfunction()
 

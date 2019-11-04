@@ -10,7 +10,7 @@
 #include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
-#include <hpx/concurrency/register_locks.hpp>
+#include <hpx/basic_execution/register_locks.hpp>
 #include <hpx/errors/exception.hpp>
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
