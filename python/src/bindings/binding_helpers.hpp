@@ -201,7 +201,7 @@ namespace phylanx { namespace bindings
         std::string const& xexpr_str);
 
     // evaluate compiled expression
-    phylanx::execution_tree::primitive_argument_type expression_evaluator(
+    pybind11::object expression_evaluator(
         compiler_state& state, std::string const& file_name,
         std::string const& xexpr_str, pybind11::args args,
         pybind11::kwargs kwargs);

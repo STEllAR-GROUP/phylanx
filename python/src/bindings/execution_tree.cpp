@@ -44,7 +44,7 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         "eval",
         [](phylanx::bindings::compiler_state& state, std::string const& xexpr,
             pybind11::args args, pybind11::kwargs kwargs)
-            -> phylanx::execution_tree::primitive_argument_type
+            -> pybind11::object
         {
             return phylanx::bindings::expression_evaluator(
                 state, state.codename_, xexpr, args, kwargs);

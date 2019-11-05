@@ -62,7 +62,7 @@ namespace phylanx { namespace bindings
             });
     }
 
-    phylanx::execution_tree::primitive_argument_type expression_evaluator(
+    pybind11::object expression_evaluator(
         compiler_state& state, std::string const& file_name,
         std::string const& xexpr_str, pybind11::args args,
         pybind11::kwargs kwargs)
@@ -72,7 +72,7 @@ namespace phylanx { namespace bindings
         using phylanx::execution_tree::primitive_argument_type;
 
         return hpx::threads::run_as_hpx_thread(
-            [&]() -> primitive_argument_type
+            [&]() -> pybind11::object
             {
                 // Make sure None is printed as "None"
                 phylanx::util::none_wrapper wrap_cout(hpx::cout);
@@ -117,9 +117,18 @@ namespace phylanx { namespace bindings
                 // potentially handle keyword arguments
                 if (!kwargs)
                 {
-                    return x(std::move(fargs), state.eval_ctx);
+                    primitive_argument_type&& result =
+                        x(std::move(fargs), state.eval_ctx);
+
+                    pybind11::gil_scoped_acquire acquire;
+                    return pybind11::cast(std::move(result));
                 }
-                return x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
+
+                primitive_argument_type&& result =
+                    x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
+
+                pybind11::gil_scoped_acquire acquire;
+                return pybind11::cast(std::move(result));
             });
     }
 
