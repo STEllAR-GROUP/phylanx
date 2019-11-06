@@ -17,6 +17,10 @@ def variable(value, dtype=None, name=None):
     if dtype is None:
         dtype = "float64"
     if isinstance(value, execution_tree.variable):
+        if dtype is not None:
+            value.dtype = dtype
+        if name is not None:
+            value.name = name
         return value
     return execution_tree.variable(value, dtype=dtype, name=name)
 

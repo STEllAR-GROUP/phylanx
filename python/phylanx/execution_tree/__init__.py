@@ -52,4 +52,11 @@ def global_compiler_state(file_name=None):
 class variable(variable_impl):
 
     def __init__(self, *args, **kwargs):
+        """initialize variable instance"""
+
+        if len(args) == 1 and len(kwargs) == 0:
+            if isinstance(args[0], variable):
+                super(variable, self).__init__(args[0])
+                return
+
         super(variable, self).__init__(global_compiler_state(), *args, **kwargs)

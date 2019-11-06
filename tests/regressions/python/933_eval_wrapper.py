@@ -15,6 +15,8 @@ PhylanxSession.init(1)
 def dtype(x, dtype=None):
     from phylanx.ast.physl import PhySL
     if isinstance(x, execution_tree.variable):
+        if dtype is not None:
+            return dtype
         return x.dtype
     return execution_tree.variable(x, dtype).dtype
 

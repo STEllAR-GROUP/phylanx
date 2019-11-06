@@ -132,7 +132,8 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             .def(
                 "eval",
                 [](phylanx::execution_tree::variable const& var,
-                    pybind11::args args) {
+                    pybind11::args args)
+                {
                     pybind11::gil_scoped_release release;       // release GIL
                     return hpx::threads::run_as_hpx_thread(
                             [&]() { return var.eval(std::move(args)); });
@@ -152,7 +153,7 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 [](phylanx::execution_tree::variable const& var) {
                     return var.dtype();
                 },
-                [](phylanx::execution_tree::variable& var, pybind11::dtype dt) {
+                [](phylanx::execution_tree::variable& var, pybind11::object dt) {
                     var.dtype(dt);
                 },
                 "return the dtype of the value stored by the variable")

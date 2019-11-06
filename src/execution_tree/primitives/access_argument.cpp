@@ -179,7 +179,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // evaluate the argument
         ctx.add_mode(eval_dont_evaluate_partials);
-        return value_operand(target, params, name_, codename_, std::move(ctx));
+        return value_operand(
+            target, this->noargs, name_, codename_, std::move(ctx));
     }
 
     void access_argument::store(primitive_arguments_type&& data,

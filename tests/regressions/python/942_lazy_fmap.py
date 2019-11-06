@@ -20,6 +20,10 @@ def variable(value, dtype=None, name=None, constraint=None):
         raise TypeError("Constraint is the projection function to be "
                         "applied to the variable after an optimizer update")
     if isinstance(value, execution_tree.variable):
+        if dtype is not None:
+            value.dtype = dtype
+        if name is not None:
+            value.name = name
         return value
     return execution_tree.variable(value, dtype=dtype, name=name)
 
@@ -33,11 +37,12 @@ def fmap(fn, elems):
 
 
 @Phylanx
-def map_fn_eager(fn, elems, dtype):
+def map_fn_eager(fn, elems, dtype=None):
     return fmap(fn, elems)
 
 
-map_fn = Phylanx.lazy(map_fn_eager)
+def map_fn(fn, elems, dtype=None):
+    return map_fn_eager.lazy(fn, elems, dtype)
 
 
 @Phylanx
@@ -49,10 +54,10 @@ sum = Phylanx.lazy(sum_eager)
 
 
 def test_map(x):
-    vx = variable(x)
-    kx = eval(map_fn(sum, vx))
-    return kx
+    return eval(map_fn(sum, variable(x)))
 
 
-assert(np.all(test_map(np.array([[1, 2, 3]])) == [6]))
-assert(np.all(test_map(np.array([1, 2, 3])) == [1, 2, 3]))
+result = test_map(np.array([[1, 2, 3]]))
+assert(np.all(result == [6])), result
+result = test_map(np.array([1, 2, 3]))
+assert(np.all(result == [1, 2, 3])), result

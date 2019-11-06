@@ -1012,7 +1012,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
 
                     // axis is (optional) argument #2
-                    if (valid(args[1]))
+                    if (valid(args[1]) && !is_explicit_nil(args[1]))
                     {
                         // the second argument is either a list of integers...
                         if (is_list_operand_strict(args[1]))

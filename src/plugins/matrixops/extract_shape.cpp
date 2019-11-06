@@ -44,8 +44,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         match_pattern_type{"__len",
             std::vector<std::string>{"__len(_1)"},
-            &create_extract_shape, &create_primitive<extract_shape>,
-            "Internal"}
+            &create_extract_shape, &create_primitive<extract_shape>, R"(
+            a
+            Args:
+
+                a (object): an array of arbitrary dimensions
+
+            Returns:
+
+            This returns the number of elements of the given array along its
+            outermost (leftmost) dimension.)"}
     };
 
     ///////////////////////////////////////////////////////////////////////////

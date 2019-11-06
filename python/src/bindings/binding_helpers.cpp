@@ -115,20 +115,28 @@ namespace phylanx { namespace bindings
                 }
 
                 // potentially handle keyword arguments
-                if (!kwargs)
+                if (kwargs.size() == 0)
                 {
                     primitive_argument_type&& result =
                         x(std::move(fargs), state.eval_ctx);
 
                     pybind11::gil_scoped_acquire acquire;
-                    return pybind11::cast(std::move(result));
+                    return pybind11::reinterpret_steal<pybind11::object>(
+                        pybind11::detail::make_caster<
+                            primitive_argument_type>::cast(std::move(result),
+                            pybind11::return_value_policy::move,
+                            pybind11::handle()));
                 }
 
                 primitive_argument_type&& result =
                     x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
 
                 pybind11::gil_scoped_acquire acquire;
-                return pybind11::cast(std::move(result));
+                return pybind11::reinterpret_steal<pybind11::object>(
+                    pybind11::detail::make_caster<
+                        primitive_argument_type>::cast(std::move(result),
+                        pybind11::return_value_policy::move,
+                        pybind11::handle()));
             });
     }
 

@@ -452,7 +452,7 @@ class PhySL:
 
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
-            for arg in tree.body[0].args.args:
+            for arg in self.args:
                 self.defined.add(arg.arg)
         else:
             PhySL.defined_classes = {}
@@ -528,12 +528,14 @@ class PhySL:
                     PhySL.compiler_state, self.file_name,
                     self.wrapped_function.__name__))
 
-        # If a variable is passed as an argument to an invocation of a Phylanx
-        # function we need to extract the compiled execution tree and pass
-        # along that instead
         def map_wrapped(val):
+            """If a variable is passed as an argument to an invocation of a
+                Phylanx function we need to extract the compiled execution tree
+                and pass that along instead"""
+
             if isinstance(val, phylanx.execution_tree.variable):
                 return val.value
+
             return val
 
         mapped_args = tuple(map(map_wrapped, args))
@@ -563,15 +565,22 @@ class PhySL:
             self.wrapped_function.__name__, *args, **kwargs)
 
         if self.performance:
-            treedata = phylanx.execution_tree.retrieve_tree_topology(
-                PhySL.compiler_state, self.file_name,
-                self.wrapped_function.__name__)
+            treedata = self.tree()
 
             self.__perfdata__ = (
                 phylanx.execution_tree.retrieve_counter_data(
                     PhySL.compiler_state), treedata[0], treedata[1])
 
         return result
+
+    def tree(self):
+        """Return the tree data for this object"""
+
+        self.ensure_is_compiled()
+
+        return phylanx.execution_tree.retrieve_tree_topology(
+            PhySL.compiler_state, self.file_name,
+            self.wrapped_function.__name__)
 
 # #############################################################################
 # Transducer rules

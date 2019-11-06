@@ -173,9 +173,9 @@ namespace phylanx { namespace execution_tree
         return dtype_;
     }
 
-    void variable::dtype(pybind11::dtype dt)
+    void variable::dtype(pybind11::object dt)
     {
-        dtype_ = dt;
+        dtype_ = detail::to_dtype(std::move(dt));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -199,8 +199,11 @@ namespace phylanx { namespace execution_tree
         template <typename T>
         pybind11::object convert_array(primitive_argument_type&& result)
         {
-            pybind11::array_t<T> arr = pybind11::cast(std::move(result),
-                pybind11::return_value_policy::move);
+            pybind11::array_t<T> arr = pybind11::reinterpret_steal<
+                pybind11::object>(
+                pybind11::detail::make_caster<primitive_argument_type>::cast(
+                    std::move(result), pybind11::return_value_policy::move,
+                    pybind11::handle()));
             return arr;
         }
     }
@@ -252,16 +255,20 @@ namespace phylanx { namespace execution_tree
     pybind11::object variable::handle_return_b(
         primitive_argument_type&& result) const
     {
-        pybind11::bool_ b = pybind11::cast(
-            std::move(result), pybind11::return_value_policy::move);
+        pybind11::bool_ b = pybind11::reinterpret_steal<pybind11::object>(
+            pybind11::detail::make_caster<primitive_argument_type>::cast(
+                std::move(result), pybind11::return_value_policy::move,
+                pybind11::handle()));
         return b;
     }
 
     pybind11::object variable::handle_return_S(
         primitive_argument_type&& result) const
     {
-        pybind11::str s = pybind11::cast(
-            std::move(result), pybind11::return_value_policy::move);
+        pybind11::str s = pybind11::reinterpret_steal<pybind11::object>(
+            pybind11::detail::make_caster<primitive_argument_type>::cast(
+                std::move(result), pybind11::return_value_policy::move,
+                pybind11::handle()));
         return s;
     }
 
@@ -348,8 +355,10 @@ namespace phylanx { namespace execution_tree
             }
         }
 
-        return pybind11::cast(
-            std::move(result), pybind11::return_value_policy::move);
+        return pybind11::reinterpret_steal<pybind11::object>(
+            pybind11::detail::make_caster<primitive_argument_type>::cast(
+                std::move(result), pybind11::return_value_policy::move,
+                pybind11::handle()));
     }
 
     ////////////////////////////////////////////////////////////////////////////

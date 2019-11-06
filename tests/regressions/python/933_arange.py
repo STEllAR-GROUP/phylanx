@@ -41,7 +41,7 @@ def test_arange():
     for dtype in ('int32', 'int64', 'float32', 'float64'):
         for k in WITH_NP:
             t = k.arange(10, dtype=dtype)
-            assert k.dtype(t) == dtype
+            assert k.dtype(t) == dtype, (k.dtype(t), dtype)
 
     start = K.constant(1, dtype='int32')
     t = K.arange(start)
