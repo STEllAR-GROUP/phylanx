@@ -25,8 +25,11 @@ def sigmoid(x):
 
 def bin_cross(target, output, from_logits=False):
     if not from_logits:
-        output = np.clip(output, 1e-7, 1 - 1e-7)
-        output = np.log(output / (1 - output))
+        epsilon = 1e-7
+        output = np.clip(output, epsilon, 1 - epsilon)
+        bce = target * np.log(output + epsilon)
+        bce += (1 - target) * np.log(1 - output + epsilon)
+        return -bce
     return (target * -np.log(sigmoid(output)) + \
             (1 - target) * -np.log(1 - sigmoid(output)))
 
@@ -42,6 +45,41 @@ def bc(target, output, from_logits):
     return li[0]
 
 
+def allnan(v):
+    return np.all(np.isnan(v))
+
+
+def fixnan(v):
+    v[np.isnan(v)] = 666.666
+
+
+dimslist = [(10,), (4, 5), (3, 4, 2)]
+
+if have_keras:
+    server = tf.train.Server.create_local_server()
+    sess = tf.Session(server.target)
+
+    for dims in dimslist:
+        for flag in [True, False]:
+            good = 0
+            while good < 10:
+                t = np.random.random(dims)
+                o = np.random.random(dims)
+
+                kt = K.constant(np.copy(t), dtype=np.float64)
+                ko = K.constant(np.copy(o), dtype=np.float64)
+
+                v1 = K.binary_crossentropy(kt, ko, from_logits=flag)
+                v1 = v1.eval(session=sess)
+                v2 = bin_cross(t, o, flag)
+
+                if allnan(v1) and allnan(v2):
+                    continue
+                fixnan(v1)
+                fixnan(v2)
+                assert np.all(np.abs(v1 - v2) < 1.0e-13)
+                good += 1
+
 # Test 0d
 for k in [True, False]:
     good = 0
@@ -56,80 +94,18 @@ for k in [True, False]:
         assert v1 == v1, "%f != %f" % (v1, v2)
         good += 1
 
-
-def allnan(v):
-    return np.all(np.isnan(v))
-
-
-def fixnan(v):
-    v[np.isnan(v)] = 666.666
-
-
-# Test 1d
-for flag in [True, False]:
-    good = 0
-    while good < 10:
-        t = np.random.random(10) * 10
-        o = np.random.random(10) * 10
-        v1 = bc(t, o, flag)
-        v2 = bin_cross(t, o, flag)
-        if allnan(v1) and allnan(v2):
-            continue
-        fixnan(v1)
-        fixnan(v2)
-        assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
-        good += 1
-
-# Test 2d
-for flag in [True, False]:
-    good = 0
-    while good < 10:
-        t = np.random.random((3, 4)) * 10
-        o = np.random.random((3, 4)) * 10
-        v1 = bc(t, o, flag)
-        v2 = bin_cross(t, o, flag)
-        if allnan(v1) and allnan(v2):
-            continue
-        fixnan(v1)
-        fixnan(v2)
-        assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
-        good += 1
-
-# Test 3d
-for flag in [True, False]:
-    good = 0
-    while good < 10:
-        t = np.random.random((3, 4, 2)) * 10
-        o = np.random.random((3, 4, 2)) * 10
-        v1 = bc(t, o, flag)
-        v2 = bin_cross(t, o, flag)
-        if allnan(v1) and allnan(v2):
-            continue
-        fixnan(v1)
-        fixnan(v2)
-        assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
-        good += 1
-
-if have_keras:
-    server = tf.train.Server.create_local_server()
-    sess = tf.Session(server.target)
-
+# Test 1d, 2d, 3d
+for dims in dimslist:
     for flag in [True, False]:
         good = 0
         while good < 10:
-            t = np.random.random((3,))
-            o = np.random.random((3,))
-
-            kt = K.constant(np.copy(t), dtype=np.float64)
-            ko = K.constant(np.copy(o), dtype=np.float64)
-
-            v1 = K.binary_crossentropy(kt, ko, from_logits=flag)
-            v1 = v1.eval(session=sess)
+            t = np.random.random(dims)
+            o = np.random.random(dims)
+            v1 = bc(t, o, flag)
             v2 = bin_cross(t, o, flag)
-
             if allnan(v1) and allnan(v2):
                 continue
             fixnan(v1)
             fixnan(v2)
-            assert np.all(np.abs(v1 - v2) < 1.0e-13)
+            assert np.all(np.abs(v1 - v2) < 1.0e-13), v1 - v2
             good += 1
