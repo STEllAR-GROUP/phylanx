@@ -103,6 +103,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gen-bool">__gen_bool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gt">__gt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#le">__le</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#len">__len</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#lt">__lt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minus">__minus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mul">__mul</a></li>
@@ -191,7 +192,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#inverse">inverse</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#l2-normalize">l2_normalize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#lambda">lambda</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#len">len</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id35">len</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linearmatrix">linearmatrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linspace">linspace</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#list">list</a></li>
@@ -492,6 +493,19 @@ arg3 (boolean, optional) : whether to use a</p>
 </dd>
 </dl>
 </div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="len">
+<h2>__len<a class="headerlink" href="#len" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>__len (a)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>a (object): an array of arbitrary dimensions</p>
+</div></blockquote>
+<p>Returns:</p>
+<p>This returns the number of elements of the given array along its
+outermost (leftmost) dimension.</p>
 </dd>
 </dl>
 </div>
@@ -2062,8 +2076,8 @@ body (statement): the body of the lambda function</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="len">
-<h2>len<a class="headerlink" href="#len" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id35">
+<h2>len<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
 <dl>
 <dt>len (li)</dt><dd><p>Args:</p>
 <blockquote>
@@ -2111,7 +2125,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dl>
 <dt>list (args)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p><a href="#id35"><span class="problematic" id="id36">*</span></a>args (list of values, optional): a list of values</p>
+<div><p><a href="#id36"><span class="problematic" id="id37">*</span></a>args (list of values, optional): a list of values</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>A Phylanx list populated by the values supplied.</p>
@@ -2136,7 +2150,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dt>logical_and (a, b)</dt><dd><p>Args:</p>
 <blockquote>
 <div><p>a (boolean) : a boolean argument
-<a href="#id37"><span class="problematic" id="id38">*</span></a>b (boolean list) : a list of boolean arguments</p>
+<a href="#id38"><span class="problematic" id="id39">*</span></a>b (boolean list) : a list of boolean arguments</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>The logical and of <cite>a</cite> and <cite>b</cite>.</p>
@@ -2161,7 +2175,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dt>logical_or (a, b)</dt><dd><p>Args:</p>
 <blockquote>
 <div><p>a (boolean) : a boolean argument
-<a href="#id39"><span class="problematic" id="id40">*</span></a>b (boolean list) : a list of boolean arguments</p>
+<a href="#id40"><span class="problematic" id="id41">*</span></a>b (boolean list) : a list of boolean arguments</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
@@ -2176,7 +2190,7 @@ of which is <cite>start</cite>, and the last is <cite>end</cite>.</p>
 <dt>logical_xor (a, b)</dt><dd><p>Args:</p>
 <blockquote>
 <div><p>a (boolean) : a boolean argument
-<a href="#id41"><span class="problematic" id="id42">*</span></a>b (boolean list) : a list of boolean arguments</p>
+<a href="#id42"><span class="problematic" id="id43">*</span></a>b (boolean list) : a list of boolean arguments</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
@@ -2227,7 +2241,7 @@ enable_output (optional, boolean): If enabled, prints out the step</p>
 <dl>
 <dt>make_list (args)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p><a href="#id43"><span class="problematic" id="id44">*</span></a>args (list of values, optional): a list of values</p>
+<div><p><a href="#id44"><span class="problematic" id="id45">*</span></a>args (list of values, optional): a list of values</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>A Phylanx list populated by the values supplied.</p>
@@ -2286,7 +2300,7 @@ pool_size (a tuple of 3 integers) : the size of pooling over each</p>
 <div><blockquote>
 <div><p>x0 (number): An addendn”</p>
 </div></blockquote>
-<p><a href="#id45"><span class="problematic" id="id46">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
+<p><a href="#id46"><span class="problematic" id="id47">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>The element-wise maximum of all input arrays.</p>
@@ -2316,7 +2330,7 @@ vector created when the mean is taken along the specified axis.</p>
 <div><blockquote>
 <div><p>x0 (number): An addendn”</p>
 </div></blockquote>
-<p><a href="#id47"><span class="problematic" id="id48">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
+<p><a href="#id48"><span class="problematic" id="id49">*</span></a>x1 (number list): A list of one or more arrays.n”</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>The element-wise minimum of all input arrays.</p>
@@ -2422,10 +2436,10 @@ pad_width.”</p>
 <div class="section" id="parallel-block">
 <h2>parallel_block<a class="headerlink" href="#parallel-block" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>parallel_block (<a href="#id49"><span class="problematic" id="id50">*</span></a>args)</dt><dd><p>Args:</p>
+<dt>parallel_block (<a href="#id50"><span class="problematic" id="id51">*</span></a>args)</dt><dd><p>Args:</p>
 <blockquote>
 <div><dl class="simple">
-<dt><a href="#id51"><span class="problematic" id="id52">*</span></a>args (list)<span class="classifier">a list of zero or more statements</span></dt><dd><p>to be evaluated in parallel.</p>
+<dt><a href="#id52"><span class="problematic" id="id53">*</span></a>args (list)<span class="classifier">a list of zero or more statements</span></dt><dd><p>to be evaluated in parallel.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -2888,7 +2902,7 @@ axis (optional, integer): an axis to squeeze along. If an axis is</p>
 <dl>
 <dt>stack (args, axis, dtype)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p><a href="#id53"><span class="problematic" id="id54">*</span></a>args (list, optional) : a list of array-like objects
+<div><p><a href="#id54"><span class="problematic" id="id55">*</span></a>args (list, optional) : a list of array-like objects
 axis (int, optional) : the axis along which to stack input</p>
 <blockquote>
 <div><p>values, the default value is ‘0’</p>
@@ -2937,7 +2951,7 @@ value (expression) : a value to assign</p>
 <dl>
 <dt>string (args)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p><a href="#id55"><span class="problematic" id="id56">*</span></a>args (object list) : any objects</p>
+<div><p><a href="#id56"><span class="problematic" id="id57">*</span></a>args (object list) : any objects</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>A string created by concatenating the string
@@ -3108,7 +3122,7 @@ keepdims (optional, boolean): keep dimension of input</p>
 <dl>
 <dt>vsplit (args)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p><a href="#id57"><span class="problematic" id="id58">*</span></a>args (m - matrix or column vector, N - number of blocks)</p>
+<div><p><a href="#id58"><span class="problematic" id="id59">*</span></a>args (m - matrix or column vector, N - number of blocks)</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>An N by 1 matrix of vertical partitions of m</p>
@@ -3120,7 +3134,7 @@ keepdims (optional, boolean): keep dimension of input</p>
 <dl>
 <dt>vstack (args, dtype)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p><a href="#id59"><span class="problematic" id="id60">*</span></a>args (list, optional) : a list of array-like objects
+<div><p><a href="#id60"><span class="problematic" id="id61">*</span></a>args (list, optional) : a list of array-like objects
 dtype (optional, string) : the data-type of the returned array,</p>
 <blockquote>
 <div><p>defaults to dtype of input arrays.</p>
@@ -3198,7 +3212,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Oct 24, 2019.
+        Last updated on Nov 10, 2019.
       </span>
 
     </p>

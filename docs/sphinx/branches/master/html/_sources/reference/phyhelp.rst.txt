@@ -137,6 +137,19 @@ __le (arg1, arg2, arg3)
                       return True if arg1 <= arg2, False otherwise.
 
 
+__len
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__len (a)
+            Args:
+
+                a (object): an array of arbitrary dimensions
+
+            Returns:
+
+            This returns the number of elements of the given array along its
+            outermost (leftmost) dimension.
+
+
 __lt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 __lt (arg1, arg2, arg3)
