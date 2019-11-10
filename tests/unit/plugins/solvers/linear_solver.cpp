@@ -211,6 +211,24 @@ void test_linear_solver_lanczos_PhySL()
             blaze::DynamicVector<double>{100000, 0, 4, 1, 2, 3}));
 }
 
+void test_linear_solver_arnoldi_PhySL()
+{
+    std::string const code = R"(block(
+        define(a, [[0, 0, 0, 0, 0, 0],[0, 1, 0, 0, 0, 0],[0, 0, 2, 0, 0, 0],
+              [0, 0, 0, 3, 0, 0],[0, 0, 0, 0, 4, 0],[0, 0, 0, 0, 0, 100000]]),
+        define(b, [1, 1, 1, 1, 1, 1]),
+        define(n, 6),
+        iterative_solver_arnoldi(a, b, n))
+    )";
+
+    auto result =
+            phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result,
+                phylanx::ir::node_data<double>(
+                        blaze::DynamicVector<double>{100000, 0, 4, 1, 2, 3}));
+}
+
 void test_linear_solver_lu(std::string const& func_name)
 {
     phylanx::execution_tree::primitive lhs =
@@ -369,6 +387,7 @@ int main()
     test_linear_solver_cg_symmetric_gauss_seidel_PhySL();
 
     test_linear_solver_lanczos_PhySL();
+    test_linear_solver_arnoldi_PhySL();
 
     test_linear_solver_lu("linear_solver_lu");
 
@@ -391,6 +410,7 @@ int main()
     test_linear_solver("iterative_solver_cg_incompleteCholesky");
     test_linear_solver("iterative_solver_cg_symmetric_gauss_seidel");
     test_linear_solver_n("iterative_solver_lanczos");
+    test_linear_solver_n("iterative_solver_arnoldi");
 #endif
     return hpx::util::report_errors();
 }
