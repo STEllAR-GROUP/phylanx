@@ -71,7 +71,7 @@ phylanx_info("Phylanx version: " ${PHYLANX_VERSION})
 
 ################################################################################
 # Locate HPX as we need to ensure to use at least the same C++ dialect as HPX uses
-find_package(HPX REQUIRED)
+phylanx_setup_hpx()
 
 ################################################################################
 # Special compiler flags
