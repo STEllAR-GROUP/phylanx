@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
 #include <hpx/assertion.hpp>
+#include <hpx/errors.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/serialization/serialization_fwd.hpp>
@@ -423,8 +424,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         entry_point() = default;        // needed for serialization
 
         entry_point(std::string const& func_name, std::string const& name)
-          : func_name_(func_name)
-          , name_(name)
+          : name_(name)
+          , func_name_(func_name)
         {
         }
 
@@ -489,6 +490,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // this must be a list to ensure stable references
     struct program
     {
+    private:
+        struct sort_entry_points
+        {
+            bool operator()(compiler::entry_point const& lhs,
+                compiler::entry_point const& rhs) const
+            {
+                return lhs.func_name_ < rhs.func_name_;
+            }
+        };
+
+        using entry_point_set =
+            std::set<compiler::entry_point, sort_entry_points>;
+
+    public:
         program() = default;
 
         ///////////////////////////////////////////////////////////////////////
@@ -527,18 +542,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         compiler::entry_point const& add_entry_point(compiler::entry_point&& ep)
         {
-            entrypoints_.emplace_back(std::move(ep));
-            return entrypoints_.back();
+//             auto it = entrypoints_.find(ep);
+//             if (it != entrypoints_.end())
+//             {
+//                 // make sure functions are not being redefined
+//                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
+//                     "program::add_entry_point",
+//                     hpx::util::format(
+//                         "duplicate function definition: {}", ep.func_name_));
+//             }
+
+            last_inserted_ = entrypoints_.emplace(std::move(ep)).first;
+            return *last_inserted_;
         }
 
         compiler::entry_point entry_point() const
         {
-            return entrypoints_.back();
+            return *last_inserted_;
         }
 
         bool has_entry_points() const
         {
-            return !entrypoints_.back().functions().empty();
+            return !entrypoints_.empty() &&
+                !last_inserted_->functions().empty();
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -547,7 +573,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return scratchpad_;
         }
 
-        std::list<compiler::entry_point> const& entry_points() const
+        entry_point_set const& entry_points() const
         {
             return entrypoints_;
         }
@@ -557,21 +583,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             HPX_ASSERT(has_entry_points());
             std::set<std::string> functions;
-            return entrypoints_.back().get_expression_topology(
+            return last_inserted_->get_expression_topology(
                 std::move(functions));
         }
         topology get_expression_topology(
             std::set<std::string>&& functions) const
         {
             HPX_ASSERT(has_entry_points());
-            return entrypoints_.back().get_expression_topology(
+            return last_inserted_->get_expression_topology(
                 std::move(functions));
         }
         topology get_expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const
         {
             HPX_ASSERT(has_entry_points());
-            return entrypoints_.back().get_expression_topology(
+            return last_inserted_->get_expression_topology(
                 std::move(functions), std::move(resolve_children));
         }
 
@@ -585,7 +611,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             unsigned);
 
         std::map<std::string, std::list<function>> scratchpad_;
-        std::list<compiler::entry_point> entrypoints_;
+        entry_point_set entrypoints_;
+        entry_point_set::iterator last_inserted_;
     };
 
     struct function_list

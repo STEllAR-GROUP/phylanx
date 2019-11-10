@@ -13,6 +13,16 @@ import phylanx.execution_tree
 from phylanx import PhylanxSession
 
 
+# find name of file that imported this file
+_name_of_importing_file = None
+
+if __name__ != '__main__':
+    if _name_of_importing_file is None:
+        for frame in inspect.stack()[1:]:
+            if frame.filename[0] != '<':
+                _name_of_importing_file = frame.filename
+
+
 def physl_zip(loop):
     def define(i, idx):
         return ['define', (i, ['slice', ('__physl_iterator', str(idx))])]
@@ -40,7 +50,8 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "subtract": "__sub"
+    "subtract": "__sub",
+    "len": "__len"
 }
 
 numpy_constants = {
@@ -367,15 +378,16 @@ class PhySLFunction:
 
     def compile_function(self):
         if PhySL.compiler_state is None:
-            PhySL.compiler_state = phylanx.execution_tree.compiler_state(
+            PhySL.compiler_state = phylanx.execution_tree.global_compiler_state(
                 self.file_name)
-        phylanx.execution_tree.compile(PhySL.compiler_state, self.file_name,
-                                       self.func_name, self.src)
+        phylanx.execution_tree.compile(
+            PhySL.compiler_state, self.file_name, self.func_name, self.src)
 
     @staticmethod
     def compile():
-        for func in PhySLFunction.functions:
-            func.compile_function()
+        if PhySLFunction.functions:
+            for func in PhySLFunction.functions:
+                func.compile_function()
         PhySLFunction.functions = []
 
 
@@ -383,6 +395,40 @@ class PhySL:
     """Python AST to PhySL Transducer."""
 
     compiler_state = None
+
+    def ensure_compiler_state(self):
+        """Ensure the compiler state object has been created"""
+
+        if PhySL.compiler_state is None:
+            if "compiler_state" in self.kwargs:
+                PhySL.compiler_state = self.kwargs['compiler_state']
+            else:
+                # the static method compiler_state is constructed only once
+                PhySL.compiler_state = \
+                    phylanx.execution_tree.global_compiler_state(self.file_name)
+
+    def ensure_is_compiled(self):
+        """Ensure this function has been compiled, also compile all functions
+           that have been collected so fart without being compiled"""
+
+        if not PhylanxSession.is_initialized:
+            PhylanxSession.init(1)
+
+        if not self.is_compiled:
+
+            # create compiler state
+            self.ensure_compiler_state()
+
+            # compile all functions that have so far been collected without an
+            # initialized session object
+            PhySLFunction.compile()
+
+            # compile this function
+            phylanx.execution_tree.compile(
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, self.__src__)
+
+            self.is_compiled = True
 
     def __init__(self, func, tree, kwargs):
         self.defined = set()
@@ -398,7 +444,7 @@ class PhySL:
                     self.numpy_aliases.add(key)
             self.file_name = self.fglobals.get('__file__')
         if not self.file_name:
-            self.file_name = "<none>"
+            self.file_name = _name_of_importing_file
 
         self.performance = self.kwargs.get('performance', False)
         self.localities = self.kwargs.get('localities')
@@ -406,7 +452,7 @@ class PhySL:
 
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
-            for arg in tree.body[0].args.args:
+            for arg in self.args:
                 self.defined.add(arg.arg)
         else:
             PhySL.defined_classes = {}
@@ -419,23 +465,10 @@ class PhySL:
             print_physl_src(self.__src__)
             print(end="", flush="")
 
+        # compile this function if session was already initialized, otherwise
+        # simply collect it for later compilation
         if PhylanxSession.is_initialized:
-            if "compiler_state" in self.kwargs:
-                PhySL.compiler_state = self.kwargs['compiler_state']
-            # the static method compiler_state is constructed only once
-            elif PhySL.compiler_state is None:
-                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
-                    self.file_name)
-
-            if PhySLFunction.functions:
-                PhySLFunction.compile()
-
-            if not self.is_compiled:
-                phylanx.execution_tree.compile(PhySL.compiler_state,
-                                               self.file_name,
-                                               self.wrapped_function.__name__,
-                                               self.__src__)
-                self.is_compiled = True
+            self.ensure_is_compiled()
 
         else:
             func_name = self.wrapped_function.__name__
@@ -482,95 +515,72 @@ class PhySL:
             block = (self.apply_rule(node), )
             return block
 
-    class eval_wrapper:
-        """evaluation wrapper binding arguments to a compiled function"""
-
-        def __init__(self, outer, *args, **kwargs):
-            """initialize evaluation wrapper"""
-            self.outer = outer
-            self.args = args
-            self.kwargs = kwargs
-            self.func_name = self.outer.wrapped_function.__name__
-
-        def eval(self):
-            """evaluate given compiled function using the bound arguments"""
-
-            self.outer.__perfdata__ = (None, None, None)
-            self.outer.performance_primitives = None
-
-            if self.outer.performance:
-                self.outer.performance_primitives = \
-                    phylanx.execution_tree.enable_measurements(
-                        PhySL.compiler_state, True)
-
-            result = phylanx.execution_tree.eval(
-                PhySL.compiler_state, self.outer.file_name, self.func_name,
-                *self.args, **self.kwargs)
-
-            if self.outer.performance:
-                treedata = phylanx.execution_tree.retrieve_tree_topology(
-                    PhySL.compiler_state, self.outer.file_name, self.func_name)
-                self.outer.__perfdata__ = (
-                    phylanx.execution_tree.retrieve_counter_data(
-                        PhySL.compiler_state), treedata[0], treedata[1])
-
-            return result
-
-        def code(self):
-            """Expose the wrapped Phylanx primitive, either directly or
-               with its arguments bound"""
-
-            return self.outer.map_wrapped(self)
-
-    def map_wrapped(self, val):
-        """If a eval_wrapper is passed as an argument to an
-            invocation of a Phylanx function we need to extract the
-            compiled execution tree and pass along that instead"""
-
-        if isinstance(val, self.eval_wrapper):
-            if len(val.args) == 0:
-                return phylanx.execution_tree.code_for(PhySL.compiler_state,
-                                                       self.file_name,
-                                                       val.func_name)
-
-            args = tuple(map(self.map_wrapped, val.args))
-            return phylanx.execution_tree.bound_code_for(
-                PhySL.compiler_state, self.file_name, val.func_name, *args)
-
-        return val
-
+    # Invocation support
     def lazy(self, *args, **kwargs):
-        """Compile a given function, return wrapper binding the function to
+        """Compile a given function, return a variable binding the function to
            arguments"""
 
-        if not PhylanxSession.is_initialized:
-            PhylanxSession.init(1)
+        self.ensure_is_compiled()
 
-        if not self.is_compiled:
-            if not self.is_compiled:
-                PhySLFunction.compile()
+        if len(args) == 0 and len(kwargs) == 0:
+            return phylanx.execution_tree.variable(
+                phylanx.execution_tree.code_for(
+                    PhySL.compiler_state, self.file_name,
+                    self.wrapped_function.__name__))
 
-            if "compiler_state" in self.kwargs:
-                PhySL.compiler_state = self.kwargs['compiler_state']
-            elif PhySL.compiler_state is None:
-                PhySL.compiler_state = phylanx.execution_tree.compiler_state(
-                    self.file_name)
+        def map_wrapped(val):
+            """If a variable is passed as an argument to an invocation of a
+                Phylanx function we need to extract the compiled execution tree
+                and pass that along instead"""
 
-            phylanx.execution_tree.compile(PhySL.compiler_state,
-                                           self.file_name,
-                                           self.wrapped_function.__name__,
-                                           self.__src__)
-            self.is_compiled = True
+            if isinstance(val, phylanx.execution_tree.variable):
+                return val.value
 
-        mapped_args = tuple(map(self.map_wrapped, args))
+            return val
+
+        mapped_args = tuple(map(map_wrapped, args))
         kwitems = kwargs.items()
-        mapped_kwargs = {k: self.map_wrapped(v) for k, v in kwitems}
-        return self.eval_wrapper(self, *mapped_args, **mapped_kwargs)
+        mapped_kwargs = {k: map_wrapped(v) for k, v in kwitems}
+
+        return phylanx.execution_tree.variable(
+            phylanx.execution_tree.bound_code_for(
+                PhySL.compiler_state, self.file_name,
+                self.wrapped_function.__name__, *mapped_args, **mapped_kwargs))
 
     def call(self, *args, **kwargs):
         """Invoke this Phylanx function, pass along the given arguments"""
 
-        return self.lazy(*args, **kwargs).eval()
+        self.ensure_is_compiled()
+
+        self.__perfdata__ = (None, None, None)
+        self.performance_primitives = None
+
+        if self.performance:
+            self.performance_primitives = \
+                phylanx.execution_tree.enable_measurements(
+                    PhySL.compiler_state, True)
+
+        result = phylanx.execution_tree.eval(
+            PhySL.compiler_state, self.file_name,
+            self.wrapped_function.__name__, *args, **kwargs)
+
+        if self.performance:
+            treedata = self.tree()
+
+            self.__perfdata__ = (
+                phylanx.execution_tree.retrieve_counter_data(
+                    PhySL.compiler_state), treedata[0], treedata[1])
+
+        return result
+
+    def tree(self):
+        """Return the tree data for this object"""
+
+        self.ensure_is_compiled()
+
+        return phylanx.execution_tree.retrieve_tree_topology(
+            PhySL.compiler_state, self.file_name,
+            self.wrapped_function.__name__)
 
 # #############################################################################
 # Transducer rules

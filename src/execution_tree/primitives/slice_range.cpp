@@ -50,7 +50,7 @@ namespace phylanx { namespace execution_tree
             {
                 auto it = list.begin();
                 std::advance(it, start);
-                return primitive_argument_type{std::move(*it)};
+                return primitive_argument_type{*it};
             }
 
             auto const& args = list.args();
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree
                 if (idx == *idx_it)
                 {
                     ++idx_it;
-                    result.emplace_back(std::move(*list_it));
+                    result.emplace_back(*list_it);
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree
                 if (idx == *idx_it)
                 {
                     ++idx_it;
-                    result.emplace_back(std::move(*list_it));
+                    result.emplace_back(*list_it);
                 }
             }
         }
@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree
         ir::slicing_indices const& indices, F && f,
         std::string const& name, std::string const& codename)
     {
-        std::size_t list_size = list.size();
+//         std::size_t list_size = list.size();
 
         std::int64_t start = indices.start();
         std::int64_t stop = indices.stop();

@@ -417,9 +417,8 @@ namespace phylanx { namespace execution_tree {
         }
 
         auto it = ann.get_data().begin();
-
-        name_ = execution_tree::extract_string_value_strict(
-            *(ann.get_data().begin()), name, codename);
+        name_ =
+            execution_tree::extract_string_value_strict(*it, name, codename);
 
         extract_from_name();
     }

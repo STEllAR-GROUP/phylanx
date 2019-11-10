@@ -26,27 +26,26 @@ assert (f(np.array([[1., 2.], [3., 4.]]), np.array(
 
 
 @Phylanx
-def f(a):
+def f1(a):
     return fmap(lambda x: x * 2, a)  # noqa: F821
 
 
-assert f([1, 2]) == [2, 4]
+assert f1([1, 2]) == [2, 4]
 
-assert (f(np.array([1, 2])) == np.array([2, 4])).all()
-assert (f(np.array([[1, 2], [3, 4]])) == np.array([[2, 4], [6, 8]])).all()
+assert (f1(np.array([1, 2])) == np.array([2, 4])).all()
+assert (f1(np.array([[1, 2], [3, 4]])) == np.array([[2, 4], [6, 8]])).all()
 
-assert (f(np.array([1., 2.])) == np.array([2., 4.])).all()
-assert (f(np.array([[1., 2.], [3., 4.]])) == np.array([[2., 4.], [6.,
-                                                                  8.]])).all()
+assert (f1(np.array([1., 2.])) == np.array([2., 4.])).all()
+assert (f1(np.array([[1., 2.], [3., 4.]])) == np.array([[2., 4.], [6., 8.]])).all()
 
 
 @Phylanx
-def f(a):
+def f2(a):
     return fmap(lambda x: not x, a)  # noqa: F821
 
 
-assert f([True, False]) == [False, True]
+assert f2([True, False]) == [False, True]
 
-assert (f(np.array([True, False])) == np.array([False, True])).all()
-assert (f(np.array([[True, False], [True, False]])) == np.array(
+assert (f2(np.array([True, False])) == np.array([False, True])).all()
+assert (f2(np.array([[True, False], [True, False]])) == np.array(
     [[False, True], [False, True]])).all()

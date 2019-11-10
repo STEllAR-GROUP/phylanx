@@ -13,9 +13,12 @@
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 
 #include <hpx/async.hpp>
+#include <hpx/format.hpp>
 #include <hpx/include/agas.hpp>
 #include <hpx/include/components.hpp>
 
+#include <atomic>
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,8 +51,8 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point compiler_component::compile(
         std::string const& name, std::vector<ast::expression> exprs)
     {
-        return execution_tree::compile(
-            name, "<unknown>", exprs, snippets_, env_, patterns_);
+        return execution_tree::compile(name, generate_unique_function_name(),
+            exprs, snippets_, env_, patterns_);
     }
 
     compiler::function compiler_component::define_variable(
@@ -59,6 +62,12 @@ namespace phylanx { namespace execution_tree
         return execution_tree::define_variable(codename,
             compiler::primitive_name_parts{name, -1, 0, 0}, snippets_, env_,
             std::move(body));
+    }
+
+    std::string compiler_component::generate_unique_function_name()
+    {
+        static std::atomic<std::size_t> function_counter(0);
+        return hpx::util::format("function_{}", ++function_counter);
     }
 
     ///////////////////////////////////////////////////////////////////////////

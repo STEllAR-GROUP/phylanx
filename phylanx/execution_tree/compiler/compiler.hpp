@@ -570,6 +570,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);
 
+    ///////////////////////////////////////////////////////////////////////////
+    /// Bind the given arguments to the function
+    PHYLANX_EXPORT function bind_arguments(std::string const& codename,
+        std::string const& func_name, function_list& snippets,
+        primitive_argument_type&& func, primitive_arguments_type&& args,
+        hpx::id_type const& default_locality);
+
+    ///////////////////////////////////////////////////////////////////////////
     /// Add the given variable to the compilation environment
     PHYLANX_EXPORT function define_variable(std::string const& codename,
         primitive_name_parts name_parts, function_list& snippets, environment& env,

@@ -794,7 +794,7 @@ void test_define_variable_function_call()
     auto def = phylanx::execution_tree::define_variable("<unknown>",
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
-        snippets, env, (pts.run())());
+        snippets, env, pts.run().arg_);
 
     def.run(ctx);
 

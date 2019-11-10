@@ -433,9 +433,9 @@ namespace phylanx { namespace execution_tree
                 if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
                     rhs.dimension(2) == 1 && rhs.dimension(3) == 1)
                 {
-                    result.resize(std::array<std::size_t, 4>{
-                        columns, rows, pages, quats});
-                    auto q = rhs.quatern();
+//                     result.resize(std::array<std::size_t, 4>{
+//                         columns, rows, pages, quats});
+//                     auto q = rhs.quatern();
 
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_quatern",
@@ -449,9 +449,9 @@ namespace phylanx { namespace execution_tree
                 if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
                     rhs.dimension(2) == 1 && rhs.dimension(3) == columns)
                 {
-                    result.resize(std::array<std::size_t, 4>{
-                        columns, rows, pages, quats});
-                    auto q = rhs.quatern();
+//                     result.resize(std::array<std::size_t, 4>{
+//                         columns, rows, pages, quats});
+//                     auto q = rhs.quatern();
 
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_quatern",
@@ -466,9 +466,9 @@ namespace phylanx { namespace execution_tree
                 if (rhs.dimension(0) == quats && rhs.dimension(1) == 1 &&
                     rhs.dimension(2) == rows && rhs.dimension(3) == 1)
                 {
-                    result.resize(std::array<std::size_t, 4>{
-                        columns, rows, pages, quats});
-                    auto q = rhs.quatern();
+//                     result.resize(std::array<std::size_t, 4>{
+//                         columns, rows, pages, quats});
+//                     auto q = rhs.quatern();
 
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_quatern",
@@ -483,9 +483,9 @@ namespace phylanx { namespace execution_tree
                 if (rhs.dimension(0) == quats && rhs.dimension(1) == pages &&
                     rhs.dimension(2) == 1 && rhs.dimension(3) == 1)
                 {
-                    result.resize(std::array<std::size_t, 4>{
-                        columns, rows, pages, quats});
-                    auto q = rhs.quatern();
+//                     result.resize(std::array<std::size_t, 4>{
+//                         columns, rows, pages, quats});
+//                     auto q = rhs.quatern();
 
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_quatern",

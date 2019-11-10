@@ -469,7 +469,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::size_t count = 0;
             for (auto it = first; it != last; ++it, ++count)
             {
-                if (count != 0 && count != size-1 &&
+                if (count != 0 && count != std::size_t(size)-1 &&
                     !ast::detail::is_identifier(it->second) &&
                     !ast::detail::is_function_call(it->second))
                 {
@@ -511,7 +511,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::size_t count = 0;
             for (auto it = first; it != last; ++it, ++count)
             {
-                if (count != 0 && count != size-1 &&
+                if (count != 0 && count != std::size_t(size)-1 &&
                     !ast::detail::is_identifier(it->second) &&
                     !ast::detail::is_function_call(it->second))
                 {
@@ -1576,6 +1576,33 @@ namespace phylanx { namespace execution_tree { namespace compiler
     {
         compiler_helper comp{codename, snippets, env, patterns, default_locality};
         return comp(expr);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    function bind_arguments(std::string const& codename,
+        std::string const& func_name, function_list& snippets,
+        primitive_argument_type&& func, primitive_arguments_type&& args,
+        hpx::id_type const& default_locality)
+    {
+        function& f = snippets.program_.add_empty(codename);
+
+        // now create the target-reference object
+        primitive_arguments_type params;
+        params.reserve(args.size() + 1);
+
+        params.emplace_back(std::move(func));
+        for (auto&& arg : std::move(args))
+        {
+            params.push_back(std::move(arg));
+        }
+
+        f = function{primitive_argument_type{
+                create_primitive_component(
+                    default_locality, "target-reference",
+                    std::move(params), func_name, codename)
+            }, func_name};
+
+        return f;
     }
 
     ///////////////////////////////////////////////////////////////////////////

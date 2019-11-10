@@ -11,9 +11,11 @@
 #include <phylanx/execution_tree/compiler_component.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
+#include <hpx/format.hpp>
 #include <hpx/include/naming.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <string>
 #include <utility>
@@ -95,21 +97,31 @@ namespace phylanx { namespace execution_tree
         return snippets.program_.add_entry_point(std::move(entry_point));
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        static std::atomic<std::size_t> function_counter(0);
+        static std::string generate_unique_function_name()
+        {
+            return hpx::util::format("function_{}", ++function_counter);
+        }
+    }
+
     compiler::entry_point const& compile(std::string const& name,
         std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        return compile(
-            name, "<unknown>", exprs, snippets, env, default_locality);
+        return compile(name, detail::generate_unique_function_name(), exprs,
+            snippets, env, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& name,
         std::string const& expr, compiler::function_list& snippets,
         compiler::environment& env, hpx::id_type const& default_locality)
     {
-        return compile(name, "<unknown>", ast::generate_ast(expr), snippets,
-            env, default_locality);
+        return compile(name, detail::generate_unique_function_name(),
+            ast::generate_ast(expr), snippets, env, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& name,
@@ -145,15 +157,16 @@ namespace phylanx { namespace execution_tree
         std::string const& expr, compiler::function_list& snippets,
         hpx::id_type const& default_locality)
     {
-        return compile(name, "<unknown>", ast::generate_ast(expr), snippets,
-            default_locality);
+        return compile(name, detail::generate_unique_function_name(),
+            ast::generate_ast(expr), snippets, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& name,
         std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
-        return compile(name, "<unknown>", exprs, snippets, default_locality);
+        return compile(name, detail::generate_unique_function_name(), exprs,
+            snippets, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& name,
@@ -170,31 +183,31 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        return compile(
-            "<unknown>", "<unknown>", exprs, snippets, env, default_locality);
+        return compile("<unknown>", detail::generate_unique_function_name(),
+            exprs, snippets, env, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& expr,
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        return compile("<unknown>", "<unknown>", ast::generate_ast(expr),
-            snippets, env, default_locality);
+        return compile("<unknown>", detail::generate_unique_function_name(),
+            ast::generate_ast(expr), snippets, env, default_locality);
     }
 
     compiler::entry_point const& compile(
         std::vector<ast::expression> const& exprs,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
-        return compile(
-            "<unknown>", "<unknown>", exprs, snippets, default_locality);
+        return compile("<unknown>", detail::generate_unique_function_name(),
+            exprs, snippets, default_locality);
     }
 
     compiler::entry_point const& compile(std::string const& expr,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
-        return compile("<unknown>", "<unknown>", ast::generate_ast(expr),
-            snippets, default_locality);
+        return compile("<unknown>", detail::generate_unique_function_name(),
+            ast::generate_ast(expr), snippets, default_locality);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -206,6 +219,17 @@ namespace phylanx { namespace execution_tree
     {
         return compiler::define_variable(
             codename, name_parts, snippets, env, body, default_locality);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Bind the given arguments to the function
+    compiler::function bind_arguments(std::string const& codename,
+        std::string const& func_name, compiler::function_list& snippets,
+        primitive_argument_type func, primitive_arguments_type args,
+        hpx::id_type const& default_locality)
+    {
+        return compiler::bind_arguments(codename, func_name, snippets,
+            std::move(func), std::move(args), default_locality);
     }
 
     ///////////////////////////////////////////////////////////////////////////

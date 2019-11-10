@@ -93,21 +93,33 @@ function(add_phylanx_primitive_plugin name)
   else()
     if(${name}_PLUGIN AND NOT PHYLANX_WITH_STATIC_LINKING)
       if(MSVC)
-        set(install_destination ${CMAKE_INSTALL_BINDIR}/phylanx)
+        set(library_install_destination ${CMAKE_INSTALL_BINDIR}/phylanx)
       else()
-        set(install_destination ${CMAKE_INSTALL_LIBDIR}/phylanx)
+        set(library_install_destination ${CMAKE_INSTALL_LIBDIR}/phylanx)
       endif()
+      set(archive_install_destination ${CMAKE_INSTALL_LIBDIR}/phylanx)
+      set(runtime_install_destination ${CMAKE_INSTALL_BINDIR}/phylanx)
       set(${name}_OUTPUT_SUFFIX phylanx)
     else()
-      set(install_destination ${CMAKE_INSTALL_LIBDIR})
+      if(MSVC)
+        set(library_install_destination ${CMAKE_INSTALL_BINDIR})
+      else()
+        set(library_install_destination ${CMAKE_INSTALL_LIBDIR})
+      endif()
+      set(archive_install_destination ${CMAKE_INSTALL_LIBDIR})
+      set(runtime_install_destination ${CMAKE_INSTALL_BINDIR})
     endif()
     if(${name}_INSTALL_SUFFIX)
-      set(install_destination ${${name}_INSTALL_SUFFIX})
+      set(library_install_destination ${${name}_INSTALL_SUFFIX})
+      set(archive_install_destination ${${name}_INSTALL_SUFFIX})
+      set(runtime_install_destination ${${name}_INSTALL_SUFFIX})
     endif()
     set(_target_flags
       INSTALL
       INSTALL_FLAGS
-        DESTINATION ${install_destination}
+        LIBRARY DESTINATION ${library_install_destination}
+        ARCHIVE DESTINATION ${archive_install_destination}
+        RUNTIME DESTINATION ${runtime_install_destination}
         COMPONENT primitives
     )
   endif()
