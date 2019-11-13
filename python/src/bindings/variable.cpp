@@ -569,7 +569,7 @@ namespace phylanx { namespace execution_tree
         if (!var.shape().is_none())
         {
             pybind11::tuple t(var.shape());
-            if (!t.empty())
+            if (t.size() != 0)
             {
                 return phylanx::execution_tree::variable(var.state(),
                     phylanx::execution_tree::primitive_argument_type(
@@ -627,7 +627,7 @@ namespace phylanx { namespace execution_tree
         }
 
         pybind11::tuple t(var.shape());
-        if (t.empty())
+        if (t.size() == 0)
         {
             throw pybind11::index_error();
         }
@@ -689,7 +689,7 @@ namespace phylanx { namespace execution_tree
         }
 
         pybind11::tuple t(var.shape());
-        if (t.empty())
+        if (t.size() == 0)
         {
             throw pybind11::index_error();
         }
