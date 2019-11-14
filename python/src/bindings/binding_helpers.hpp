@@ -200,6 +200,10 @@ namespace phylanx { namespace bindings
         std::string const& file_name, std::string const& func_name,
         std::string const& xexpr_str);
 
+    std::string expression_compiler_ast(compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        std::vector<phylanx::ast::expression> const& xexpr);
+
     // evaluate compiled expression
     pybind11::object expression_evaluator(
         compiler_state& state, std::string const& file_name,

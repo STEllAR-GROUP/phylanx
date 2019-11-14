@@ -6,11 +6,12 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import re
-import ast
 import inspect
 import numpy as np
+import ast
 import phylanx.execution_tree
 from phylanx import PhylanxSession
+from .physl_db import db
 
 
 # find name of file that imported this file
@@ -371,17 +372,11 @@ class PhySLFunction:
 
     functions = []
 
-    def __init__(self, file_name, function_name, src):
-        self.file_name = file_name
-        self.func_name = function_name
-        self.src = src
+    def __init__(self, physl):
+        self.physl = physl
 
     def compile_function(self):
-        if PhySL.compiler_state is None:
-            PhySL.compiler_state = phylanx.execution_tree.global_compiler_state(
-                self.file_name)
-        phylanx.execution_tree.compile(
-            PhySL.compiler_state, self.file_name, self.func_name, self.src)
+        self.physl._ensure_is_compiled()
 
     @staticmethod
     def compile():
@@ -396,7 +391,7 @@ class PhySL:
 
     compiler_state = None
 
-    def ensure_compiler_state(self):
+    def _ensure_compiler_state(self):
         """Ensure the compiler state object has been created"""
 
         if PhySL.compiler_state is None:
@@ -407,28 +402,80 @@ class PhySL:
                 PhySL.compiler_state = \
                     phylanx.execution_tree.global_compiler_state(self.file_name)
 
-    def ensure_is_compiled(self):
-        """Ensure this function has been compiled, also compile all functions
-           that have been collected so fart without being compiled"""
+    def _compile_or_load(self):
+        """Compile or load this function from database"""
+
+        physl_db = None
+        try:
+            # create/open database representing the function in this file
+            physl_db = db(_name_of_importing_file)
+
+            # check whether this Phylanx function is already in database
+            self.__src__, self.__ast__ = physl_db.select(
+                self.wrapped_function.__name__)
+
+            if self.__src__ is None:
+                # this function is not in database, generate physl
+                self.ir = self._apply_rule(self.python_tree.body[0])
+                check_return(self.ir)
+
+                self.__src__ = self._generate_physl(self.ir)
+                self.__ast__ = phylanx.ast.generate_ast(self.__src__)
+
+                # now store the PhySL string and AST for this function
+                physl_db.insert(
+                    self.wrapped_function.__name__, self.__src__, self.__ast__)
+
+            physl_db.close()
+
+        except Exception:
+            # assume something went wrong while handling the database, simply
+            # compile things withoput db support
+            self.ir = self._apply_rule(self.python_tree.body[0])
+            check_return(self.ir)
+            self.__src__ = self._generate_physl(self.ir)
+            self.__ast__ = phylanx.ast.generate_ast(self.__src__)
+
+            # close database, if needed
+            if physl_db is not None:
+                physl_db.close()
+
+        # now, print generated PhySL if required
+        if self.kwargs.get("debug"):
+            print_physl_src(self.__src__)
+            print(end="", flush="")
+
+    def _ensure_global_state(self):
+        """Ensure global PhySL session has been initialized"""
 
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
 
         if not self.is_compiled:
 
-            # create compiler state
-            self.ensure_compiler_state()
-
             # compile all functions that have so far been collected without an
             # initialized session object
             PhySLFunction.compile()
 
-            # compile this function
-            phylanx.execution_tree.compile(
-                PhySL.compiler_state, self.file_name,
-                self.wrapped_function.__name__, self.__src__)
+    def _ensure_is_compiled(self):
+        """Ensure this function has been compiled, also compile all functions
+           that have been collected so fart without being compiled"""
 
-            self.is_compiled = True
+        if self.is_compiled:
+            return
+
+        # create compiler state
+        self._ensure_compiler_state()
+
+        # transduce the python code, generate AST
+        self._compile_or_load()
+
+        # compile this function
+        phylanx.execution_tree.compile(
+            PhySL.compiler_state, self.file_name,
+            self.wrapped_function.__name__, self.__ast__)
+
+        self.is_compiled = True
 
     def __init__(self, func, tree, kwargs):
         self.defined = set()
@@ -437,6 +484,11 @@ class PhySL:
         self.kwargs = kwargs
         self.is_compiled = False
         self.file_name = None
+        self.__src__ = None
+        self.__ast__ = None
+        self.ir = None
+        self.python_tree = tree
+
         if self.kwargs.get('fglobals'):
             self.fglobals = self.kwargs['fglobals']
             for key, val in self.fglobals.items():
@@ -451,34 +503,26 @@ class PhySL:
         self.__perfdata__ = (None, None, None)
 
         # Add arguments of the function to the list of discovered variables.
-        if inspect.isfunction(tree.body[0]):
-            for arg in self.args:
+        if inspect.isfunction(self.python_tree.body[0]):
+            for arg in self.python_tree.body[0].args.args:
                 self.defined.add(arg.arg)
         else:
             PhySL.defined_classes = {}
 
-        self.ir = self.apply_rule(tree.body[0])
-        check_return(self.ir)
-        self.__src__ = self.generate_physl(self.ir)
-
-        if self.kwargs.get("debug"):
-            print_physl_src(self.__src__)
-            print(end="", flush="")
-
         # compile this function if session was already initialized, otherwise
         # simply collect it for later compilation
         if PhylanxSession.is_initialized:
-            self.ensure_is_compiled()
+            self._ensure_global_state()
+            self._ensure_is_compiled()
 
         else:
-            func_name = self.wrapped_function.__name__
-            func = PhySLFunction(self.file_name, func_name, self.__src__)
+            func = PhySLFunction(self)
             PhySLFunction.functions.append(func)
 
-    def generate_physl(self, ir):
+    def _generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
                 ir[1], tuple):
-            result = [self.generate_physl(i) for i in ir[1]]
+            result = [self._generate_physl(i) for i in ir[1]]
             # Remove return statements when generating physl
             if re.match(r'return\$.*', ir[0]):
                 if len(result) == 1:
@@ -488,39 +532,27 @@ class PhySL:
             else:
                 return ir[0] + '(' + ', '.join(result) + ')'
         elif isinstance(ir, list):
-            return ', '.join([self.generate_physl(i) for i in ir])
+            return ', '.join([self._generate_physl(i) for i in ir])
         elif isinstance(ir, tuple):
             # NOTE Phylanx does not support tuples at this point, therefore, we
             # unpack all tuples for now!
-            return ', '.join([self.generate_physl(i) for i in ir])
+            return ', '.join([self._generate_physl(i) for i in ir])
         else:
             return ir
 
-    def apply_rule(self, node):
+    def _apply_rule(self, node):
         """Calls the corresponding rule, based on the name of the node."""
         if node is not None:
             node_name = node.__class__.__name__
             return eval('self._%s' % node_name)(node)
-
-    def block(self, node):
-        """Returns a map representation of a PhySL block."""
-
-        if isinstance(node, list):
-            block = tuple(map(self.apply_rule, node))
-            if len(node) == 1:
-                return block
-            else:
-                return ['block', block]
-        else:
-            block = (self.apply_rule(node), )
-            return block
 
     # Invocation support
     def lazy(self, *args, **kwargs):
         """Compile a given function, return a variable binding the function to
            arguments"""
 
-        self.ensure_is_compiled()
+        self._ensure_global_state()
+        self._ensure_is_compiled()
 
         if len(args) == 0 and len(kwargs) == 0:
             return phylanx.execution_tree.variable(
@@ -550,7 +582,8 @@ class PhySL:
     def call(self, *args, **kwargs):
         """Invoke this Phylanx function, pass along the given arguments"""
 
-        self.ensure_is_compiled()
+        self._ensure_global_state()
+        self._ensure_is_compiled()
 
         self.__perfdata__ = (None, None, None)
         self.performance_primitives = None
@@ -576,11 +609,20 @@ class PhySL:
     def tree(self):
         """Return the tree data for this object"""
 
-        self.ensure_is_compiled()
+        self._ensure_global_state()
+        self._ensure_is_compiled()
 
         return phylanx.execution_tree.retrieve_tree_topology(
             PhySL.compiler_state, self.file_name,
             self.wrapped_function.__name__)
+
+    def get_physl_source(self):
+        """Return generated PhySL source string"""
+
+        self._ensure_global_state()
+        self._ensure_is_compiled()
+
+        return self.__src__
 
 # #############################################################################
 # Transducer rules
@@ -627,11 +669,11 @@ class PhySL:
         if node.vararg or node.kwarg:
             raise (Exception("Phylanx does not support *args and **kwargs"))
 
-        defaults = tuple(map(self.apply_rule, node.defaults))
+        defaults = tuple(map(self._apply_rule, node.defaults))
         result = tuple()
         padded_defaults = (None, ) * (len(node.args) - len(defaults)) + defaults
         for arg, default in zip(node.args, padded_defaults):
-            a = self.apply_rule(arg)
+            a = self._apply_rule(arg)
             symbol_name = re.sub(r'\$\d+', '', a)
             self.defined.add(symbol_name)
             if default is None:
@@ -658,7 +700,7 @@ class PhySL:
             raise Exception(
                 "Phylanx does not support multi-target assignments.")
 
-        symbol = self.apply_rule(node.targets[0])
+        symbol = self._apply_rule(node.targets[0])
         # if lhs is not indexed.
         if isinstance(symbol, str):
             symbol_name = re.sub(r'\$\d+', '', symbol)
@@ -676,8 +718,8 @@ class PhySL:
         else:
             op = get_symbol_info(node.targets[0], "store")
 
-        target = self.apply_rule(node.targets[0])
-        value = self.apply_rule(node.value)
+        target = self._apply_rule(node.targets[0])
+        value = self._apply_rule(node.value)
         return [op, (target, value)]
 
     def _Attribute(self, node):
@@ -709,25 +751,25 @@ class PhySL:
         """class AugAssign(target, op, value)"""
 
         symbol = get_symbol_info(node, 'store')
-        op = get_symbol_info(node, self.apply_rule(node.op))
-        target = self.apply_rule(node.target)
-        value = self.apply_rule(node.value)
+        op = get_symbol_info(node, self._apply_rule(node.op))
+        target = self._apply_rule(node.target)
+        value = self._apply_rule(node.value)
 
         return [symbol, (target, (op, (target, value)))]
 
     def _BinOp(self, node):
         """class BinOp(left, op, right)"""
 
-        op = get_symbol_info(node, self.apply_rule(node.op))
-        left = self.apply_rule(node.left)
-        right = self.apply_rule(node.right)
+        op = get_symbol_info(node, self._apply_rule(node.op))
+        left = self._apply_rule(node.left)
+        right = self._apply_rule(node.right)
         return [op, (left, right)]
 
     def _BoolOp(self, node):
         """class BoolOp(left, op, right)"""
 
-        op = get_symbol_info(node, self.apply_rule(node.op))
-        values = list(map(self.apply_rule, node.values))
+        op = get_symbol_info(node, self._apply_rule(node.op))
+        values = list(map(self._apply_rule, node.values))
 
         return [op, (values, )]
 
@@ -739,11 +781,11 @@ class PhySL:
         """
 
         def __apply(self, k):
-            kw = self.apply_rule(k.value)
+            kw = self._apply_rule(k.value)
             return (k.arg, kw)
 
-        symbol = self.apply_rule(node.func)
-        args = tuple(self.apply_rule(arg) for arg in node.args)
+        symbol = self._apply_rule(node.func)
+        args = tuple(self._apply_rule(arg) for arg in node.args)
         op = get_symbol_info(node.func, '__arg')
         kwargs = tuple([op, __apply(self, k)] for k in node.keywords)
 
@@ -829,7 +871,7 @@ class PhySL:
     #     PhySL.defined_classes[node.name] = {}
     #     if node.bases:
     #         raise NotImplementedError("Phylanx does not support inheritance.")
-    #     class_body = list(self.apply_rule(m) for m in node.body)
+    #     class_body = list(self._apply_rule(m) for m in node.body)
 
     #     return class_body
 
@@ -843,9 +885,9 @@ class PhySL:
         """
 
         if (len(node.ops) == 1):
-            left = self.apply_rule(node.left)
-            op = get_symbol_info(node, self.apply_rule(node.ops[0]))
-            right = self.apply_rule(node.comparators[0])
+            left = self._apply_rule(node.left)
+            op = get_symbol_info(node, self._apply_rule(node.ops[0]))
+            right = self._apply_rule(node.comparators[0])
 
             return [op, (left, right)]
         else:
@@ -855,17 +897,17 @@ class PhySL:
             # TODO: Make sure to respect Python operator precedence.
             comparison = []
             for i in range(len(node.ops)):
-                op = self.apply_rule(node.ops[-i])
-                left = self.apply_rule(node.comparators[-i - 1])
-                right = self.apply_rule(node.comparators[-i])
+                op = self._apply_rule(node.ops[-i])
+                left = self._apply_rule(node.comparators[-i - 1])
+                right = self._apply_rule(node.comparators[-i])
                 if comparison:
                     comparison = ['__and', (*comparison, (op, (left, right)))]
                 else:
                     comparison = [*comparison, (op, (left, right))]
 
-            op = self.apply_rule(node.ops[0])
-            left = self.apply_rule(node.left)
-            right = self.apply_rule(node.comparators[0])
+            op = self._apply_rule(node.ops[0])
+            left = self._apply_rule(node.left)
+            right = self._apply_rule(node.comparators[0])
             if comparison:
                 comparison = ['__and', (*comparison, (op, (left, right)))]
             else:
@@ -883,8 +925,8 @@ class PhySL:
         `is_async` indicates a comprehension is asynchronous.
         """
 
-        target = self.apply_rule(node.target)
-        iteration_space = self.apply_rule(node.iter)
+        target = self._apply_rule(node.target)
+        iteration_space = self._apply_rule(node.iter)
 
         comprehension = {
             'target': target,
@@ -909,7 +951,7 @@ class PhySL:
         `value` holds one of the other nodes (rules).
         """
 
-        return self.apply_rule(node.value)
+        return self._apply_rule(node.value)
 
     def _ExtSlice(self, node):
         """class ExtSlice(dims)
@@ -917,8 +959,21 @@ class PhySL:
         Advanced slicing.
         `dims` holds a list of `Slice` and `Index` nodes.
         """
-        slicing = list(map(self.apply_rule, node.dims))
+        slicing = list(map(self._apply_rule, node.dims))
         return slicing
+
+    def _block(self, node):
+        """Returns a map representation of a PhySL block."""
+
+        if isinstance(node, list):
+            block = tuple(map(self._apply_rule, node))
+            if len(node) == 1:
+                return block
+            else:
+                return ['block', block]
+        else:
+            block = (self._apply_rule(node), )
+            return block
 
     def _For(self, node):
         """class For(target, iter, body, orelse)
@@ -941,15 +996,15 @@ class PhySL:
             'prange': 'parallel_map'
         }
 
-        target = self.apply_rule(node.target)
+        target = self._apply_rule(node.target)
         # TODO: **MAP**
         # target_name = target.split('$', 1)[0]
         # self.defined.add(target_name)
-        iteration_space = self.apply_rule(node.iter)
+        iteration_space = self._apply_rule(node.iter)
         if isinstance(iteration_space, list) and iteration_space[0].startswith('zip'):
             iter_space, indices = physl_zip(node)
             symbol = get_symbol_info(node, 'for_each')
-            body = self.block(node.body)
+            body = self._block(node.body)
             body = ['block', (*indices, *body)]
             op = get_symbol_info(node, 'lambda')
             return [symbol, ([op, ('__physl_iterator', body)], iter_space)]
@@ -964,8 +1019,8 @@ class PhySL:
         else:
             symbol = get_symbol_info(node, 'for_each')
 
-        body = self.block(node.body)
-        # orelse = self.block(node.orelse)
+        body = self._block(node.body)
+        # orelse = self._block(node.orelse)
         op = get_symbol_info(node, 'lambda')
         return [symbol, ([op, (target, body)], iteration_space)]
         # return [symbol, (target, iteration_space, body, orelse)]
@@ -986,8 +1041,8 @@ class PhySL:
 
         op = get_symbol_info(node, 'define')
         symbol = get_symbol_info(node, node.name)
-        args = self.apply_rule(node.args)
-        body = self.block(node.body)
+        args = self._apply_rule(node.args)
+        body = self._block(node.body)
         lambda_op = get_symbol_info(node, 'lambda')
 
         if (args):
@@ -1013,9 +1068,9 @@ class PhySL:
        """
 
         symbol = '%s' % get_symbol_info(node, 'if')
-        test = self.apply_rule(node.test)
-        body = self.block(node.body)
-        orelse = self.block(node.orelse)
+        test = self._apply_rule(node.test)
+        body = self._block(node.body)
+        orelse = self._block(node.orelse)
 
         return [symbol, (test, body, orelse)]
 
@@ -1027,9 +1082,9 @@ class PhySL:
        """
 
         symbol = '%s' % get_symbol_info(node, 'if')
-        test = self.apply_rule(node.test)
-        body = self.block(node.body)
-        orelse = self.block(node.orelse)
+        test = self._apply_rule(node.test)
+        body = self._block(node.body)
+        orelse = self._block(node.orelse)
 
         return [symbol, (test, body, orelse)]
 
@@ -1045,11 +1100,11 @@ class PhySL:
         # TODO: **SLICING**
         # if isinstance(node.value, ast.Tuple):
         #     op = 'list'
-        #     elements = tuple(map(self.apply_rule, node.value.elts))
+        #     elements = tuple(map(self._apply_rule, node.value.elts))
         #     return [op, (*elements, )]
         # else:
-        #     return self.apply_rule(node.value)
-        return self.apply_rule(node.value)
+        #     return self._apply_rule(node.value)
+        return self._apply_rule(node.value)
 
     def _Is(self, node):
         raise Exception("`Is` operator is not defined in Phylanx.")
@@ -1063,8 +1118,8 @@ class PhySL:
         `body` is a single node.
         """
         symbol = get_symbol_info(node, 'lambda')
-        args = self.apply_rule(node.args)
-        body = self.block(node.body)
+        args = self._apply_rule(node.args)
+        body = self._block(node.body)
 
         return [symbol, (args, body)]
 
@@ -1072,7 +1127,7 @@ class PhySL:
         """class List(elts, ctx)"""
 
         op = get_symbol_info(node, 'list')
-        elements = tuple(map(self.apply_rule, node.elts))
+        elements = tuple(map(self._apply_rule, node.elts))
         return [op, (*elements, )]
 
     def _ListComp(self, node):
@@ -1086,8 +1141,8 @@ class PhySL:
         if len(node.generators) > 1:
             raise NotImplementedError("Nested comprehensions is not yet supported!")
 
-        elt = self.apply_rule(node.elt)
-        loop = self.apply_rule(node.generators[0])
+        elt = self._apply_rule(node.elt)
+        loop = self._apply_rule(node.generators[0])
 
         target = loop['target']
         iter_space = loop['iter']
@@ -1115,7 +1170,7 @@ class PhySL:
 
     def _Module(self, node):
         """Root node of the Python AST."""
-        module = list(self.apply_rule(m) for m in node.body)
+        module = list(self._apply_rule(m) for m in node.body)
 
         return module
 
@@ -1184,9 +1239,9 @@ class PhySL:
         symbol = get_symbol_info(node, "return")
 
         if type(node.value) == ast.Tuple:
-            return [symbol, (["list", self.apply_rule(node.value)],)]
+            return [symbol, (["list", self._apply_rule(node.value)],)]
 
-        value = self.apply_rule(node.value)
+        value = self._apply_rule(node.value)
         if value is None:
             value = get_symbol_info(node, "nil")
 
@@ -1197,19 +1252,19 @@ class PhySL:
 
         symbol = 'list'
 
-        lower = self.apply_rule(node.lower)
+        lower = self._apply_rule(node.lower)
         if lower is None:
             lower = 'nil'
 
-        upper = self.apply_rule(node.upper)
+        upper = self._apply_rule(node.upper)
         if upper is None:
             upper = 'nil'
 
-        step = self.apply_rule(node.step)
+        step = self._apply_rule(node.step)
         if step is None:
-            slice_ = self.generate_physl([symbol, (lower, upper)])
+            slice_ = self._generate_physl([symbol, (lower, upper)])
         else:
-            slice_ = self.generate_physl([symbol, (lower, upper, step)])
+            slice_ = self._generate_physl([symbol, (lower, upper, step)])
 
         return slice_
 
@@ -1235,23 +1290,23 @@ class PhySL:
                 # value = _NestedSubscript(node.value)
             else:
                 op = '%s' % get_symbol_info(node, 'slice')
-                value = self.apply_rule(node.value)
+                value = self._apply_rule(node.value)
                 op = '%s' % get_symbol_info(node, 'slice')
                 # if isinstance(node.ctx, ast.Load):
-                # slice_ = self.apply_rule(node.slice)
+                # slice_ = self._apply_rule(node.slice)
                 # return [value, [slice_]]
 
                 # if isinstance(node.ctx, ast.Store):
-                slice_ = self.apply_rule(node.slice)
+                slice_ = self._apply_rule(node.slice)
                 return [op, (value, [slice_])]
 
         op = '%s' % get_symbol_info(node, 'slice')
-        slice_ = self.apply_rule(node.slice)
+        slice_ = self._apply_rule(node.slice)
         if isinstance(node.value, ast.Subscript):
             value = _NestedSubscript(node.value)
             return [op, (value, slice_)]
         else:
-            value = self.apply_rule(node.value)
+            value = self._apply_rule(node.value)
         # TODO: **SLICING**
         #     if isinstance(node.slice, ast.Index) and isinstance(slice_, str) \
         #         or isinstance(node.slice, ast.Slice):
@@ -1267,25 +1322,25 @@ class PhySL:
                 attribute = withitem.context_expr
                 if attribute.attr == "parallel":
                     if self.fglobals[attribute.value.id].parallel.is_parallel_block():
-                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+                        return ["parallel_block", tuple(map(self._apply_rule, node.body))]
             elif type(withitem.context_expr) == ast.Name:
                 if withitem.context_expr.id == "parallel":
                     if self.fglobals["parallel"].is_parallel_block():
-                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+                        return ["parallel_block", tuple(map(self._apply_rule, node.body))]
         raise Exception("Unsupported use of 'With'")
 
     def _Dict(self, node):
         res = []
         for i in range(len(node.keys)):
-            key = self.apply_rule(node.keys[i])
-            val = self.apply_rule(node.values[i])
+            key = self._apply_rule(node.keys[i])
+            val = self._apply_rule(node.values[i])
             res += [["list", (key, val)]]
         return ["dict", (["list", tuple(res)],)]
 
     def _Tuple(self, node):
         """class Tuple(elts, ctx)"""
 
-        expr = tuple(map(self.apply_rule, node.elts))
+        expr = tuple(map(self._apply_rule, node.elts))
         return expr
 
     def _UAdd(self, node):
@@ -1301,11 +1356,11 @@ class PhySL:
     def _UnaryOp(self, node):
         """class UnaryOp(op, operand)"""
 
-        operand = self.apply_rule(node.operand)
+        operand = self._apply_rule(node.operand)
         if isinstance(node.op, ast.UAdd):
             return [(operand, )]
 
-        op = get_symbol_info(node, self.apply_rule(node.op))
+        op = get_symbol_info(node, self._apply_rule(node.op))
         return [op, (operand, )]
 
     def _USub(self, node):
@@ -1322,8 +1377,8 @@ class PhySL:
         """
 
         symbol = '%s' % get_symbol_info(node, 'while')
-        test = self.block(node.test)
-        body = self.block(node.body)
+        test = self._block(node.test)
+        body = self._block(node.body)
         return [symbol, (test, body)]
 
 

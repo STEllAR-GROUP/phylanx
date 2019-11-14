@@ -62,6 +62,39 @@ namespace phylanx { namespace bindings
             });
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    std::string expression_compiler_ast(compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        std::vector<phylanx::ast::expression> const& xexpr)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                auto const& code = phylanx::execution_tree::compile(
+                    file_name, func_name, xexpr, state.eval_snippets,
+                    state.eval_env);
+
+                auto const& funcs = code.functions();
+
+                if (state.enable_measurements)
+                {
+                    if (!funcs.empty())
+                    {
+                        state.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
+                }
+
+                // add all definitions to the global execution environment
+                code.run(state.eval_ctx);
+
+                return !funcs.empty() ? funcs.front().name_ : "";
+            });
+    }
+
     pybind11::object expression_evaluator(
         compiler_state& state, std::string const& file_name,
         std::string const& xexpr_str, pybind11::args args,

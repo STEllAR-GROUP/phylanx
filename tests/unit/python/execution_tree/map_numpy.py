@@ -18,7 +18,7 @@ def np_argmax(x):
 
 
 assert (np_argmax(np_array) == np.argmax(np_array)).all
-assert np_argmax.__src__ == \
+assert np_argmax.get_physl_source() == \
     'define$16$0(np_argmax$16$0, x$16$14, argmax$17$11(x$17$21))'
 
 
@@ -28,7 +28,7 @@ def np_argmin(x):
 
 
 assert (np_argmin(np_array) == np.argmin(np_array)).all
-assert np_argmin.__src__ == \
+assert np_argmin.get_physl_source() == \
     'define$26$0(np_argmin$26$0, x$26$14, argmin$27$11(x$27$21))'
 
 
@@ -38,7 +38,7 @@ def np_cross(x, y):
 
 
 assert (np_cross(np_x, np_y) == np.cross(np_x, np_y)).all
-assert np_cross.__src__ == \
+assert np_cross.get_physl_source() == \
     'define$36$0(np_cross$36$0, x$36$13, y$36$16, cross$37$11(x$37$20, y$37$23))'
 
 
@@ -48,7 +48,7 @@ def np_determinant(x):
 
 
 assert (np_determinant(np_array) == np.linalg.det(np_array)).all
-assert np_determinant.__src__ == \
+assert np_determinant.get_physl_source() == \
     'define$46$0(np_determinant$46$0, x$46$19, determinant$47$11(x$47$25))'
 
 
@@ -58,7 +58,7 @@ def np_diag(x):
 
 
 assert (np_diag(np_array) == np.diagonal(np_array)).all
-assert np_diag.__src__ == \
+assert np_diag.get_physl_source() == \
     'define$56$0(np_diag$56$0, x$56$12, diag$57$11(x$57$23))'
 
 
@@ -68,7 +68,7 @@ def np_dot(x, y):
 
 
 assert (np_dot(np_x, np_y) == np.dot(np_y, np_y)).all
-assert np_dot.__src__ == \
+assert np_dot.get_physl_source() == \
     'define$66$0(np_dot$66$0, x$66$11, y$66$14, dot$67$11(x$67$18, y$67$21))'
 
 
@@ -78,7 +78,7 @@ def np_exp(x):
 
 
 assert (np_exp(np_array) == np.exp(np_array)).all
-assert np_exp.__src__ == \
+assert np_exp.get_physl_source() == \
     'define$76$0(np_exp$76$0, x$76$11, exp$77$11(x$77$18))'
 
 # @Phylanx
@@ -94,7 +94,7 @@ def np_identity(x):
 
 
 assert (np_identity(3) == np.identity(3)).all
-assert np_identity.__src__ == \
+assert np_identity.get_physl_source() == \
     'define$92$0(np_identity$92$0, x$92$16, identity$93$11(x$93$23))'
 
 # TODO
@@ -118,7 +118,7 @@ def np_linspace(start, stop, steps):
 
 
 assert (np_linspace(2, 3, 5) == np.linspace(2, 3, 5)).all
-assert np_linspace.__src__ == \
+assert np_linspace.get_physl_source() == \
     'define$116$0(np_linspace$116$0, start$116$16, stop$116$23, steps$116$29, linspace$117$11(2, 3, 5))' # noqa E501
 
 
@@ -128,7 +128,7 @@ def np_power(x, p):
 
 
 assert (np_power(np_array, 2) == np.power(np_array, 2)).all
-assert np_power.__src__ == \
+assert np_power.get_physl_source() == \
     'define$126$0(np_power$126$0, x$126$13, p$126$16, power$127$11(x$127$20, 2))'
 
 # TODO
@@ -155,7 +155,7 @@ def np_slice_01(x):
 
 
 assert (np_slice_01(arr) == arr[1:4]).all
-assert np_slice_01.__src__ == \
+assert np_slice_01.get_physl_source() == \
     "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11, list(1, 4)))"
 
 a = np.array([1, 4, 9])
@@ -167,7 +167,7 @@ def np_sqrt(x):
 
 
 assert (np_sqrt(a) == np.sqrt(a)).all
-assert np_sqrt.__src__ == \
+assert np_sqrt.get_physl_source() == \
     'define$165$0(np_sqrt$165$0, x$165$12, sqrt$166$11(x$166$19))'
 
 
@@ -178,7 +178,7 @@ def np_transpose(x):
 
 
 assert (np_transpose(np_array) == np.transpose(np_array)).all
-assert np_transpose.__src__ == \
+assert np_transpose.get_physl_source() == \
     'define$175$0(np_transpose$175$0, x$175$17, block(define$176$4(transx$176$4, transpose$176$13(x$176$26)), transx$177$11))' # noqa E501
 
 # @Phylanx

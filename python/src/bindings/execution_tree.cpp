@@ -35,7 +35,10 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
-        "compile a numerical expression in PhySL");
+        "compile a PhySL expression");
+
+    execution_tree.def("compile", phylanx::bindings::expression_compiler_ast,
+        "compile a PhySL expression from a compiled AST");
 
     execution_tree.def("eval", phylanx::bindings::expression_evaluator,
         "compile and evaluate a numerical expression in PhySL");

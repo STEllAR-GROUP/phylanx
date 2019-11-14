@@ -15,6 +15,6 @@ def test_assign(x):
     return x
 
 
-assert(test_assign.__src__ ==
+assert(test_assign.get_physl_source() ==
         'define$13$0(test_assign$13$0, x$13$16, ' + \
         'block(store$14$4(x$14$4, 1), x$15$11))')
