@@ -7,7 +7,7 @@ set(headers
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/fileio.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read_csv.hpp"
-   "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read_csv_d.cpp"
+   "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read_csv_d.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_write.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_write_csv.hpp"
   )

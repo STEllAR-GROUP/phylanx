@@ -8,6 +8,7 @@
 
 #include <phylanx/plugins/fileio/file_read.hpp>
 #include <phylanx/plugins/fileio/file_read_csv.hpp>
+#include <phylanx/plugins/fileio/file_read_csv_d.hpp>
 #include <phylanx/plugins/fileio/file_read_hdf5.hpp>
 #include <phylanx/plugins/fileio/file_write.hpp>
 #include <phylanx/plugins/fileio/file_write_csv.hpp>
