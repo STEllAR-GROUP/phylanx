@@ -108,7 +108,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             annotation tmp(args);
             annotation locality_ann;
             annotation tiles_ann;
-            if (tmp.find("locality", locality_ann) && tmp.find("tile", tiles_ann))
+            if (tmp.find("locality", locality_ann) &&
+                tmp.find("tile", tiles_ann))
             {
                 ir::range tmp = tiles_ann.get_range();
                 localities = localities_annotation(locality_ann,
@@ -118,25 +119,23 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "annotate_primitive::annotate_d",
-                    generate_error_message("locality and/or tile annotation not found"));
+                    generate_error_message(
+                        "locality and/or tile annotation not found"));
             }
+        }
+        else if (phylanx::execution_tree::extract_string_value(*args.begin()) ==
+            "tile")
+        {
+            annotation locality_ann;
+            localities = localities_annotation(locality_ann,
+                annotation{std::move(args)}, ann_info, name_, codename_);
         }
         else
         {
-            if (phylanx::execution_tree::extract_string_value(*args.begin()) ==
-                "tiles")
-            {
-                annotation locality_ann;
-                localities = localities_annotation(locality_ann,
-                    annotation{std::move(args)}, ann_info, name_, codename_);
-            }
-            else
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "annotate_primitive::annotate_d",
-                    generate_error_message(
-                        "no args annotation and tiles annotation not first"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "annotate_primitive::annotate_d",
+                generate_error_message(
+                    "no args annotation and tiles annotation not first"));
         }
         target.set_annotation(std::move(localities), name_, codename_);
         return std::move(target);
