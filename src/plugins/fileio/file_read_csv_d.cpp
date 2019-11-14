@@ -6,9 +6,12 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 #include <phylanx/plugins/fileio/file_read_csv_d.hpp>
 
+#include <hpx/collectives.hpp>
 #include <hpx/errors/throw_exception.hpp>
+#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
@@ -40,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             Args:
 
                 fname (string) : file name
-                locality (annotation) : annotation for locality
+                locality (list) : annotation for locality
 
             Returns:
 
@@ -57,27 +60,55 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     primitive_argument_type file_read_csv_d::read(std::string filename,
         phylanx::execution_tree::annotation&& locality_info)
     {
-        ir::range loc_of = locality_info.get_data();
-        if (extract_numeric_value_dimension(
-                *loc_of.begin(), name_, codename_) != 0 ||
-            extract_numeric_value_dimension(
-                *(loc_of.begin() + 1), name_, codename_) != 0)
+        annotation tmp;
+        if (!locality_info.has_key("locality"))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "file_read_csv_d::read",
-                generate_error_message(
-                    "locality annotation has elements of wrong dimension"));
+                generate_error_message("malformed annotation"));
         }
-        std::size_t me = phylanx::execution_tree::extract_scalar_integer_value(
-            *loc_of.begin());
+        ir::range data = locality_info.get_data();
+        ir::range_iterator first = data.begin();
+        ir::range_iterator second = data.begin();
+        ++second;
+        std::size_t me =
+            phylanx::execution_tree::extract_scalar_integer_value_strict(
+                *first);
+        if (me != hpx::get_locality_id())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_read_csv_d::read",
+                generate_error_message("supplied locality id is different from "
+                                       "execution locality id"));
+        }
         std::size_t num_locs =
-            phylanx::execution_tree::extract_scalar_integer_value(
-                *(loc_of.begin() + 1));
+            phylanx::execution_tree::extract_scalar_integer_value_strict(
+                *second);
         std::size_t num_rows = 0;    // Need a way to get this. With num_locs,
         // we can do a barrier, and let locality 0 count the rows and
         // broadcast the result to all participating elements. I think
         // we need a basename for that though
-        hpx::lcos::barrier barrier("file_read_csv_d_" + filename, num_locs, me);
-        barrier.wait();
+        /*hpx::lcos::barrier barrier("file_read_csv_d_" + filename, num_locs, me);
+        barrier.wait();*/
+
+        // Want to find what localities are participating, and which element
+        // this locality is in the list, to determine which portion of the
+        // result matrix it holds
+        std::vector<std::size_t> locs =
+            hpx::all_to_all(("all_to_all_" + filename).c_str(), me, num_locs,
+                std::size_t(-1), me)
+                .get();
+        std::sort(locs.begin(), locs.end());
+        std::size_t me_idx = std::distance(
+            locs.begin(), std::find(locs.begin(), locs.end(), me));
+
+        // This check might be excessive
+        if (std::find(locs.begin(), locs.end(), me) == locs.end())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_read_csv_d::read",
+                generate_error_message("all_to_all returned locality list "
+                                       "without current locality"));
+        }
 
         std::ifstream infile(filename.c_str(), std::ios::in);
 
@@ -86,7 +117,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             throw std::runtime_error(
                 generate_error_message("couldn't open file: " + filename));
         }
-
         std::string line;
         bool header_parsed = false;
         std::vector<double> matrix_array, current_line;
@@ -94,15 +124,14 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         std::size_t before_readln = 0, after_readln = 0;
         while (std::getline(infile, line))
         {
-        }
-        while (std::getline(infile, line))
-        {
-            before_readln = matrix_array.size();
-
             auto begin_local = line.begin();
-            if (n_rows == 0 &&
-                boost::spirit::qi::parse(begin_local, line.end(),
-                    boost::spirit::qi::double_ % ',', current_line))
+            if (n_rows != 0)
+            {
+                n_rows++;
+                continue;
+            }
+            else if (boost::spirit::qi::parse(begin_local, line.end(),
+                         boost::spirit::qi::double_ % ',', current_line))
             {
                 if (begin_local == line.end() || header_parsed)
                 {
@@ -119,11 +148,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 }
                 current_line.clear();
             }
-            else if (n_rows != 0)
-            {
-                n_rows++;
-                continue;
-            }
             else
             {
                 throw std::runtime_error(
@@ -137,11 +161,14 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             if (n_cols == 1)
             {
                 // scalar value
+                // Need to decide whether this would be an error or
+                // if only locality 0 keeps the scalar
                 return primitive_argument_type{
                     ir::node_data<double>{matrix_array[0]}};
             }
 
             // vector
+            std::size_t my_part = 
             blaze::DynamicVector<double> vector(n_cols, matrix_array.data());
 
             return primitive_argument_type{
@@ -181,89 +208,14 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         std::string filename = string_operand_sync(
             operands[0], args, name_, codename_, std::move(ctx));
+        phylanx::execution_tree::annotation loc_info(
+            phylanx::execution_tree::extract_list_value_strict(operands[1]));
 
         auto this_ = this->shared_from_this();
         return hpx::threads::run_as_os_thread(
-            [filename = std::move(filename),
+            [filename = std::move(filename), loc_info = std::move(loc_info),
                 this_ = std::move(this_)]() -> primitive_argument_type {
-                std::ifstream infile(filename.c_str(), std::ios::in);
-
-                if (!infile.is_open())
-                {
-                    throw std::runtime_error(this_->generate_error_message(
-                        "couldn't open file: " + filename));
-                }
-
-                std::string line;
-                bool header_parsed = false;
-                std::vector<double> matrix_array, current_line;
-                std::size_t n_rows = 0, n_cols = 0;
-                std::size_t before_readln = 0, after_readln = 0;
-
-                while (std::getline(infile, line))
-                {
-                    before_readln = matrix_array.size();
-
-                    auto begin_local = line.begin();
-                    if (boost::spirit::qi::parse(begin_local, line.end(),
-                            boost::spirit::qi::double_ % ',', current_line))
-                    {
-                        if (begin_local == line.end() || header_parsed)
-                        {
-                            header_parsed = true;
-
-                            matrix_array.insert(matrix_array.end(),
-                                current_line.begin(), current_line.end());
-
-                            after_readln = matrix_array.size();
-                            if (n_rows == 0)
-                            {
-                                n_cols = matrix_array.size();
-                            }
-                            else if (n_cols != (after_readln - before_readln))
-                            {
-                                throw std::runtime_error(
-                                    this_->generate_error_message(
-                                        "wrong data format, different number "
-                                        "of element in this row " +
-                                        filename + ':' +
-                                        std::to_string(n_rows)));
-                            }
-                            n_rows++;
-                        }
-                        current_line.clear();
-                    }
-                    else
-                    {
-                        throw std::runtime_error(
-                            this_->generate_error_message("wrong data format " +
-                                filename + ':' + std::to_string(n_rows)));
-                    }
-                }
-
-                if (n_rows == 1)
-                {
-                    if (n_cols == 1)
-                    {
-                        // scalar value
-                        return primitive_argument_type{
-                            ir::node_data<double>{matrix_array[0]}};
-                    }
-
-                    // vector
-                    blaze::DynamicVector<double> vector(
-                        n_cols, matrix_array.data());
-
-                    return primitive_argument_type{
-                        ir::node_data<double>{std::move(vector)}};
-                }
-
-                // matrix
-                blaze::DynamicMatrix<double> matrix(
-                    n_rows, n_cols, matrix_array.data());
-
-                return primitive_argument_type{
-                    ir::node_data<double>{std::move(matrix)}};
+                return this_->read(filename, loc_info);
             });
     }
 }}}    // namespace phylanx::execution_tree::primitives

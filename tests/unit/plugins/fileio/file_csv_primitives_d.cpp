@@ -20,6 +20,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     std::string filename = std::tmpnam(nullptr);
 
     // write to file
+    if (hpx::get_locality_id() == 0)
     {
         phylanx::execution_tree::primitive litval =
             phylanx::execution_tree::primitives::create_variable(
@@ -38,15 +39,25 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     // read back the file
     hpx::future<phylanx::execution_tree::primitive_argument_type> f;
     {
+        phylanx::ir::range loc_info;
+        if (hpx::get_locality_id() == 0)
+        {
+            loc_info = phylanx::ir::range{"locality", 0, 2};
+        }
+        else if (hpx::get_locality_id() == 1)
+        {
+            loc_info = phylanx::ir::range{"locality", 1, 2};
+        }
+        phylanx::execution_tree::primitive_argument_type p{loc_info};
         phylanx::execution_tree::primitive infile =
-            phylanx::execution_tree::primitives::create_file_read_csv(
+            phylanx::execution_tree::primitives::create_file_read_csv_d(
                 hpx::find_here(),
                 phylanx::execution_tree::primitive_arguments_type{
-                    {filename}});
+                    {filename}, {p}});
 
         f = infile.eval();
     }
-
+    // Have to check that this is sliced correctly for comparison
     HPX_TEST(in == phylanx::execution_tree::extract_numeric_value(f.get()));
 
     std::remove(filename.c_str());
@@ -71,11 +82,21 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
     // read back the file
     hpx::future<phylanx::execution_tree::primitive_argument_type> f;
     {
+        phylanx::ir::range loc_info;
+        if (hpx::get_locality_id() == 0)
+        {
+            loc_info = phylanx::ir::range{"locality", 0, 2};
+        }
+        else if (hpx::get_locality_id() == 1)
+        {
+            loc_info = phylanx::ir::range{"locality", 1, 2};
+        }
+        phylanx::execution_tree::primitive_argument_type p{loc_info};
         phylanx::execution_tree::primitive infile =
-            phylanx::execution_tree::primitives::create_file_read_csv(
+            phylanx::execution_tree::primitives::create_file_read_csv_d(
                 hpx::find_here(),
                 phylanx::execution_tree::primitive_arguments_type{
-                    {filename}});
+                    {filename}, {p}});
 
         f = infile.eval();
     }
