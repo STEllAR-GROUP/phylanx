@@ -10,6 +10,7 @@ set(tests
    )
 
 set(dist_dot_operation_PARAMETERS LOCALITIES 2)
+set(dist_cannon_product_PARAMETERS LOCALITIES 4)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
