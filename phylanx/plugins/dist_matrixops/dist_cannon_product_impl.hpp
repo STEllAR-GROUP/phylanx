@@ -197,12 +197,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             (lhs_local_tile_index + 1) % lhs_tile_row.size();
         std::size_t rhs_iter_idx =
             (rhs_local_tile_index + 1) % rhs_tile_col.size();
+        hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp1 =
+            lhs_data.fetch(lhs_tile_row[lhs_iter_idx]);
+        hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp1 =
+            rhs_data.fetch(rhs_tile_col[rhs_iter_idx]);
+        lhs_iter_idx = (lhs_iter_idx + 1) % lhs_tile_row.size();
+        rhs_iter_idx = (rhs_iter_idx + 1) % rhs_tile_col.size();
+
         for (int i = 0; i < lhs_tile_row.size(); i++)
         {
-            result_matrix += lhs_data.fetch(lhs_tile_row[lhs_iter_idx]).get() *
-                rhs_data.fetch(rhs_tile_col[rhs_iter_idx]).get();
+            hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp2 =
+                lhs_data.fetch(lhs_tile_row[lhs_iter_idx]);
+            hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp2 =
+                rhs_data.fetch(rhs_tile_col[rhs_iter_idx]);
+            result_matrix += lhs_tmp1.get() * rhs_tmp1.get();
             lhs_iter_idx = (lhs_iter_idx + 1) % lhs_tile_row.size();
             rhs_iter_idx = (rhs_iter_idx + 1) % rhs_tile_col.size();
+            lhs_tmp1 = std::move(lhs_tmp2);
+            rhs_tmp1 = std::move(rhs_tmp2);
         }
 
         // collect overall result if left hand side vector is distributed
@@ -258,6 +270,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         return product(std::move(lhs), std::move(rhs),
             std::move(lhs_localities), rhs_localities);
     }
-}}}
+}}}    // namespace phylanx::dist_matrixops::primitives
 
 #endif
