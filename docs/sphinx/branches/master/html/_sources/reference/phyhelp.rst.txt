@@ -674,6 +674,20 @@ block (stmt)
             The value of the last statement.
 
 
+cannon_product
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cannon_product (a, b)
+             Args:
+
+                 a (array) : a scalar, vector, matrix or a tensor
+                 b (array) : a scalar, vector, matrix or a tensor
+
+             Returns:
+
+             The dot product of two matrices: `a` and `b` using Cannon's algorithm.
+             The dot product of an MxN matrix and an NxL is of size MxL
+
+
 car_cdr
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 car_cdr (li)
