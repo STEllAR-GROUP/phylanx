@@ -101,8 +101,16 @@ namespace phylanx { namespace execution_tree
         // objects.
         if (locality_ann.get_type() == "locality")
         {
+            std::size_t default_loc = loc.locality_id_;
             loc = execution_tree::extract_locality_information(
                 locality_ann, name, codename);
+            if (default_loc != loc.locality_id_)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "supplied locality differs from default");
+            }
+
         }
         else
         {
