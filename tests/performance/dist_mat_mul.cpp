@@ -813,19 +813,20 @@ void test_cannon_0()
 
 int hpx_main(int argc, char* argv[])
 {
+   /*
     test_dot_d_100();
     test_dot_d_200();
+    */
     test_dot_d_210();
-    
     test_dot_d_225();
-
-    test_dot_d_250();
+   /*
+   test_dot_d_250();
     test_dot_d_300();
     test_dot_d_400();
     test_dot_d_600();
     test_dot_d_800();
     test_dot_d_1000();
-    
+    */
     //test_cannon_0();
 
     return hpx::finalize();
