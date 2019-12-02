@@ -6,6 +6,7 @@
 set(tests
     blaze_benchmarks
     simple_loop
+	dist_mat_mul
    )
 
 foreach(test ${tests})
