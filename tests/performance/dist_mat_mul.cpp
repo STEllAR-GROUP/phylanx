@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& name, std::string const& codestr)
@@ -43,17 +44,14 @@ void time_mat_mul(std::string const& name, std::string const& code)
 
     auto const& compiled_code =
         phylanx::execution_tree::compile(name, code, snippets, env);
-    hpx::cout << "Locality: " << hpx::get_locality_id()
-              << " Starting execution for: " << name << hpx::endl;
+    hpx::cout << "Locality: " << hpx::get_locality_id() << " Starting execution for: " << name << hpx::endl;
     std::chrono::high_resolution_clock::time_point t1 =
         std::chrono::high_resolution_clock::now();
-    phylanx::execution_tree::primitive_argument_type val =
-        compiled_code.run().arg_;
+    phylanx::execution_tree::primitive_argument_type val = compiled_code.run().arg_;
     std::chrono::high_resolution_clock::time_point t2 =
         std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> time_span = t2 - t1;
-    hpx::cout << "Locality: " << hpx::get_locality_id() << " " << name
-              << " elapsed time: " << time_span.count() << hpx::endl;
+    hpx::cout << "Locality: " << hpx::get_locality_id() << " " << name << " elapsed time: " << time_span.count() << hpx::endl;
     hpx::cout << hpx::flush;
 }
 
@@ -716,6 +714,7 @@ void test_dot_d_1000()
     }
 }
 
+
 void test_cannon_0()
 {
     if (hpx::get_locality_id() == 0)
@@ -801,7 +800,7 @@ void test_cannon_0()
                         list("tile", list("columns", 3, 6), list("rows", 1, 2))))
             )
         )");
-        /*,
+            /*,
             R"(
             annotate_d([[32, 40, 48], [40, 50, 60], [48, 60, 72]],
                 "test2d2d_2_1/1",
@@ -814,14 +813,14 @@ void test_cannon_0()
 
 int hpx_main(int argc, char* argv[])
 {
-   /*
+    /*
     test_dot_d_100();
     test_dot_d_200();
     */
     test_dot_d_210();
     test_dot_d_225();
-   /*
-   test_dot_d_250();
+    /*
+    test_dot_d_250();
     test_dot_d_300();
     test_dot_d_400();
     test_dot_d_600();
