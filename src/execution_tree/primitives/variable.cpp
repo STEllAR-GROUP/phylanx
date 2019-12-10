@@ -92,6 +92,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (args.size() == 2)
             {
+                // if one of the slicing arguments needs evaluation
+                if (is_primitive_operand(args[0]) ||
+                    is_primitive_operand(args[1]))
+                {
+                    auto this_ = this->shared_from_this();
+                    auto op0 =
+                        value_operand(args[0], noargs, name_, codename_, ctx);
+                    return hpx::dataflow(
+                        [this_ = std::move(this_)](
+                            hpx::future<primitive_argument_type>&& arg0,
+                            hpx::future<primitive_argument_type>&& arg1)
+                        {
+                            primitive_argument_type const& target =
+                                valid(this_->bound_value_) ?
+                                    this_->bound_value_ : this_->operands_[0];
+                            return slice(target, arg0.get(), arg1.get(),
+                                this_->name_, this_->codename_);
+                        },
+                        std::move(op0),
+                        value_operand(
+                            args[1], noargs, name_, codename_, std::move(ctx)));
+                }
+
                 // handle row/column-slicing
                 return hpx::make_ready_future(
                     slice(target, args[0], args[1], name_, codename_));
@@ -99,12 +122,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (args.size() > 2)
             {
+                // if one of the slicing arguments needs evaluation
+                if (is_primitive_operand(args[0]) ||
+                    is_primitive_operand(args[1]) ||
+                    is_primitive_operand(args[2]))
+                {
+                    auto this_ = this->shared_from_this();
+                    auto op0 =
+                        value_operand(args[0], noargs, name_, codename_, ctx);
+                    auto op1 =
+                        value_operand(args[1], noargs, name_, codename_, ctx);
+                    return hpx::dataflow(
+                        [this_ = std::move(this_)](
+                            hpx::future<primitive_argument_type>&& arg0,
+                            hpx::future<primitive_argument_type>&& arg1,
+                            hpx::future<primitive_argument_type>&& arg2)
+                        {
+                            primitive_argument_type const& target =
+                                valid(this_->bound_value_) ?
+                                    this_->bound_value_ : this_->operands_[0];
+                            return slice(target, arg0.get(), arg1.get(),
+                                arg2.get(), this_->name_, this_->codename_);
+                        },
+                        std::move(op0), std::move(op1),
+                        value_operand(
+                            args[2], noargs, name_, codename_, std::move(ctx)));
+                }
+
                 // handle page/row/column-slicing
                 return hpx::make_ready_future(
                     slice(target, args[0], args[1], args[2], name_, codename_));
             }
 
             // handle row-slicing
+
+            // if the slicing argument needs evaluation
+            if (is_primitive_operand(args[0]))
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& arg0)
+                    {
+                        primitive_argument_type const& target =
+                            valid(this_->bound_value_) ?
+                                this_->bound_value_ : this_->operands_[0];
+                        return slice(target, arg0.get(), this_->name_,
+                            this_->codename_);
+                    },
+                    value_operand(
+                        args[0], noargs, name_, codename_, std::move(ctx)));
+            }
+
             return hpx::make_ready_future(
                 slice(target, args[0], name_, codename_));
         }
@@ -133,6 +202,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             (ctx.mode_ & eval_slicing))
         {
             // handle row-slicing
+
+            // if the slicing argument needs evaluation
+            if (is_primitive_operand(arg))
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& arg0)
+                    {
+                        primitive_argument_type const& target =
+                            valid(this_->bound_value_) ?
+                                this_->bound_value_ : this_->operands_[0];
+                        return slice(target, arg0.get(), this_->name_,
+                            this_->codename_);
+                    },
+                    value_operand(std::move(arg), noargs, name_, codename_,
+                        std::move(ctx)));
+            }
+
             return hpx::make_ready_future(
                 slice(target, std::move(arg), name_, codename_));
         }

@@ -93,6 +93,27 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             assert len(tree.body) == 1
             return tree
 
+        def get_physl_source(self):
+            """Return generated PhySL source string"""
+
+            return self.backend.get_physl_source()
+
+        def compile_function(self, func):
+            fn_src = inspect.getsource(func).strip()
+            fn_ast = ast.parse(fn_src)
+            if func.__name__ == '<lambda>':
+                func.__name__ = "__Physl_lambda_%d" % lambda_counter()
+                LambdaExtractor().visit(fn_ast)
+                lambda_ast = LambdaExtractor._ast
+                fn_body = ast.FunctionDef(
+                    name=func.__name__,
+                    args=lambda_ast.args,
+                    body=lambda_ast.body,
+                    lineno=lambda_ast.lineno,
+                    col_offset=lambda_ast.col_offset)
+                fn_ast = ast.Module(body=[fn_body])
+            return PhySL(func, fn_ast, self.kwargs)
+
         def map_decorated(self, val):
             """If a PhylanxDecorator is passed as an argument to an
                invocation of a Phylanx function we need to extract the
@@ -110,21 +131,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 return val()
 
             if isinstance(val, types.FunctionType):
-                fn_src = inspect.getsource(val)
-                fn_src = fn_src.strip()
-                fn_ast = ast.parse(fn_src)
-                if val.__name__ == '<lambda>':
-                    val.__name__ = "__Physl_lambda_%d" % lambda_counter()
-                    LambdaExtractor().visit(fn_ast)
-                    lambda_ast = LambdaExtractor._ast
-                    fn_body = ast.FunctionDef(
-                        name=val.__name__,
-                        args=lambda_ast.args,
-                        body=lambda_ast.body,
-                        lineno=lambda_ast.lineno,
-                        col_offset=lambda_ast.col_offset)
-                    fn_ast = ast.Module(body=[fn_body])
-                fn_physl = PhySL(val, fn_ast, self.kwargs)
+                fn_physl = self.compile_function(val)
                 return fn_physl.lazy()
 
             return val
@@ -137,7 +144,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            mapped_args = map(self.map_decorated, args)
+            mapped_args = tuple(map(self.map_decorated, args))
             kwitems = kwargs.items()
             mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}
             return self.backend.lazy(*mapped_args, **mapped_kwargs)
@@ -149,7 +156,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            mapped_args = map(self.map_decorated, args)
+            mapped_args = tuple(map(self.map_decorated, args))
             kwitems = kwargs.items()
             mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}
             result = self.backend.call(*mapped_args, **mapped_kwargs)
@@ -161,6 +168,9 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         def generate_ast(self):
             return generate_phylanx_ast(self.__src__)
 
+        def tree(self):
+            return self.backend.tree()
+
     class _PhylanxLazyDecorator:
         def __init__(self, decorator):
             """
@@ -169,9 +179,12 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             self.decorator = decorator
 
         def __call__(self, *args, **kwargs):
-            """Invoke this decorator using the given arguments"""
-
+            """Invoke this decorator"""
             return self.decorator.lazy(*args, **kwargs)
+
+        def tree(self):
+            """Return the tree data for this decorator"""
+            return self.decorator.tree()
 
     # expose lazy version of the decorator
     def lazy(decorator):

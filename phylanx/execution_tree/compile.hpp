@@ -125,6 +125,14 @@ namespace phylanx { namespace execution_tree
         hpx::id_type const& default_locality = hpx::find_here());
 
     ///////////////////////////////////////////////////////////////////////////
+    /// Bind the given arguments to the function
+    PHYLANX_EXPORT compiler::function bind_arguments(
+        std::string const& codename, std::string const& func_name,
+        compiler::function_list& snippets, primitive_argument_type func,
+        primitive_arguments_type args,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    ///////////////////////////////////////////////////////////////////////////
     // Helper function allowing to construct the internal data structures for
     // a pattern
     PHYLANX_EXPORT void add_patterns(

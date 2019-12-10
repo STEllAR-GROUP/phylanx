@@ -14,6 +14,6 @@ def f():
     return [1, [1]]
 
 
-assert f.__src__ == \
+assert f.get_physl_source() == \
     "define$13$0(f$13$0, lambda$13$0(list$14$11(1, list$14$15(1))))", \
-    f.__src__
+    f.get_physl_source()

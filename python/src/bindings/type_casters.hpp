@@ -1346,6 +1346,11 @@ namespace pybind11 { namespace detail
             return make_caster<T>::cast(std::forward<T>(src), policy, parent);
         }
 
+        handle operator()(phylanx::ast::nil const&) const
+        {
+            return pybind11::none();
+        }
+
         handle operator()(phylanx::ast::nil&&) const
         {
             return pybind11::none();

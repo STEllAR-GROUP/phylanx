@@ -107,10 +107,6 @@ namespace phylanx { namespace execution_tree
                     "column-step can not be zero", name, codename));
         }
 
-        std::size_t num_tensor_pages = t.pages();
-        std::size_t num_tensor_rows = t.rows();
-        std::size_t num_tensor_cols = t.columns();
-
         // handle special cases
         if (pages.single_value())
         {
@@ -292,7 +288,6 @@ namespace phylanx { namespace execution_tree
 
         if (largest_dimensionality == 0)
         {
-            auto row = blaze::row(blaze::pageslice(t, pages[0]), rows[0]);
             return f.scalar(t, t(pages[0], rows[0], columns[0]));
         }
 
@@ -378,7 +373,7 @@ namespace phylanx { namespace execution_tree
     {
         // handle single value page-slicing result
         auto pageslice = blaze::pageslice(
-            t, detail::check_index(pages[0], pages.size(), name, codename));
+            t, detail::check_index(pages[0], t.pages(), name, codename));
 
         return f.matrix(t, std::move(pageslice));
     }

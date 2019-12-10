@@ -19,6 +19,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -46,6 +47,8 @@ namespace phylanx { namespace execution_tree
             compiler_component, define_variable, define_variable_action);
 
     private:
+        static std::string generate_unique_function_name();
+
         compiler::function_list snippets_;
         compiler::environment env_;
         compiler::expression_pattern_list const patterns_;

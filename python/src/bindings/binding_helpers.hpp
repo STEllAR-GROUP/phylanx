@@ -58,9 +58,22 @@ namespace phylanx { namespace bindings
 #endif
         }
 
+        static phylanx::execution_tree::compiler::environment
+        construct_default_environment()
+        {
+            pybind11::gil_scoped_release release;    // release GIL
+
+            using namespace phylanx::execution_tree::compiler;
+            return hpx::threads::run_as_hpx_thread(
+                [&]() -> environment
+                {
+                    return default_environment();
+                });
+        }
+
         compiler_state(std::string codename)
           : m(import_phylanx())
-          , eval_env(phylanx::execution_tree::compiler::default_environment())
+          , eval_env(construct_default_environment())
           , eval_snippets()
           , codename_(std::move(codename))
           , enable_measurements(false)
@@ -187,8 +200,12 @@ namespace phylanx { namespace bindings
         std::string const& file_name, std::string const& func_name,
         std::string const& xexpr_str);
 
+    std::string expression_compiler_ast(compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        std::vector<phylanx::ast::expression> const& xexpr);
+
     // evaluate compiled expression
-    phylanx::execution_tree::primitive_argument_type expression_evaluator(
+    pybind11::object expression_evaluator(
         compiler_state& state, std::string const& file_name,
         std::string const& xexpr_str, pybind11::args args,
         pybind11::kwargs kwargs);
@@ -203,7 +220,7 @@ namespace phylanx { namespace bindings
     phylanx::execution_tree::primitive bound_code_for(
         phylanx::bindings::compiler_state& state,
         std::string const& file_name, std::string const& func_name,
-        pybind11::args args);
+        pybind11::args args, pybind11::kwargs kwargs);
 
     ///////////////////////////////////////////////////////////////////////////
     // initialize measurements for tree evaluations

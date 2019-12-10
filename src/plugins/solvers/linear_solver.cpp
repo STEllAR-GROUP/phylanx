@@ -222,8 +222,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
          Returns:
 
-         A vector of eigenvalues approximate the matrix `a`, whose dimention is decided
+         A vector of eigenvalues approximate the matrix `a`, whose dimension is decided
          by n, solved using the Lanczos solver.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_arnoldi",
+                               R"(a, b, n, x
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+             n (scalar) : a scalar
+             x (vector) : a vector
+
+         Returns:
+
+         A vector of eigenvalues approximate the matrix `a`, whose dimension is decided
+         by n, solved using the Arnoldi solver.)"
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_gmres",
+                               R"(a, b, n, x
+         Args:
+
+             a (matrix) : a matrix
+             b (vector) : a vector
+             n (scalar) : a scalar
+             x (vector) : a vector
+
+         Returns:
+
+         A vector of eigenvalues approximate the matrix `a`, solved
+         using the GMRES solver.)"
         )
 #endif
     };
@@ -269,7 +297,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::ConjugateGradientTag tag;
                     b = blaze::iterative::solve(A, b, tag);
@@ -280,7 +308,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag);
@@ -291,7 +319,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "LU");
@@ -302,7 +330,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "RQ");
@@ -313,7 +341,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "QR");
@@ -324,7 +352,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionBiCGSTABTag tag;
                     b = blaze::iterative::solve(A, b, tag, "Cholesky");
@@ -335,7 +363,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionCGTag tag;
                     b = blaze::iterative::solve(A, b, tag, "Jacobi");
@@ -346,7 +374,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionCGTag tag;
                     b = blaze::iterative::solve(A, b, tag, "SSOR");
@@ -357,7 +385,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionCGTag tag;
                     b = blaze::iterative::solve(
@@ -370,7 +398,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
                 [](args_type&& args) -> arg_type {
-                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage2d_type A{args[0].matrix()};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::PreconditionCGTag tag;
                     b = blaze::iterative::solve(
@@ -435,10 +463,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     primitive_argument_type&& arg_2) -> arg_type {
                     std::int64_t n =
                         extract_scalar_integer_value_strict(std::move(arg_2));
-                    storage2d_type A{blaze::trans(arg_0.matrix())};
+                    storage2d_type A{arg_0.matrix()};
                     storage1d_type b{arg_1.vector()};
                     storage1d_type x;
                     blaze::iterative::LanczosTag tag;
+                    x = blaze::iterative::solve(A, b, tag, n);
+                    return arg_type{std::move(x)};
+                }},
+            {"iterative_solver_arnoldi",
+                // Iterative Arnoldi solver for eigenvalues
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](arg_type&& arg_0, arg_type&& arg_1,
+                    primitive_argument_type&& arg_2) -> arg_type {
+                    std::int64_t n =
+                        extract_scalar_integer_value_strict(std::move(arg_2));
+                    storage2d_type A{arg_0.matrix()};
+                    storage1d_type b{arg_1.vector()};
+                    storage1d_type x;
+                    blaze::iterative::ArnoldiTag tag;
+                    x = blaze::iterative::solve(A, b, tag, n);
+                    return arg_type{std::move(x)};
+                }},
+            {"iterative_solver_gmres",
+                // Iterative GMRES solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled
+                [](arg_type&& arg_0, arg_type&& arg_1,
+                    primitive_argument_type&& arg_2) -> arg_type {
+                    std::int64_t n =
+                        extract_scalar_integer_value_strict(std::move(arg_2));
+                    storage2d_type A{arg_0.matrix()};
+                    storage1d_type b{arg_1.vector()};
+                    storage1d_type x;
+                    blaze::iterative::GMRESTag tag;
                     x = blaze::iterative::solve(A, b, tag, n);
                     return arg_type{std::move(x)};
                 }}

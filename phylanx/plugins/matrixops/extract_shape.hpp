@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         extract_shape() = default;
 
@@ -59,6 +59,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type shape4d(primitive_argument_type&& arg) const;
         primitive_argument_type shape4d(
             primitive_argument_type&& arg, std::int64_t index) const;
+
+        bool len_mode_;
     };
 
     inline primitive create_extract_shape(hpx::id_type const& locality,

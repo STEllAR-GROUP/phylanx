@@ -343,11 +343,7 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        std::int64_t row_start = rows.start();
-        std::int64_t row_stop = rows.stop();
-        std::int64_t row_step = rows.step();
-
-        if (row_step == 0 && !rows.single_value())
+        if (rows.step() == 0 && !rows.single_value())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice2d_basic_boolean",
@@ -564,11 +560,7 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        std::int64_t col_start = columns.start();
-        std::int64_t col_stop = columns.stop();
-        std::int64_t col_step = columns.step();
-
-        if (col_step == 0 && !columns.single_value())
+        if (columns.step() == 0 && !columns.single_value())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice2d_boolean_basic",

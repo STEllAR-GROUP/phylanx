@@ -35,16 +35,19 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
-        "compile a numerical expression in PhySL");
+        "compile a PhySL expression");
+
+    execution_tree.def("compile", phylanx::bindings::expression_compiler_ast,
+        "compile a PhySL expression from a compiled AST");
 
     execution_tree.def("eval", phylanx::bindings::expression_evaluator,
         "compile and evaluate a numerical expression in PhySL");
 
     execution_tree.def(
         "eval",
-        [](compiler_state& state, std::string const& xexpr, pybind11::args args,
-            pybind11::kwargs kwargs)
-            -> phylanx::execution_tree::primitive_argument_type
+        [](phylanx::bindings::compiler_state& state, std::string const& xexpr,
+            pybind11::args args, pybind11::kwargs kwargs)
+            -> pybind11::object
         {
             return phylanx::bindings::expression_evaluator(
                 state, state.codename_, xexpr, args, kwargs);
@@ -83,37 +86,48 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
     // phylanx.execution_tree.variable
     auto var =
         pybind11::class_<phylanx::execution_tree::variable>(execution_tree,
-            "variable", "type representing an arbitrary execution tree")
+            "variable_impl", "type representing an arbitrary execution tree",
+            pybind11::dynamic_attr())
             // copy-constructor must go before constructor that takes
             // primitive_argument_type to avoid implicit conversion
             .def(pybind11::init<phylanx::execution_tree::variable const&>())
-            .def(pybind11::init<phylanx::execution_tree::primitive,
+            .def(pybind11::init<phylanx::bindings::compiler_state&,
+                     phylanx::execution_tree::primitive,
                      pybind11::object, pybind11::object, pybind11::object>(),
+                pybind11::arg("state"),
                 pybind11::arg("value"),
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
                 pybind11::arg("constraint") = pybind11::none())
-            .def(pybind11::init<pybind11::array, pybind11::object,
+            .def(pybind11::init<phylanx::bindings::compiler_state&,
+                     pybind11::array, pybind11::object,
                      pybind11::object, pybind11::object>(),
+                pybind11::arg("state"),
                 pybind11::arg("value"),
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
                 pybind11::arg("constraint") = pybind11::none())
-            .def(pybind11::init<pybind11::tuple, pybind11::object,
+            .def(pybind11::init<phylanx::bindings::compiler_state&,
+                     pybind11::tuple, pybind11::object,
                      pybind11::object, pybind11::object>(),
+                pybind11::arg("state"),
                 pybind11::arg("shape"),
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
                 pybind11::arg("constraint") = pybind11::none())
-            .def(pybind11::init<std::string, pybind11::object, pybind11::object,
+            .def(pybind11::init<phylanx::bindings::compiler_state&,
+                     std::string, pybind11::object, pybind11::object,
                      pybind11::object>(),
+                pybind11::arg("state"),
                 pybind11::arg("value"),
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
                 pybind11::arg("constraint") = pybind11::none())
             .def(
-                pybind11::init<phylanx::execution_tree::primitive_argument_type,
-                    pybind11::object, pybind11::object, pybind11::object>(),
+                pybind11::init<phylanx::bindings::compiler_state&,
+                      phylanx::execution_tree::primitive_argument_type,
+                      pybind11::object, pybind11::object, pybind11::object>(),
+                pybind11::arg("state"),
                 pybind11::arg("value"),
                 pybind11::arg("dtype") = pybind11::none(),
                 pybind11::arg("name") = pybind11::none(),
@@ -121,7 +135,8 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             .def(
                 "eval",
                 [](phylanx::execution_tree::variable const& var,
-                    pybind11::args args) {
+                    pybind11::args args)
+                {
                     pybind11::gil_scoped_release release;       // release GIL
                     return hpx::threads::run_as_hpx_thread(
                             [&]() { return var.eval(std::move(args)); });
@@ -141,7 +156,7 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 [](phylanx::execution_tree::variable const& var) {
                     return var.dtype();
                 },
-                [](phylanx::execution_tree::variable& var, pybind11::dtype dt) {
+                [](phylanx::execution_tree::variable& var, pybind11::object dt) {
                     var.dtype(dt);
                 },
                 "return the dtype of the value stored by the variable")
@@ -154,6 +169,12 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                     var.shape(sh);
                 },
                 "return the shape of the value stored by the variable")
+            .def_property_readonly(
+                "value",
+                [](phylanx::execution_tree::variable const& var) {
+                    return var.value();
+                },
+                "return the value of the variable")
             .def_property_readonly(
                 "name",
                 [](phylanx::execution_tree::variable const& var) {
@@ -169,6 +190,7 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                     return bindings::repr<phylanx::execution_tree::primitive>(
                         var.value());
                 })
+
             .def("__add__", &phylanx::execution_tree::add_variables)
             .def("__add__", &phylanx::execution_tree::add_variables_gen)
             .def("__radd__", &phylanx::execution_tree::radd_variables_gen)
@@ -181,7 +203,7 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             .def("__div__", &phylanx::execution_tree::div_variables)
             .def("__div__", &phylanx::execution_tree::div_variables_gen)
             .def("__rdiv__", &phylanx::execution_tree::rdiv_variables_gen)
-            .def("__neg__", &phylanx::execution_tree::unary_minus_variables)
+            .def("__neg__", &phylanx::execution_tree::unary_minus_variables_gen)
             .def("__iadd__", &phylanx::execution_tree::iadd_variables)
             .def("__iadd__", &phylanx::execution_tree::iadd_variables_gen)
             .def("update_add", &phylanx::execution_tree::iadd_variables)
@@ -193,7 +215,13 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             .def("update_moving_average",
                 &phylanx::execution_tree::moving_average_variables)
             .def("update_moving_average",
-                &phylanx::execution_tree::moving_average_variables_gen);
+                &phylanx::execution_tree::moving_average_variables_gen)
+
+            // mandatory iteration interface
+            .def("__getitem__", &phylanx::execution_tree::get_variable_item)
+            .def("__setitem__", &phylanx::execution_tree::set_variable_item)
+            .def("__len__", &phylanx::execution_tree::get_variable_size)
+            ;
 
     // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,

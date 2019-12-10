@@ -174,8 +174,6 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename)
     {
-        std::size_t size = data.size();
-
         switch (indices.num_dimensions())
         {
         case 0:         // 0d index

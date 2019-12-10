@@ -16,6 +16,7 @@
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <list>
@@ -61,7 +62,40 @@ namespace phylanx { namespace bindings
             });
     }
 
-    phylanx::execution_tree::primitive_argument_type expression_evaluator(
+    ///////////////////////////////////////////////////////////////////////////
+    std::string expression_compiler_ast(compiler_state& state,
+        std::string const& file_name, std::string const& func_name,
+        std::vector<phylanx::ast::expression> const& xexpr)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                auto const& code = phylanx::execution_tree::compile(
+                    file_name, func_name, xexpr, state.eval_snippets,
+                    state.eval_env);
+
+                auto const& funcs = code.functions();
+
+                if (state.enable_measurements)
+                {
+                    if (!funcs.empty())
+                    {
+                        state.primitive_instances.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
+                }
+
+                // add all definitions to the global execution environment
+                code.run(state.eval_ctx);
+
+                return !funcs.empty() ? funcs.front().name_ : "";
+            });
+    }
+
+    pybind11::object expression_evaluator(
         compiler_state& state, std::string const& file_name,
         std::string const& xexpr_str, pybind11::args args,
         pybind11::kwargs kwargs)
@@ -71,7 +105,7 @@ namespace phylanx { namespace bindings
         using phylanx::execution_tree::primitive_argument_type;
 
         return hpx::threads::run_as_hpx_thread(
-            [&]() -> primitive_argument_type
+            [&]() -> pybind11::object
             {
                 // Make sure None is printed as "None"
                 phylanx::util::none_wrapper wrap_cout(hpx::cout);
@@ -114,11 +148,28 @@ namespace phylanx { namespace bindings
                 }
 
                 // potentially handle keyword arguments
-                if (!kwargs)
+                if (kwargs.size() == 0)
                 {
-                    return x(std::move(fargs), state.eval_ctx);
+                    primitive_argument_type&& result =
+                        x(std::move(fargs), state.eval_ctx);
+
+                    pybind11::gil_scoped_acquire acquire;
+                    return pybind11::reinterpret_steal<pybind11::object>(
+                        pybind11::detail::make_caster<
+                            primitive_argument_type>::cast(std::move(result),
+                            pybind11::return_value_policy::move,
+                            pybind11::handle()));
                 }
-                return x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
+
+                primitive_argument_type&& result =
+                    x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
+
+                pybind11::gil_scoped_acquire acquire;
+                return pybind11::reinterpret_steal<pybind11::object>(
+                    pybind11::detail::make_caster<
+                        primitive_argument_type>::cast(std::move(result),
+                        pybind11::return_value_policy::move,
+                        pybind11::handle()));
             });
     }
 
@@ -185,26 +236,38 @@ namespace phylanx { namespace bindings
     ///////////////////////////////////////////////////////////////////////////
     phylanx::execution_tree::primitive create_bound_primitive(
         phylanx::bindings::compiler_state& state, std::string const& file_name,
-        std::string const& func_name, std::string const& func_full_name,
-        pybind11::args args,
+        std::string const& func_name,
+        phylanx::execution_tree::compiler::function const& f,
+        pybind11::args args, pybind11::kwargs kwargs,
         phylanx::execution_tree::primitive_argument_type&& value)
     {
         using namespace phylanx::execution_tree;
 
+        std::string const& func_full_name = f.name_;
+        auto const& named_args = f.named_args_;
+        std::size_t num_named_args = f.num_named_args_;
+
         // transfer arguments
         primitive_arguments_type fargs;
-        fargs.reserve(args.size() + 1);
+        fargs.reserve(args.size() + kwargs.size() + 1);
 
         // first 'argument' is the function itself
         fargs.push_back(std::move(value));
 
         // now bind the transferred arguments
+        std::map<std::string, primitive_argument_type> fkwargs;
+
         {
             pybind11::gil_scoped_acquire acquire;
             for (auto const& item : args)
             {
-                fargs.emplace_back(
-                    item.cast<primitive_argument_type>());
+                fargs.emplace_back(item.cast<primitive_argument_type>());
+            }
+
+            if (kwargs && num_named_args)
+            {
+                fkwargs = kwargs.cast<
+                    std::map<std::string, primitive_argument_type>>();
             }
         }
 
@@ -216,6 +279,32 @@ namespace phylanx { namespace bindings
             name_parts.instance = func_name;
         }
 
+        // handle named arguments (fill in given ones into array of arguments)
+        if (num_named_args)
+        {
+            for (auto const& kwarg : fkwargs)
+            {
+                auto it = std::find(named_args.get(),
+                    named_args.get() + num_named_args, kwarg.first);
+                if (it == named_args.get() + num_named_args)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "create_bound_primitive",
+                        hpx::util::format(
+                            "cannot locate requested named argument '{}'",
+                            kwarg.first));
+                }
+
+                std::ptrdiff_t kwarg_pos = std::distance(named_args.get(), it);
+                if (kwarg_pos >= std::ptrdiff_t(fargs.size()))
+                {
+                    fargs.resize(kwarg_pos + 1);
+                }
+
+                fargs[kwarg_pos] = std::move(kwarg.second);
+            }
+        }
+
         name_parts.primitive = "target-reference";
         return create_primitive_component(hpx::find_here(),
             name_parts.primitive, std::move(fargs),
@@ -225,7 +314,8 @@ namespace phylanx { namespace bindings
 
     phylanx::execution_tree::primitive bound_code_for(
         phylanx::bindings::compiler_state& state, std::string const& file_name,
-        std::string const& func_name, pybind11::args args)
+        std::string const& func_name, pybind11::args args,
+        pybind11::kwargs kwargs)
     {
         pybind11::gil_scoped_release release;       // release GIL
         return hpx::threads::run_as_hpx_thread([&]()
@@ -234,32 +324,31 @@ namespace phylanx { namespace bindings
 
             // if the requested name is defined in the environment, use it
             primitive_argument_type* var = state.eval_ctx.get_var(func_name);
-            if (var != nullptr)
+            if (var != nullptr && kwargs.size() == 0)
             {
-                return create_bound_primitive(state, file_name, func_name,
-                    func_name, args,
+                execution_tree::compiler::function f(*var, func_name);
+                return create_bound_primitive(state, file_name, func_name, f,
+                    args, kwargs,
                     extract_ref_value(*var, func_name, file_name));
             }
 
             // locate requested function entry point
-            for (auto const& entry_point :
-                state.eval_snippets.program_.entry_points())
+            execution_tree::compiler::entry_point ep(func_name, file_name);
+            auto it =
+                state.eval_snippets.program_.entry_points().find(ep);
+            if (it != state.eval_snippets.program_.entry_points().end())
             {
-                if (func_name == entry_point.func_name_)
+                auto && funcs = it->functions();
+                if (funcs.empty())
                 {
-                    auto && funcs = entry_point.functions();
-                    if (funcs.empty())
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "phylanx::bindings::bound_code_for",
-                            hpx::util::format("cannot locate requested "
-                                "function entry point '{}'", func_name));
-                    }
-                    return create_bound_primitive(state, file_name, func_name,
-                        funcs.back().name_, args,
-                        extract_ref_value(
-                            funcs.back().arg_, func_name, file_name));
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::bindings::bound_code_for",
+                        hpx::util::format("cannot locate requested "
+                            "function entry point '{}'", func_name));
                 }
+                return create_bound_primitive(state, file_name, func_name,
+                    funcs.back(), args, kwargs,
+                    extract_ref_value(funcs.back().arg_, func_name, file_name));
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
