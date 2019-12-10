@@ -95,11 +95,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             output_ = blaze::map(output.vector(),[](double o_){
                 return (std::min)(clip_high,(std::max)(clip_low,o_));
             });
-            target_ = blaze::map(target.vector(), output.vector(),[](double t_,double o_) {
+            target_ = blaze::map(target.vector(), output.vector(),
+                    [](double t_,double o_) {
                 return -t_*std::log(o_+clip_low) - (1-t_)*std::log(1 - o_ + clip_low);
             });
         } else {
-            target_ = blaze::map(target.vector(), output.vector(),[](double t_,double o_){
+            target_ = blaze::map(target.vector(), output.vector(),
+                    [](double t_,double o_){
                 double sig = 1/(1+exp(-o_));
                 return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
             });
@@ -127,11 +129,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             output_ = blaze::map(output.matrix(),[](double o_){
                 return (std::min)(clip_high,(std::max)(clip_low,o_));
             });
-            target_ = blaze::map(target.matrix(), output.matrix(),[](double t_,double o_) {
+            target_ = blaze::map(target.matrix(), output.matrix(),
+                    [](double t_,double o_) {
                 return -t_*std::log(o_+clip_low) - (1-t_)*std::log(1 - o_ + clip_low);
             });
         } else {
-            target_ = blaze::map(target.matrix(), output.matrix(),[](double t_,double o_){
+            target_ = blaze::map(target.matrix(), output.matrix(),
+                    [](double t_,double o_){
                 double sig = 1/(1+exp(-o_));
                 return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
             });
@@ -152,11 +156,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             output_ = blaze::map(output.tensor(),[](double o_){
                 return (std::min)(clip_high,(std::max)(clip_low,o_));
             });
-            target_ = blaze::map(target.tensor(), output.tensor(),[](double t_,double o_) {
+            target_ = blaze::map(target.tensor(), output.tensor(),
+                    [](double t_,double o_) {
                 return -t_*std::log(o_+clip_low) - (1-t_)*std::log(1 - o_ + clip_low);
             });
         } else {
-            target_ = blaze::map(target.tensor(), output.tensor(),[](double t_,double o_){
+            target_ = blaze::map(target.tensor(), output.tensor(),
+                    [](double t_,double o_){
                 double sig = 1/(1+exp(-o_));
                 return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
             });
