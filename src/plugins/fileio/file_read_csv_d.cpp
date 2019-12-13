@@ -70,6 +70,94 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         std::pair<std::size_t, std::size_t> locality_info,
         std::pair<std::size_t, std::size_t> dims) const
     {
+        std::size_t my_idx = locality_info.first;
+        std::size_t num_locs = locality_info.second;
+
+        double val;
+        if (my_idx == 0)
+        {
+            std::ifstream infile(filename.c_str(), std::ios::in);
+
+            if (!infile.is_open())
+            {
+                throw std::runtime_error(
+                    generate_error_message("couldn't open file: " + filename));
+            }
+
+            std::string line;
+            bool header_parsed = false;
+            std::vector<double> matrix_array, current_line;
+
+            while (std::getline(infile, line))
+            {
+                auto begin_local = line.begin();
+                if (boost::spirit::qi::parse(begin_local, line.end(),
+                        boost::spirit::qi::double_ % ',', current_line))
+                {
+                    if (begin_local == line.end() || header_parsed)
+                    {
+                        header_parsed = true;
+
+                        if (current_line.size() == 1)
+                        {
+                            val = current_line[0];
+                        }
+                        else
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "file_read_csv_d::read_scalar",
+                                generate_error_message(
+                                    "file size read error"));
+                        }
+                    }
+                    current_line.clear();
+                }
+                else
+                {
+                    throw std::runtime_error(generate_error_message(
+                        "wrong data format " + filename + ':' + std::to_string(0)));
+                }
+            }
+        }
+
+        annotation tile;
+
+        if (my_idx == 0)
+        {
+            annotation tmp{
+                "tile", annotation{"columns", 0, 1}, annotation{"rows", 0, 1}};
+            tmp.find("tile", tile);
+        }
+        else
+        {
+            annotation tmp{
+                "tile", annotation{"columns", 0, 0}, annotation{"rows", 0, 0}};
+            tmp.find("tile", tile);
+        }
+        annotation_information ann_info{
+            (filename.copy + "file_read_csv_d").c_str(), 0ll};
+        annotation locality{"locality", my_idx, num_locs};
+
+        annotation localities = localities_annotation(
+            locality, std::move(tile), ann_info, name_, codename_);
+
+        // How do I crawl this? Stay simple, make it work. Then optimize
+        
+        if (my_idx == 0) {
+            primitive_argument_type ret(val);
+            ret.set_annotation(std::move(localities), name_, codename_);
+            return ret;
+        }
+        else
+        {
+            // Maybe what this should do is broadcast the value to all
+            // other localities
+            primitive_argument_type ret;
+            ret.set_annotation(std::move(localities), name_, codename_);
+            return ret;
+        }
+
+        
     }
 
     primitive_argument_type file_read_csv_d::read_vector(std::string filename,
@@ -153,6 +241,92 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         std::pair<std::size_t, std::size_t> locality_info,
         std::pair<std::size_t, std::size_t> dims) const
     {
+        std::size_t my_idx = locality_info.first;
+        std::size_t num_locs = locality_info.second;
+
+        // All of this really depends on the tiling
+        // Maybe we can add that later though
+        std::size_t my_rows = dims.first / num_locs;
+        std::size_t others_rows = dims.first / num_locs;
+        if (dims.first % num_locs != 0)
+        {
+            others_rows++;
+            if (my_idx == (num_locs - 1))
+            {
+                my_rows = (dims.first - (num_locs - 1) * (my_rows + 1));
+            }
+            else
+            {
+                my_rows++;
+            }
+        }
+
+        std::ifstream infile(filename.c_str(), std::ios::in);
+
+        if (!infile.is_open())
+        {
+            throw std::runtime_error(
+                generate_error_message("couldn't open file: " + filename));
+        }
+
+        std::string line;
+        bool header_parsed = false;
+        std::vector<double> matrix_array, current_line;
+        std::size_t start_row = my_idx * others_rows;
+        std::size_t current_row = 0;
+        std::size_t before_readln = 0, after_readln = 0;
+
+        while (std::getline(infile, line))
+        {
+            before_readln = matrix_array.size();
+
+            auto begin_local = line.begin();
+            if (current_row < start_row)
+            {
+                current_row++;
+            }
+            else if( current_row - start_row > my_rows)
+            {
+                break;
+            }
+            else if (boost::spirit::qi::parse(begin_local, line.end(),
+                    boost::spirit::qi::double_ % ',', current_line))
+            {
+                if (begin_local == line.end() || header_parsed)
+                {
+                    header_parsed = true;
+
+                    matrix_array.insert(matrix_array.end(),
+                        current_line.begin(), current_line.end());
+
+                    after_readln = matrix_array.size();
+                    current_row++;
+                }
+                current_line.clear();
+            }
+            else
+            {
+                throw std::runtime_error(generate_error_message(
+                    "wrong data format " + filename + ':' + std::to_string(0)));
+            }
+        }
+
+        annotation tile{"tile",
+            annotation{"columns", 0, dims.second},
+            annotation{"rows", start_row, start_row+my_rows}};
+        annotation_information ann_info{
+            (filename.copy + "file_read_csv_d").c_str(), 0ll};
+        annotation locality{"locality", my_idx, num_locs};
+
+        annotation localities = localities_annotation(
+            locality, std::move(tile), ann_info, name_, codename_);
+
+        // How do I crawl this? Stay simple, make it work. Then optimize
+        blaze::DynamicMatrix<double> mat(my_rows, dims.second, matrix_array.data());
+
+        primitive_argument_type ret(mat);
+        ret.set_annotation(std::move(localities), name_, codename_);
+        return ret;
     }
 
     std::pair<std::size_t, std::size_t> file_read_csv_d::get_dims(
@@ -220,10 +394,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         ir::range_iterator first = data.begin();
         ir::range_iterator second = data.begin();
         ++second;
+
         std::size_t my_idx =
             phylanx::execution_tree::extract_scalar_integer_value_strict(
                 *first);
-
         std::size_t num_locs =
             phylanx::execution_tree::extract_scalar_integer_value_strict(
                 *second);
