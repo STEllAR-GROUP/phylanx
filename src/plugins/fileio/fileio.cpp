@@ -7,6 +7,10 @@
 #include <phylanx/plugins/fileio/fileio.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
 
+
+// Add factory registration functionality
+HPX_REGISTER_COMPONENT_MODULE_DYNAMIC()
+
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(file_read_plugin,

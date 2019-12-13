@@ -31,8 +31,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         file_read_csv_d(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
+        primitive_argument_type read_scalar(std::string filename,
+            std::pair<std::size_t, std::size_t> locs,
+            std::pair<std::size_t, std::size_t> dims) const;
+
+        primitive_argument_type read_vector(std::string filename,
+            std::pair<std::size_t, std::size_t> loc_info,
+            std::pair<std::size_t, std::size_t> dims) const;
+
+        primitive_argument_type read_matrix(std::string filename,
+            std::pair<std::size_t, std::size_t> locs,
+            std::pair<std::size_t, std::size_t> dims) const;
+
+        std::pair<std::size_t, std::size_t> get_dims(std::string filename) const;
+
         primitive_argument_type file_read_csv_d::read(std::string filename,
-            phylanx::execution_tree::annotation&& locality_info);
+            phylanx::execution_tree::annotation&& locality_info) const;
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
