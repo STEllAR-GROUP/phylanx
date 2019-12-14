@@ -17,8 +17,7 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace execution_tree { namespace primitives {
     class file_read_csv_d
       : public primitive_component_base
       , public std::enable_shared_from_this<file_read_csv_d>
@@ -43,9 +42,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::pair<std::size_t, std::size_t> locs,
             std::pair<std::size_t, std::size_t> dims) const;
 
-        std::pair<std::size_t, std::size_t> get_dims(std::string filename) const;
+        std::pair<std::size_t, std::size_t> get_dims(
+            std::string filename) const;
 
-        primitive_argument_type file_read_csv_d::read(std::string filename,
+        primitive_argument_type read(std::string filename,
             phylanx::execution_tree::annotation&& locality_info) const;
 
         hpx::future<primitive_argument_type> eval(
@@ -55,12 +55,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_file_read_csv_d(hpx::id_type const& locality,
-        primitive_arguments_type&& operands,
-        std::string const& name = "", std::string const& codename = "")
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
     {
         return create_primitive_component(
             locality, "file_read_csv_d", std::move(operands), name, codename);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 #endif

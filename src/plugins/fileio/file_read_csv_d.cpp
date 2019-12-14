@@ -36,8 +36,9 @@
 #include <utility>
 #include <vector>
 
-HPX_REGISTER_ALLTOALL(std::pair<std::size_t, std::size_t>,
-    file_read_csv_d_all_to_all_coordination);
+using pair_size_t_size_t = std::pair<std::size_t, std::size_t>;
+HPX_REGISTER_ALLTOALL(
+    pair_size_t_size_t, file_read_csv_d_all_to_all_coordination);
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives {
@@ -106,16 +107,16 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "file_read_csv_d::read_scalar",
-                                generate_error_message(
-                                    "file size read error"));
+                                generate_error_message("file size read error"));
                         }
                     }
                     current_line.clear();
                 }
                 else
                 {
-                    throw std::runtime_error(generate_error_message(
-                        "wrong data format " + filename + ':' + std::to_string(0)));
+                    throw std::runtime_error(
+                        generate_error_message("wrong data format " + filename +
+                            ':' + std::to_string(0)));
                 }
             }
         }
@@ -124,26 +125,30 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         if (my_idx == 0)
         {
-            annotation tmp{
-                "tile", annotation{"columns", 0, 1}, annotation{"rows", 0, 1}};
+            annotation col{"columns", 0ll, 1ll};
+            annotation row{"rows", 0ll, 1ll};
+            annotation tmp{"tile", col.get_range(), row.get_range()};
             tmp.find("tile", tile);
         }
         else
         {
-            annotation tmp{
-                "tile", annotation{"columns", 0, 0}, annotation{"rows", 0, 0}};
+            annotation col{"columns", 0ll, 0ll};
+            annotation row{"rows", 0ll, 0ll};
+            annotation tmp{"tile", col.get_range(), row.get_range()};
             tmp.find("tile", tile);
         }
-        annotation_information ann_info{
-            (filename.copy + "file_read_csv_d").c_str(), 0ll};
-        annotation locality{"locality", my_idx, num_locs};
+        std::string name = filename + "file_read_csv_d";
+        annotation_information ann_info{std::move(name), 0ll};
+        annotation locality{
+            "locality", (long long) my_idx, (long long) num_locs};
 
         annotation localities = localities_annotation(
             locality, std::move(tile), ann_info, name_, codename_);
 
         // How do I crawl this? Stay simple, make it work. Then optimize
-        
-        if (my_idx == 0) {
+
+        if (my_idx == 0)
+        {
             primitive_argument_type ret(val);
             ret.set_annotation(std::move(localities), name_, codename_);
             return ret;
@@ -156,8 +161,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ret.set_annotation(std::move(localities), name_, codename_);
             return ret;
         }
-
-        
     }
 
     primitive_argument_type file_read_csv_d::read_vector(std::string filename,
@@ -217,14 +220,18 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                     "wrong data format " + filename + ':' + std::to_string(0)));
             }
         }
+        annotation col{"columns", (long long) (my_idx * others_share),
+            (long long) (my_idx * others_share + my_share)};
+        annotation row{"rows", 0ll, 1ll};
 
-        annotation tile{"tile",
-            annotation{"columns", my_idx * others_share,
-                my_idx * others_share + my_share},
-            annotation{"rows", 0, 1}};
+        annotation tile{"tile", col.get_range(), row.get_range()};
+
+        std::string name = filename;
+
         annotation_information ann_info{
-            (filename.copy + "file_read_csv_d").c_str(), 0ll};
-        annotation locality{"locality", my_idx, num_locs};
+            std::move((filename + "file_read_csv_d")), 0ll};
+        annotation locality{
+            "locality", (long long) my_idx, (long long) num_locs};
 
         annotation localities = localities_annotation(
             locality, std::move(tile), ann_info, name_, codename_);
@@ -285,12 +292,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             {
                 current_row++;
             }
-            else if( current_row - start_row > my_rows)
+            else if (current_row - start_row > my_rows)
             {
                 break;
             }
             else if (boost::spirit::qi::parse(begin_local, line.end(),
-                    boost::spirit::qi::double_ % ',', current_line))
+                         boost::spirit::qi::double_ % ',', current_line))
             {
                 if (begin_local == line.end() || header_parsed)
                 {
@@ -311,18 +318,22 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             }
         }
 
-        annotation tile{"tile",
-            annotation{"columns", 0, dims.second},
-            annotation{"rows", start_row, start_row+my_rows}};
+        annotation col{"columns", 0ll, (long long) dims.second};
+        annotation row{
+            "rows", (long long) start_row, (long long) (start_row + my_rows)};
+
+        annotation tile{"tile", col.get_range(), row.get_range()};
         annotation_information ann_info{
-            (filename.copy + "file_read_csv_d").c_str(), 0ll};
-        annotation locality{"locality", my_idx, num_locs};
+            std::move((filename + "file_read_csv_d")), 0ll};
+        annotation locality{
+            "locality", (long long) my_idx, (long long) num_locs};
 
         annotation localities = localities_annotation(
             locality, std::move(tile), ann_info, name_, codename_);
 
         // How do I crawl this? Stay simple, make it work. Then optimize
-        blaze::DynamicMatrix<double> mat(my_rows, dims.second, matrix_array.data());
+        blaze::DynamicMatrix<double> mat(
+            my_rows, dims.second, matrix_array.data());
 
         primitive_argument_type ret(mat);
         ret.set_annotation(std::move(localities), name_, codename_);
@@ -402,7 +413,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             phylanx::execution_tree::extract_scalar_integer_value_strict(
                 *second);
 
-        std::pair<std::size_t, std::size_t> locality_info(my_idx, num_locs);
+        std::pair<std::size_t, std::size_t> my_locality_info(my_idx, num_locs);
         std::pair<std::size_t, std::size_t> dims = get_dims(filename);
 
         if (dims.first == 1)
@@ -414,13 +425,15 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 // Need to decide whether this would be an error or
                 // if only locality 0 keeps the scalar
                 return primitive_argument_type{
-                    read_scalar(filename, locality_info, dims)};
+                    read_scalar(filename, my_locality_info, dims)};
             }
-            return primitive_argument_type{read_vector(filename, locality_info, dims)};
+            return primitive_argument_type{
+                read_vector(filename, my_locality_info, dims)};
         }
         else
         {
-            return primitive_argument_type{read_matrix(filename, locality_info, dims)};
+            return primitive_argument_type{
+                read_matrix(filename, my_locality_info, dims)};
         }
 
         return primitive_argument_type{};

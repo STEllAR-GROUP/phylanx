@@ -33,12 +33,12 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 void test_file_read_d(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
-    phylanx::execution_tree::primitive_argument_type cannon_result =
+    phylanx::execution_tree::primitive_argument_type dist_read =
         compile_and_run(name, code);
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
-    hpx::cout << cannon_result << " : " << comparison << hpx::endl;
-    HPX_TEST_EQ(cannon_result, comparison);
+    hpx::cout << dist_read << " : " << comparison << hpx::endl;
+    HPX_TEST_EQ(dist_read, comparison);
 }
 
 void test_file_read_d_0()
@@ -51,38 +51,32 @@ void test_file_read_d_0()
             file_read_csv_d(
                 "test_csv.csv",
                 list("locality", 0, 2))
-            )
         )",
             R"(
             annotate_d(
                 slice_row(file_read_csv("test_csv.csv"),
                           make_list(0,500)),
-                "test_csv.csv",
+                "test_csv.csvfile_read_csv_d",
                 list("args",
-                    list("locality", 0, 4),
-                    list("tile", list("columns", 0, 3), list("rows", 0, 3))))
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 1000), list("rows", 0, 500))))
         )");
     }
-    else
+    else if (hpx::get_locality_id() == 1)
     {
-        test_file_read_d("test2d2d_2", R"(
-            cannon_product(
-                annotate_d([[4], [5], [6]], "test2d2d_2_1",
-                    list("args",
-                        list("locality", 3, 4),
-                        list("tile", list("columns", 1, 2), list("rows", 3, 6)))),
-                annotate_d([[4, 5, 6]], "test2d2d_2_2",
-                    list("args",
-                        list("locality", 3, 4),
-                        list("tile", list("columns", 3, 6), list("rows", 1, 2))))
-            )
+        test_file_read_d("testload_d_0", R"(
+            file_read_csv_d(
+                "test_csv.csvfile_read_csv_d",
+                list("locality", 1, 2))
         )",
             R"(
-            annotate_d([[32, 40, 48], [40, 50, 60], [48, 60, 72]],
-                "test2d2d_2_1/1",
+            annotate_d(
+                slice_row(file_read_csv("test_csv.csv"),
+                          make_list(500,1000)),
+                "test_csv.csvfile_read_csv_d",
                 list("args",
-                    list("locality", 3, 4),
-                    list("tile", list("columns", 3, 6), list("rows", 3, 6))))
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 1000), list("rows", 500, 1000))))
         )");
     }
 }
@@ -187,21 +181,22 @@ void test_file_read_d_0()
 
 int main(int argc, char* argv[])
 {
-    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    //blaze::Rand<blaze::DynamicVector<double>> gen{};
 
-    //test_file_io(phylanx::ir::node_data<double>(42.0));
+    ////test_file_io(phylanx::ir::node_data<double>(42.0));
 
-    blaze::DynamicVector<double> ev = gen.generate(1007UL);
-    //test_file_io(phylanx::ir::node_data<double>(std::move(ev)));
+    //blaze::DynamicVector<double> ev = gen.generate(1007UL);
+    ////test_file_io(phylanx::ir::node_data<double>(std::move(ev)));
 
-    std::vector<double> v(1007);
-    std::generate(v.begin(), v.end(), std::rand);
-    //test_file_io(phylanx::ir::node_data<double>(std::move(v)));
+    //std::vector<double> v(1007);
+    //std::generate(v.begin(), v.end(), std::rand);
+    ////test_file_io(phylanx::ir::node_data<double>(std::move(v)));
 
-    blaze::Rand<blaze::DynamicMatrix<double>> gen2{};
+    //blaze::Rand<blaze::DynamicMatrix<double>> gen2{};
 
-    blaze::DynamicMatrix<double> m = gen2.generate(101UL, 101UL);
-    //test_file_io(phylanx::ir::node_data<double>(std::move(m)));
+    //blaze::DynamicMatrix<double> m = gen2.generate(101UL, 101UL);
+    ////test_file_io(phylanx::ir::node_data<double>(std::move(m)));
 
+    test_file_read_d_0();
     return hpx::util::report_errors();
 }
