@@ -466,8 +466,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             operands[0], args, name_, codename_, std::move(ctx));
         auto f = value_operand(operands[1], args, name_, codename_, ctx);
         phylanx::execution_tree::annotation loc_info(
-            phylanx::execution_tree::extract_list_value_strict(
-                f.get()));
+            phylanx::execution_tree::extract_list_value_strict(f.get()));
 
         auto this_ = this->shared_from_this();
         //return hpx::threads::run_as_os_thread(
