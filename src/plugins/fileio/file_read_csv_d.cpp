@@ -396,7 +396,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         // Here, the locality info is being interpreted as:
         // ("locality", my index in group, number of localities)
         annotation tmp;
-        if (!locality_info.has_key("locality"))
+        if (locality_info.get_type() != "locality")
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "file_read_csv_d::read",
                 generate_error_message("missing locality annotation"));
@@ -464,8 +464,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         std::string filename = string_operand_sync(
             operands[0], args, name_, codename_, std::move(ctx));
+        auto f = value_operand(operands[1], args, name_, codename_, ctx);
         phylanx::execution_tree::annotation loc_info(
-            phylanx::execution_tree::extract_list_value_strict(operands[1]));
+            phylanx::execution_tree::extract_list_value_strict(
+                f.get()));
 
         auto this_ = this->shared_from_this();
         //return hpx::threads::run_as_os_thread(

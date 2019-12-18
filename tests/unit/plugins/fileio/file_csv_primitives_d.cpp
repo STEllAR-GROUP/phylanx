@@ -16,7 +16,6 @@
 #include <utility>
 #include <vector>
 
-
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& name, std::string const& codestr)
 {
@@ -37,7 +36,7 @@ void test_file_read_d(std::string const& name, std::string const& code,
         compile_and_run(name, code);
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
-    hpx::cout << dist_read << " : " << comparison << hpx::endl;
+    //hpx::cout << dist_read << " : " << comparison << hpx::endl;
     HPX_TEST_EQ(dist_read, comparison);
 }
 
@@ -45,42 +44,37 @@ void test_file_read_d_0()
 {
     if (hpx::get_locality_id() == 0)
     {
+        compile_and_run("test_make_csv", R"(
+            file_write_csv("test_csv.csv", random(make_list(40,40)))
+        )");
         test_file_read_d("testload_d_0", R"(
-            define(x, random(make_list(1000, 1000))),
-            file_write_csv("test_csv.csv", x),
-            file_read_csv_d(
-                "test_csv.csv",
-                list("locality", 0, 2))
+            file_read_csv_d("test_csv.csv", list("locality", 0, 2))
         )",
             R"(
             annotate_d(
-                slice_row(file_read_csv("test_csv.csv"),
-                          make_list(0,500)),
+                slice_row(file_read_csv("test_csv.csv"), make_list(0,20)),
                 "test_csv.csvfile_read_csv_d",
                 list("args",
                     list("locality", 0, 2),
-                    list("tile", list("columns", 0, 1000), list("rows", 0, 500))))
+                    list("tile", list("columns", 0, 40), list("rows", 0, 40)))
+            )
         )");
     }
     else if (hpx::get_locality_id() == 1)
     {
         test_file_read_d("testload_d_0", R"(
-            file_read_csv_d(
-                "test_csv.csvfile_read_csv_d",
-                list("locality", 1, 2))
+            file_read_csv_d("test_csv.csv", list("locality", 1, 2))
         )",
             R"(
             annotate_d(
-                slice_row(file_read_csv("test_csv.csv"),
-                          make_list(500,1000)),
+                slice_row(file_read_csv("test_csv.csv"), make_list(20, 40)),
                 "test_csv.csvfile_read_csv_d",
                 list("args",
                     list("locality", 1, 2),
-                    list("tile", list("columns", 0, 1000), list("rows", 500, 1000))))
+                    list("tile", list("columns", 0, 40), list("rows", 0, 40))))
         )");
     }
 }
-
 
 //void test_file_io_lit(phylanx::ir::node_data<double> const& in)
 //{
@@ -179,24 +173,17 @@ void test_file_read_d_0()
 //    test_file_io_primitive(in);
 //}
 
+int hpx_main(int argc, char* argv[])
+{
+    test_file_read_d_0();
+    return hpx::finalize();
+}
+
 int main(int argc, char* argv[])
 {
-    //blaze::Rand<blaze::DynamicVector<double>> gen{};
+    hpx::cout << "Hello" << hpx::endl;
 
-    ////test_file_io(phylanx::ir::node_data<double>(42.0));
+    std::vector<std::string> cfg = {"hpx.run_hpx_main!=1"};
 
-    //blaze::DynamicVector<double> ev = gen.generate(1007UL);
-    ////test_file_io(phylanx::ir::node_data<double>(std::move(ev)));
-
-    //std::vector<double> v(1007);
-    //std::generate(v.begin(), v.end(), std::rand);
-    ////test_file_io(phylanx::ir::node_data<double>(std::move(v)));
-
-    //blaze::Rand<blaze::DynamicMatrix<double>> gen2{};
-
-    //blaze::DynamicMatrix<double> m = gen2.generate(101UL, 101UL);
-    ////test_file_io(phylanx::ir::node_data<double>(std::move(m)));
-
-    test_file_read_d_0();
-    return hpx::util::report_errors();
+    return hpx::init(argc, argv, cfg);
 }
