@@ -93,14 +93,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         assign_vector<arg_type> target_(target);
         if(!from_logits) {
             output_ = blaze::map(output.vector(),[](double o_){
-                double tmp = (std::min)(clip_high,(std::max)(clip_low,o_));
-                return std::log(tmp/(1-tmp));
+                return (std::min)(clip_high,(std::max)(clip_low,o_));
+            });
+            target_ = blaze::map(target.vector(), output.vector(),
+                    [](double t_,double o_) {
+                return -t_*std::log(o_+clip_low) - (1-t_)*std::log(1 - o_ + clip_low);
+            });
+        } else {
+            target_ = blaze::map(target.vector(), output.vector(),
+                    [](double t_,double o_){
+                double sig = 1/(1+exp(-o_));
+                return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
             });
         }
-        target_ = blaze::map(target.vector(), output.vector(),[](double t_,double o_){
-            double sig = 1/(1+exp(-o_));
-            return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
-        });
         primitive_argument_type part1(std::move(target)), part2(std::move(output));
         primitive_arguments_type both{part1, part2};
         phylanx::ir::range tup(both);
@@ -122,14 +127,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         assign_matrix<arg_type> target_(target);
         if(!from_logits) {
             output_ = blaze::map(output.matrix(),[](double o_){
-                double tmp = (std::min)(clip_high,(std::max)(clip_low,o_));
-                return std::log(tmp/(1-tmp));
+                return (std::min)(clip_high,(std::max)(clip_low,o_));
+            });
+            target_ = blaze::map(target.matrix(), output.matrix(),
+                    [](double t_,double o_) {
+                return -t_*std::log(o_+clip_low) - (1-t_)*std::log(1 - o_ + clip_low);
+            });
+        } else {
+            target_ = blaze::map(target.matrix(), output.matrix(),
+                    [](double t_,double o_){
+                double sig = 1/(1+exp(-o_));
+                return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
             });
         }
-        target_ = blaze::map(target.matrix(), output.matrix(),[](double t_,double o_){
-            double sig = 1/(1+exp(-o_));
-            return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
-        });
         primitive_argument_type part1(std::move(target)), part2(std::move(output));
         primitive_arguments_type both{part1, part2};
         phylanx::ir::range tup(both);
@@ -144,14 +154,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         assign_tensor<arg_type> target_(target);
         if(!from_logits) {
             output_ = blaze::map(output.tensor(),[](double o_){
-                double tmp = (std::min)(clip_high,(std::max)(clip_low,o_));
-                return std::log(tmp/(1-tmp));
+                return (std::min)(clip_high,(std::max)(clip_low,o_));
+            });
+            target_ = blaze::map(target.tensor(), output.tensor(),
+                    [](double t_,double o_) {
+                return -t_*std::log(o_+clip_low) - (1-t_)*std::log(1 - o_ + clip_low);
+            });
+        } else {
+            target_ = blaze::map(target.tensor(), output.tensor(),
+                    [](double t_,double o_){
+                double sig = 1/(1+exp(-o_));
+                return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
             });
         }
-        target_ = blaze::map(target.tensor(), output.tensor(),[](double t_,double o_){
-            double sig = 1/(1+exp(-o_));
-            return -t_*std::log(sig) - (1-t_)*std::log(1-sig);
-        });
         primitive_argument_type part1(std::move(target)), part2(std::move(output));
         primitive_arguments_type both{part1, part2};
         phylanx::ir::range tup(both);
