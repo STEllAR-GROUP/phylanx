@@ -11,7 +11,7 @@
 #include <phylanx/config.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/lcos/local/spinlock.hpp>
+#include <hpx/synchronization/spinlock.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
 #include <hpx/runtime/basename_registration_fwd.hpp>
