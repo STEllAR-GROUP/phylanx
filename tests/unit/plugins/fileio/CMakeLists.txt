@@ -9,6 +9,8 @@ set(tests
 	file_csv_primitives_d
    )
 
+set(file_csv_primitives_d_PARAMETERS LOCALITIES 2)
+
 if(PHYLANX_WITH_HIGHFIVE)
   set(tests ${tests}
         file_hdf5_primitives
