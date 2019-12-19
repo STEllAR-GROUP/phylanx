@@ -125,22 +125,20 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         if (my_idx == 0)
         {
-            annotation col{"columns", 0ll, 1ll};
-            annotation row{"rows", 0ll, 1ll};
-            annotation tmp{"tile", col.get_range(), row.get_range()};
-            tmp.find("tile", tile);
+            annotation tmp(ir::range{"tile", ir::range{"columns", 0ll, 1ll},
+                ir::range{"rows", 0ll, 1ll}});
+            tile = std::move(tmp);
         }
         else
         {
-            annotation col{"columns", 0ll, 0ll};
-            annotation row{"rows", 0ll, 0ll};
-            annotation tmp{"tile", col.get_range(), row.get_range()};
-            tmp.find("tile", tile);
+            annotation tmp(ir::range{"tile", ir::range{"columns", 0ll, 0ll},
+                ir::range{"rows", 0ll, 0ll}});
+            tile = std::move(tmp);
         }
         std::string name = filename + "file_read_csv_d";
         annotation_information ann_info{std::move(name), 0ll};
-        annotation locality{
-            "locality", (long long) my_idx, (long long) num_locs};
+        annotation locality(
+            ir::range{"locality", (long long) my_idx, (long long) num_locs});
 
         annotation localities = localities_annotation(
             locality, std::move(tile), ann_info, name_, codename_);
@@ -220,18 +218,17 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                     "wrong data format " + filename + ':' + std::to_string(0)));
             }
         }
-        annotation col{"columns", (long long) (my_idx * others_share),
-            (long long) (my_idx * others_share + my_share)};
-        annotation row{"rows", 0ll, 1ll};
 
-        annotation tile{"tile", col.get_range(), row.get_range()};
+        annotation tile(ir::range{"tile", ir::range{"rows", 0ll, 1ll},
+            ir::range{"columns", (long long) (my_idx * others_share),
+                (long long) (my_idx * others_share + my_share)}});
 
         std::string name = filename;
 
         annotation_information ann_info{
             std::move((filename + "file_read_csv_d")), 0ll};
-        annotation locality{
-            "locality", (long long) my_idx, (long long) num_locs};
+        annotation locality(
+            ir::range{"locality", (long long) my_idx, (long long) num_locs});
 
         annotation localities = localities_annotation(
             locality, std::move(tile), ann_info, name_, codename_);
@@ -318,15 +315,15 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             }
         }
 
-        annotation col{"columns", 0ll, (long long) dims.second};
-        annotation row{
-            "rows", (long long) start_row, (long long) (start_row + my_rows)};
+        annotation tile(ir::range{"tile",
+            ir::range{"columns", 0ll, (long long) dims.second},
+            ir::range{"rows", (long long) start_row,
+                (long long) (start_row + my_rows)}});
 
-        annotation tile{"tile", col.get_range(), row.get_range()};
         annotation_information ann_info{
             std::move((filename + "file_read_csv_d")), 0ll};
-        annotation locality{
-            "locality", (long long) my_idx, (long long) num_locs};
+        annotation locality(
+            ir::range{"locality", (long long) my_idx, (long long) num_locs});
 
         annotation localities = localities_annotation(
             locality, std::move(tile), ann_info, name_, codename_);
@@ -469,11 +466,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             phylanx::execution_tree::extract_list_value_strict(f.get()));
 
         auto this_ = this->shared_from_this();
-        //return hpx::threads::run_as_os_thread(
-        //    [filename = std::move(filename), loc_info = std::move(loc_info), this_ = std::move(this_)]()
-        //    -> primitive_argument_type {
-        //        return this_->read(filename, std::move(loc_info));
-        //    });
+
         return hpx::dataflow(
             hpx::launch::sync,
             [this_ = std::move(this_)](std::string&& filename,

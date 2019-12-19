@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
