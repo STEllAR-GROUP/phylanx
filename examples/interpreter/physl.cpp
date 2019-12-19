@@ -240,6 +240,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "PhySL expression encountered in the input")
             ("performance", "Print the topology of the created execution "
                 "tree and the corresponding performance counter results")
+            ("result-file", po::value<std::string>(), "Write the result of the "
+                "execution to a file")
             ("dump-dot", po::value<std::string>(), "Write the topology of the "
                 "created execution tree as a dot file to a file")
             ("dump-newick-tree", po::value<std::string>(), "Write the topology "
@@ -619,6 +621,20 @@ void interpreter(po::variables_map const& vm)
     phylanx::execution_tree::compiler::function_list snippets;
     auto const result = compile_and_run(ast, positional_args, snippets,
         code_source_name, vm.count("dry-run") != 0, vm.count("time") != 0);
+
+    // Print the result to the specified file, if requested
+    if (vm.count("result-file") != 0)
+    {
+        std::string const result_file = vm["result-file"].as<std::string>();
+        std::ofstream os(result_file);
+        if (!os.good())
+        {
+            HPX_THROW_EXCEPTION(hpx::filesystem_error,
+                "result-file",
+                "Failed to open the specified file: " + result_file);
+        }
+        os << result << "\n";
+    }
 
     // Print the result of the last PhySL expression, if requested
     if (vm.count("print") != 0)
