@@ -125,14 +125,16 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         if (my_idx == 0)
         {
-            annotation tmp(ir::range{"tile", ir::range{"columns", 0ll, 1ll},
-                ir::range{"rows", 0ll, 1ll}});
+            annotation tmp(ir::range{"tile",
+                primitive_argument_type(ir::range{"columns", 0ll, 1ll}),
+                primitive_argument_type(ir::range{"rows", 0ll, 1ll})});
             tile = std::move(tmp);
         }
         else
         {
-            annotation tmp(ir::range{"tile", ir::range{"columns", 0ll, 0ll},
-                ir::range{"rows", 0ll, 0ll}});
+            annotation tmp(ir::range{"tile",
+                primitive_argument_type(ir::range{"columns", 0ll, 0ll}),
+                primitive_argument_type(ir::range{"rows", 0ll, 0ll})});
             tile = std::move(tmp);
         }
         std::string name = filename + "file_read_csv_d";
@@ -219,9 +221,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             }
         }
 
-        annotation tile(ir::range{"tile", ir::range{"rows", 0ll, 1ll},
-            ir::range{"columns", (long long) (my_idx * others_share),
-                (long long) (my_idx * others_share + my_share)}});
+        annotation tile(ir::range{"tile",
+            primitive_argument_type(ir::range{"rows", 0ll, 1ll}),
+            primitive_argument_type(
+                ir::range{"columns", (long long) (my_idx * others_share),
+                    (long long) (my_idx * others_share + my_share)})});
 
         std::string name = filename;
 
@@ -316,9 +320,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
 
         annotation tile(ir::range{"tile",
-            ir::range{"columns", 0ll, (long long) dims.second},
-            ir::range{"rows", (long long) start_row,
-                (long long) (start_row + my_rows)}});
+            primitive_argument_type(ir::range{"columns", 0ll, (long long) dims.second}),
+            primitive_argument_type(ir::range{
+                    "rows", (long long) start_row,
+                (long long) (start_row + my_rows)})});
 
         annotation_information ann_info{
             std::move((filename + "file_read_csv_d")), 0ll};
