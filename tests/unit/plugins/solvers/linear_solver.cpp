@@ -432,15 +432,15 @@ int main()
     test_linear_solver_cholesky_u_PhySL();
     test_linear_solver_cholesky_l_PhySL();
 
+#ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
     test_linear_solver_cg_jacobi_PhySL();
     test_linear_solver_cg_ssor_PhySL();
     test_linear_solver_cg_incompleteCholesky_PhySL();
     test_linear_solver_cg_symmetric_gauss_seidel_PhySL();
-
     test_linear_solver_lanczos_PhySL();
     test_linear_solver_arnoldi_PhySL();
-
     test_linear_solver_gmres_PhySL();
+#endif
 
     test_linear_solver_lu("linear_solver_lu");
 
