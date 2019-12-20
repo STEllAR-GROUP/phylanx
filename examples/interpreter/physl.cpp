@@ -236,8 +236,11 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             ("docs","Print out all primitives/plugins and descriptions")
             ("code,c", po::value<std::string>(),
                 "Execute the PhySL code given in argument")
-            ("print,p", "Print the result of evaluation of the last "
-                "PhySL expression encountered in the input")
+            ("print,p", po::value<std::string>()->implicit_value("<none>"),
+                "Print the result of evaluation of the last "
+                "PhySL expression encountered in the input. "
+                "If a filename is specified, print to the file."
+                )
             ("performance", "Print the topology of the created execution "
                 "tree and the corresponding performance counter results")
             ("dump-dot", po::value<std::string>(), "Write the topology of the "
@@ -621,9 +624,22 @@ void interpreter(po::variables_map const& vm)
         code_source_name, vm.count("dry-run") != 0, vm.count("time") != 0);
 
     // Print the result of the last PhySL expression, if requested
+    // Print the result to the specified file, if requested
     if (vm.count("print") != 0)
     {
-        hpx::cout << result << "\n";
+        std::string const result_file = vm["print"].as<std::string>();
+        if(result_file == "<none>") {
+            hpx::cout << result << "\n";
+        } else {
+            std::ofstream os(result_file);
+            if (!os.good())
+            {
+                HPX_THROW_EXCEPTION(hpx::filesystem_error,
+                    "result-file",
+                    "Failed to open the specified file: " + result_file);
+            }
+            os << result << "\n";
+        }
     }
 
     // Print auxiliary information at exit: topology of the execution tree
