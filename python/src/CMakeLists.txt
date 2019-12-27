@@ -59,7 +59,7 @@ if(APPLE) # OSX requires this to be a shared library, not a module (default)
       ${phylanx_py_SOURCES}
       ${phylanx_py_HEADERS})
 else(APPLE)
-  pybind11_add_module(phylanx_py
+  pybind11_add_module(phylanx_py NO_EXTRAS
     ${phylanx_py_SOURCES}
     ${phylanx_py_HEADERS}
     ${phylanx_python_SOURCES})
