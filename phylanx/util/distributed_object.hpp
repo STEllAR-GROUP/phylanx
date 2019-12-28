@@ -11,7 +11,7 @@
 #include <phylanx/config.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/synchronization/spinlock.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
 #include <hpx/runtime/basename_registration_fwd.hpp>
@@ -22,8 +22,8 @@
 #include <hpx/runtime/get_num_localities.hpp>
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/runtime/launch_policy.hpp>
+#include <hpx/synchronization/spinlock.hpp>
 #include <hpx/thread_support/unlock_guard.hpp>
-#include <hpx/errors/throw_exception.hpp>
 
 #include <algorithm>
 #include <cstddef>

@@ -64,9 +64,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type generic2d(arg_type<T>&& op) const;
 
-        primitive_argument_type generic0d(primitive_argument_type&& op) const;
-        primitive_argument_type generic1d(primitive_argument_type&& op) const;
-        primitive_argument_type generic2d(primitive_argument_type&& op) const;
+        primitive_argument_type generic0d(
+            primitive_argument_type&& op, node_data_type t) const;
+        primitive_argument_type generic1d(
+            primitive_argument_type&& op, node_data_type t) const;
+        primitive_argument_type generic2d(
+            primitive_argument_type&& op, node_data_type t) const;
 
         template <typename T>
         static std::map<std::string, scalar_function_ptr<T>> const&
@@ -93,7 +96,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         template <typename T>
         primitive_argument_type generic3d(arg_type<T>&& op) const;
-        primitive_argument_type generic3d(primitive_argument_type&& op) const;
+        primitive_argument_type generic3d(
+            primitive_argument_type&& op, node_data_type t) const;
 
         template <typename T>
         static std::map<std::string, matrix_vector_function_ptr<T>> const&
@@ -105,7 +109,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         std::string func_name_;
-        node_data_type dtype_;
         bool retain_argument_type_;
     };
 

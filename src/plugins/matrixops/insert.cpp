@@ -4,6 +4,7 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/insert.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
@@ -29,37 +30,38 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const insert::match_data = {match_pattern_type{"insert",
-        std::vector<std::string>{
-            "insert(_1, _2, _3)", "insert(_1, _2, _3, _4)"},
-        &create_insert, &create_primitive<insert>, R"(
-            arr, obj, values, axis
+    match_pattern_type const insert::match_data = {
+        match_pattern_type{
+            "insert",
+            std::vector<std::string>{
+                "insert(_1, _2, _3, __arg(_4_axis, nil), __arg(_5_dtype, nil))"},
+            &create_insert, &create_primitive<insert>, R"(
+            arr, obj, values, axis, dtype
             Args:
 
                 arr (array_like) : input array
-                obj (int, slice or sequence of ints) : Object that defines the index or
-                                                       indices before which values is
-                                                       inserted.
+                obj (int, slice or sequence of ints) : Object that defines the
+                    index or indices before which values is inserted.
                 values (array_like) : Values to insert into arr.
-                axis (int, optional) : Axis along which to insert values. If axis is
-                                       None then arr is flattened first.
+                axis (int, optional) : Axis along which to insert values. If
+                    axis is None then arr is flattened first.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
-            A copy of arr with values inserted.
-            )",
-        true}};
+            A copy of arr with values inserted.)"
+        }
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     insert::insert(primitive_arguments_type&& operands, std::string const& name,
         std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     template <typename T>
     std::size_t insert::get_vector_size(ir::node_data<T> const& arg)
     {
@@ -67,12 +69,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 0:
             return 1;
+
         case 1:
             return arg.size();
+
         case 2:
             return arg.dimension(1);
+
         case 3:
             return arg.dimension(2);
+
         default:
             break;
         }
@@ -84,16 +90,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
     {
         if (indices.num_dimensions() > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_flatten_nd_helper",
                 generate_error_message("index array argument to insert must be "
                                        "one dimensional or scalar"));
+        }
+
         if (arg.num_dimensions() == 0)
+        {
             arg = extract_value_vector<T>(arg, 1, name_, codename_);
+        }
+
         auto flattened_result = arg.vector();
 
-        std::size_t size = (std::max)(get_vector_size(indices), get_vector_size(values));
-        auto val = extract_value_vector<T>(values, size, name_, codename_);
+        std::size_t size =
+            (std::max)(get_vector_size(indices), get_vector_size(values));
+        auto val =
+            extract_value_vector<T>(std::move(values), size, name_, codename_);
+
         auto values_vec = val.vector();
         auto ind =
             extract_value_vector<std::int64_t>(indices, size, name_, codename_);
@@ -116,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<T> result(flattened_result.size() + size);
         blaze::DynamicVector<std::int64_t> mask(result.size(), 1);
 
-        for (int i = 0; i < size; ++i)
+        for (std::size_t i = 0; i < size; ++i)
         {
             if (indices_vec[sorted_indices[i]] < 0)
                 indices_vec[sorted_indices[i]] += result.size();
@@ -134,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             result[indices_vec[sorted_indices[i]]] = values_vec[sorted_indices[i]];
         }
 
-        for (int i = 0; i < result.size(); ++i)
+        for (std::size_t i = 0; i < result.size(); ++i)
         {
             if (mask[i] == 1)
             {
@@ -200,20 +215,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto ndim = arg.num_dimensions();
         switch (ndim)
         {
-        case 0:
-            HPX_FALLTHROUGH;
+        case 0: HPX_FALLTHROUGH;
         case 1:
             return flatten_nd_helper(
                 std::move(arg), std::move(indices), std::move(values));
+
         case 2:
             return insert_flatten_2d(
                 std::move(arg), std::move(indices), std::move(values));
+
         case 3:
             return insert_flatten_3d(
                 std::move(arg), std::move(indices), std::move(values));
+
         default:
             break;
         }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "insert::insert_flatten_nd",
             generate_error_message("index is out of bounds"));
@@ -225,8 +243,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t axis) const
     {
         if (axis == 0 || axis == -1)
+        {
             return flatten_nd_helper(
                 std::move(arg), std::move(indices), std::move(values));
+        }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "insert::insert_1d",
             generate_error_message(
@@ -238,20 +259,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
     {
         if (indices.num_dimensions() > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_flatten_2d_axis0",
                 generate_error_message("index array argument to insert must be "
                                        "one dimensional or scalar"));
+        }
         if (arg.num_dimensions() == 0)
+        {
             arg = extract_value_vector<T>(arg, 1, name_, codename_);
-
+        }
         if (indices.num_dimensions() == 0)
+        {
             indices = extract_value_vector<T>(indices, 1, name_, codename_);
+        }
 
         auto m = arg.matrix();
+        auto val = extract_value_vector<T>(
+            std::move(values), m.columns(), name_, codename_);
 
-        auto val =
-            extract_value_vector<T>(values, m.columns(), name_, codename_);
         auto values_vec = val.vector();
         auto indices_vec = indices.vector();
 
@@ -276,7 +302,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<std::int64_t> mask(
             m.rows() + indices_vec.size(), 1);
 
-        for (int i = 0; i < indices_vec.size(); ++i)
+        for (std::size_t i = 0; i < indices_vec.size(); ++i)
         {
             if (indices_vec[sorted_indices[i]] < 0)
                 indices_vec[sorted_indices[i]] += result.rows();
@@ -309,19 +335,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
     {
         if (indices.num_dimensions() > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_flatten_2d_axis1",
                 generate_error_message("index array argument to insert must be "
                                        "one dimensional or scalar"));
+        }
         if (arg.num_dimensions() == 0)
+        {
             arg = extract_value_vector<T>(arg, 1, name_, codename_);
-
+        }
         if (indices.num_dimensions() == 0)
+        {
             indices = extract_value_vector<T>(indices, 1, name_, codename_);
+        }
 
         auto m = arg.matrix();
-        auto val =
-            extract_value_vector<T>(values, indices.size(), name_, codename_);
+        auto val = extract_value_vector<T>(
+            std::move(values), indices.size(), name_, codename_);
+
         auto values_vec = val.vector();
         auto indices_vec = indices.vector();
 
@@ -346,7 +378,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<std::int64_t> mask(
             m.columns() + indices_vec.size(), 1);
 
-        for (int i = 0; i < indices_vec.size(); ++i)
+        for (std::size_t i = 0; i < indices_vec.size(); ++i)
         {
             if (indices_vec[sorted_indices[i]] < 0)
                 indices_vec[sorted_indices[i]] += result.columns();
@@ -359,6 +391,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "insert::insert_2d_axis_1",
                     generate_error_message("index out of bound"));
             }
+
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::column(result, indices_vec[sorted_indices[i]]) =
@@ -397,19 +430,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
     {
         if (indices.num_dimensions() > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_flatten_3d_axis0",
                 generate_error_message("index array argument to insert must be "
                                        "one dimensional or scalar"));
+        }
         if (arg.num_dimensions() == 0)
+        {
             arg = extract_value_vector<T>(arg, 1, name_, codename_);
-
+        }
         if (indices.num_dimensions() == 0)
+        {
             indices = extract_value_vector<T>(indices, 1, name_, codename_);
+        }
 
         auto m = arg.tensor();
         auto val = extract_value_matrix<T>(
-            values, m.rows(), m.columns(), name_, codename_);
+            std::move(values), m.rows(), m.columns(), name_, codename_);
+
         auto values_mat = val.matrix();
         auto indices_vec = indices.vector();
 
@@ -434,7 +473,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<std::int64_t> mask(
             arg.dimension(0) + indices_vec.size(), 1);
 
-        for (int i = 0; i < indices_vec.size(); ++i)
+        for (std::size_t i = 0; i < indices_vec.size(); ++i)
         {
             if (indices_vec[sorted_indices[i]] < 0)
                 indices_vec[sorted_indices[i]] += result.pages();
@@ -447,6 +486,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "insert::insert_3d_axis0",
                     generate_error_message("index out of bound"));
             }
+
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::pageslice(result, indices_vec[sorted_indices[i]]) =
@@ -466,19 +506,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
     {
         if (indices.num_dimensions() > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_flatten_3d_axis1",
                 generate_error_message("index array argument to insert must be "
                                        "one dimensional or scalar"));
+        }
         if (arg.num_dimensions() == 0)
+        {
             arg = extract_value_vector<T>(arg, 1, name_, codename_);
-
+        }
         if (indices.num_dimensions() == 0)
+        {
             indices = extract_value_vector<T>(indices, 1, name_, codename_);
+        }
 
         auto m = arg.tensor();
         auto val = extract_value_matrix<T>(
-            values, m.pages(), indices.size(), name_, codename_);
+            std::move(values), m.pages(), indices.size(), name_, codename_);
+
         auto values_vec = val.matrix();
         auto indices_vec = indices.vector();
 
@@ -503,7 +549,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<std::int64_t> mask(
             m.rows() + indices_vec.size(), 1);
 
-        for (int i = 0; i < indices_vec.size(); ++i)
+        for (std::size_t i = 0; i < indices_vec.size(); ++i)
         {
             if (indices_vec[sorted_indices[i]] < 0)
                 indices_vec[sorted_indices[i]] += result.rows();
@@ -516,6 +562,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "insert::insert_3d_axis_1",
                     generate_error_message("index out of bound"));
             }
+
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::rowslice(result, indices_vec[sorted_indices[i]]) =
@@ -536,19 +583,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values) const
     {
         if (indices.num_dimensions() > 1)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_flatten_3d_axis2",
                 generate_error_message("index array argument to insert must be "
                                        "one dimensional or scalar"));
-        if (arg.num_dimensions() == 0)
-            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+        }
 
+        if (arg.num_dimensions() == 0)
+        {
+            arg = extract_value_vector<T>(arg, 1, name_, codename_);
+        }
         if (indices.num_dimensions() == 0)
+        {
             indices = extract_value_vector<T>(indices, 1, name_, codename_);
+        }
 
         auto m = arg.tensor();
-        auto val =
-            extract_value_vector<T>(values, indices.size(), name_, codename_);
+        auto val = extract_value_vector<T>(
+            std::move(values), indices.size(), name_, codename_);
+
         auto values_vec = val.vector();
         auto indices_vec = indices.vector();
 
@@ -573,7 +627,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<std::int64_t> mask(
             m.columns() + indices_vec.size(), 1);
 
-        for (int i = 0; i < indices_vec.size(); ++i)
+        for (std::size_t i = 0; i < indices_vec.size(); ++i)
         {
             if (indices_vec[sorted_indices[i]] < 0)
                 indices_vec[sorted_indices[i]] += result.columns();
@@ -586,6 +640,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "insert::insert_3d_axis_2",
                     generate_error_message("index out of bound"));
             }
+
             indices_vec[sorted_indices[i]] += i;
             mask[indices_vec[sorted_indices[i]]] = 0;
             blaze::columnslice(result, indices_vec[sorted_indices[i]]) =
@@ -607,14 +662,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t axis) const
     {
         if (axis == 0 || axis == -3)
+        {
             return insert_3d_axis0(
                 std::move(arg), std::move(indices), std::move(values));
+        }
         if (axis == 1 || axis == -2)
+        {
             return insert_3d_axis1(
                 std::move(arg), std::move(indices), std::move(values));
+        }
         if (axis == 2 || axis == -1)
+        {
             return insert_3d_axis2(
                 std::move(arg), std::move(indices), std::move(values));
+        }
+
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "insert::insert_flatten_3d",
             generate_error_message(
@@ -627,8 +689,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::optional<std::int64_t> axis) const
     {
         if (!axis)
+        {
             return insert_flatten_nd(
                 std::move(arg), std::move(indices), std::move(values));
+        }
 
         switch (arg.num_dimensions())
         {
@@ -636,15 +700,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::insert_nd",
                 generate_error_message("assignment to 0-d array"));
+
         case 1:
             return insert_1d(std::move(arg), std::move(indices),
                 std::move(values), axis.value());
+
         case 2:
             return insert_2d(std::move(arg), std::move(indices),
                 std::move(values), axis.value());
+
         case 3:
             return insert_3d(std::move(arg), std::move(indices),
                 std::move(values), axis.value());
+
         default:
             break;
         }
@@ -657,12 +725,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || (operands.size() < 3 || operands.size() > 4))
+        if (operands.empty() || (operands.size() < 3 || operands.size() > 5))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "insert::eval",
                 generate_error_message(
-                    "the insert primitive requires three or four operands"));
+                    "the insert primitive requires three to five operands"));
         }
 
         if ((!valid(operands[0]) || !valid(operands[1])) || !valid(operands[2]))
@@ -675,58 +743,67 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_arguments_type&& args)
-                    -> primitive_argument_type {
-                    hpx::util::optional<std::int64_t> axis;
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
+                -> primitive_argument_type
+            {
+                hpx::util::optional<std::int64_t> axis;
+                node_data_type dtype = extract_common_type(args[0]);
 
-                    if (args.size() == 4 && valid(args[3]))
-                    {
-                        axis = extract_scalar_integer_value_strict(
-                            args[3], this_->name_, this_->codename_);
-                    }
+                if (args.size() >= 4 && valid(args[3]))
+                {
+                    axis = extract_scalar_integer_value_strict(
+                        args[3], this_->name_, this_->codename_);
+                }
 
-                    switch (extract_common_type(args[0]))
-                    {
-                    case node_data_type_bool:
-                        return this_->insert_nd(
-                            extract_boolean_value(std::move(args[0]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value_strict(std::move(args[1]),
-                                this_->name_, this_->codename_),
-                            extract_boolean_value(std::move(args[2]),
-                                this_->name_, this_->codename_),
-                            axis);
-                    case node_data_type_int64:
-                        return this_->insert_nd(
-                            extract_integer_value(std::move(args[0]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value_strict(std::move(args[1]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value(std::move(args[2]),
-                                this_->name_, this_->codename_),
-                            axis);
-                    case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
-                    case node_data_type_double:
-                        return this_->insert_nd(
-                            extract_numeric_value(std::move(args[0]),
-                                this_->name_, this_->codename_),
-                            extract_integer_value_strict(std::move(args[1]),
-                                this_->name_, this_->codename_),
-                            extract_numeric_value(std::move(args[2]),
-                                this_->name_, this_->codename_),
-                            axis);
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "insert::eval",
-                            this_->generate_error_message(
-                                "the insert primitive requires for all "
-                                "arguments "
-                                "to be numeric data types"));
-                    }
-                }),
+                if (args.size() == 5 && valid(args[4]))
+                {
+                    dtype = map_dtype(extract_string_value_strict(
+                        args[3], this_->name_, this_->codename_));
+                }
+
+                switch (dtype)
+                {
+                case node_data_type_bool:
+                    return this_->insert_nd(
+                        extract_boolean_value(std::move(args[0]),
+                            this_->name_, this_->codename_),
+                        extract_integer_value_strict(std::move(args[1]),
+                            this_->name_, this_->codename_),
+                        extract_boolean_value(std::move(args[2]),
+                            this_->name_, this_->codename_),
+                        axis);
+
+                case node_data_type_int64:
+                    return this_->insert_nd(
+                        extract_integer_value(std::move(args[0]),
+                            this_->name_, this_->codename_),
+                        extract_integer_value_strict(std::move(args[1]),
+                            this_->name_, this_->codename_),
+                        extract_integer_value(std::move(args[2]),
+                            this_->name_, this_->codename_),
+                        axis);
+
+                case node_data_type_unknown: HPX_FALLTHROUGH;
+                case node_data_type_double:
+                    return this_->insert_nd(
+                        extract_numeric_value(std::move(args[0]),
+                            this_->name_, this_->codename_),
+                        extract_integer_value_strict(std::move(args[1]),
+                            this_->name_, this_->codename_),
+                        extract_numeric_value(std::move(args[2]),
+                            this_->name_, this_->codename_),
+                        axis);
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "insert::eval",
+                        this_->generate_error_message(
+                            "the insert primitive requires for all "
+                            "arguments "
+                            "to be numeric data types"));
+                }
+            }),
             detail::map_operands(operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }

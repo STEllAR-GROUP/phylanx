@@ -838,6 +838,12 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<std::string> string_operand_strict(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT std::string string_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,

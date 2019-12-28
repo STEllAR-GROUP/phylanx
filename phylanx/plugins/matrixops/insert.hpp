@@ -24,6 +24,7 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives {
+
     /// \brief Implementation of insert as a Phylanx primitive.
     /// Returns a copy of the array with values inserted.
     /// This implementation is intended to behave like [NumPy implementation of flatten]
@@ -38,10 +39,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
       , public std::enable_shared_from_this<insert>
     {
     protected:
-        using operand_type = ir::node_data<double>;
-        using matrix_type = blaze::DynamicMatrix<double>;
-        using operands_type = std::vector<operand_type>;
-
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
@@ -125,9 +122,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_argument_type insert_nd(ir::node_data<T>&& arg,
             ir::node_data<std::int64_t>&& indices, ir::node_data<T>&& values,
             hpx::util::optional<std::int64_t> axis) const;
-
-    private:
-        node_data_type dtype_;
     };
 
     inline primitive create_insert(hpx::id_type const& locality,
