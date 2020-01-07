@@ -79,10 +79,11 @@ __ge (arg1, arg2, arg3)
 
 __gen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-__gen (arg)
+__gen (arg, dtype)
 Args:
 
     arg (float) : a floating point number
+    dtype (optional, string) : the data-type of the returned         array, defaults to 'float'.
 
 Returns:
 
@@ -1503,15 +1504,16 @@ hstack (args, dtype)
 
 identity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-identity (n)
+identity (n, dtype)
             Args:
 
                 n (int) : the size of a created (n x n) matrix
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
             An identity matrix of size `sz` by `sz`.
-            
 
 
 if
@@ -1535,21 +1537,21 @@ if (cond, thenf, elsef)
 
 insert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-insert (arr, obj, values, axis)
+insert (arr, obj, values, axis, dtype)
             Args:
 
                 arr (array_like) : input array
-                obj (int, slice or sequence of ints) : Object that defines the index or
-                                                       indices before which values is
-                                                       inserted.
+                obj (int, slice or sequence of ints) : Object that defines the
+                    index or indices before which values is inserted.
                 values (array_like) : Values to insert into arr.
-                axis (int, optional) : Axis along which to insert values. If axis is
-                                       None then arr is flattened first.
+                axis (int, optional) : Axis along which to insert values. If
+                    axis is None then arr is flattened first.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
             A copy of arr with values inserted.
-            
 
 
 inverse
@@ -2008,13 +2010,15 @@ prod (v, axis, keepdims, initial)
 
 random
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-random (size, distribution)
+random (size, dist, dtype)
             Args:
 
                 size (int) : the size of the array of random numbers
-                distribution (optional, string or list) : the name of the
+                dist (optional, string or list) : the name of the
                     distribution, or a list that begins with the name and is
                     followed by up to two numeric parameters.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 

@@ -431,10 +431,11 @@ arg3 (boolean, optional) : whether to use a</p>
 </div>
 <div class="section" id="gen">
 <h2>__gen<a class="headerlink" href="#gen" title="Permalink to this headline">¶</a></h2>
-<p>__gen (arg)
+<p>__gen (arg, dtype)
 Args:</p>
 <blockquote>
-<div><p>arg (float) : a floating point number</p>
+<div><p>arg (float) : a floating point number
+dtype (optional, string) : the data-type of the returned         array, defaults to ‘float’.</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>This function implements function <cite>absolute</cite> from Python’s math library.</p>
@@ -1998,9 +1999,13 @@ dtype (optional, string) : the data-type of the returned array,</p>
 <div class="section" id="identity">
 <h2>identity<a class="headerlink" href="#identity" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>identity (n)</dt><dd><p>Args:</p>
+<dt>identity (n, dtype)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>n (int) : the size of a created (n x n) matrix</p>
+<div><p>n (int) : the size of a created (n x n) matrix
+dtype (optional, string) : the data-type of the returned array,</p>
+<blockquote>
+<div><p>defaults to ‘float’.</p>
+</div></blockquote>
 </div></blockquote>
 <p>Returns:</p>
 <p>An identity matrix of size <cite>sz</cite> by <cite>sz</cite>.</p>
@@ -2030,19 +2035,22 @@ otherwise</p>
 <div class="section" id="insert">
 <h2>insert<a class="headerlink" href="#insert" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>insert (arr, obj, values, axis)</dt><dd><p>Args:</p>
+<dt>insert (arr, obj, values, axis, dtype)</dt><dd><p>Args:</p>
 <blockquote>
 <div><p>arr (array_like) : input array
-obj (int, slice or sequence of ints) : Object that defines the index or</p>
+obj (int, slice or sequence of ints) : Object that defines the</p>
 <blockquote>
-<div><p>indices before which values is
-inserted.</p>
+<div><p>index or indices before which values is inserted.</p>
 </div></blockquote>
 <p>values (array_like) : Values to insert into arr.
-axis (int, optional) : Axis along which to insert values. If axis is</p>
+axis (int, optional) : Axis along which to insert values. If</p>
 <blockquote>
-<div><p>None then arr is flattened first.</p>
+<div><p>axis is None then arr is flattened first.</p>
 </div></blockquote>
+<dl class="simple">
+<dt>dtype (optional, string)<span class="classifier">the data-type of the returned array,</span></dt><dd><p>defaults to ‘float’.</p>
+</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
 <p>A copy of arr with values inserted.</p>
@@ -2529,14 +2537,18 @@ initial (optional, scalar): The starting value for the product</p>
 <div class="section" id="random">
 <h2>random<a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>random (size, distribution)</dt><dd><p>Args:</p>
+<dt>random (size, dist, dtype)</dt><dd><p>Args:</p>
 <blockquote>
 <div><p>size (int) : the size of the array of random numbers
-distribution (optional, string or list) : the name of the</p>
+dist (optional, string or list) : the name of the</p>
 <blockquote>
 <div><p>distribution, or a list that begins with the name and is
 followed by up to two numeric parameters.</p>
 </div></blockquote>
+<dl class="simple">
+<dt>dtype (optional, string)<span class="classifier">the data-type of the returned array,</span></dt><dd><p>defaults to ‘float’.</p>
+</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
 <p>An array of random numbers.</p>
@@ -3227,7 +3239,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2019, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Dec 20, 2019.
+        Last updated on Jan 07, 2020.
       </span>
 
     </p>
