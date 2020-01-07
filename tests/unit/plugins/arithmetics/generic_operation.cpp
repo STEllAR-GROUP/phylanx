@@ -741,8 +741,8 @@ void test_operation(std::string const& code, std::string const& expected_str)
 
 void test_dtype()
 {
-    test_operation("floor__int(10)", "10");
-    test_operation("floor__int(10.2)", "10");
+    test_operation(R"(floor(10, __arg(dtype, "int")))", "10");
+    test_operation(R"(floor(10.2, __arg(dtype, "int")))", "10");
 
     test_operation("sign(10)", "1");
     test_operation("sign(10.2)", "1.");

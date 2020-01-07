@@ -4,6 +4,7 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/identity.hpp>
 
@@ -29,26 +30,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const identity::match_data =
     {
         match_pattern_type{"identity",
-            std::vector<std::string>{"identity(_1)"},
+            std::vector<std::string>{"identity(_1, __arg(_2_dtype, nil))"},
             &create_identity, &create_primitive<identity>, R"(
-            n
+            n, dtype
             Args:
 
                 n (int) : the size of a created (n x n) matrix
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
-            An identity matrix of size `sz` by `sz`.
-            )",
-            true
+            An identity matrix of size `sz` by `sz`.)"
         }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     identity::identity(primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename    )
-      , dtype_(extract_dtype(name_))
+      : primitive_component_base(std::move(operands), name, codename)
     {
     }
 
@@ -67,10 +67,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<T>{blaze::IdentityMatrix<T>(size)}};
     }
 
-    primitive_argument_type identity::identity_nd(std::int64_t&& op) const
+    primitive_argument_type identity::identity_nd(
+        std::int64_t&& op, node_data_type t) const
     {
-        node_data_type t = dtype_;
-
         switch (t)
         {
         case node_data_type_bool:
@@ -100,12 +99,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1)
+        if (operands.size() != 1 && operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
                 generate_error_message(
-                    "the identity primitive requires at most one operand"));
+                    "the identity primitive requires at most two operands"));
         }
 
         if (!valid(operands[0]))
@@ -117,13 +116,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "arguments given by the operands array are valid"));
         }
 
+        if (operands.size() > 1 && !valid(operands[1]) &&
+            !is_explicit_nil(operands[1]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "identity::eval",
+                generate_error_message(
+                    "the identity primitive requires that the "
+                        "arguments given by the operands array are valid"));
+        }
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
+        if (operands.size() > 1 && valid(operands[1]))
+        {
+            auto dtype =
+                string_operand_strict(operands[1], args, name_, codename_, ctx);
+
+            return hpx::dataflow(hpx::launch::sync,
                 [this_ = std::move(this_)](
-                    std::int64_t&& op0) -> primitive_argument_type {
-                    return this_->identity_nd(std::move(op0));
-                }),
+                    hpx::future<std::int64_t>&& op0,
+                    hpx::future<std::string>&& dtype)
+                -> primitive_argument_type
+                {
+                    return this_->identity_nd(op0.get(), map_dtype(dtype.get()));
+                },
+                scalar_integer_operand_strict(
+                    operands[0], args, name_, codename_, std::move(ctx)),
+                std::move(dtype));
+        }
+
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](hpx::future<std::int64_t>&& op0)
+            -> primitive_argument_type
+            {
+                return this_->identity_nd(op0.get(), node_data_type_double);
+            },
             scalar_integer_operand_strict(
                 operands[0], args, name_, codename_, std::move(ctx)));
     }

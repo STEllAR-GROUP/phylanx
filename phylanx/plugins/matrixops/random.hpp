@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/util/random.hpp>
 
@@ -140,18 +141,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
         primitive_argument_type random0d(
-            distribution_parameters_type&& params) const;
-        primitive_argument_type random1d(
-            std::size_t dim, distribution_parameters_type&& params) const;
+            distribution_parameters_type&& params, node_data_type) const;
+        primitive_argument_type random1d(std::size_t dim,
+            distribution_parameters_type&& params, node_data_type) const;
         primitive_argument_type random2d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params) const;
+            distribution_parameters_type&& params, node_data_type) const;
         primitive_argument_type random3d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params) const;
+            distribution_parameters_type&& params, node_data_type) const;
         primitive_argument_type random4d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params) const;
+            distribution_parameters_type&& params, node_data_type) const;
     };
 
     inline primitive create_random(hpx::id_type const& locality,

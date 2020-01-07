@@ -29,18 +29,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 ///////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_GEN_MATCH_DATA(name)                                           \
-    match_pattern_type{name, std::vector<std::string>{name "(_1)"},            \
-        &create_generic_operation, &create_primitive<generic_operation>,       \
-        "arg\n"                                                                \
-        "Args:\n"                                                              \
-        "\n"                                                                   \
-        "    arg (float) : a floating point number\n"                          \
-        "\n"                                                                   \
-        "Returns:\n"                                                           \
-        "\n"                                                                   \
-        "This function implements function `" name "` from Python's "          \
-        "math library.",                                                       \
-        true                                                                   \
+    match_pattern_type                                                         \
+    {                                                                          \
+        name, std::vector<std::string>{name "(_1, __arg(_2_dtype, nil))"},     \
+            &create_generic_operation, &create_primitive<generic_operation>,   \
+            "arg, dtype\n"                                                     \
+            "Args:\n"                                                          \
+            "\n"                                                               \
+            "    arg (float) : a floating point number\n"                      \
+            "    dtype (optional, string) : the data-type of the returned "    \
+            "        array, defaults to 'float'.\n"                            \
+            "\n"                                                               \
+            "Returns:\n"                                                       \
+            "\n"                                                               \
+            "This function implements function `" name "` from Python's "      \
+            "math library.",                                                   \
+            true                                                               \
     }                                                                          \
     /**/
 
@@ -82,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             { PHYLANX_GEN_MATCH_DATA("sign"), true },
             { PHYLANX_GEN_MATCH_DATA("normalize"), false },
             { PHYLANX_GEN_MATCH_DATA("trace"), false },
-    };
+        };
 
 #undef PHYLANX_GEN_MATCH_DATA
 
@@ -109,7 +113,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , func_name_(extract_function_name(name))
-      , dtype_(extract_dtype(name_))
       , retain_argument_type_(detail::extract_argument_handling_mode(
             func_name_, name_, codename_))
     {
@@ -146,9 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type generic_operation::generic0d(
-        primitive_argument_type&& op) const
+        primitive_argument_type&& op, node_data_type t) const
     {
-        node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
             t = retain_argument_type_ ? extract_common_type(op) :
@@ -174,9 +176,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type generic_operation::generic1d(
-        primitive_argument_type&& op) const
+        primitive_argument_type&& op, node_data_type t) const
     {
-        node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
             t = retain_argument_type_ ? extract_common_type(op) :
@@ -202,9 +203,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type generic_operation::generic2d(
-        primitive_argument_type&& op) const
+        primitive_argument_type&& op, node_data_type t) const
     {
-        node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
             t = retain_argument_type_ ? extract_common_type(op) :
@@ -230,9 +230,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type generic_operation::generic3d(
-        primitive_argument_type&& op) const
+        primitive_argument_type&& op, node_data_type t) const
     {
-        node_data_type t = dtype_;
         if (t == node_data_type_unknown)
         {
             t = retain_argument_type_ ? extract_common_type(op) :
@@ -262,16 +261,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1)
+        if (operands.size() != 1 && operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "generic_operation::eval",
                 generate_error_message(
                     "the generic_operation primitive requires"
-                    "exactly one operand"));
+                    "exactly one or two operands"));
         }
 
-        if (!valid(operands[0]))
+        if (!valid(operands[0]) ||
+            (operands.size() == 2 && !valid(operands[1]) &&
+                !is_explicit_nil(operands[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "generic_operation::eval",
@@ -282,11 +283,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
+        if (operands.size() == 2 && valid(operands[1]))
+        {
+            auto&& op1 =
+                value_operand(operands[1], args, name_, codename_, ctx);
+
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& fop,
+                    hpx::future<primitive_argument_type>&& fdtype)
+                -> primitive_argument_type
+                {
+                    auto&& op = fop.get();
+                    annotation_wrapper wrap(op);
+
+                    std::size_t dims = extract_numeric_value_dimension(
+                        op, this_->name_, this_->codename_);
+                    node_data_type dtype =
+                        map_dtype(extract_string_value_strict(
+                            fdtype.get(), this_->name_, this_->codename_));
+
+                    switch (dims)
+                    {
+                    case 0:
+                        return wrap.propagate(
+                            this_->generic0d(std::move(op), dtype));
+
+                    case 1:
+                        return wrap.propagate(
+                            this_->generic1d(std::move(op), dtype));
+
+                    case 2:
+                        return wrap.propagate(
+                            this_->generic2d(std::move(op), dtype));
+
+                    case 3:
+                        return wrap.propagate(
+                            this_->generic3d(std::move(op), dtype));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "generic_operation::eval",
+                            this_->generate_error_message(
+                                "left hand side operand has unsupported "
+                                "number of dimensions"));
+                    }
+                },
+                value_operand(
+                    operands[0], args, name_, codename_, std::move(ctx)),
+                std::move(op1));
+        }
+
+        return hpx::dataflow(
+            hpx::launch::sync,
             [this_ = std::move(this_)](
-                    hpx::future<primitive_argument_type>&& fop)
-            -> primitive_argument_type
-            {
+                hpx::future<primitive_argument_type>&& fop)
+                -> primitive_argument_type {
                 auto&& op = fop.get();
 
                 annotation_wrapper wrap(op);
@@ -296,16 +348,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (dims)
                 {
                 case 0:
-                    return wrap.propagate(this_->generic0d(std::move(op)));
+                    return wrap.propagate(this_->generic0d(
+                        std::move(op), node_data_type_unknown));
 
                 case 1:
-                    return wrap.propagate(this_->generic1d(std::move(op)));
+                    return wrap.propagate(this_->generic1d(
+                        std::move(op), node_data_type_unknown));
 
                 case 2:
-                    return wrap.propagate(this_->generic2d(std::move(op)));
+                    return wrap.propagate(this_->generic2d(
+                        std::move(op), node_data_type_unknown));
 
                 case 3:
-                    return wrap.propagate(this_->generic3d(std::move(op)));
+                    return wrap.propagate(this_->generic3d(
+                        std::move(op), node_data_type_unknown));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

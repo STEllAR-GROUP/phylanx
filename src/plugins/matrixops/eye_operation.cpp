@@ -32,7 +32,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         match_pattern_type{"eye",
             std::vector<std::string>{R"(
-                eye(_1_N, __arg(_2_M, nil), __arg(_3_k, 0), __arg(dtype, "float"))
+                eye(_1_N,
+                    __arg(_2_M, nil),
+                    __arg(_3_k, 0),
+                    __arg(_4_dtype, "float")
+                )
             )"},
             &create_eye_operation, &create_primitive<eye_operation>, R"(
             N, M, k, dtype

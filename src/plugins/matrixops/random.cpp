@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/util/random.hpp>
@@ -28,6 +29,7 @@
 #include <utility>
 #include <vector>
 #include <sstream>
+#include <type_traits>
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
@@ -38,21 +40,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const random::match_data =
     {
-        hpx::util::make_tuple("random",
-            std::vector<std::string>{"random(_1)", "random(_1, _2)"},
+        hpx::util::make_tuple(
+            "random",
+            std::vector<std::string>{
+                "random(_1, __arg(_2_dist, nil), __arg(_3_dtype, nil))"},
             &create_random, &create_primitive<random>, R"(
-            size, distribution
+            size, dist, dtype
             Args:
 
                 size (int) : the size of the array of random numbers
-                distribution (optional, string or list) : the name of the
+                dist (optional, string or list) : the name of the
                     distribution, or a list that begins with the name and is
                     followed by up to two numeric parameters.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'float'.
 
             Returns:
 
-            An array of random numbers.)")
-    };
+            An array of random numbers.)")};
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
@@ -304,14 +309,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         ///////////////////////////////////////////////////////////////////////
         template <typename Dist, typename T>
-        primitive_argument_type randomize(Dist& dist, T& d)
+        ir::node_data<T> randomize(Dist& dist, T& d)
         {
             d = dist(util::rng_);
-            return primitive_argument_type{d};
+            return ir::node_data<T>{d};
         }
 
         template <typename Dist, typename T>
-        primitive_argument_type randomize(
+        ir::node_data<T> randomize(
             Dist& dist, blaze::DynamicVector<T>& v)
         {
             std::size_t const size = v.size();
@@ -321,11 +326,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 v[i] = dist(util::rng_);
             }
 
-            return primitive_argument_type{std::move(v)};
+            return ir::node_data<T>{std::move(v)};
         }
 
         template <typename Dist, typename T>
-        primitive_argument_type randomize(
+        ir::node_data<T> randomize(
             Dist& dist, blaze::DynamicMatrix<T>& m)
         {
             std::size_t const rows = m.rows();
@@ -339,11 +344,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            return primitive_argument_type{std::move(m)};
+            return ir::node_data<T>{std::move(m)};
         }
 
         template <typename Dist, typename T>
-        primitive_argument_type randomize(
+        ir::node_data<T> randomize(
             Dist& dist, blaze::DynamicTensor<T>& t)
         {
             std::size_t const pages = t.pages();
@@ -361,11 +366,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            return primitive_argument_type{std::move(t)};
+            return ir::node_data<T>{std::move(t)};
         }
 
         template <typename Dist, typename T>
-        primitive_argument_type randomize(
+        ir::node_data<T> randomize(
             Dist& dist, blaze::DynamicArray<4UL, T>& q)
         {
             std::size_t const quats = q.quats();
@@ -387,7 +392,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            return primitive_argument_type{std::move(q)};
+            return ir::node_data<T>{std::move(q)};
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -395,42 +400,95 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             virtual ~distribution() = default;
 
-            virtual primitive_argument_type call0d() = 0;
-            virtual primitive_argument_type call1d(std::size_t dim) = 0;
+            virtual primitive_argument_type call0d(node_data_type dtype) = 0;
+            virtual primitive_argument_type call1d(
+                std::size_t dim, node_data_type dtype) = 0;
             virtual primitive_argument_type call2d(
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+                node_data_type dtype) = 0;
             virtual primitive_argument_type call3d(
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+                node_data_type dtype) = 0;
             virtual primitive_argument_type call4d(
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) = 0;
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+                node_data_type dtype) = 0;
         };
 
         using create_distribution_type = std::unique_ptr<distribution> (*)(
             distribution_parameters_type const&, std::string const&,
             std::string const&);
 
-        //////////////////////////////////////////////////////////////////////
+        template <typename Result, typename T>
+        typename std::enable_if<!std::is_same<Result, T>::value,
+            primitive_argument_type>::type
+        convert_to(ir::node_data<T>&& val)
+        {
+            return primitive_argument_type(ir::node_data<Result>(std::move(val)));
+        }
+
+        template <typename Result, typename T>
+        typename std::enable_if<std::is_same<Result, T>::value,
+            primitive_argument_type>::type
+        convert_to(ir::node_data<T>&& val)
+        {
+            return primitive_argument_type(std::move(val));
+        }
+
+        template <typename T, typename Dist, typename Array>
+        primitive_argument_type randomize(
+            Dist& dist, Array& data, node_data_type dtype,
+            std::string const& name, std::string const& codename)
+        {
+            ir::node_data<T> result = randomize(dist, data);
+            switch (dtype)
+            {
+            case node_data_type_int64:
+                return convert_to<std::int64_t>(std::move(result));
+
+            case node_data_type_unknown: HPX_FALLTHROUGH;
+            case node_data_type_double:
+                return convert_to<double>(std::move(result));
+
+            case node_data_type_bool:
+                return convert_to<std::uint8_t>(std::move(result));
+
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::random::randomize",
+                util::generate_error_message(
+                    "unsupported requested numeric data type", name, codename));
+        }
+
+////////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
     primitive_argument_type call3d(                                            \
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,           \
+        node_data_type dtype) override                                         \
     {                                                                          \
         blaze::DynamicTensor<T> data(dims[0], dims[1], dims[2]);               \
-        return randomize(dist_, data);                                         \
+        return randomize<T>(dist_, data, dtype, name_, codename_);             \
     }                                                                          \
     /**/
 #define PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
     primitive_argument_type call4d(                                            \
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override  \
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,           \
+        node_data_type dtype) override                                         \
     {                                                                          \
         blaze::DynamicArray<4UL, T> data(dims[0], dims[1], dims[2], dims[3]);  \
-        return randomize(dist_, data);                                         \
+        return randomize<T>(dist_, data, dtype, name_, codename_);             \
     }                                                                          \
     /**/
 
 #define PHYLANX_RANDOM_DISTRIBUTION_1(type, stdtype, param, T)                 \
     struct type##_distribution : distribution                                  \
     {                                                                          \
-        type##_distribution(distribution_parameters_type const& params)        \
+        type##_distribution(distribution_parameters_type const& params,        \
+            std::string const& name, std::string const& codename)              \
+          : name_(name)                                                        \
+          , codename_(codename)                                                \
         {                                                                      \
             switch (std::get<1>(params))                                       \
             {                                                                  \
@@ -450,32 +508,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }                                                                  \
         }                                                                      \
                                                                                \
-        primitive_argument_type call0d() override                              \
+        primitive_argument_type call0d(node_data_type dtype) override          \
         {                                                                      \
             T data;                                                            \
-            return randomize(dist_, data);                                     \
+            return randomize<T>(dist_, data, dtype, name_, codename_);         \
         }                                                                      \
-        primitive_argument_type call1d(std::size_t dim) override               \
+        primitive_argument_type call1d(                                        \
+            std::size_t dim, node_data_type dtype) override                    \
         {                                                                      \
             blaze::DynamicVector<T> data(dim);                                 \
-            return randomize(dist_, data);                                     \
+            return randomize<T>(dist_, data, dtype, name_, codename_);         \
         }                                                                      \
         primitive_argument_type call2d(                                        \
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override \
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,       \
+            node_data_type dtype) override                                     \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
-            return randomize(dist_, data);                                     \
+            return randomize<T>(dist_, data, dtype, name_, codename_);         \
         }                                                                      \
         PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
         PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
         stdtype dist_;                                                         \
+        std::string const& name_;                                              \
+        std::string const& codename_;                                          \
     };                                                                         \
     /**/
 
 #define PHYLANX_RANDOM_DISTRIBUTION_2(type, stdtype, param, T)                 \
     struct type##_distribution : distribution                                  \
     {                                                                          \
-        type##_distribution(distribution_parameters_type const& params)        \
+        type##_distribution(distribution_parameters_type const& params,        \
+            std::string const& name, std::string const& codename)              \
+          : name_(name)                                                        \
+          , codename_(codename)                                                \
         {                                                                      \
             switch (std::get<1>(params))                                       \
             {                                                                  \
@@ -499,26 +564,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }                                                                  \
         }                                                                      \
                                                                                \
-        primitive_argument_type call0d() override                              \
+        primitive_argument_type call0d(node_data_type dtype) override          \
         {                                                                      \
             T data;                                                            \
-            return randomize(dist_, data);                                     \
+            return randomize<T>(dist_, data, dtype, name_, codename_);         \
         }                                                                      \
-        primitive_argument_type call1d(std::size_t dim) override               \
+        primitive_argument_type call1d(                                        \
+            std::size_t dim, node_data_type dtype) override                    \
         {                                                                      \
             blaze::DynamicVector<T> data(dim);                                 \
-            return randomize(dist_, data);                                     \
+            return randomize<T>(dist_, data, dtype, name_, codename_);         \
         }                                                                      \
         primitive_argument_type call2d(                                        \
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)       \
-            override                                                           \
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,       \
+            node_data_type dtype) override                                     \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
-            return randomize(dist_, data);                                     \
+            return randomize<T>(dist_, data, dtype, name_, codename_);         \
         }                                                                      \
         PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
         PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
         stdtype dist_;                                                         \
+        std::string const& name_;                                              \
+        std::string const& codename_;                                          \
     };                                                                         \
     /**/
 
@@ -543,7 +611,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new uniform_int_distribution(params)};
+            new uniform_int_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -565,7 +633,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::get<3>(params)),
                     name, codename));
         }
-        return std::unique_ptr<distribution>{new uniform_distribution(params)};
+        return std::unique_ptr<distribution>{
+            new uniform_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -587,7 +656,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new bernoulli_distribution(params)};
+            new bernoulli_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -610,7 +679,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::get<2>(params), std::get<3>(params)),
                     name, codename));
         }
-        return std::unique_ptr<distribution>{new binomial_distribution(params)};
+        return std::unique_ptr<distribution>{
+            new binomial_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -634,7 +704,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new negative_binomial_distribution(params)};
+            new negative_binomial_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -656,7 +726,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new geometric_distribution(params)};
+            new geometric_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -677,7 +747,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::get<2>(params)),
                     name, codename));
         }
-        return std::unique_ptr<distribution>{new poisson_distribution(params)};
+        return std::unique_ptr<distribution>{
+            new poisson_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -699,7 +770,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new exponential_distribution(params)};
+            new exponential_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -720,7 +791,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "{}, beta: {})", std::get<2>(params), std::get<3>(params)),
                     name, codename));
         }
-        return std::unique_ptr<distribution>{new gamma_distribution(params)};
+        return std::unique_ptr<distribution>{
+            new gamma_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -742,7 +814,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new weibull_distribution(params)};
+            new weibull_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -764,7 +836,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new extreme_value_distribution(params)};
+            new extreme_value_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -786,7 +858,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new normal_distribution(params)};
+            new normal_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -809,7 +881,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new truncated_normal_distribution(params)};
+            new truncated_normal_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -831,7 +903,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new lognormal_distribution(params)};
+            new lognormal_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -853,7 +925,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new chi_squared_distribution(params)};
+            new chi_squared_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -875,7 +947,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new cauchy_distribution(params)};
+            new cauchy_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -897,7 +969,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new fisher_f_distribution(params)};
+            new fisher_f_distribution(params, name, codename)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -919,7 +991,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
         return std::unique_ptr<distribution>{
-            new student_t_distribution(params)};
+            new student_t_distribution(params, name, codename)};
     }
 
 #undef PHYLANX_RANDOM_DISTRIBUTION_1
@@ -952,8 +1024,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         ///////////////////////////////////////////////////////////////////////
         primitive_argument_type randomize0d(
-            distribution_parameters_type&& params, std::string const& name,
-            std::string const& codename)
+            distribution_parameters_type&& params, node_data_type dtype,
+            std::string const& name, std::string const& codename)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
@@ -973,12 +1045,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     util::generate_error_message(
                             msg.str(), name, codename));
             }
-            return (it->second)(params, name, codename)->call0d();
+            return (it->second)(params, name, codename)->call0d(dtype);
         }
 
         primitive_argument_type randomize1d(std::size_t dim,
-            distribution_parameters_type&& params, std::string const& name,
-            std::string const& codename)
+            distribution_parameters_type&& params, node_data_type dtype,
+            std::string const& name, std::string const& codename)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
@@ -998,13 +1070,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     util::generate_error_message(
                         msg.str(), name, codename));
             }
-            return (it->second)(params, name, codename)->call1d(dim);
+            return (it->second)(params, name, codename)->call1d(dim, dtype);
         }
 
         primitive_argument_type randomize2d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params, std::string const& name,
-            std::string const& codename)
+            distribution_parameters_type&& params, node_data_type dtype,
+            std::string const& name, std::string const& codename)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
@@ -1024,13 +1096,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     util::generate_error_message(
                         msg.str(), name, codename));
             }
-            return (it->second)(params, name, codename)->call2d(dims);
+            return (it->second)(params, name, codename)->call2d(dims, dtype);
         }
 
         primitive_argument_type randomize3d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params, std::string const& name,
-            std::string const& codename)
+            distribution_parameters_type&& params, node_data_type dtype,
+            std::string const& name, std::string const& codename)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
@@ -1050,13 +1122,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     util::generate_error_message(
                         msg.str(), name, codename));
             }
-            return (it->second)(params, name, codename)->call3d(dims);
+            return (it->second)(params, name, codename)->call3d(dims, dtype);
         }
 
         primitive_argument_type randomize4d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params, std::string const& name,
-            std::string const& codename)
+            distribution_parameters_type&& params, node_data_type dtype,
+            std::string const& name, std::string const& codename)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
@@ -1076,7 +1148,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     util::generate_error_message(
                         msg.str(), name, codename));
             }
-            return (it->second)(params, name, codename)->call4d(dims);
+            return (it->second)(params, name, codename)->call4d(dims, dtype);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1107,15 +1179,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() > 2)
+        if (operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
                 generate_error_message(
-                    "the random primitive requires at most one operand"));
+                    "the random primitive requires at most three operand"));
         }
 
-        if (operands.size() == 2 && !valid(operands[1]))
+        if ((operands.size() > 1 && !valid(operands[1]) &&
+                !is_explicit_nil(operands[1])) ||
+            (operands.size() > 2 && !valid(operands[2]) &&
+                !is_explicit_nil(operands[2])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
@@ -1131,7 +1206,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // the second (optional) argument encodes the distribution to use
         hpx::future<distribution_parameters_type> params;
-        if (operands.size() < 2)
+        if (operands.size() < 2 || !valid(operands[1]))
         {
             params = hpx::make_ready_future(
                 distribution_parameters_type{"normal", 2, 0.0, 1.0});
@@ -1142,29 +1217,83 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operands[1], args, name_, codename_, std::move(ctx));
         }
 
+        using array_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
+
+        if (operands.size() < 3 || !valid(operands[2]))
+        {
+            auto this_ = this->shared_from_this();
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<array_type>&& dims_f,
+                        hpx::future<distribution_parameters_type>&& params_f)
+                ->  primitive_argument_type
+                {
+                    array_type&& dims = dims_f.get();
+                    distribution_parameters_type&& params = params_f.get();
+
+                    switch (detail::num_dimensions(dims))
+                    {
+                    case 0:
+                        return this_->random0d(
+                            std::move(params), node_data_type_double);
+
+                    case 1:
+                        return this_->random1d(
+                            dims[0], std::move(params), node_data_type_double);
+
+                    case 2:
+                        return this_->random2d(
+                            dims, std::move(params), node_data_type_double);
+
+                    case 3:
+                        return this_->random3d(
+                            dims, std::move(params), node_data_type_double);
+
+                    case 4:
+                        return this_->random4d(
+                            dims, std::move(params), node_data_type_double);
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "random::eval",
+                            this_->generate_error_message(
+                            "left hand side operand has unsupported "
+                                    "number of dimensions"));
+                    }
+                }, std::move(dims), std::move(params));
+        }
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_)](
-                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> && dims,
-                    distribution_parameters_type && params)
+                    hpx::future<array_type>&& dims_f,
+                    hpx::future<distribution_parameters_type>&& params_f,
+                    primitive_argument_type const& dtype_arg)
             ->  primitive_argument_type
             {
+                array_type&& dims = dims_f.get();
+                distribution_parameters_type&& params = params_f.get();
+                std::string dtype_str = extract_string_value_strict(
+                    dtype_arg, this_->name_, this_->codename_);
+
+                node_data_type dtype = map_dtype(dtype_str);
                 switch (detail::num_dimensions(dims))
                 {
                 case 0:
-                    return this_->random0d(std::move(params));
+                    return this_->random0d(std::move(params), dtype);
 
                 case 1:
-                    return this_->random1d(dims[0], std::move(params));
+                    return this_->random1d(dims[0], std::move(params), dtype);
 
                 case 2:
-                    return this_->random2d(dims, std::move(params));
+                    return this_->random2d(dims, std::move(params), dtype);
 
                 case 3:
-                    return this_->random3d(dims, std::move(params));
+                    return this_->random3d(dims, std::move(params), dtype);
 
                 case 4:
-                    return this_->random4d(dims, std::move(params));
+                    return this_->random4d(dims, std::move(params), dtype);
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
@@ -1172,43 +1301,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "left hand side operand has unsupported "
                                 "number of dimensions"));
                 }
-            }), std::move(dims), std::move(params));
+            }, std::move(dims), std::move(params), operands[2]);
     }
 
     primitive_argument_type random::random0d(
-        distribution_parameters_type&& params) const
+        distribution_parameters_type&& params, node_data_type dtype) const
     {
-        return detail::randomize0d(std::move(params), name_, codename_);
+        return detail::randomize0d(std::move(params), dtype, name_, codename_);
     }
 
-    primitive_argument_type random::random1d(
-        std::size_t dim, distribution_parameters_type&& params) const
+    primitive_argument_type random::random1d(std::size_t dim,
+        distribution_parameters_type&& params, node_data_type dtype) const
     {
-        auto result = detail::randomize1d(dim, std::move(params), name_, codename_);
+        auto result = detail::randomize1d(
+            dim, std::move(params), dtype, name_, codename_);
         return result;
     }
 
     primitive_argument_type random::random2d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        distribution_parameters_type&& params) const
+        distribution_parameters_type&& params, node_data_type dtype) const
     {
-        return detail::randomize2d(dims, std::move(params), name_, codename_);
+        return detail::randomize2d(
+            dims, std::move(params), dtype, name_, codename_);
     }
 
     primitive_argument_type random::random3d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        distribution_parameters_type&& params) const
+        distribution_parameters_type&& params, node_data_type dtype) const
     {
-        return detail::randomize3d(dims, std::move(params), name_, codename_);
+        return detail::randomize3d(
+            dims, std::move(params), dtype, name_, codename_);
     }
 
     primitive_argument_type random::random4d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        distribution_parameters_type&& params) const
+        distribution_parameters_type&& params, node_data_type dtype) const
     {
-        return detail::randomize4d(dims, std::move(params), name_, codename_);
+        return detail::randomize4d(
+            dims, std::move(params), dtype, name_, codename_);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives

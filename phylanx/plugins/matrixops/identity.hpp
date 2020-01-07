@@ -27,10 +27,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<identity>
     {
     protected:
-        using operand_type = ir::node_data<double>;
-        using matrix_type = blaze::IdentityMatrix<double>;
-        using operands_type = std::vector<operand_type>;
-
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
@@ -47,10 +43,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         template <typename T>
         primitive_argument_type identity_helper(std::int64_t&& op) const;
-        primitive_argument_type identity_nd(std::int64_t&& op) const;
-
-    private:
-        node_data_type dtype_;
+        primitive_argument_type identity_nd(
+            std::int64_t&& op, node_data_type) const;
     };
 
     inline primitive create_identity(hpx::id_type const& locality,

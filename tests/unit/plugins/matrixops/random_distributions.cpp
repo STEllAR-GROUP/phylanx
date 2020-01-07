@@ -281,7 +281,7 @@ void test_uniform_distribution_explicit_params(std::mt19937& gen)
 void test_uniform_int_distribution_explicit(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "uniform_int")),
+            define(call, size, random(size, "uniform_int", __arg(dtype, "int"))),
             call
         ))";
 
@@ -312,7 +312,9 @@ void test_uniform_int_distribution_explicit(std::mt19937& gen)
 void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, list("uniform_int", 200, 400))),
+            define(call, size,
+                random(size, list("uniform_int", 200, 400), __arg(dtype, "int"))
+            ),
             call
         ))";
 
@@ -344,7 +346,7 @@ void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
 void test_bernoulli_distribution(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, "bernoulli")),
+            define(call, size, random(size, "bernoulli", __arg(dtype, "bool"))),
             call
         ))";
 
@@ -375,7 +377,9 @@ void test_bernoulli_distribution(std::mt19937& gen)
 void test_bernoulli_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, list("bernoulli", 0.8))),
+            define(call, size,
+                random(size, list("bernoulli", 0.8), __arg(dtype, "bool"))
+            ),
             call
         ))";
 
