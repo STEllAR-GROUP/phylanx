@@ -87,8 +87,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         default:
             // lhs_order == 1 && rhs_order != 2
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot0d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot0d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
@@ -410,8 +409,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return dot1d3d(std::move(lhs), std::move(rhs));
 
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot1d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot1d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
@@ -604,7 +602,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // it could also be the reverse if the LHS tiles were retrieved
         // instead of the RHS
         blaze::DynamicMatrix<T> result_matrix(
-            lhs.dimension(0), rhs_localities.columns(), T{0});
+            lhs_localities.rows(), rhs_localities.columns(), T{0});
 
         std::uint32_t loc = 0;
         // 2d2d doesn't use every tile of the RHS, only those that contain
@@ -642,10 +640,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             if (rhs_localities.locality_.locality_id_ == loc)
             {
                 // calculate the dot product with local tile
-                // TODO ensure that this is generating a sub-matrix
                 //dot_result += blaze::DynamicVector<T>{1};
-                blaze::submatrix(result_matrix, 0, rhs_column_start,
-                    lhs.dimension(0), rhs_column_size) +=
+                auto res = blaze::submatrix(result_matrix,
+                    lhs_localities.get_span(1).start_,
+                    rhs_localities.get_span(0).start_,
+                    lhs_localities.get_span(1).size(),
+                    rhs_localities.get_span(0).size());
+                res +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
                         lhs.dimension(0), lhs_intersection.size()) *
                     blaze::submatrix(rhs.matrix(), rhs_intersection.start_, 0,
@@ -655,8 +656,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             {
                 // calculate the dot product with remote tile
                 //dot_result += blaze::DynamicVector<T>{1};
-                blaze::submatrix(result_matrix, 0, rhs_column_start,
-                    lhs.dimension(0), rhs_column_size) +=
+                auto res = blaze::submatrix(result_matrix,
+                    lhs_localities.get_span(1).start_,
+                    rhs_tile.spans_[0].start_,
+                    lhs_localities.get_span(1).size(),
+                    rhs_tile.spans_[0].size());
+                res +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
                         lhs.dimension(0), lhs_intersection.size()) *
                     rhs_data
@@ -678,6 +683,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 // result. Instead, the overall result is a tiled vector.
                 //result = execution_tree::primitive_argument_type{
                 //std::move(dot_result)};
+                result_matrix = blaze::submatrix(result_matrix,
+                    lhs_localities.get_span(1).start_, 0,
+                    lhs_localities.get_span(1).size(),
+                    rhs_localities.columns());
                 result = execution_tree::primitive_argument_type{
                     std::move(result_matrix)};
                 execution_tree::annotation ann{ir::range("tile",
@@ -699,15 +708,81 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     name_, codename_);
             }
             else
-            {
+            {    // This needs an annotation
+                 // First we need to construct a tile row data structure
+                blaze::DynamicMatrix<T> result_matrix_ = hpx::all_reduce(
+                    ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
+                    result_matrix, blaze::Add{},
+                    lhs_localities.locality_.num_localities_, std::size_t(-1),
+                    lhs_localities.locality_.locality_id_)
+                                                             .get();
+                // Which tile am I? I'm gonna say there are as many tiles
+                // as there are in the LHS, seems idiomatic with the rest
+                // of the primitive
+                // What about if num_localities < lhs_localities.rows()?
+                // TODO Need to take care of that eventuality here, and in file_read_csv_d
+                long long num_locs = lhs_localities.locality_.num_localities_;
+                long long size_of_tile = lhs_localities.rows() / num_locs;
+                long long num_prev_rows =
+                    lhs_localities.locality_.locality_id_ * size_of_tile;
+                if (lhs_localities.rows() % num_locs != 0)
+                {
+                    if (num_locs > lhs_localities.rows())
+                    {
+                        if (lhs_localities.locality_.locality_id_ <
+                            lhs_localities.rows())
+                        {
+                            size_of_tile = 1;
+                        }
+                        else
+                        {
+                            num_prev_rows = lhs_localities.rows();
+                            size_of_tile = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (lhs_localities.locality_.locality_id_ <
+                            (lhs_localities.rows() % num_locs))
+                        {
+                            size_of_tile++;
+                            num_prev_rows +=
+                                lhs_localities.locality_.locality_id_;
+                        }
+                        else
+                        {
+                            num_prev_rows += lhs_localities.rows() % num_locs;
+                        }
+                    }
+                }
+                blaze::DynamicMatrix<T> out_result =
+                    blaze::submatrix(result_matrix_, num_prev_rows, 0,
+                        size_of_tile, rhs_localities.columns());
                 result =
-                    execution_tree::primitive_argument_type{hpx::all_reduce(
-                        ("all_reduce_" + lhs_localities.annotation_.name_)
-                            .c_str(),
-                        result_matrix, blaze::Add{},
-                        lhs_localities.locality_.num_localities_,
-                        std::size_t(-1), lhs_localities.locality_.locality_id_)
-                                                                .get()};
+                    execution_tree::primitive_argument_type{std::move(out_result)};
+                execution_tree::annotation ann{ir::range("tile",
+                    ir::range("columns", (long long) 0,
+                        (long long) rhs_localities.columns()),
+                    ir::range("rows", num_prev_rows,
+                        (long long) (num_prev_rows + size_of_tile)))};
+
+                //{ir::range("tile",
+                //    ,
+                //    ir::range("rows", num_prev_rows,
+                //        (long long)(num_prev_rows+size_of_tile)))};
+                // Generate new tiling annotation for the result vector
+                execution_tree::tiling_information_2d tile_info(
+                    ann, name_, codename_);
+
+                ++lhs_localities.annotation_.generation_;
+
+                auto locality_ann = lhs_localities.locality_.as_annotation();
+                // Problems happening here
+                result.set_annotation(
+                    execution_tree::localities_annotation(locality_ann,
+                        tile_info.as_annotation(name_, codename_),
+                        lhs_localities.annotation_, name_, codename_),
+                    name_, codename_);
             }
         }
         else
@@ -788,8 +863,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return dot2d3d(std::move(lhs), std::move(rhs));
 
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot2d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot2d",
                 generate_error_message("the operands have incompatible "
                                        "number of dimensions"));
         }
@@ -853,8 +927,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message("the operands have incompatible "
                                        "number of dimensions"));
         }
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_dot_operation::dot3d3d",
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot3d3d",
             generate_error_message("it is not supported by Phylanx yet"));
     }
 
@@ -884,12 +957,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return dot3d3d(std::move(lhs), std::move(rhs));
 
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot3d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot3d",
                 generate_error_message("the operands have incompatible "
                                        "number of dimensions"));
         }
     }
-}}}
+}}}    // namespace phylanx::dist_matrixops::primitives
 
 #endif
