@@ -764,7 +764,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     ir::range("columns", (std::size_t) 0,
                         (std::size_t) rhs_localities.columns()),
                     ir::range("rows", num_prev_rows,
-                        (lostd::size_t) (num_prev_rows + size_of_tile)))};
+                        (std::size_t) (num_prev_rows + size_of_tile)))};
 
                 //{ir::range("tile",
                 //    ,
