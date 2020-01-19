@@ -9,9 +9,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/plugin_base.hpp>
 
-#include <hpx/datastructures/detail/pack.hpp>
-#include <hpx/plugins/plugin_factory_base.hpp>
 #include <hpx/plugin.hpp>
+#include <hpx/plugins/plugin_factory_base.hpp>
+#include <hpx/type_support/pack.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace plugin
@@ -52,7 +52,7 @@ namespace hpx { namespace util { namespace plugin
     struct virtual_constructor<phylanx::plugin::plugin_factory_base>
     {
         typedef
-            hpx::util::detail::pack<
+            hpx::util::pack<
                 hpx::util::section const*, hpx::util::section const*, bool
             > type;
     };
