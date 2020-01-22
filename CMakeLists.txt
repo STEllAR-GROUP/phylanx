@@ -4,11 +4,10 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-# We require at least CMake V3.3.2
-cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.11.0)
 
 # explicitly set certain policies
-cmake_policy(VERSION 3.3.2)
+cmake_policy(VERSION 3.11.0)
 
 ################################################################################
 # Build type (needs to be handled before project command below)

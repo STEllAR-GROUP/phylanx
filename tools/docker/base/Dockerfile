@@ -30,6 +30,13 @@ RUN apt-get update &&                                                           
         libblas-dev                                                                 \
         liblapack-dev                                                               \
         libhdf5-dev                                                              && \
+                                                                                    \
+    (                                                                               \
+        curl -JLO https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.sh     && \
+        sh ./cmake-3.11.0-Linux-x86_64.sh --prefix=/usr --exclude-subdir         && \
+        rm -f ./cmake-3.11.0-Linux-x86_64.sh                                        \
+    )                                                                            && \
+                                                                                    \
     apt-get purge && apt-get clean && rm -rf /var/lib/apt/lists/*                && \
                                                                                     \
     pip3 --no-cache-dir install setuptools                                       && \
