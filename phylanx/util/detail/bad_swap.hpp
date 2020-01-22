@@ -23,8 +23,7 @@ namespace blaze
 
         template <typename T>
         void check_swap() noexcept(
-            noexcept(swap(std::declval<typename T::BaseType&>(),
-                std::declval<typename T::BaseType&>())))
+            noexcept(swap(std::declval<T&>(), std::declval<T&>())))
         {}
     }
 
@@ -50,14 +49,14 @@ namespace blaze
             iter_swap(a, b);
         }
     }
+
     namespace _column_swap
     {
         using std::swap;
 
         template <typename T>
         void check_swap() noexcept(
-            noexcept(swap(std::declval<typename T::BaseType&>(),
-                std::declval<typename T::BaseType&>())))
+            noexcept(swap(std::declval<T&>(), std::declval<T&>())))
         {}
     }
 
