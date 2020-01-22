@@ -15,7 +15,7 @@ foreach(test ${tests})
     FOLDER "Tests/Python/Unit/Plugins/Keras"
     DEPENDS phylanx_py python_setup
     WORKING_DIRECTORY ${PHYLANX_PYTHON_EXTENSION_LOCATION}
-    ENVIRONMENT "PYTHONPATH=${PHYLANX_PYTHON_EXTENSION_LOCATION}")
+    ENVIRONMENT "PYTHONPATH=${PHYLANX_PYTHON_EXTENSION_LOCATION}:$ENV{PYTHONPATH}")
 
   add_phylanx_pseudo_target(tests.unit.python_plugins.python_keras.${test}_py)
   add_phylanx_pseudo_dependencies(
