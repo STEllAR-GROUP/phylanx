@@ -32,13 +32,9 @@ RUN apt-get update &&                                                           
         libhdf5-dev                                                              && \
                                                                                     \
     (                                                                               \
-        curl -JL https://cmake.org/files/v3.11/cmake-3.11.0.tar.gz | tar xz      && \
-        (                                                                           \
-            cd cmake-3.11.0                                                      && \
-            ./configure --parallel=22 -- -DCMAKE_USE_OPENSSL=OFF                 && \
-            make -j install                                                         \
-        )                                                                        && \
-        rm -rf cmake-3.11.0                                                         \
+        curl -JLO https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.sh     && \
+        sh ./cmake-3.11.0-Linux-x86_64.sh --prefix=/usr --exclude-subdir         && \
+        rm -f ./cmake-3.11.0-Linux-x86_64.sh                                        \
     )                                                                            && \
                                                                                     \
     apt-get purge && apt-get clean && rm -rf /var/lib/apt/lists/*                && \
