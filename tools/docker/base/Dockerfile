@@ -30,6 +30,17 @@ RUN apt-get update &&                                                           
         libblas-dev                                                                 \
         liblapack-dev                                                               \
         libhdf5-dev                                                              && \
+                                                                                    \
+    (                                                                               \
+        curl -JL https://cmake.org/files/v3.11/cmake-3.11.0.tar.gz | tar xz      && \
+        (                                                                           \
+            cd cmake-3.11.0                                                      && \
+            ./configure --parallel=22 -- -DCMAKE_USE_OPENSSL=OFF                 && \
+            make -j install                                                         \
+        )                                                                        && \
+        rm -rf cmake-3.11.0                                                         \
+    )                                                                            && \
+                                                                                    \
     apt-get purge && apt-get clean && rm -rf /var/lib/apt/lists/*                && \
                                                                                     \
     pip3 --no-cache-dir install setuptools                                       && \
