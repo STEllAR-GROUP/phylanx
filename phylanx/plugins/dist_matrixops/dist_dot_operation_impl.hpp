@@ -761,10 +761,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 result =
                     execution_tree::primitive_argument_type{std::move(out_result)};
                 execution_tree::annotation ann{ir::range("tile",
-                    ir::range("columns", (std::size_t) 0,
-                        (std::size_t) rhs_localities.columns()),
-                    ir::range("rows", num_prev_rows,
-                        (std::size_t) (num_prev_rows + size_of_tile)))};
+                    ir::range("columns", (std::int64_t) 0,
+                        (std::int64_t) rhs_localities.columns()),
+                    ir::range("rows", (std::int64_t) num_prev_rows,
+                        (std::int64_t)(num_prev_rows + size_of_tile)))};
 
                 //{ir::range("tile",
                 //    ,
