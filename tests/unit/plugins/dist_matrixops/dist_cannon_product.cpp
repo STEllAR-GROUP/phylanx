@@ -139,6 +139,8 @@ void test_cannon_product_0()
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
+    HPX_TEST_EQ(hpx::get_num_localities(hpx::launch::sync), (std::uint32_t) 4);
+
     test_cannon_product_0();
 
     return hpx::finalize();
@@ -148,5 +150,7 @@ int main(int argc, char* argv[])
 {
     std::vector<std::string> cfg = {"hpx.run_hpx_main!=1"};
 
-    return hpx::init(argc, argv, cfg);
+    HPX_TEST_EQ(hpx::init(argc, argv, cfg), 0);
+
+    return hpx::util::report_errors();
 }

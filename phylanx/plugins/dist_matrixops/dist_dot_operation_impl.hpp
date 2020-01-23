@@ -721,9 +721,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 // of the primitive
                 // What about if num_localities < lhs_localities.rows()?
                 // TODO Need to take care of that eventuality here, and in file_read_csv_d
-                long long num_locs = lhs_localities.locality_.num_localities_;
-                long long size_of_tile = lhs_localities.rows() / num_locs;
-                long long num_prev_rows =
+                std::size_t num_locs = lhs_localities.locality_.num_localities_;
+                std::size_t size_of_tile = lhs_localities.rows() / num_locs;
+                std::size_t num_prev_rows =
                     lhs_localities.locality_.locality_id_ * size_of_tile;
                 if (lhs_localities.rows() % num_locs != 0)
                 {
@@ -761,10 +761,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 result =
                     execution_tree::primitive_argument_type{std::move(out_result)};
                 execution_tree::annotation ann{ir::range("tile",
-                    ir::range("columns", (long long) 0,
-                        (long long) rhs_localities.columns()),
-                    ir::range("rows", num_prev_rows,
-                        (long long) (num_prev_rows + size_of_tile)))};
+                    ir::range("columns", (std::int64_t) 0,
+                        (std::int64_t) rhs_localities.columns()),
+                    ir::range("rows", (std::int64_t) num_prev_rows,
+                        (std::int64_t)(num_prev_rows + size_of_tile)))};
 
                 //{ir::range("tile",
                 //    ,
