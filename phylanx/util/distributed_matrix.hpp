@@ -44,7 +44,8 @@ namespace phylanx { namespace util { namespace server
     {
     public:
         using data_type = blaze::DynamicMatrix<T>;
-        using reference_type = blaze::CustomMatrix<T, true, true>;
+        using reference_type =
+            blaze::CustomMatrix<T, blaze::aligned, blaze::padded>;
 
         distributed_matrix_part() = default;
 

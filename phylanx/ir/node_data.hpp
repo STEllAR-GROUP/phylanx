@@ -125,17 +125,21 @@ namespace phylanx { namespace ir
         using storage2d_type = blaze::DynamicMatrix<T>;
 
         using custom_storage0d_type = std::reference_wrapper<T>;
-        using custom_storage1d_type = blaze::CustomVector<T, true, true>;
-        using custom_storage2d_type = blaze::CustomMatrix<T, true, true>;
+        using custom_storage1d_type =
+            blaze::CustomVector<T, blaze::aligned, blaze::padded>;
+        using custom_storage2d_type =
+            blaze::CustomMatrix<T, blaze::aligned, blaze::padded>;
 
         constexpr static std::size_t const max_dimensions =
             PHYLANX_MAX_DIMENSIONS;
 
         using storage3d_type = blaze::DynamicTensor<T>;
-        using custom_storage3d_type = blaze::CustomTensor<T, true, true>;
+        using custom_storage3d_type =
+            blaze::CustomTensor<T, blaze::aligned, blaze::padded>;
 
         using storage4d_type = blaze::DynamicArray<4UL, T>;
-        using custom_storage4d_type = blaze::CustomArray<4UL, T, true, true>;
+        using custom_storage4d_type =
+            blaze::CustomArray<4UL, T, blaze::aligned, blaze::padded>;
 
         using storage_type = util::variant<storage0d_type, storage1d_type,
             storage2d_type, storage3d_type, storage4d_type,

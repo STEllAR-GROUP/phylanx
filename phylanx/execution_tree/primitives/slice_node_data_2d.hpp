@@ -992,16 +992,16 @@ namespace phylanx { namespace execution_tree
     namespace detail
     {
         template <typename T>
-        blaze::CustomMatrix<T, true, true>
+        blaze::CustomMatrix<T, blaze::aligned, blaze::padded>
         create_ref(blaze::DynamicMatrix<T>& m)
         {
-            return blaze::CustomMatrix<T, true, true>(
+            return blaze::CustomMatrix<T, blaze::aligned, blaze::padded>(
                 m.data(), m.rows(), m.columns(), m.spacing());
         }
 
         template <typename T>
-        blaze::CustomMatrix<T, true, true> create_ref(
-            blaze::CustomMatrix<T, true, true> const& m)
+        blaze::CustomMatrix<T, blaze::aligned, blaze::padded> create_ref(
+            blaze::CustomMatrix<T, blaze::aligned, blaze::padded> const& m)
         {
             return m;
         }

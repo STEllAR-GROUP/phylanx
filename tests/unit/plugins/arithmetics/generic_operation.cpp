@@ -18,9 +18,12 @@
 #include <blaze_tensor/Blaze.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-using custom_vector_type = blaze::CustomVector<double, true, true>;
-using custom_matrix_type = blaze::CustomMatrix<double, true, true>;
-using custom_tensor_type = blaze::CustomTensor<double, true, true>;
+using custom_vector_type =
+    blaze::CustomVector<double, blaze::aligned, blaze::padded>;
+using custom_matrix_type =
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded>;
+using custom_tensor_type =
+    blaze::CustomTensor<double, blaze::aligned, blaze::padded>;
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_generic_operation_0d(std::string const& func_name,

@@ -40,11 +40,11 @@ void vsplit_operation_scalar_blocks()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vsplit.eval();
 
-    blaze::CustomMatrix<double, true, true> expected_first(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_first(
         &(m1(0, 0)), 1, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_second(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_second(
         &(m1(1, 0)), 1, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_third(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_third(
         &(m1(2, 0)), 1, 3, m1.spacing());
 
     phylanx::ir::node_data<double> data_expected_first(
@@ -99,17 +99,17 @@ void vsplit_operation_range_blocks()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vsplit.eval();
 
-    blaze::CustomMatrix<double, true, true> expected_zero(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_zero(
         &(m1(0, 0)), 0, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_first(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_first(
         &(m1(0, 0)), 1, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_second(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_second(
         &(m1(1, 0)), 3, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_third(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_third(
         &(m1(0, 0)), 0, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_fourth(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_fourth(
         &(m1(2, 0)), 3, 3, m1.spacing());
-    blaze::CustomMatrix<double, true, true> expected_fifth(
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> expected_fifth(
         &(m1(0, 0)), 0, 3, m1.spacing());
 
     phylanx::ir::node_data<double> data_expected_zero(std::move(expected_zero));

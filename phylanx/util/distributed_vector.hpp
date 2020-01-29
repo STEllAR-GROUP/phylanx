@@ -44,7 +44,8 @@ namespace phylanx { namespace util { namespace server
     {
     public:
         using data_type = blaze::DynamicVector<T>;
-        using reference_type = blaze::CustomVector<T, true, true>;
+        using reference_type =
+            blaze::CustomVector<T, blaze::aligned, blaze::padded>;
 
         distributed_vector_part() = default;
 
