@@ -22,7 +22,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     template execution_tree::primitive_argument_type dist_dot_operation::dot1d(
         ir::node_data<double>&&, ir::node_data<double>&&,
-        execution_tree::localities_information const& lhs_localities,
+        execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const;
 
     template execution_tree::primitive_argument_type dist_dot_operation::dot2d(
