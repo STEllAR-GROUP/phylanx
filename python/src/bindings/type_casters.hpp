@@ -189,7 +189,8 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF, bool TF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        bool TF, typename RT>
     handle blaze_array_cast(blaze::CustomVector<T, AF, PF, TF, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
@@ -238,7 +239,7 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, typename RT>
     handle blaze_array_cast(blaze::CustomMatrix<T, AF, PF, false, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
@@ -255,7 +256,7 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, typename RT>
     handle blaze_array_cast(blaze::CustomMatrix<T, AF, PF, true, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
@@ -292,7 +293,7 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, typename RT>
     handle blaze_array_cast(blaze::CustomTensor<T, AF, PF, RT> const& src,
         handle base = handle(), bool writeable = true)
     {
@@ -332,7 +333,8 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     handle blaze_array_cast(blaze::CustomArray<4, T, AF, PF, RT> const& src,
         handle base = handle(), bool writeable = true)
     {

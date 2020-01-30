@@ -61,21 +61,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return val;
         }
 
-        template <typename T, bool AF, bool PF, bool TF, typename RT>
+        template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            bool TF, typename RT>
         blaze::UniformVector<T> make_uniform(
             T val, blaze::CustomVector<T, AF, PF, TF, RT> const& v)
         {
             return blaze::UniformVector<T>(v.size(), val);
         }
 
-        template <typename T, bool AF, bool PF, bool SO, typename RT>
+        template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            bool SO, typename RT>
         blaze::UniformMatrix<T> make_uniform(
             T val, blaze::CustomMatrix<T, AF, PF, SO, RT> const& m)
         {
             return blaze::UniformMatrix<T>(m.rows(), m.columns(), val);
         }
 
-        template <typename T, bool AF, bool PF, typename RT>
+        template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            typename RT>
         blaze::UniformTensor<T> make_uniform(
             T val, blaze::CustomTensor<T, AF, PF, RT> const& t)
         {

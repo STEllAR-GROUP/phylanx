@@ -100,28 +100,32 @@ namespace hpx { namespace serialization
                        target.data(), rows * spacing * pages * quats);
     }
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T, bool AF, bool PF, bool TF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        bool TF, typename RT>
     void load(input_archive& archive,
         blaze::CustomVector<T, AF, PF, TF, RT>& target, unsigned)
     {
         HPX_ASSERT(false);      // shouldn't ever be called
     }
 
-    template <typename T, bool AF, bool PF, bool SO, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        bool SO, typename RT>
     void load(input_archive& archive,
         blaze::CustomMatrix<T, AF, PF, SO, RT>& target, unsigned)
     {
         HPX_ASSERT(false);      // shouldn't ever be called
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     void load(input_archive& archive,
         blaze::CustomTensor<T, AF, PF, RT>& target, unsigned)
     {
         HPX_ASSERT(false);      // shouldn't ever be called
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     void load(input_archive& archive,
         blaze::CustomArray<4UL, T, AF, PF, RT>& target, unsigned)
     {
@@ -201,7 +205,8 @@ namespace hpx { namespace serialization
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T, bool AF, bool PF, bool TF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        bool TF, typename RT>
     void save(output_archive& archive,
         blaze::CustomVector<T, AF, PF, TF, RT> const& target, unsigned)
     {
@@ -213,7 +218,8 @@ namespace hpx { namespace serialization
         archive << hpx::serialization::make_array(target.data(), spacing);
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     void save(output_archive& archive,
         blaze::CustomMatrix<T, AF, PF, true, RT> const& target, unsigned)
     {
@@ -227,7 +233,8 @@ namespace hpx { namespace serialization
             target.data(), spacing * columns);
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     void save(output_archive& archive,
         blaze::CustomMatrix<T, AF, PF, false, RT> const& target, unsigned)
     {
@@ -241,7 +248,8 @@ namespace hpx { namespace serialization
             target.data(), rows * spacing);
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     void save(output_archive& archive,
         blaze::CustomTensor<T, AF, PF, RT> const& target, unsigned)
     {
@@ -256,7 +264,8 @@ namespace hpx { namespace serialization
             target.data(), pages * rows * spacing);
     }
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     void save(output_archive& archive,
         blaze::CustomArray<4UL, T, AF, PF, RT> const& target, unsigned)
     {
@@ -280,12 +289,14 @@ namespace hpx { namespace serialization
         (template <typename T, bool SO>), (blaze::DynamicMatrix<T, SO>));
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T, bool AF, bool PF, bool TF, typename RT>),
-        (blaze::CustomVector<T, AF, PF, TF, RT>));
+        (template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            bool TF, typename RT>),
+        (blaze::CustomVector<T, AF, PF, TF, RT>) );
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T, bool AF, bool PF, bool SO, typename RT>),
-        (blaze::CustomMatrix<T, AF, PF, SO, RT>));
+        (template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            bool SO, typename RT>),
+        (blaze::CustomMatrix<T, AF, PF, SO, RT>) );
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
         (template <typename T>), (blaze::DynamicTensor<T>));
@@ -294,12 +305,14 @@ namespace hpx { namespace serialization
         (template <typename T>), (blaze::DynamicArray<4UL, T>));
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T, bool AF, bool PF, typename RT>),
-        (blaze::CustomTensor<T, AF, PF, RT>));
+        (template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            typename RT>),
+        (blaze::CustomTensor<T, AF, PF, RT>) );
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T, bool AF, bool PF, typename RT>),
-        (blaze::CustomArray<4UL, T, AF, PF, RT>));
+        (template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+            typename RT>),
+        (blaze::CustomArray<4UL, T, AF, PF, RT>) );
 }}
 
 #endif

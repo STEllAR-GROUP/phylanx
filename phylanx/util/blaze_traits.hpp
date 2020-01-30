@@ -79,7 +79,8 @@ namespace phylanx { namespace traits
     {
     };
 
-    template <typename T, bool AF, bool PF, bool TF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        bool TF, typename RT>
     struct is_vector<blaze::CustomVector<T, AF, PF, TF, RT>> : std::true_type
     {
     };
@@ -90,7 +91,8 @@ namespace phylanx { namespace traits
     {
     };
 
-    template <typename T, bool AF, bool PF, bool SO, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        bool SO, typename RT>
     struct is_matrix<blaze::CustomMatrix<T, AF, PF, SO, RT>> : std::true_type
     {
     };
@@ -101,7 +103,8 @@ namespace phylanx { namespace traits
     {
     };
 
-    template <typename T, bool AF, bool PF, typename RT>
+    template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF,
+        typename RT>
     struct is_matrix<blaze::CustomTensor<T, AF, PF, RT>> : std::true_type
     {
     };

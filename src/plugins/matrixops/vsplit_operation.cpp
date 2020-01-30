@@ -163,8 +163,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (ranges[i].second > ranges[i].first)
             {
-                blaze::CustomMatrix<T, true, true> block(&m(ranges[i].first, 0),
-                    ranges[i].second - ranges[i].first, num_cols, m.spacing());
+                blaze::CustomMatrix<T, blaze::aligned, blaze::padded> block(
+                    &m(ranges[i].first, 0), ranges[i].second - ranges[i].first,
+                    num_cols, m.spacing());
 
                 result.push_back(primitive_argument_type{
                     std::move(ir::node_data<T>{std::move(block)})});

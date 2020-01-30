@@ -26,8 +26,9 @@ struct array_dims<blaze::DynamicVector<T, TF>>
     static const std::size_t value = 1 + array_dims<T>::value;
 };
 
-template <typename T, bool AF, bool TF>
-struct array_dims<blaze::CustomVector<T, AF, TF>>
+template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool TF,
+    typename RT>
+struct array_dims<blaze::CustomVector<T, AF, PF, TF, RT>>
 {
     static const std::size_t value = 1 + array_dims<T>::value;
 };
@@ -38,8 +39,9 @@ struct array_dims<blaze::DynamicMatrix<T, SO>>
     static const std::size_t value = 2 + array_dims<T>::value;
 };
 
-template <typename T, bool AF, bool PF, bool SO>
-struct array_dims<blaze::CustomMatrix<T, AF, PF, SO>>
+template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool SO,
+    typename RT>
+struct array_dims<blaze::CustomMatrix<T, AF, PF, SO, RT>>
 {
     static const std::size_t value = 2 + array_dims<T>::value;
 };
@@ -51,8 +53,9 @@ struct type_of_array<blaze::DynamicVector<T, TF>>
     typedef typename type_of_array<T>::type type;
 };
 
-template <typename T, bool AF, bool TF>
-struct type_of_array<blaze::CustomVector<T, AF, TF>>
+template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool TF,
+    typename RT>
+struct type_of_array<blaze::CustomVector<T, AF, PF, TF, RT>>
 {
     typedef typename type_of_array<T>::type type;
 };
@@ -63,8 +66,9 @@ struct type_of_array<blaze::DynamicMatrix<T, SO>>
     typedef typename type_of_array<T>::type type;
 };
 
-template <typename T, bool AF, bool PF, bool SO>
-struct type_of_array<blaze::CustomMatrix<T, AF, PF, SO>>
+template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool SO,
+    typename RT>
+struct type_of_array<blaze::CustomMatrix<T, AF, PF, SO, RT>>
 {
     typedef typename type_of_array<T>::type type;
 };
@@ -106,10 +110,11 @@ struct data_converter<blaze::DynamicVector<T, TF>, void>
     std::vector<std::size_t> _dims;
 };
 
-template <typename T, bool AF, bool TF>
-struct data_converter<blaze::CustomVector<T, AF, TF>, void>
+template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool TF,
+    typename RT>
+struct data_converter<blaze::CustomVector<T, AF, PF, TF, RT>, void>
 {
-    typedef typename blaze::CustomVector<T, AF, TF> Vector;
+    typedef typename blaze::CustomVector<T, AF, PF, TF, RT> Vector;
 
     inline data_converter(Vector& vector, DataSpace& space, std::size_t dim = 0)
             : _dims(space.getDimensions())
@@ -173,10 +178,11 @@ struct data_converter<blaze::DynamicMatrix<T, SO>, void>
     std::vector<std::size_t> _dims;
 };
 
-template <typename T, bool AF, bool PF, bool SO>
-struct data_converter<blaze::CustomMatrix<T, AF, PF, SO>, void>
+template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool SO,
+    typename RT>
+struct data_converter<blaze::CustomMatrix<T, AF, PF, SO, RT>, void>
 {
-    typedef typename blaze::CustomMatrix<T, AF, PF, SO> Matrix;
+    typedef typename blaze::CustomMatrix<T, AF, PF, SO, RT> Matrix;
 
     inline data_converter(Matrix& matrix, DataSpace& space, std::size_t dim = 0)
       : _dims(space.getDimensions())
