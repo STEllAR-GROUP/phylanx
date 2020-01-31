@@ -239,8 +239,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             lhs_localities.get_span(0);
 
         // go over all tiles of rhs matrix, the result size is determined by
-        // the number of columns of the rhs tile
-        blaze::DynamicVector<T> dot_result(rhs.dimension(1), T{0});
+        // the number of columns of the entire RHS
+        blaze::DynamicVector<T> dot_result(rhs_localities.columns(), T{0});
 
         std::uint32_t loc = 0;
         for (auto const& rhs_tile : rhs_localities.tiles_)
@@ -250,6 +250,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
             execution_tree::tiling_span const& rhs_span =
                 rhs_tile.spans_[rhs_span_index];
+
+            HPX_ASSERT(rhs_tile.spans_[0].is_valid());
+            std::size_t rhs_column_start = rhs_tile.spans_[0].start_;
+            std::size_t rhs_column_size =
+                rhs_tile.spans_[0].stop_ - rhs_column_start;
 
             execution_tree::tiling_span intersection;
             if (!intersect(lhs_span, rhs_span, intersection))
@@ -269,22 +274,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             if (rhs_localities.locality_.locality_id_ == loc)
             {
                 // calculate the dot product with local tile
-                dot_result += blaze::trans(blaze::submatrix(rhs.matrix(),
-                                  rhs_intersection.start_, 0,
-                                  rhs_intersection.size(), rhs.dimension(1))) *
+                blaze::subvector(
+                    dot_result, rhs_column_start, rhs_column_size) +=
+                    blaze::trans(
+                        blaze::submatrix(rhs.matrix(), rhs_intersection.start_,
+                            0, rhs_intersection.size(), rhs.dimension(1))) *
                     blaze::subvector(lhs.vector(), lhs_intersection.start_,
                         lhs_intersection.size());
             }
             else
             {
                 // calculate the dot product with remote tile
-                dot_result +=
-                    blaze::trans(rhs_data
-                                     .fetch(loc, rhs_intersection.start_,
-                                         rhs_intersection.stop_, 0,
-                                         rhs_tile.spans_[0].stop_ -
-                                             rhs_tile.spans_[0].start_)
-                                     .get()) *
+                blaze::subvector(
+                    dot_result, rhs_column_start, rhs_column_size) +=
+                    blaze::trans(
+                        rhs_data
+                            .fetch(loc, rhs_intersection.start_,
+                                rhs_intersection.stop_, 0, rhs_column_size)
+                            .get()) *
                     blaze::subvector(lhs.vector(), lhs_intersection.start_,
                         lhs_intersection.size());
             }
@@ -597,7 +604,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // it could also be the reverse if the LHS tiles were retrieved
         // instead of the RHS
         blaze::DynamicMatrix<T> result_matrix(
-            lhs.dimension(0), rhs.dimension(1), T{0});
+            lhs.dimension(0), rhs_localities.columns(), T{0});
 
         std::uint32_t loc = 0;
         // 2d2d doesn't use every tile of the RHS, only those that contain
@@ -605,10 +612,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         for (auto const& rhs_tile : rhs_localities.tiles_)
         {
             std::size_t rhs_span_index = 1;
-            HPX_ASSERT(rhs_tile.spans_[1].is_valid());
+            HPX_ASSERT(rhs_tile.spans_[rhs_span_index].is_valid());
 
             execution_tree::tiling_span const& rhs_span =
                 rhs_tile.spans_[rhs_span_index];
+
+            HPX_ASSERT(rhs_tile.spans_[0].is_valid());
+            std::size_t rhs_column_start = rhs_tile.spans_[0].start_;
+            std::size_t rhs_column_size =
+                rhs_tile.spans_[0].stop_ - rhs_column_start;
 
             execution_tree::tiling_span intersection;
             if (!intersect(lhs_span, rhs_span, intersection))
@@ -632,7 +644,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 // calculate the dot product with local tile
                 // TODO ensure that this is generating a sub-matrix
                 //dot_result += blaze::DynamicVector<T>{1};
-                result_matrix +=
+                blaze::submatrix(result_matrix, 0, rhs_column_start,
+                    lhs.dimension(0), rhs_column_size) +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
                         lhs.dimension(0), lhs_intersection.size()) *
                     blaze::submatrix(rhs.matrix(), rhs_intersection.start_, 0,
@@ -642,14 +655,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             {
                 // calculate the dot product with remote tile
                 //dot_result += blaze::DynamicVector<T>{1};
-                result_matrix +=
+                blaze::submatrix(result_matrix, 0, rhs_column_start,
+                    lhs.dimension(0), rhs_column_size) +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
                         lhs.dimension(0), lhs_intersection.size()) *
                     rhs_data
                         .fetch(loc, rhs_intersection.start_,
-                            rhs_intersection.stop_, 0,
-                            rhs_tile.spans_[0].stop_ -
-                                rhs_tile.spans_[0].start_)
+                            rhs_intersection.stop_, 0, rhs_column_size)
                         .get();
             }
             ++loc;

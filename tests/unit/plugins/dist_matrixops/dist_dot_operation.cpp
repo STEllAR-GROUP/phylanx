@@ -188,6 +188,34 @@ void test_dot_1d2d_3()
     }
 }
 
+void test_dot_1d2d_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test1d2d_4", R"(
+            dot_d(
+                annotate_d([1, 2, 3], "test1d2d_4_1",
+                    list("tile", list("columns", 0, 3))),
+                annotate_d([[1], [2], [3], [4], [5], [6]], "test1d2d_4_2",
+                    list("tile", list("columns", 0, 1), list("rows", 0, 6)))
+            )
+        )",
+            "[91, 55, 30]");
+    }
+    else
+    {
+        test_dot_operation("test1d2d_4", R"(
+            dot_d(
+                annotate_d([4, 5, 6], "test1d2d_4_1",
+                    list("tile", list("columns", 3, 6))),
+                annotate_d([[1, 1], [2, 2], [3, 3], [4, 4], [5, 0], [0, 0]],
+                    "test1d2d_4_2",
+                    list("tile", list("columns", 1, 3), list("rows", 0, 6)))
+            )
+        )", "[91, 55, 30]");
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void test_dot_2d1d_0()
 {
@@ -443,6 +471,41 @@ void test_dot_2d2d_4()
     }
 }
 
+void test_dot_2d2d_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test2d2d_5", R"(
+            dot_d(
+                annotate_d([[0, 2, 3, 4, 5, 6]], "test2d2d_5_1",
+                    list("tile", list("columns", 0, 6), list("rows", 0, 1))),
+                annotate_d([[1], [2], [3], [4], [5], [6]], "test2d2d_5_2",
+                    list("tile", list("columns", 0, 1), list("rows", 0, 6)))
+            )
+        )",
+            R"(
+            annotate_d([[90, 54, 29]], "test2d2d_5_1/1",
+                list("tile", list("columns", 0, 3), list("rows", 0, 1)))
+        )");
+    }
+    else
+    {
+        test_dot_operation("test2d2d_5", R"(
+            dot_d(
+                annotate_d([[1, 2, 3, 4, 5, 6]], "test2d2d_5_1",
+                    list("tile", list("columns", 0, 6), list("rows", 1, 2))),
+                annotate_d([[1, 1], [2, 2], [3, 3], [4, 4], [5, 0], [0, 0]],
+                    "test2d2d_5_2",
+                    list("tile", list("columns", 1, 3), list("rows", 0, 6)))
+            )
+        )",
+            R"(
+            annotate_d([[91, 55, 30]], "test2d2d_5_1/1",
+                list("tile", list("columns", 0, 3), list("rows", 1, 2)))
+        )");
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -453,6 +516,7 @@ int hpx_main(int argc, char* argv[])
     test_dot_1d2d_1();
     test_dot_1d2d_2();
     test_dot_1d2d_3();
+    test_dot_1d2d_4();
 
     test_dot_2d1d_0();
     test_dot_2d1d_1();
@@ -464,6 +528,7 @@ int hpx_main(int argc, char* argv[])
     test_dot_2d2d_2();
     test_dot_2d2d_3();
     test_dot_2d2d_4();
+    test_dot_2d2d_5();
 
     return hpx::finalize();
 }
