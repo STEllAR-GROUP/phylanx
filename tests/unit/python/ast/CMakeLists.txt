@@ -18,7 +18,7 @@ foreach(test ${tests})
     FOLDER "Tests/Python/Unit/AST"
     DEPENDS phylanx_py python_setup
     WORKING_DIRECTORY ${PHYLANX_PYTHON_EXTENSION_LOCATION}
-    ENVIRONMENT "PYTHONPATH=${PHYLANX_PYTHON_EXTENSION_LOCATION}")
+    ENVIRONMENT "PYTHONPATH=${PHYLANX_PYTHON_EXTENSION_LOCATION}:$ENV{PYTHONPATH}")
 
   add_phylanx_pseudo_target(tests.unit.python_ast.${test}_py)
   add_phylanx_pseudo_dependencies(tests.unit.python_ast tests.unit.python_ast.${test}_py)
