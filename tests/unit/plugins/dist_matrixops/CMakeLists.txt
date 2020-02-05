@@ -6,7 +6,7 @@
 set(tests
     dist_dot_operation
     dist_transpose_operation
-	dist_cannon_product
+    dist_cannon_product
    )
 
 set(dist_dot_operation_PARAMETERS LOCALITIES 2)
