@@ -112,7 +112,7 @@ int main()
 
         // Verify the number of primitive instances in lra
         auto entries = hpx::agas::find_symbols(
-            hpx::launch::sync, "/phylanx/" + name + "$*");
+            hpx::launch::sync, "/phylanx$0/" + name + "$*");
 
         if (entries.empty())
         {

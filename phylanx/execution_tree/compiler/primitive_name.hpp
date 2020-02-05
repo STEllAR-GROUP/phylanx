@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         primitive_name_parts(char const* primitive_)
-          : locality(hpx::naming::invalid_locality_id)
+          : locality(hpx::get_locality_id())
           , primitive(primitive_)
           , sequence_number(-1)
           , compile_id(-1)

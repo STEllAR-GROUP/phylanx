@@ -1508,9 +1508,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         std::uint32_t get_locality_id(hpx::id_type const& locality) const
         {
-            return hpx::get_initial_num_localities() == 1 ?
-                hpx::naming::invalid_locality_id :
-                hpx::naming::get_locality_id_from_id(locality);
+            return hpx::naming::get_locality_id_from_id(locality);
         }
 
         static std::map<std::string, primitive_argument_type>
