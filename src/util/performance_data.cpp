@@ -56,7 +56,7 @@ namespace phylanx { namespace util
         if (primitive_instances.empty())
         {
             return enable_measurements(
-                hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"));
+                hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*"));
         }
 
         using phylanx::execution_tree::primitives::primitive_component;
@@ -116,7 +116,7 @@ namespace phylanx { namespace util
     std::vector<std::string> enable_measurements()
     {
         return enable_measurements(
-            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"));
+            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ namespace phylanx { namespace util
         hpx::naming::id_type const& locality_id)
     {
         auto entries =
-            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*");
+            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*");
 
         std::vector<std::string> primitive_instances;
         primitive_instances.reserve(entries.size());
