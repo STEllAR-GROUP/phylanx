@@ -326,7 +326,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     if (vm.count("instrument") != 0)
     {
         auto entries =
-            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*");
+            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*");
 
         print_instrumentation("read_x", 0, read_x_code, read_x, entries);
         print_instrumentation("read_y", 1, read_y_code, read_y, entries);
