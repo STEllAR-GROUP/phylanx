@@ -67,9 +67,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         fargs.reserve(operands_.size() - 1);
 
         // pass along pre-bound arguments
-        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+        if (operands_.size() > 2)
         {
-            fargs.push_back(extract_ref_value(*it, name_, codename_));
+            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+            {
+                fargs.push_back(extract_ref_value(*it, name_, codename_));
+            }
+        }
+        else if (operands_.size() == 2 && !is_implicit_nil(operands_[1]))
+        {
+            // we represent function calls with empty argument lists as
+            // a function call with a single nil argument to be able to
+            // distinguish func() from invoke(func)
+            fargs.push_back(extract_ref_value(operands_[1], name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
