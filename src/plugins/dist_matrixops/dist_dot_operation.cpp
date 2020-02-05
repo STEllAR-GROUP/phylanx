@@ -120,20 +120,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return dot1d(
                 extract_boolean_value(std::move(lhs), name_, codename_),
                 extract_boolean_value(std::move(rhs), name_, codename_),
-                lhs_localities, rhs_localities);
+                std::move(lhs_localities), rhs_localities);
 
         case node_data_type_int64:
             return dot1d(
                 extract_integer_value(std::move(lhs), name_, codename_),
                 extract_integer_value(std::move(rhs), name_, codename_),
-                lhs_localities, rhs_localities);
+                std::move(lhs_localities), rhs_localities);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return dot1d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
                 extract_numeric_value(std::move(rhs), name_, codename_),
-                lhs_localities, rhs_localities);
+                std::move(lhs_localities), rhs_localities);
 
         default:
             break;
