@@ -14,6 +14,7 @@
 #include <phylanx/execution_tree/primitives/assert_condition.hpp>
 #include <phylanx/execution_tree/primitives/call_function.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>
+#include <phylanx/execution_tree/primitives/find_all.hpp>
 #include <phylanx/execution_tree/primitives/phytype.hpp>
 #include <phylanx/execution_tree/primitives/phyname.hpp>
 #include <phylanx/execution_tree/primitives/debug_output.hpp>
