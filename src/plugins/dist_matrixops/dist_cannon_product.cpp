@@ -63,7 +63,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type&& rhs) const
     {
         using namespace execution_tree;
-
+        // what about a local matrix
         if (!lhs.has_annotation() || !rhs.has_annotation())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -140,13 +140,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
         using namespace execution_tree;
 
-        if (operands.size() != 2 && operands.size() != 3)
+        if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::eval",
                 generate_error_message(
                     "the dist_cannon_product primitive requires exactly "
-                    "two or three operands"));
+                    "two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
