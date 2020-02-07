@@ -281,13 +281,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {
         using namespace execution_tree;
 
-        if (operands.size() != 2 && operands.size() != 3)
+        if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::eval",
                 generate_error_message(
                     "the dist_dot_operation primitive requires exactly "
-                        "two or three operands"));
+                        "two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))

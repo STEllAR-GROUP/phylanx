@@ -95,17 +95,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::vector<std::size_t> lhs_tile_row;
         std::vector<std::size_t> rhs_tile_col;
         std::size_t count = 0;
+        std::uint32_t lhs_num_localities =
+            lhs_localities.locality_.num_localities_;
+        std::uint32_t rhs_num_localities =
+            rhs_localities.locality_.num_localities_;
         // This could maybe be replaced with a std::copy_if
-        if (lhs_localities.tiles_.size() != rhs_localities.tiles_.size() &&
-            lhs_localities.tiles_.size() != 1 &&
-            rhs_localities.tiles_.size() != 1)
+        if (lhs_num_localities != rhs_num_localities &&
+            lhs_num_localities != 1 && rhs_num_localities != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::product",
                 generate_error_message(
                     "number of tiles in lhs and rhs must be equal"));
         }
-        for (int i = 0; i < lhs_localities.tiles_.size(); i++)
+        for (std::size_t i = 0; i < lhs_num_localities; i++)
         {
             // This works because lhs_localities.tiles_ is
             // guaranteed to be sorted by locality index
@@ -135,7 +138,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         }
         std::int64_t max_start_col = 0;
         std::int64_t max_start_row = 0;
-        for (int i = 0; i < lhs_tile_row.size(); i++)
+        std::size_t lhs_tile_row_size = lhs_tile_row.size();
+        std::size_t rhs_tile_col_size = rhs_tile_col.size();
+        for (int i = 0; i < lhs_tile_row_size; i++)
         {
             std::size_t lhs_tile_idx = lhs_tile_row[i];
             std::size_t rhs_tile_idx = rhs_tile_col[i];
@@ -161,25 +166,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 rhs_localities.tiles_[rhs_tile_idx].spans_[1].start_;
         }
 
+        std::uint32_t lhs_locality_id = lhs_localities.locality_.locality_id_;
+        std::uint32_t rhs_locality_id = rhs_localities.locality_.locality_id_;
+
         // construct a distributed matrix object for both tiles
         util::distributed_matrix<T> lhs_data(lhs_localities.annotation_.name_,
-            lhs.matrix(), lhs_localities.locality_.num_localities_,
-            lhs_localities.locality_.locality_id_);
+            lhs.matrix(), lhs_num_localities, lhs_locality_id);
         util::distributed_matrix<T> rhs_data(rhs_localities.annotation_.name_,
-            rhs.matrix(), rhs_localities.locality_.num_localities_,
-            rhs_localities.locality_.locality_id_);
+            rhs.matrix(), rhs_num_localities, rhs_locality_id);
 
         std::size_t lhs_local_tile_index = std::distance(lhs_tile_row.begin(),
-            std::find(lhs_tile_row.begin(), lhs_tile_row.end(),
-                lhs_localities.locality_.locality_id_));
+            std::find(
+                lhs_tile_row.begin(), lhs_tile_row.end(), lhs_locality_id));
         std::size_t rhs_local_tile_index = std::distance(rhs_tile_col.begin(),
-            std::find(rhs_tile_col.begin(), rhs_tile_col.end(),
-                rhs_localities.locality_.locality_id_));
+            std::find(
+                rhs_tile_col.begin(), rhs_tile_col.end(), rhs_locality_id));
 
-        if (lhs_tile_row[lhs_local_tile_index] !=
-                lhs_localities.locality_.locality_id_ ||
-            rhs_tile_col[rhs_local_tile_index] !=
-                rhs_localities.locality_.locality_id_)
+        if (lhs_tile_row[lhs_local_tile_index] != lhs_locality_id ||
+            rhs_tile_col[rhs_local_tile_index] != rhs_locality_id)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::dot2d2d",
@@ -193,31 +197,28 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // 2d2d doesn't use every tile of the RHS, only those that contain
         // the rows with the same index as the columns the LHS has
 
-        std::size_t lhs_iter_idx =
-            (lhs_local_tile_index + 1) % lhs_tile_row.size();
-        std::size_t rhs_iter_idx =
-            (rhs_local_tile_index + 1) % rhs_tile_col.size();
-        hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp1 =
-            lhs_data.fetch(lhs_tile_row[lhs_iter_idx]);
-        hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp1 =
-            rhs_data.fetch(rhs_tile_col[rhs_iter_idx]);
-        lhs_iter_idx = (lhs_iter_idx + 1) % lhs_tile_row.size();
-        rhs_iter_idx = (rhs_iter_idx + 1) % rhs_tile_col.size();
+        std::size_t iter_idx =
+            (lhs_local_tile_index + 1) % lhs_tile_row_size;
 
-        for (int i = 0; i < lhs_tile_row.size(); i++)
+        hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp1 =
+            lhs_data.fetch(lhs_tile_row[iter_idx]);
+        hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp1 =
+            rhs_data.fetch(rhs_tile_col[iter_idx]);
+        iter_idx = (iter_idx + 1) % lhs_tile_row_size;
+
+        for (int i = 0; i < lhs_tile_row_size; i++)
         {
             hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp2 =
-                lhs_data.fetch(lhs_tile_row[lhs_iter_idx]);
+                lhs_data.fetch(lhs_tile_row[iter_idx]);
             hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp2 =
-                rhs_data.fetch(rhs_tile_col[rhs_iter_idx]);
+                rhs_data.fetch(rhs_tile_col[iter_idx]);
             result_matrix += lhs_tmp1.get() * rhs_tmp1.get();
-            lhs_iter_idx = (lhs_iter_idx + 1) % lhs_tile_row.size();
-            rhs_iter_idx = (rhs_iter_idx + 1) % rhs_tile_col.size();
+            iter_idx = (iter_idx + 1) % lhs_tile_row_size;
             lhs_tmp1 = std::move(lhs_tmp2);
             rhs_tmp1 = std::move(rhs_tmp2);
         }
 
-        // collect overall result if left hand side vector is distributed
+        // collect overall result if left hand side matrix is distributed
         // The overall result is a tiled matrix.
         execution_tree::primitive_argument_type result =
             execution_tree::primitive_argument_type{std::move(result_matrix)};
@@ -242,9 +243,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         return result;
     }
 
-    // lhs_num_dims == 2
-    // Multiply a matrix with a vector
-    // Regular matrix multiplication
     template <typename T>
     execution_tree::primitive_argument_type dist_cannon_product::dot2d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
