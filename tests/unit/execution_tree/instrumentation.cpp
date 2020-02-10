@@ -26,7 +26,7 @@ void test_unary_expr()
         phylanx::ast::generate_ast(code, iterators), snippets);
     auto f = code.run();
 
-    auto entries = hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*");
+    auto entries = hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*");
 }
 
 int main(int argc, char* argv[])
