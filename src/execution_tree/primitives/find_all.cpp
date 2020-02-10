@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<phylanx::ast::expression> values;
                 for (auto const& loc : hpx::find_all_localities())
                 {
-                    std::int64_t v = hpx::naming::get_locality_id_from_gid(loc.get_gid());
+                    std::int64_t v = hpx::naming::get_locality_id_from_id(loc);
                     phylanx::ast::expression e{v};
                     values.push_back(e);
                 }
