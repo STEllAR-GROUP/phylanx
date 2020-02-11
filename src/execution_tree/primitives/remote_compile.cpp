@@ -76,7 +76,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive_arguments_type&& args)
                 -> primitive_argument_type
             {
-                // yyy
                 using namespace phylanx::execution_tree::detail;
 
                 // Extract args...
@@ -99,15 +98,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else
                         code2 += *it;
 
-                if(compilers.find(loc_id) == compilers.end()) {
+                // If we don't have a compiler on the remote locality yet,
+                // create one....
+                if(compilers.find(loc_id) == compilers.end())
                   compilers[loc_id] = hpx::components::new_<phylanx::execution_tree::compiler_component>(id).get();
-                }
+
+                // instantiate a client object for the remote compiler
                 physl_compiler pc(compilers[loc_id]);
 
+                // compile the code
                 auto ep = pc.compile(code2);
-                if(exec)
-                    ep.get().run();
 
+                // optionally, execute it
+                if(exec)
+                    // return the result back if we execute
+                    return ep.get().run()();
+
+                // return nothing if we don't
                 return primitive_argument_type{};
             }),
             detail::map_operands(
