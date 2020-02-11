@@ -126,7 +126,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             }
             count++;
         }
-        if (lhs_tile_row.size() < 2 || rhs_tile_col.size() < 2)
+
+        std::size_t lhs_tile_row_size = lhs_tile_row.size();
+        std::size_t rhs_tile_col_size = rhs_tile_col.size();
+        if (lhs_tile_row_size < 2 || rhs_tile_col_size < 2)
         {
             // This is debateable, maybe we should allow single tile
             // rows or columns
@@ -136,10 +139,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "cannon_product requires tile rows and columns of size at "
                     "least 2"));
         }
+
         std::int64_t max_start_col = 0;
         std::int64_t max_start_row = 0;
-        std::size_t lhs_tile_row_size = lhs_tile_row.size();
-        std::size_t rhs_tile_col_size = rhs_tile_col.size();
         for (int i = 0; i < lhs_tile_row_size; i++)
         {
             std::size_t lhs_tile_idx = lhs_tile_row[i];
@@ -196,26 +198,31 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // 2d2d doesn't use every tile of the RHS, only those that contain
         // the rows with the same index as the columns the LHS has
-
-        std::size_t iter_idx =
-            (lhs_local_tile_index + 1) % lhs_tile_row_size;
-
-        hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp1 =
-            lhs_data.fetch(lhs_tile_row[iter_idx]);
-        hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp1 =
-            rhs_data.fetch(rhs_tile_col[iter_idx]);
-        iter_idx = (iter_idx + 1) % lhs_tile_row_size;
+        std::size_t iter_idx = (lhs_local_tile_index + 1) % lhs_tile_row_size;
 
         for (int i = 0; i < lhs_tile_row_size; i++)
         {
-            hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp2 =
-                lhs_data.fetch(lhs_tile_row[iter_idx]);
-            hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp2 =
-                rhs_data.fetch(rhs_tile_col[iter_idx]);
-            result_matrix += lhs_tmp1.get() * rhs_tmp1.get();
+            blaze::DynamicMatrix<T> lhs_tmp;
+            if (iter_idx == lhs_local_tile_index)
+            {
+                lhs_tmp = lhs.matrix();
+            }
+            else
+            {
+                lhs_tmp = lhs_data.fetch(lhs_tile_row[iter_idx]).get();
+            }
+            blaze::DynamicMatrix<T> rhs_tmp;
+            if (iter_idx == rhs_local_tile_index)
+            {
+                rhs_tmp = rhs.matrix();
+            }
+            else
+            {
+                rhs_tmp = rhs_data.fetch(rhs_tile_col[iter_idx]).get();
+            }
+
+            result_matrix += lhs_tmp * rhs_tmp;
             iter_idx = (iter_idx + 1) % lhs_tile_row_size;
-            lhs_tmp1 = std::move(lhs_tmp2);
-            rhs_tmp1 = std::move(rhs_tmp2);
         }
 
         // collect overall result if left hand side matrix is distributed
@@ -228,7 +235,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 rhs_localities.get_span(0).stop_),
             ir::range("rows", lhs_localities.get_span(1).start_,
                 lhs_localities.get_span(1).stop_))};
-        // Generate new tiling annotation for the result vector
+        // Generate new tiling annotation for the result matrix
         execution_tree::tiling_information_2d tile_info(ann, name_, codename_);
 
         ++lhs_localities.annotation_.generation_;
