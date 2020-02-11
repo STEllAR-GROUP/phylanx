@@ -62,6 +62,7 @@ namespace phylanx { namespace execution_tree
         using base_type =
             hpx::components::client_base<physl_compiler, compiler_component>;
 
+        PHYLANX_EXPORT physl_compiler(hpx::id_type& id);
         PHYLANX_EXPORT physl_compiler(hpx::id_type&& id);
         PHYLANX_EXPORT physl_compiler(hpx::future<hpx::id_type>&& id);
 

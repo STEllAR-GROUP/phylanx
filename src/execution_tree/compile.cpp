@@ -21,8 +21,6 @@
 #include <utility>
 #include <vector>
 
-#define HERE std::cout << "HERE: " << __FILE__ << " " << __LINE__ << std::endl;
-
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -32,7 +30,6 @@ namespace phylanx { namespace execution_tree
             ast::expression const& expr, compiler::function_list& snippets,
             compiler::environment& env, hpx::id_type const& default_locality)
         {
-            HERE
             ++snippets.compile_id_;
             return compiler::compile(name, expr, snippets, env,
                 compiler::generate_patterns(), default_locality);
@@ -42,7 +39,6 @@ namespace phylanx { namespace execution_tree
             ast::expression const& expr, compiler::function_list& snippets,
             hpx::id_type const& default_locality)
         {
-            HERE
             compiler::environment env =
                 compiler::default_environment(default_locality);
 
@@ -57,7 +53,6 @@ namespace phylanx { namespace execution_tree
             compiler::expression_pattern_list const& patterns,
             hpx::id_type const& default_locality)
         {
-            HERE
             ++snippets.compile_id_;
             return compiler::compile(
                 name, expr, snippets, env, patterns, default_locality);
@@ -71,7 +66,6 @@ namespace phylanx { namespace execution_tree
         compiler::expression_pattern_list const& patterns,
         hpx::id_type const& default_locality)
     {
-        HERE
         compiler::entry_point entry_point(func_name, name);
 
         for (auto const& expr : exprs)
@@ -90,7 +84,6 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality)
     {
-        HERE
         compiler::entry_point entry_point(func_name, name);
 
         for (auto const& expr : exprs)

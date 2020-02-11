@@ -3,18 +3,22 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_REMOTE_FEB_10_2020_200PM)
-#define PHYLANX_PRIMITIVES_REMOTE_COMPILE_FEB_10_2020_200PM
+#if !defined(PHYLANX_PRIMITIVES_REMOTE_COMPILE_FEB_10_2020_200PM)
+#define      PHYLANX_PRIMITIVES_REMOTE_COMPILE_FEB_10_2020_200PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/execution_tree/compiler_component.hpp>
 
 #include <hpx/lcos/future.hpp>
 
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
+
+using phylanx::execution_tree::physl_compiler;
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -35,6 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+
+        static std::map<int,hpx::naming::id_type> compilers;
     };
 
     PHYLANX_EXPORT primitive create_remote_compile(hpx::id_type const& locality,

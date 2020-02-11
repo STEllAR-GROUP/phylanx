@@ -23,8 +23,6 @@
 #include <utility>
 #include <vector>
 
-#define HERE std::cout << "HERE: " << __LINE__ << std::endl;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Serialization support for the base_file actions
 typedef phylanx::execution_tree::compiler_component
@@ -53,10 +51,10 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point compiler_component::compile(
         std::string const& name, std::vector<ast::expression> exprs)
     {
-        HERE
-        std::cout << "COMPILE: " << name << std::endl;
-        return execution_tree::compile(name, generate_unique_function_name(),
+        auto ep = execution_tree::compile(name, generate_unique_function_name(),
             exprs, snippets_, env_, patterns_);
+        //execution_tree::eval(name)
+        return ep;
     }
 
     compiler::function compiler_component::define_variable(
@@ -72,6 +70,12 @@ namespace phylanx { namespace execution_tree
     {
         static std::atomic<std::size_t> function_counter(0);
         return hpx::util::format("function_{}", ++function_counter);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    physl_compiler::physl_compiler(hpx::id_type& id)
+      : base_type(id)
+    {
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -99,7 +103,6 @@ namespace phylanx { namespace execution_tree
     hpx::future<compiler::entry_point> physl_compiler::compile(
         std::vector<ast::expression> exprs)
     {
-        HERE
         using action_type = typename compiler_component::compile_action;
         return hpx::async(action_type(), this->base_type::get_id(), "<unknown>",
             std::move(exprs));
@@ -108,14 +111,12 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point physl_compiler::compile(hpx::launch::sync_policy,
         std::vector<ast::expression> exprs)
     {
-        HERE
         return compile(std::move(exprs)).get();
     }
 
     hpx::future<compiler::entry_point> physl_compiler::compile(
         std::string const& name, std::vector<ast::expression> exprs)
     {
-        HERE
         using action_type = typename compiler_component::compile_action;
         return hpx::async(
             action_type(), this->base_type::get_id(), name, std::move(exprs));
@@ -124,14 +125,12 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point physl_compiler::compile(hpx::launch::sync_policy,
         std::string const& name, std::vector<ast::expression> exprs)
     {
-        HERE
         return compile(name, std::move(exprs)).get();
     }
 
     hpx::future<compiler::entry_point> physl_compiler::compile(
         std::string const& name, std::string const& expr)
     {
-        HERE
         using action_type = typename compiler_component::compile_action;
         std::cout << "COMP: name=" << name << " expr='" << expr << "'" << std::endl;
         return hpx::async(action_type(), this->base_type::get_id(), name,
@@ -141,14 +140,12 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point physl_compiler::compile(hpx::launch::sync_policy,
         std::string const& name, std::string const& expr)
     {
-        HERE
         return compile(name, expr).get();
     }
 
     hpx::future<compiler::entry_point> physl_compiler::compile(
         std::string const& expr)
     {
-        HERE
         using action_type = typename compiler_component::compile_action;
         return hpx::async(action_type(), this->base_type::get_id(), "<unknown>",
             ast::generate_ast(expr));
@@ -157,7 +154,6 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point physl_compiler::compile(hpx::launch::sync_policy,
         std::string const& expr)
     {
-        HERE
         return compile(expr).get();
     }
 
@@ -165,7 +161,6 @@ namespace phylanx { namespace execution_tree
         std::string const& codename, std::string const& name,
         primitive_argument_type body)
     {
-        HERE
         using action_type = typename compiler_component::define_variable_action;
         return hpx::async(action_type(), this->base_type::get_id(), codename,
             name, std::move(body));
@@ -175,7 +170,6 @@ namespace phylanx { namespace execution_tree
         std::string const& codename, std::string const& name,
         primitive_argument_type body)
     {
-        HERE
         return define_variable(codename, name, std::move(body)).get();
     }
 
