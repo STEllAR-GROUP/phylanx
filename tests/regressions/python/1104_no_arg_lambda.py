@@ -8,10 +8,10 @@
 
 from phylanx import Phylanx
 
+
 @Phylanx
 def foo():
-    f = lambda : print("Hello")
+    return lambda: True
 
-    return True
 
-assert True == foo()
+assert foo()()
