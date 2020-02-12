@@ -200,7 +200,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // the rows with the same index as the columns the LHS has
         std::size_t iter_idx = (lhs_local_tile_index + 1) % lhs_tile_row_size;
 
-        for (int i = 0; i < lhs_tile_row_size; i++)
+        for (std::size_t i = 0; i < lhs_tile_row_size; i++)
         {
             blaze::DynamicMatrix<T> lhs_tmp;
             if (iter_idx == lhs_local_tile_index)
