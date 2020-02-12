@@ -25,6 +25,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
+
     auto const& code =
         phylanx::execution_tree::compile(name, codestr, snippets, env);
     return code.run().arg_;
@@ -234,7 +235,8 @@ int hpx_main(int argc, char* argv[])
     test_cannon_product_0();
     test_cannon_product_1();
 
-    return hpx::finalize();
+    hpx::finalize();
+    return hpx::util::report_errors();
 }
 
 int main(int argc, char* argv[])

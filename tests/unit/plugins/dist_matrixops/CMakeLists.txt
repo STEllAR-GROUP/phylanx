@@ -7,10 +7,12 @@ set(tests
     dist_dot_operation
     dist_transpose_operation
     dist_cannon_product
+    dist_cannon_product_9_loc
    )
 
 set(dist_dot_operation_PARAMETERS LOCALITIES 2)
 set(dist_cannon_product_PARAMETERS LOCALITIES 4)
+set(dist_cannon_product_9_loc_PARAMETERS LOCALITIES 9)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
