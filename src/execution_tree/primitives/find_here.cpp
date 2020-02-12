@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/find_all.hpp>
+#include <phylanx/execution_tree/primitives/find_here.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -23,36 +23,36 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_find_all(hpx::id_type const& locality,
+    primitive create_find_here(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
-        static std::string type("find_all");
+        static std::string type("find_here");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const find_all::match_data =
+    match_pattern_type const find_here::match_data =
     {
-        hpx::util::make_tuple("find_all",
-            std::vector<std::string>{"find_all()"},
-            &create_find_all, &create_primitive<find_all>,
+        hpx::util::make_tuple("find_here",
+            std::vector<std::string>{"find_here()"},
+            &create_find_here, &create_primitive<find_here>,
             R"(args
             Args:
 
             Returns:
-              All the localities available on the system.)"
+              Returns the current locality)"
             )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    find_all::find_all(
+    find_here::find_here(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    hpx::future<primitive_argument_type> find_all::eval(
+    hpx::future<primitive_argument_type> find_here::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
@@ -61,15 +61,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
                 -> primitive_argument_type
             {
-                std::vector<primitive_argument_type> values;
-                for (auto const& loc : hpx::find_all_localities())
-                {
-                    std::int64_t v = hpx::naming::get_locality_id_from_id(loc);
-                    values.push_back(primitive_argument_type{v});
-                }
-
-                phylanx::execution_tree::primitive_argument_type p{values};
-                return p;
+                auto const& loc = hpx::find_here();
+                std::int64_t v = hpx::naming::get_locality_id_from_id(loc);
+                return primitive_argument_type{v};
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_,

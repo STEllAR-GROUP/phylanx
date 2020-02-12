@@ -101,7 +101,6 @@ namespace phylanx { namespace bindings
         pybind11::kwargs kwargs)
     {
         pybind11::gil_scoped_release release;       // release GIL
-        std::cout << "file_name: " << file_name << " xexpr_str=" << xexpr_str << std::endl;
 
         using phylanx::execution_tree::primitive_argument_type;
 
