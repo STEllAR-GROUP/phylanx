@@ -1234,7 +1234,7 @@ class PhySL:
     def _Str(self, node):
         """class Str(s)"""
 
-        return '"' + node.s + '"'
+        return '"' + re.sub(r'(["|\\])',r'\\\1',node.s) + '"'
 
     def _Sub(self, node):
         """Leaf node, returning raw string of the 'subtraction' operation."""
