@@ -53,8 +53,8 @@ HPX_REGISTER_ALLREDUCE_DECLARATION(std_int64_t);
 HPX_REGISTER_ALLREDUCE_DECLARATION(std_uint8_t);
 
 using blaze_vector_double = blaze::DynamicVector<double>;
-using blaze_vector_std_int64_t = blaze::DynamicVector<std::int64_t>;
-using blaze_vector_std_uint8_t = blaze::DynamicVector<std::uint8_t>;
+using blaze_vector_std_int64_t = blaze::DynamicVector<std_int64_t>;
+using blaze_vector_std_uint8_t = blaze::DynamicVector<std_uint8_t>;
 
 HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_double);
 HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_int64_t);
@@ -140,9 +140,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "least 2"));
         }
 
-        std::int64_t max_start_col = 0;
-        std::int64_t max_start_row = 0;
-        for (int i = 0; i < lhs_tile_row_size; i++)
+        std_int64_t max_start_col = 0;
+        std_int64_t max_start_row = 0;
+        for (std::size_t i = 0; i < lhs_tile_row_size; i++)
         {
             std::size_t lhs_tile_idx = lhs_tile_row[i];
             std::size_t rhs_tile_idx = rhs_tile_col[i];
@@ -199,30 +199,66 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // 2d2d doesn't use every tile of the RHS, only those that contain
         // the rows with the same index as the columns the LHS has
         std::size_t iter_idx = (lhs_local_tile_index + 1) % lhs_tile_row_size;
+        bool lhs_flag = true;
+        bool rhs_flag = true;
+        hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp1;
+        hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp1;
+        if (iter_idx != lhs_local_tile_index)
+        {
+            lhs_tmp1 = lhs_data.fetch(lhs_tile_row[iter_idx]);
+            lhs_flag = false;
+        }
+        if (iter_idx != rhs_local_tile_index)
+        {
+            rhs_tmp1 = rhs_data.fetch(rhs_tile_col[iter_idx]);
+            rhs_flag = false;
+        }
+        iter_idx = (iter_idx + 1) % lhs_tile_row_size;
 
         for (std::size_t i = 0; i < lhs_tile_row_size; i++)
         {
-            blaze::DynamicMatrix<T> lhs_tmp;
-            if (iter_idx == lhs_local_tile_index)
+            hpx::lcos::future<blaze::DynamicMatrix<T>> lhs_tmp2;
+            hpx::lcos::future<blaze::DynamicMatrix<T>> rhs_tmp2;
+
+            // fetching the next tiles if necessary
+            if (i != lhs_tile_row_size - 1)
             {
-                lhs_tmp = lhs.matrix();
-            }
-            else
-            {
-                lhs_tmp = lhs_data.fetch(lhs_tile_row[iter_idx]).get();
-            }
-            blaze::DynamicMatrix<T> rhs_tmp;
-            if (iter_idx == rhs_local_tile_index)
-            {
-                rhs_tmp = rhs.matrix();
-            }
-            else
-            {
-                rhs_tmp = rhs_data.fetch(rhs_tile_col[iter_idx]).get();
+                if (iter_idx != lhs_local_tile_index)
+                {
+                    lhs_tmp2 = lhs_data.fetch(lhs_tile_row[iter_idx]);
+                }
+                if (iter_idx != rhs_local_tile_index)
+                {
+                    rhs_tmp2 = rhs_data.fetch(rhs_tile_col[iter_idx]);
+                }
             }
 
-            result_matrix += lhs_tmp * rhs_tmp;
+            if (lhs_flag && rhs_flag)
+            {
+                // both tiles are available locally
+                result_matrix += lhs.matrix() * rhs.matrix();
+            }
+            else if (lhs_flag)
+            {
+                // left tile is in the current locality
+                result_matrix += lhs.matrix() * rhs_tmp1.get();
+            }
+            else if (rhs_flag)
+            {
+                // right tile is in the current locality
+                result_matrix += lhs_tmp1.get() * rhs.matrix();
+            }
+            else
+            {
+                // both lhs and rhs are remotely available
+                result_matrix += lhs_tmp1.get() * rhs_tmp1.get();
+            }
+
+            lhs_flag = iter_idx != lhs_local_tile_index ? false : true;
+            rhs_flag = iter_idx != rhs_local_tile_index ? false : true;
             iter_idx = (iter_idx + 1) % lhs_tile_row_size;
+            lhs_tmp1 = std::move(lhs_tmp2);
+            rhs_tmp1 = std::move(rhs_tmp2);
         }
 
         // collect overall result if left hand side matrix is distributed
