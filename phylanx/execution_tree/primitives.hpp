@@ -15,6 +15,7 @@
 #include <phylanx/execution_tree/primitives/call_function.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>
 #include <phylanx/execution_tree/primitives/find_all.hpp>
+#include <phylanx/execution_tree/primitives/randone.hpp>
 #include <phylanx/execution_tree/primitives/find_here.hpp>
 #include <phylanx/execution_tree/primitives/remote_compile.hpp>
 #include <phylanx/execution_tree/primitives/phytype.hpp>

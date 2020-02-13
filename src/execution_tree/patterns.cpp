@@ -131,6 +131,7 @@ namespace phylanx { namespace execution_tree
         {
             pattern_list patterns = {// debugging support
                 PHYLANX_MATCH_DATA(find_all),
+                PHYLANX_MATCH_DATA(randone),
                 PHYLANX_MATCH_DATA(find_here),
                 PHYLANX_MATCH_DATA(remote_compile),
                 PHYLANX_MATCH_DATA(console_output),
