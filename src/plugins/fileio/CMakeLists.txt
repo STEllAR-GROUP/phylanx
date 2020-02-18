@@ -35,7 +35,7 @@ add_phylanx_primitive_plugin(fileio
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio"
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx)
+  DEPENDENCIES phylanx_component)
 
 if(PHYLANX_WITH_HIGHFIVE)
   target_link_libraries(fileio_primitive

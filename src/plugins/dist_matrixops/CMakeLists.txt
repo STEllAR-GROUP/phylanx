@@ -9,8 +9,7 @@ add_phylanx_primitive_plugin(dist_matrixops
   AUTOGLOB
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx
-  DEPENDENCIES common)
+  DEPENDENCIES phylanx_component common)
 
 add_phylanx_pseudo_target(primitives.dist_matrixops_dir.dist_matrixops_plugin)
 add_phylanx_pseudo_dependencies(primitives.dist_matrixops_dir

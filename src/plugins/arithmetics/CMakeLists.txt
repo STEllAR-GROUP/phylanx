@@ -9,7 +9,7 @@ add_phylanx_primitive_plugin(arithmetics
   AUTOGLOB
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx)
+  DEPENDENCIES phylanx_component)
 
 add_phylanx_pseudo_target(primitives.arithmetics_dir.arithmetics_plugin)
 add_phylanx_pseudo_dependencies(primitives.arithmetics_dir

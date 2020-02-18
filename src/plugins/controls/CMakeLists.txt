@@ -9,7 +9,7 @@ add_phylanx_primitive_plugin(controls
   AUTOGLOB
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx
+  DEPENDENCIES phylanx_component
   DEPENDENCIES common)
 
 add_phylanx_pseudo_target(primitives.controls_dir.controls_plugin)

@@ -76,11 +76,6 @@ target_link_libraries(phylanx_py
     blaze::blaze
     BlazeTensor::BlazeTensor
     ${pybind11_LIBRARIES})
-if(NOT MSVC)
-  foreach(dir ${HPX_LIBRARY_DIR})
-    target_link_libraries(phylanx_py PRIVATE -L${dir})
-  endforeach()
-endif()
 
 target_include_directories(phylanx_py
   PRIVATE

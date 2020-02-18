@@ -9,7 +9,7 @@ add_phylanx_primitive_plugin(listops
   AUTOGLOB
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx)
+  DEPENDENCIES phylanx_component)
 
 add_phylanx_pseudo_target(primitives.listops_dir.listops_plugin)
 add_phylanx_pseudo_dependencies(primitives.listops_dir

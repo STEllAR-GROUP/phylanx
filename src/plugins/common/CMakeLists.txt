@@ -8,7 +8,7 @@ add_phylanx_library(common
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/common"
   AUTOGLOB
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx)
+  DEPENDENCIES phylanx_component)
 
 target_compile_definitions(common PRIVATE PHYLANX_COMMON_EXPORTS)
 

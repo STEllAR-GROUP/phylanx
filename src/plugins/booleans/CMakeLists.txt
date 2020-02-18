@@ -9,7 +9,7 @@ add_phylanx_primitive_plugin(booleans
   AUTOGLOB
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx)
+  DEPENDENCIES phylanx_component)
 
 add_phylanx_pseudo_target(primitives.booleans_dir.booleans_plugin)
 add_phylanx_pseudo_dependencies(primitives.booleans_dir

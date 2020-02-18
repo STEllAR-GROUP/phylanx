@@ -86,23 +86,15 @@ endif()
 
 ################################################################################
 # create main module
-if(phylanx_external_OBJECTS)
-  add_hpx_component(phylanx SHARED
-    SOURCES ${phylanx_SOURCES}
-    HEADERS ${phylanx_HEADERS}
-    AUXILIARY ${phylanx_external_OBJECTS}
-    DEPENDENCIES HPX::iostreams_component)
-else()
-  add_hpx_component(phylanx SHARED
-    SOURCES ${phylanx_SOURCES}
-    HEADERS ${phylanx_HEADERS}
-    DEPENDENCIES HPX::iostreams_component)
-endif()
-
+add_library(phylanx_component SHARED
+  ${phylanx_SOURCES} ${phylanx_HEADERS}
+  ${phylanx_external_OBJECTS})
 target_link_libraries(phylanx_component
-  ${HPX_TLL_PUBLIC} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  ${HPX_TLL_PUBLIC} HPX::iostreams_component)
 target_link_libraries(phylanx_component
-  ${HPX_TLL_PRIVATE} blaze::blaze BlazeTensor::BlazeTensor)
+  ${HPX_TLL_PUBLIC} HPX::hpx ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(phylanx_component
+  ${HPX_TLL_PRIVATE} HPX::component blaze::blaze BlazeTensor::BlazeTensor)
 
 set_target_properties(
   phylanx_component PROPERTIES

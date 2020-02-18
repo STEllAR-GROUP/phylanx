@@ -9,7 +9,7 @@ add_phylanx_primitive_plugin(solvers
     HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/solvers"
     AUTOGLOB
     PLUGIN FOLDER "Core/Plugins"
-    COMPONENT_DEPENDENCIES phylanx
+    DEPENDENCIES phylanx_component
 )
 
 add_phylanx_pseudo_target(primitives.solvers_dir.solvers_plugin)
