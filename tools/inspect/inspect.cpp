@@ -1018,7 +1018,7 @@ int cpp_main( int argc_param, char * argv_param[] )
     for(auto const& search_root: search_roots)
     {
         ::search_root = search_root;
-        visit_all<fs::directory_iterator>( search_root.leaf().string(),
+        visit_all<fs::directory_iterator>( search_root.filename().string(),
             search_root, inspectors );
     }
 
