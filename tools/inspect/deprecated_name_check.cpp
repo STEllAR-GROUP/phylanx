@@ -9,12 +9,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <hpx/config/defines.hpp>
+#include <hpx/util/to_string.hpp>
 
 #include <algorithm>
 
 #include "deprecated_name_check.hpp"
 #include "boost/regex.hpp"
-#include "boost/lexical_cast.hpp"
 #include "function_hyper.hpp"
 
 #include <set>
@@ -54,6 +54,7 @@ namespace boost
       { "(\\bboost\\s*::\\s*detail\\s*::\\s*atomic_count\\b)",
         "hpx::util::atomic_count" },
       { "(\\bboost\\s*::\\s*function\\b)", "hpx::util::function_nonser" },
+      { R"((\bboost\s*::\s*intrusive_ptr\b))", "hpx::intrusive_ptr" },
       { "(\\bboost\\s*::\\s*shared_ptr\\b)", "std::shared_ptr" },
       { "(\\bboost\\s*::\\s*make_shared\\b)", "std::make_shared" },
       { "(\\bboost\\s*::\\s*enable_shared_from_this\\b)",
@@ -89,6 +90,7 @@ namespace boost
         "(acq_rel)|(seq_cst))\\b)", "std::memory_order_\\2" },
       { "(\\bboost\\s*::\\s*random\\s*::\\s*([^\\s]*)\\b)", "std::\\2" },
       { "(\\bboost\\s*::\\s*format\\b)", "hpx::util::format[_to]" },
+      { "(\\bboost\\s*::\\s*(regex[^\\s]*)\\b)", "std::\\2" },
       /////////////////////////////////////////////////////////////////////////
       { "((\\bhpx::\\b)?\\btraits\\s*::\\bis_callable\\b)", "\\2traits::is_invocable[_r]" },
       { "((\\bhpx::\\b)?\\butil\\s*::\\bresult_of\\b)", "\\2util::invoke_result" },
@@ -195,7 +197,7 @@ namespace boost
                   + " deprecated name ("
                   + found_name
                   + ") on line "
-                  + linelink(full_path, boost::lexical_cast<string>(line_number))
+                  + linelink(full_path, hpx::util::to_string(line_number))
                   + ", use " + m.format(d.data->use_instead)
                   + " instead");
             }

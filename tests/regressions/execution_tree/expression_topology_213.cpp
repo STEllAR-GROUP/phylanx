@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
             "fact(10)"
         ")",
         "(((((((/phylanx$0/access-argument$0$arg0/0$1$29) "
-        "/phylanx$0/__le$0/0$1$29,(/phylanx$0/access-argument$1$arg0/0$1$43,(/"
-        "phylanx/access-function$0$fact/0$1$50) "
+        "/phylanx$0/__le$0/0$1$29,(/phylanx$0/access-argument$1$arg0/0$1$43,("
+        "/phylanx$0/access-function$0$fact/0$1$50) "
         "/phylanx$0/call-function$0$fact/0$1$50) /phylanx$0/__mul$0/0$1$43) "
         "/phylanx$0/if$0/0$1$26) /phylanx$0/lambda$0/0$1$14) "
         "/phylanx$0/function$0$fact/0$1$14) "

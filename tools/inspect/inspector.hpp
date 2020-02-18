@@ -19,6 +19,7 @@
 #include <set>
 #include <string>
 
+
 using std::string;
 using hpx::filesystem::path;
 
@@ -64,7 +65,9 @@ namespace boost
       // callback used by constructor to register leaf() signature.
       // Signature can be a full file name (Jamfile) or partial (.cpp)
       void register_signature( const string & signature );
+      void register_skip_signature( const string & signature );
       const string_set & signatures() const { return m_signatures; }
+      const string_set & skip_signatures() const { return m_skip_signatures; }
 
       // report error callback (from inspect(), close() ):
       void error(
@@ -75,6 +78,7 @@ namespace boost
 
     private:
       string_set m_signatures;
+      string_set m_skip_signatures;
     };
 
     // for inspection of source code of one form or other
@@ -96,7 +100,7 @@ namespace boost
     inline string relative_to( const path & src_arg, const path & base_arg )
     {
       path base( base_arg );
-      base.normalize();
+      base.lexically_normal();
       string::size_type pos( base.string().size() );
       string src_arg_s(src_arg.string());
       path src;
@@ -104,7 +108,7 @@ namespace boost
         src = path(src_arg.string().substr(pos));
       else
         src = path(src_arg_s);
-      src.normalize();
+      src.lexically_normal();
       return src.string();
     }
 

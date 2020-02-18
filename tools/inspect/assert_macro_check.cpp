@@ -9,12 +9,13 @@
 
 #include <hpx/config/defines.hpp>
 #include <hpx/filesystem.hpp>
+#include <hpx/util/to_string.hpp>
 
 #include "assert_macro_check.hpp"
-#include <functional>
 #include "function_hyper.hpp"
 #include "boost/regex.hpp"
-#include "boost/lexical_cast.hpp"
+
+#include <functional>
 
 namespace fs = hpx::filesystem;
 
@@ -87,7 +88,7 @@ namespace boost
               }
           }
           std::string lineloc = linelink (full_path,
-              boost::lexical_cast<string>(line_number));
+              hpx::util::to_string(line_number));
           ++errors;
           error( library_name, full_path, "C-style assert macro on line "
             + lineloc );
