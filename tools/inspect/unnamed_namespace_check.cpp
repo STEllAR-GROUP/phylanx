@@ -10,11 +10,10 @@
 #include <hpx/filesystem.hpp>
 
 #include "boost/regex.hpp"
-#include "boost/lexical_cast.hpp"
 #include "unnamed_namespace_check.hpp"
 #include "function_hyper.hpp"
-#include <string>
 
+#include <string>
 
 namespace
 {
