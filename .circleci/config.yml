@@ -291,7 +291,7 @@ jobs:
             - run:
                 name: Check the formatting of Phylanx's Python files
                 environment:
-                    PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.6"
+                    PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.8"
                 command: |
                     python3 tools/check_help/check_help.py >/code_format/phylanx_help_report.xml
                     cp /code_format/phylanx_help_report.xml /artifacts/phylanx_help_report.txt
