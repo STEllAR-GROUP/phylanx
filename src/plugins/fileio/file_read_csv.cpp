@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <iomanip>
 #include <memory>
 #include <stdexcept>
 #include <string>
