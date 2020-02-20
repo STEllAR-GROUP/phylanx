@@ -44,35 +44,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (shape.size() == 1)
                 {
-                    result[0] =
-                        extract_scalar_positive_integer_value(*shape.begin());
+                    result[0] = extract_scalar_nonneg_integer_value_strict(
+                        *shape.begin());
                 }
                 else if (shape.size() == 2)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
                 else if (shape.size() == 3)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[2] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
                 else if (shape.size() == 4)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[2] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[3] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
             }
             return result;
@@ -208,12 +211,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (valid(op))
         {
-            return ir::node_data<T>{blaze::DynamicVector<T>(
+            return ir::node_data<T>{blaze::UniformVector<T>(
                 dim, extract_scalar_data<T>(std::move(op), name_, codename_))};
         }
 
         // create an empty vector
-        return ir::node_data<T>{blaze::DynamicVector<T>(dim)};
+        return ir::node_data<T>{blaze::UniformVector<T>(dim)};
     }
 
     primitive_argument_type constant::constant1d(primitive_argument_type&& op,
@@ -256,12 +259,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (valid(op))
         {
-            return ir::node_data<T>{blaze::DynamicMatrix<T>(dim[0], dim[1],
+            return ir::node_data<T>{blaze::UniformMatrix<T>(dim[0], dim[1],
                 extract_scalar_data<T>(std::move(op), name_, codename_))};
         }
 
         // create an empty matrix
-        return ir::node_data<T>{blaze::DynamicMatrix<T>(dim[0], dim[1])};
+        return ir::node_data<T>{blaze::UniformMatrix<T>(dim[0], dim[1])};
     }
 
     primitive_argument_type constant::constant2d(primitive_argument_type&& op,
@@ -305,13 +308,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (valid(op))
         {
             return ir::node_data<T>{
-                blaze::DynamicTensor<T>(dim[0], dim[1], dim[2],
+                blaze::UniformTensor<T>(dim[0], dim[1], dim[2],
                     extract_scalar_data<T>(std::move(op), name_, codename_))};
         }
 
         // create an empty tensor
         return ir::node_data<T>{
-            blaze::DynamicTensor<T>(dim[0], dim[1], dim[2])};
+            blaze::UniformTensor<T>(dim[0], dim[1], dim[2])};
     }
 
     primitive_argument_type constant::constant3d(primitive_argument_type&& op,
@@ -519,7 +522,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         // support constant(42, 3) == [42, 42, 42]
                         numdims = 1;
-                        dims[0] = extract_scalar_integer_value(
+                        dims[0] = extract_scalar_nonneg_integer_value_strict(
                             std::move(op1), this_->name_, this_->codename_);
                     }
                 }
