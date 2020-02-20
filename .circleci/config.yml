@@ -153,7 +153,7 @@ jobs:
                         -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
                         -DPHYLANX_WITH_DOCUMENTATION=ON             \
                         -DPHYLANX_WITH_HIGHFIVE=ON                  \
-                        -DPHYLANX_WITH_CXX14=ON
+                        -DPHYLANX_WITH_CXX17=ON
             - persist_to_workspace:
                 root: /
                 paths:
@@ -291,7 +291,7 @@ jobs:
             - run:
                 name: Check the formatting of Phylanx's Python files
                 environment:
-                    PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.6"
+                    PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.7"
                 command: |
                     python3 tools/check_help/check_help.py >/code_format/phylanx_help_report.xml
                     cp /code_format/phylanx_help_report.xml /artifacts/phylanx_help_report.txt

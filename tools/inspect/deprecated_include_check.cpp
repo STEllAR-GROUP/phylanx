@@ -9,12 +9,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <hpx/config/defines.hpp>
+#include <hpx/util/to_string.hpp>
 
 #include <algorithm>
 
 #include "deprecated_include_check.hpp"
 #include "boost/regex.hpp"
-#include "boost/lexical_cast.hpp"
 #include "function_hyper.hpp"
 
 namespace boost
@@ -26,29 +26,35 @@ namespace boost
       { "boost/move/move\\.hpp", "utility" },
       { "boost/atomic/atomic\\.hpp", "boost/atomic.hpp" },
 //       { "boost/thread/locks.hpp", "mutex" },
-      { "boost/type_traits\\.hpp", "separate type-traits headers" },
+      { "boost/type_traits\\.hpp", "type_traits" },
+      { "boost/type_traits/([^\\s]*)\\.hpp", "type_traits" },
       { "boost/unordered_map\\.hpp", "unordered_map" },
       { "boost/unordered_set\\.hpp", "unordered_set" },
       { "boost/utility/enable_if\\.hpp", "type_traits" },
-      { "boost/detail/atomic_count\\.hpp", "hpx/util/atomic_count.hpp" },
+      { "boost/detail/atomic_count\\.hpp", "hpx/thread_support/atomic_count.hpp" },
       { "boost/function\\.hpp", "hpx/util/function.hpp" },
       { "boost/shared_ptr\\.hpp", "memory" },
+      { "boost/intrusive_ptr\\.hpp", "hpx/memory/intrusive_ptr.hpp" },
       { "boost/make_shared\\.hpp", "memory" },
       { "boost/enable_shared_from_this\\.hpp", "memory" },
       { "boost/bind\\.hpp", "hpx/util/bind.hpp" },
       { "boost/(chrono/)?chrono\\.hpp", "chrono" },
       { "boost/(core/)?ref\\.hpp", "functional" },
       { "boost/cstdint\\.hpp", "cstdint" },
-      { "boost/thread/barrier\\.hpp", "hpx/compat/barrier.hpp" },
+      { "boost/thread/barrier\\.hpp", "hpx/util/barrier.hpp" },
       { "boost/exception_ptr\\.hpp", "exception" },
-      { "boost/range/iterator_range\\.hpp", "hpx/util/iterator_range.hpp" },
+      { "boost/range/iterator_range\\.hpp", "hpx/iterator_support/iterator_range.hpp" },
       { "hpx/hpx_fwd\\.hpp", "nothing (remove unconditionally)" },
-      { "boost/preprocessor/cat\\.hpp", "hpx/preprocessor/cat.hpp" },
-      { "boost/preprocessor/stringize\\.hpp", "hpx/preprocessor/stringize.hpp" },
+      { "boost/preprocessor/cat\\.hpp", "hpx/util/detail/pp/cat.hpp" },
+      { "boost/preprocessor/stringize\\.hpp", "hpx/util/detail/pp/stringize.hpp" },
       { "boost/atomic\\.hpp", "atomic" },
       { "boost/nondet_random.hpp", "random" },
       { "boost/random/([^\\s]*)\\.hpp", "random" },
-      { "boost/format\\.hpp", "hpx/format.hpp" },
+      { "boost/format\\.hpp", "hpx/util/format.hpp" },
+      { "boost/regex.hpp", "regex" },
+      { "boost/program_options([^\\s]*)\\.hpp", "hpx/program_options\\2.hpp" },
+      { "boost/filesystem([^\\s]*)\\.hpp", "hpx/filesystem.hpp" },
+      { "boost/lexical_cast\\.hpp", "hpx/util/((from_string)|(to_string)).hpp" },
       { nullptr, nullptr }
     };
 
@@ -147,7 +153,7 @@ namespace boost
                   + " deprecated #include ("
                   + found_include
                   + ") on line "
-                  + linelink(full_path, boost::lexical_cast<string>(line_number))
+                  + linelink(full_path, hpx::util::to_string(line_number))
                   + " use " + m.format(d.data->use_instead) + " instead");
             }
           }

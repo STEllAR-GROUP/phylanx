@@ -9,10 +9,9 @@
 
 #include <hpx/config/defines.hpp>
 #include <hpx/filesystem.hpp>
+#include <hpx/util/to_string.hpp>
 
 #include "path_name_check.hpp"
-
-#include "boost/lexical_cast.hpp"
 #include "function_hyper.hpp"
 
 #include <string>
@@ -25,7 +24,7 @@ using std::string;
 namespace
 {
   const char allowable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.";
-  const char initial_char[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+  const char initial_char[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.";
 }
 
 namespace boost
@@ -43,7 +42,7 @@ namespace boost
       string::size_type pos;
 
       //  called for each file and directory, so only the leaf need be tested
-      string const leaf( full_path.leaf().string() );
+      string const leaf( full_path.filename().string() );
 
       //  includes only allowable characters
       if ( (pos = leaf.find_first_not_of( allowable )) != string::npos )
@@ -62,16 +61,18 @@ namespace boost
             + " file or directory name begins with an unacceptable character" );
       }
 
-      //  rules for dot characters differ slightly for directories and files
-      if ( filesystem::is_directory( full_path ) )
-      {
-        if ( std::strchr( leaf.c_str(), '.' ) )
-        {
-          ++m_name_errors;
-          error( library_name, full_path, loclink(full_path, string(name()))
-              + " directory name contains a dot character ('.')" );
-        }
-      }
+      // We want to inspect some of the hidden dirs
+
+      ////  rules for dot characters differ slightly for directories and files
+      //if ( hpx::filesystem::is_directory( full_path ) )
+      //{
+      //  if ( std::strchr( leaf.c_str(), '.' ) )
+      //  {
+      //    ++m_name_errors;
+      //    error( library_name, full_path, loclink(full_path, string(name()))
+      //        + " directory name contains a dot character ('.')" );
+      //  }
+      //}
       //else // not a directory
       //{
       //  //  includes at most one dot character
@@ -95,7 +96,7 @@ namespace boost
         error( library_name, full_path,
             loclink(full_path, string(name()))
             + " path will exceed "
-            + boost::lexical_cast<string>(max_relative_path)
+            + hpx::util::to_string(max_relative_path)
             + " characters in a directory tree with a root in the form "
             + generic_root + ", and this exceeds ISO 9660:1999 limit of 207"  )
             ;
