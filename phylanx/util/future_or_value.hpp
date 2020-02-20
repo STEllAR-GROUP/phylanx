@@ -11,6 +11,7 @@
 
 #include <hpx/async.hpp>
 #include <hpx/lcos/future.hpp>
+#include <hpx/memory/intrusive_ptr.hpp>
 #include <hpx/traits/acquire_future.hpp>
 #include <hpx/traits/future_traits.hpp>
 #include <hpx/traits/is_future.hpp>
@@ -18,8 +19,6 @@
 
 #include <type_traits>
 #include <utility>
-
-#include <boost/intrusive_ptr.hpp>
 
 namespace phylanx { namespace util
 {
@@ -233,7 +232,7 @@ namespace hpx { namespace traits
         {
             template <typename SharedState>
             static phylanx::util::future_or_value<T>
-            create(boost::intrusive_ptr<SharedState> const& shared_state)
+            create(hpx::intrusive_ptr<SharedState> const& shared_state)
             {
                 return phylanx::util::future_or_value<T>(
                     hpx::future<T>(shared_state));
@@ -241,7 +240,7 @@ namespace hpx { namespace traits
 
             template <typename SharedState>
             static phylanx::util::future_or_value<T>
-            create(boost::intrusive_ptr<SharedState>&& shared_state)
+            create(hpx::intrusive_ptr<SharedState>&& shared_state)
             {
                 return phylanx::util::future_or_value<T>(
                     hpx::future<T>(std::move(shared_state)));
@@ -252,7 +251,7 @@ namespace hpx { namespace traits
             create(SharedState* shared_state)
             {
                 return phylanx::util::future_or_value<T>(hpx::future<T>(
-                    boost::intrusive_ptr<SharedState>(shared_state)));
+                    hpx::intrusive_ptr<SharedState>(shared_state)));
             }
 
             HPX_FORCEINLINE static
