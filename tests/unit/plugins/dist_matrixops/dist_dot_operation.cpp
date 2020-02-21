@@ -530,7 +530,8 @@ int hpx_main(int argc, char* argv[])
     test_dot_2d2d_4();
     test_dot_2d2d_5();
 
-    return hpx::finalize();
+    hpx::finalize();
+    return hpx::util::report_errors();
 }
 
 int main(int argc, char* argv[])
