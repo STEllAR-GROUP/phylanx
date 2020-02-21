@@ -45,35 +45,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (shape.size() == 1)
                 {
-                    result[0] =
-                        extract_scalar_positive_integer_value(*shape.begin());
+                    result[0] = extract_scalar_nonneg_integer_value_strict(
+                        *shape.begin());
                 }
                 else if (shape.size() == 2)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
                 else if (shape.size() == 3)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[2] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
                 else if (shape.size() == 4)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[2] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[3] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
             }
             return result;
@@ -262,7 +265,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "scalar value"));
                 }
 
-                // if the second argument is a list of up to two values
+                // if the second argument is a list of up to four values
                 // (shape) this creates an empty array of the given size
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{0};
                 std::size_t numdims = 0;
@@ -287,7 +290,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->generate_error_message(
                                 "the constant primitive requires "
                                 "for the shape not to have more than "
-                                "two entries"));
+                                "4 entries"));
                     }
 
                     dims = detail::extract_dimensions(r);
@@ -307,7 +310,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         // support constant(42, 3) == [42, 42, 42]
                         numdims = 1;
-                        dims[0] = extract_scalar_integer_value(
+                        dims[0] = extract_scalar_nonneg_integer_value_strict(
                             std::move(op1), this_->name_, this_->codename_);
                     }
                 }
