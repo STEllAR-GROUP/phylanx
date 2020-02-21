@@ -7,6 +7,8 @@
 #define PHYLANX_PRIMITIVES_CONSTANT_OCT_10_2017_0243PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>

@@ -4,15 +4,19 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    dist_dot_operation
-    dist_transpose_operation
     dist_cannon_product
     dist_cannon_product_9_loc
+    dist_constant_2_loc
+    dist_constant_5_loc
+    dist_dot_operation
+    dist_transpose_operation
    )
 
-set(dist_dot_operation_PARAMETERS LOCALITIES 2)
 set(dist_cannon_product_PARAMETERS LOCALITIES 4)
 set(dist_cannon_product_9_loc_PARAMETERS LOCALITIES 9)
+set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_constant_5_loc_PARAMETERS LOCALITIES 5)
+set(dist_dot_operation_PARAMETERS LOCALITIES 2)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

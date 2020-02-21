@@ -14,6 +14,7 @@
 
 #include <hpx/errors/throw_exception.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -265,13 +266,6 @@ namespace phylanx { namespace common
     {
         if (valid(op))
         {
-            auto a = ir::node_data<T>{
-                blaze::DynamicArray<4UL, T>(blaze::init_from_value,
-                    execution_tree::extract_scalar_data<T>(
-                        std::move(op), name_, codename_),
-                    dim[0], dim[1], dim[2], dim[3])};
-            auto b = execution_tree::extract_scalar_data<T>(
-                std::move(op), name_, codename_);
             return ir::node_data<T>{
                 blaze::DynamicArray<4UL, T>(blaze::init_from_value,
                     execution_tree::extract_scalar_data<T>(

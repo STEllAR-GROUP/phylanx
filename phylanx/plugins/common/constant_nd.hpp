@@ -13,6 +13,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/export_definitions.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
