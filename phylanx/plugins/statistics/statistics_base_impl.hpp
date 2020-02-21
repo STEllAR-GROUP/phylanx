@@ -1530,7 +1530,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         Op<T> op{ name_, codename_ };
                         auto row = blaze::row(slice, j);
-                        result(k, i, 0, j) =
+                        result(k, i, j, 0) =
                             op.finalize(op(row, initial_value), row.size());
                     }
                 }
