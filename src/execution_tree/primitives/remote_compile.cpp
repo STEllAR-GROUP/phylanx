@@ -110,9 +110,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto ep = pc.compile(code2);
 
                 // optionally, execute it
+                auto res = ep.get().run();
                 if(exec)
                     // return the result back if we execute
-                    return ep.get().run()();
+                    return res();
 
                 // return nothing if we don't
                 return primitive_argument_type{};

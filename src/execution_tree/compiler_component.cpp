@@ -51,10 +51,8 @@ namespace phylanx { namespace execution_tree
     compiler::entry_point compiler_component::compile(
         std::string const& name, std::vector<ast::expression> exprs)
     {
-        auto ep = execution_tree::compile(name, generate_unique_function_name(),
+        return execution_tree::compile(name, generate_unique_function_name(),
             exprs, snippets_, env_, patterns_);
-        //execution_tree::eval(name)
-        return ep;
     }
 
     compiler::function compiler_component::define_variable(
@@ -132,7 +130,6 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& expr)
     {
         using action_type = typename compiler_component::compile_action;
-        std::cout << "COMP: name=" << name << " expr='" << expr << "'" << std::endl;
         return hpx::async(action_type(), this->base_type::get_id(), name,
             ast::generate_ast(expr));
     }

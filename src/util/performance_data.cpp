@@ -131,7 +131,6 @@ namespace phylanx { namespace util
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "retrieve_counter_data",
                 "counter_name_last_parts cannot be empty");
         }
-        HPX_ASSERT(primitive_instances.size() > 0);
 
         // NOTE: primitive_instances are not verified
 
@@ -144,11 +143,9 @@ namespace phylanx { namespace util
                 hpx::future<hpx::performance_counters::counter_values_array>>>
             values_futures_pile;
 
-        std::cout << "locality_id=" << locality_id << std::endl;
         // Iterate through all provided primitive instances
         for (auto const& name : primitive_instances)
         {
-            std::cout << "  name=" << name << std::endl;
             // Parse the primitive name
             auto const tags =
                 phylanx::execution_tree::compiler::parse_primitive_name(name);

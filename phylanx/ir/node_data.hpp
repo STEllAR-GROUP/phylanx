@@ -123,7 +123,6 @@ namespace phylanx { namespace ir
         using storage0d_type = T;
         using storage1d_type = blaze::DynamicVector<T>;
         using storage2d_type = blaze::DynamicMatrix<T>;
-        using storageF_type = hpx::shared_future<T>;
 
         using custom_storage0d_type = std::reference_wrapper<T>;
         using custom_storage1d_type =
@@ -145,8 +144,7 @@ namespace phylanx { namespace ir
         using storage_type = util::variant<storage0d_type, storage1d_type,
             storage2d_type, storage3d_type, storage4d_type,
             custom_storage0d_type, custom_storage1d_type, custom_storage2d_type,
-            custom_storage3d_type, custom_storage4d_type,
-            storageF_type>;
+            custom_storage3d_type, custom_storage4d_type>;
 
         enum variant_index
         {
@@ -159,8 +157,7 @@ namespace phylanx { namespace ir
             custom_storage1d = 6,
             custom_storage2d = 7,
             custom_storage3d = 8,
-            custom_storage4d = 9,
-            storageF = 10
+            custom_storage4d = 9
         };
 
         using dimensions_type = std::array<std::size_t, max_dimensions>;

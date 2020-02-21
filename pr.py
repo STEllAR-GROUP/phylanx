@@ -1,25 +1,27 @@
+import re
 import sys
 from phylanx import Phylanx
 import numpy as np
 from random import random
 import subprocess as s
 
-@Phylanx
+@Phylanx #(debug=True)
 def find_pi():
     sum = 0.0
     sum_in = 0.0
     for i in range(100):
-        x = randone()
-        y = randone()
-        r = x**2+y**2
+        xy = random([2],["uniform",0,1],"float64")
+        r = xy[0]**2+xy[1]**2
         if r < 1:
             sum_in += 1.0
         sum += 1.0
     return 4*sum_in/sum
 
-find_pi_src = find_pi.get_physl_source()
+find_pi_src = re.sub(r'\$\d+','',find_pi.get_physl_source())
+find_pi_src + "\\nfind_pi()"
+print(find_pi_src)
 
-@Phylanx
+@Phylanx #(debug=True)
 def par(txt):
     f = find_all()
     n = f[-1]+1
@@ -34,7 +36,8 @@ def par(txt):
     s /= n
     print(s)
 
-par_src = par.get_physl_source()
+par_src = re.sub(r'\$\d+','',par.get_physl_source())
+par(find_pi_src)
 
 with open("x.p","w") as fd:
     print('define(find_pi_str,"%s")' % find_pi_src,file=fd)

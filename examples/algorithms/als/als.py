@@ -87,7 +87,7 @@ ratings[9, 3] = 2
 
 regularization = 0.1
 alpha = 40
-iterations = 5
+iterations = 500
 num_factors = 3
 enable_output = False
 
