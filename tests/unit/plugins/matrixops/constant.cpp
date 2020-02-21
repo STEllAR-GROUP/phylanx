@@ -245,28 +245,28 @@ int main(int argc, char* argv[])
         R"(constant(42, list(2, 2, 2), __arg(dtype, "int")))",
         "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
 
-    // ...like operations, default dtype is derived from argument
-    test_constant_operation("constant_like(42, 1)", "42");
-    test_constant_operation("constant_like(42, [1, 2, 3, 4])",
-        "[42, 42, 42, 42]");
-    test_constant_operation(
-        "constant_like(42, [[1, 2], [3, 4]])",
-        "[[42, 42], [42, 42]]");
-    test_constant_operation(
-        "constant_like(42, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
-        "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
+    //// ...like operations, default dtype is derived from argument
+    //test_constant_operation("constant_like(42, 1)", "42");
+    //test_constant_operation("constant_like(42, [1, 2, 3, 4])",
+    //    "[42, 42, 42, 42]");
+    //test_constant_operation(
+    //    "constant_like(42, [[1, 2], [3, 4]])",
+    //    "[[42, 42], [42, 42]]");
+    //test_constant_operation(
+    //    "constant_like(42, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
+    //    "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
 
-    test_constant_operation(
-        "constant_like(42.0, 1)", "42.0");
-    test_constant_operation(
-        "constant_like(42.0, [1, 2, 3, 4])",
-        "[42.0, 42.0, 42.0, 42.0]");
-    test_constant_operation(
-        "constant_like(42.0, [[1, 2], [3, 4]])",
-        "[[42.0, 42.0], [42.0, 42.0]]");
-    test_constant_operation(
-        "constant_like(42.0, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
-        "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
+    //test_constant_operation(
+    //    "constant_like(42.0, 1)", "42.0");
+    //test_constant_operation(
+    //    "constant_like(42.0, [1, 2, 3, 4])",
+    //    "[42.0, 42.0, 42.0, 42.0]");
+    //test_constant_operation(
+    //    "constant_like(42.0, [[1, 2], [3, 4]])",
+    //    "[[42.0, 42.0], [42.0, 42.0]]");
+    //test_constant_operation(
+    //    "constant_like(42.0, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
+    //    "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
 
     // empty
     test_empty_operation(
@@ -285,31 +285,31 @@ int main(int argc, char* argv[])
         R"(constant(nil, list(2, 3, 4, 5), __arg(dtype, "int")))",
         std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 3, 4, 5});
 
-    // empty_like
-    test_empty_operation(
-        R"(constant_like(nil, 1, __arg(dtype, "int")))",
-        std::array<int, PHYLANX_MAX_DIMENSIONS>{});
-    test_empty_operation(
-        R"(constant_like(nil, [1, 2, 3, 4], __arg(dtype, "int")))",
-        std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
-    test_empty_operation(
-        R"(constant_like(nil, [[1, 2], [3, 4]], __arg(dtype, "int")))",
-        std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
-    test_empty_operation(
-        R"(constant_like(
-                nil,
-                [[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
-                __arg(dtype, "int"))
-        )",
-    std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
-        test_empty_operation(
-        R"(constant_like(
-                nil,
-                [[[[1, 2, 3, 4], [3, 4, 5, 6], [7, 8, 9, 10]],
-                [[1, 2, 3, 4], [3, 4, 5, 6], [7, 8, 9, 10]]]],
-                __arg(dtype, "int"))
-        )",
-        std::array<int, PHYLANX_MAX_DIMENSIONS>{1, 2, 3, 4});
+    //// empty_like
+    //test_empty_operation(
+    //    R"(constant_like(nil, 1, __arg(dtype, "int")))",
+    //    std::array<int, PHYLANX_MAX_DIMENSIONS>{});
+    //test_empty_operation(
+    //    R"(constant_like(nil, [1, 2, 3, 4], __arg(dtype, "int")))",
+    //    std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
+    //test_empty_operation(
+    //    R"(constant_like(nil, [[1, 2], [3, 4]], __arg(dtype, "int")))",
+    //    std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
+    //test_empty_operation(
+    //    R"(constant_like(
+    //            nil,
+    //            [[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
+    //            __arg(dtype, "int"))
+    //    )",
+    //std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2, 2});
+    //    test_empty_operation(
+    //    R"(constant_like(
+    //            nil,
+    //            [[[[1, 2, 3, 4], [3, 4, 5, 6], [7, 8, 9, 10]],
+    //            [[1, 2, 3, 4], [3, 4, 5, 6], [7, 8, 9, 10]]]],
+    //            __arg(dtype, "int"))
+    //    )",
+    //    std::array<int, PHYLANX_MAX_DIMENSIONS>{1, 2, 3, 4});
 
     return hpx::util::report_errors();
 }
