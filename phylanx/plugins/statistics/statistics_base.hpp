@@ -83,15 +83,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type statistics2d_axis1(arg_type<T>&& arg,
             bool keepdims, hpx::util::optional<Init> const& initial) const;
 
-        template <typename T>
-        primitive_argument_type statisticsnd_flat(arg_type<T>&& arg,
-            bool keepdims, primitive_argument_type&& initial) const;
-
-        template <typename T>
-        primitive_argument_type statisticsnd(arg_type<T>&& arg,
-            hpx::util::optional<std::int64_t> const& axis,
-            bool keepdims, primitive_argument_type&& initial) const;
-
         template <typename T, typename Init>
         primitive_argument_type statistics3d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
@@ -131,6 +122,87 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& arg, std::int64_t axis0,
             std::int64_t axis1, bool keepdims,
             primitive_argument_type&& initial) const;
+
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d(arg_type<T>&& arg,
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_flat(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_axis0(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_axis1(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_axis2(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_axis3(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_slice01(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_slice02(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_slice03(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_slice12(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_slice13(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_slice23(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+
+        template <typename T>
+        primitive_argument_type statistics4d_slice(arg_type<T>&& arg,
+            std::int64_t axis0, std::int64_t axis1, bool keepdims,
+            primitive_argument_type&& initial) const;
+
+        primitive_argument_type statistics4d_slice(
+            primitive_argument_type&& arg, std::int64_t axis0,
+            std::int64_t axis1, bool keepdims,
+            primitive_argument_type&& initial) const;
+
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_tensor012(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_tensor013(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_tensor023(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d_tensor123(arg_type<T>&& arg,
+            bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T>
+        primitive_argument_type statistics4d_tensor(arg_type<T>&& arg,
+            std::int64_t axis0, std::int64_t axis1, std::int64_t axis2,
+            bool keepdims, primitive_argument_type&& initial) const;
+
+        primitive_argument_type statistics4d_tensor(
+            primitive_argument_type&& arg, std::int64_t axis0,
+            std::int64_t axis1, std::int64_t axis2, bool keepdims,
+            primitive_argument_type&& initial) const;
+
+        template <typename T>
+        primitive_argument_type statisticsnd_flat(arg_type<T>&& arg,
+            bool keepdims, primitive_argument_type&& initial) const;
+
+        template <typename T>
+        primitive_argument_type statisticsnd(arg_type<T>&& arg,
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keepdims, primitive_argument_type&& initial) const;
 
         primitive_argument_type statisticsnd_flat(
             primitive_argument_type&& arg, bool keepdims,
