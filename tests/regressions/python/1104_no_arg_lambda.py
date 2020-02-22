@@ -11,7 +11,8 @@ from phylanx import Phylanx
 
 @Phylanx
 def foo():
-    return lambda: True
+    f = lambda: True    # noqa E731
+    return f
 
 
 assert foo()()
