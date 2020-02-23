@@ -23,7 +23,7 @@ class db:
            open existing database otherwise"""
 
         # generate db name from given script name
-        head, tail = os.path.split(name)
+        head, tail = os.path.split(os.path.realpath(name))
         filename, _ = os.path.splitext(tail)
         dbname = '%s/__physlcache__/%s.db' % (head, filename)
 
