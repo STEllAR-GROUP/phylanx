@@ -238,6 +238,17 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                     });
             },
             "evaluate execution tree")
+        .def("__call__", [](phylanx::execution_tree::primitive const& p)
+            {
+                pybind11::gil_scoped_release release;       // release GIL
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        return value_operand(primitive_argument_type{p},
+                            primitive_argument_type{}).get();
+                    });
+            },
+            "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
             {
                 pybind11::gil_scoped_release release;       // release GIL
