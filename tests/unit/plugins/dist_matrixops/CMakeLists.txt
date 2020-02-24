@@ -5,11 +5,15 @@
 
 set(tests
     dist_dot_operation
+    dist_dot_operation_3
+    dist_dot_operation_4
     dist_transpose_operation
     dist_cannon_product
    )
 
 set(dist_dot_operation_PARAMETERS LOCALITIES 2)
+set(dist_dot_operation_3_PARAMETERS LOCALITIES 3)
+set(dist_dot_operation_4_PARAMETERS LOCALITIES 4)
 set(dist_cannon_product_PARAMETERS LOCALITIES 4)
 
 foreach(test ${tests})
