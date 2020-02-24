@@ -43,8 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "Returns:\n"                                                       \
             "\n"                                                               \
             "This function implements function `" name "` from Python's "      \
-            "math library.",                                                   \
-            true                                                               \
+            "math library."                                                    \
     }                                                                          \
     /**/
 

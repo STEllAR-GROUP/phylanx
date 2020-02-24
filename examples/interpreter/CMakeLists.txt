@@ -6,7 +6,6 @@
 
 set(example_programs
     physl
-    bug
    )
 
 foreach(example_program ${example_programs})

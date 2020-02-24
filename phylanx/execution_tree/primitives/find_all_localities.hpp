@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_RANDONE_FEB_03_2020_200PM)
-#define      PHYLANX_PRIMITIVES_RANDONE_FEB_03_2020_200PM
+#if !defined(PHYLANX_PRIMITIVES_FIND_ALL_FEB_03_2020_200PM)
+#define PHYLANX_PRIMITIVES_FIND_ALL_FEB_03_2020_200PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -18,16 +18,16 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class randone
+    class find_all_localities
       : public primitive_component_base
-      , public std::enable_shared_from_this<randone>
+      , public std::enable_shared_from_this<find_all_localities>
     {
     public:
         static match_pattern_type const match_data;
 
-        randone() = default;
+        find_all_localities() = default;
 
-        randone(primitive_arguments_type&& operands,
+        find_all_localities(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
     private:
@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
     };
 
-    PHYLANX_EXPORT primitive create_randone(hpx::id_type const& locality,
+    PHYLANX_EXPORT primitive create_find_all(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}

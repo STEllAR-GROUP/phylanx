@@ -130,10 +130,8 @@ namespace phylanx { namespace execution_tree
         pattern_list get_all_known_patterns()
         {
             pattern_list patterns = {// debugging support
-                PHYLANX_MATCH_DATA(find_all),
-                PHYLANX_MATCH_DATA(randone),
+                PHYLANX_MATCH_DATA(find_all_localities),
                 PHYLANX_MATCH_DATA(find_here),
-                PHYLANX_MATCH_DATA(remote_compile),
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
                 PHYLANX_MATCH_DATA(enable_tracing),

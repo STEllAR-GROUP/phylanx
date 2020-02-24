@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/find_all.hpp>
+#include <phylanx/execution_tree/primitives/find_all_localities.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -27,16 +27,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
-        static std::string type("find_all");
+        static std::string type("find_all_localities");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const find_all::match_data =
+    match_pattern_type const find_all_localities::match_data =
     {
-        hpx::util::make_tuple("find_all",
-            std::vector<std::string>{"find_all()"},
-            &create_find_all, &create_primitive<find_all>,
+        hpx::util::make_tuple("find_all_localities",
+            std::vector<std::string>{"find_all_localities()"},
+            &create_find_all, &create_primitive<find_all_localities>,
             R"(args
             Args:
 
@@ -46,13 +46,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    find_all::find_all(
+    find_all_localities::find_all_localities(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    hpx::future<primitive_argument_type> find_all::eval(
+    hpx::future<primitive_argument_type> find_all_localities::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {

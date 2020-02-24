@@ -77,8 +77,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else
         {
             HPX_ASSERT(operands_.size() > 1 &&
-                (valid(operands_[0]) || is_explicit_nil(operands_[0])));
-            target = extract_ref_value(operands_[0], name_, codename_);
+                (valid(operands_[1]) || is_explicit_nil(operands_[1])));
+            target = extract_ref_value(operands_[1], name_, codename_);
         }
 
         // handle slicing, we can replace the params with our slicing
