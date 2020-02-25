@@ -38,9 +38,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("find_all_localities",
             std::vector<std::string>{"find_all_localities()"},
             &create_find_all, &create_primitive<find_all_localities>,
-            R"(args
+            R"(
             Args:
-
+            
             Returns:
               All the localities available on the system.)"
             )

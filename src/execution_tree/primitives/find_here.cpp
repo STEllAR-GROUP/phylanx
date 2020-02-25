@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("find_here",
             std::vector<std::string>{"find_here()"},
             &create_find_here, &create_primitive<find_here>,
-            R"(args
+            R"(
             Args:
 
             Returns:
