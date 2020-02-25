@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_find_all, &create_primitive<find_all_localities>,
             R"(
             Args:
-            
+
             Returns:
               All the localities available on the system.)"
             )
