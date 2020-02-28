@@ -48,43 +48,35 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     private:
         template <typename T>
         execution_tree::primitive_argument_type constant1d_helper(
-            execution_tree::primitive_argument_type&& value, std::size_t dim,
-            std::size_t const& tile_idx, std::size_t const& numtiles,
+            execution_tree::primitive_argument_type&& value,
+            std::size_t const& dim, std::uint32_t const& tile_idx,
+            std::uint32_t const& numtiles, std::string&& given_name,
             std::string const& tiling_type, std::string const& name,
             std::string const& codename) const;
 
         execution_tree::primitive_argument_type constant1d(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
-            std::size_t const& tile_idx, std::size_t const& numtiles,
-            std::string const& tiling_type,
+            std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+            std::string&& given_name, std::string const& tiling_type,
             execution_tree::node_data_type dtype, std::string const& name_,
             std::string const& codename_) const;
-        //execution_tree::primitive_argument_type constant2d(
-        //    execution_tree::primitive_argument_type&& arg) const;
-        //execution_tree::primitive_argument_type constant2d(
-        //    execution_tree::primitive_argument_type&& arg,
-        //    ir::node_data<std::int64_t>&& axes) const;
 
-        //template <typename T>
-        //execution_tree::primitive_argument_type constant2d(
-        //    ir::node_data<T>&& arg,
-        //    execution_tree::localities_information&& localities) const;
+        template <typename T>
+        execution_tree::primitive_argument_type constant2d_helper(
+            execution_tree::primitive_argument_type&& value,
+            operand_type::dimensions_type const& dims,
+            std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+            std::string&& given_name, std::string const& tiling_type,
+            std::string const& name, std::string const& codename) const;
 
-        //execution_tree::primitive_argument_type constant3d(
-        //    execution_tree::primitive_argument_type&& arg) const;
-        //execution_tree::primitive_argument_type constant3d(
-        //    execution_tree::primitive_argument_type&& arg,
-        //    ir::node_data<std::int64_t>&& axes) const;
-
-        //template <typename T>
-        //execution_tree::primitive_argument_type constant3d(
-        //    ir::node_data<T>&& arg,
-        //    execution_tree::localities_information&& localities) const;
-        //template <typename T>
-        //execution_tree::primitive_argument_type constant3d(
-        //    ir::node_data<T>&& arg, ir::node_data<std::int64_t>&& axes,
-        //    execution_tree::localities_information&& localities) const;
+        execution_tree::primitive_argument_type constant2d(
+            execution_tree::primitive_argument_type&& value,
+            operand_type::dimensions_type const& dims,
+            std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+            std::string&& given_name, std::string const& tiling_type,
+            execution_tree::node_data_type dtype, std::string const& name_,
+            std::string const& codename_) const;
 
     };
 
