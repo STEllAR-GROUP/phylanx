@@ -20,11 +20,13 @@
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -98,13 +100,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     _2_shape,
                     _3_tile_index,
                     _4_numtiles,
-                    __arg(_5_tiling_type, "sym"),
-                    __arg(_3_dtype, "float64")
+                    __arg(_5_name, ""),
+                    __arg(_6_tiling_type, "sym"),
+                    __arg(_7_dtype, "float64")
                 )
             )"},
             &create_dist_constant,
             &execution_tree::create_primitive<dist_constant>, R"(
-            value, shape, tile_index, numtiles, tiling_type, dtype
+            value, shape, tile_index, numtiles, name, tiling_type, dtype
             Args:
 
                 value (float): fill value
@@ -113,7 +116,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tile_index (int): the tile index we need to generate the
                     constant array for. A non-negative integer.
                 numtiles (int): number of tiles of the returned array
-                tiling_type (string, optional): defaults to `sym`
+                name (string, optional): the array given name. If not given, a
+                    globally unique name will be generated.
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all the numtiles localities.
                 dtype (string, optional): the data-type of the returned array,
                     defaults to 'float'.
 
@@ -131,41 +137,87 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        std::tuple<std::uint32_t, std::uint32_t> middle_divisors(
+            std::uint32_t num)
+        {
+            std::uint32_t first = blaze::sqrt(num);
+            std::uint32_t second;
+            while (true)
+            {
+                if (num % first == 0)
+                {
+                    // worst case scenario is a prime number where first
+                    // becomes 1
+                    second = num / first;
+                    break;
+                }
+                first -= 1;
+            }
+            return std::make_tuple(first, second);
+        }
+
+        std::tuple<std::int64_t, std::size_t> tile_calculation(
+            std::uint32_t const& tile_idx, std::size_t const& dim,
+            std::uint32_t const& numtiles)
+        {
+            // calculates start and size or the tile_idx-th tile on the given
+            // dimension with th given dim size
+            std::int64_t start;
+            std::size_t size = static_cast<std::size_t>(dim / numtiles);
+            std::size_t remainder = dim % numtiles;
+            if (tile_idx < remainder)
+            {
+                size++;
+            }
+
+            if (remainder == 0)
+            {
+                start = size * tile_idx;
+            }
+            else if (remainder != 0 && tile_idx >= remainder)
+            {
+                start = (size + 1) * remainder + size * (tile_idx - remainder);
+            }
+            return std::make_tuple(start, size);
+        }
+    }
+
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
-        execution_tree::primitive_argument_type&& value, std::size_t dim,
-        std::size_t const& tile_idx, std::size_t const& numtiles,
-        std::string const& tiling_type, std::string const& name,
-        std::string const& codename) const
+        execution_tree::primitive_argument_type&& value, std::size_t const& dim,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type,
+        std::string const& name, std::string const& codename) const
     {
         using namespace execution_tree;
 
         T const_value =
             extract_scalar_data<T>(std::move(value), name, codename);
-        std::size_t size = static_cast<std::size_t>(dim / numtiles);
-        std::int64_t start = 0;
-        std::size_t remainder = dim % numtiles;
-        if (tile_idx < remainder)
-        {
-            size++;
-        }
 
-        if (remainder == 0)
-        {
-            start = size * tile_idx;
-        }
-        else if (remainder != 0 && tile_idx >= remainder)
-        {
-            start = (size + 1) * remainder + size * (tile_idx - remainder);
-        }
+        std::int64_t start;
+        std::size_t size;
+        std::tie(start, size) =
+            detail::tile_calculation(tile_idx, dim, numtiles);
 
         tiling_information_1d tile_info(
             tiling_information_1d::tile1d_type::columns,
             tiling_span(start, start + size));
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
-        std::string base_name =
-            "constant_" + std::to_string(numtiles) + "_" + std::to_string(dim);
+        // TODO: check for the name uniqueness
+        std::string base_name;
+        if (given_name.empty())
+        {
+            base_name = "constant_vector_" + std::to_string(numtiles) + "_" +
+                std::to_string(dim);
+        }
+        else
+        {
+            base_name = std::move(given_name);
+        }
+
         annotation_information ann_info(base_name, 0);    //generation 0
 
         auto attached_annotation =
@@ -181,8 +233,147 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     execution_tree::primitive_argument_type dist_constant::constant1d(
         execution_tree::primitive_argument_type&& value,
-        operand_type::dimensions_type const& dims, std::size_t const& tile_idx,
-        std::size_t const& numtiles, std::string const& tiling_type,
+        operand_type::dimensions_type const& dims, std::uint32_t const& tile_idx,
+        std::uint32_t const& numtiles, std::string&& given_name,
+        std::string const& tiling_type, execution_tree::node_data_type dtype,
+        std::string const& name_, std::string const& codename_) const
+    {
+        using namespace execution_tree;
+
+        switch (dtype)
+        {
+        case node_data_type_bool:
+            return constant1d_helper<std::uint8_t>(std::move(value), dims[0],
+                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
+                codename_);
+
+        case node_data_type_int64:
+            return constant1d_helper<std::int64_t>(std::move(value), dims[0],
+                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
+                codename_);
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return constant1d_helper<double>(std::move(value), dims[0],
+                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
+                codename_);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_matrixops::dist_constant::constant1d",
+            util::generate_error_message(
+                "the constant primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    execution_tree::primitive_argument_type dist_constant::constant2d_helper(
+        execution_tree::primitive_argument_type&& value,
+        operand_type::dimensions_type const& dims,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type,
+        std::string const& name, std::string const& codename) const
+    {
+        using namespace execution_tree;
+
+        T const_value =
+            extract_scalar_data<T>(std::move(value), name, codename);
+
+        std::int64_t row_start, column_start;
+        std::size_t row_size, column_size;
+        std::uint32_t row_dim = dims[0];
+        std::uint32_t column_dim = dims[1];
+        if (numtiles == 2)
+        {
+            if (row_dim > column_dim)
+            {
+                // larger number of rows -> row_tiling (horizontal tiling)
+                column_start = 0;
+                column_size = column_dim;
+                std::tie(row_start, row_size) =
+                    detail::tile_calculation(tile_idx, row_dim, 2);
+            }
+            else
+            {
+                // column_tiling (vertical tiling)
+                row_start = 0;
+                row_size = row_dim;
+                std::tie(column_start, column_size) =
+                    detail::tile_calculation(tile_idx, column_dim, 2);
+            }
+        }
+        else if (numtiles == 4)
+        {
+            std::tie(row_start, row_size) = detail::tile_calculation(
+                blaze::floor(tile_idx / 2), row_dim, 2);
+            std::tie(column_start, column_size) =
+                detail::tile_calculation(tile_idx % 2, column_dim, 2);
+        }
+        else
+        {
+            // the assumption is tiles are numbered in a row-major fashion
+            std::uint32_t first_div,
+                second_div;    // first_div is the smaller one
+            std::tie(first_div, second_div) = detail::middle_divisors(numtiles);
+            if (row_dim > column_dim)
+            {
+                // larger number of rows (larger row_dim)
+                std::tie(row_start, row_size) = detail::tile_calculation(
+                    blaze::floor(tile_idx / first_div), row_dim, second_div);
+                std::tie(column_start, column_size) = detail::tile_calculation(
+                    tile_idx % first_div, column_dim, first_div);
+            }
+            else
+            {
+                // larger column_dim
+                std::tie(row_start, row_size) = detail::tile_calculation(
+                    blaze::floor(tile_idx / second_div), row_dim, first_div);
+                std::tie(column_start, column_size) = detail::tile_calculation(
+                    tile_idx % second_div, column_dim, second_div);
+            }
+        }
+
+        tiling_information_2d tile_info(
+            tiling_span(column_start, column_start + column_size),
+            tiling_span(row_start, row_start + row_size));
+
+        locality_information locality_info(tile_idx, numtiles);
+        annotation locality_ann = locality_info.as_annotation();
+        // TODO: check for the name uniqueness
+        std::string base_name;
+        if (given_name.empty())
+        {
+            base_name = "constant_matrix_" + std::to_string(numtiles) + "_" +
+                std::to_string(dims[0]) + "x" + std::to_string(dims[1]);
+        }
+        else
+        {
+            base_name = std::move(given_name);
+        }
+
+        annotation_information ann_info(base_name, 0);    //generation 0
+
+        auto attached_annotation =
+            std::make_shared<execution_tree::annotation>(localities_annotation(
+                locality_ann, tile_info.as_annotation(name, codename), ann_info,
+                name, codename));
+
+        execution_tree::primitive_argument_type res(
+            blaze::DynamicMatrix<T>(row_size, column_size, const_value),
+            attached_annotation);
+
+        return std::move(res);
+    }
+
+    execution_tree::primitive_argument_type dist_constant::constant2d(
+        execution_tree::primitive_argument_type&& value,
+        operand_type::dimensions_type const& dims,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type,
         execution_tree::node_data_type dtype, std::string const& name_,
         std::string const& codename_) const
     {
@@ -191,30 +382,30 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         switch (dtype)
         {
         case node_data_type_bool:
-            return constant1d_helper<std::uint8_t>(std::move(value), dims[0],
-                tile_idx, numtiles, tiling_type, name_, codename_);
+            return constant2d_helper<std::uint8_t>(std::move(value), dims,
+                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
+                codename_);
 
         case node_data_type_int64:
-            return constant1d_helper<std::int64_t>(std::move(value), dims[0],
-                tile_idx, numtiles, tiling_type, name_, codename_);
+            return constant2d_helper<std::int64_t>(std::move(value), dims,
+                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
+                codename_);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
-            return constant1d_helper<double>(std::move(value), dims[0],
-                tile_idx, numtiles, tiling_type, name_, codename_);
+            return constant2d_helper<double>(std::move(value), dims, tile_idx,
+                numtiles, std::move(given_name), tiling_type, name_, codename_);
 
         default:
             break;
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_matrixops::dist_constant::constant1d"
-                "constant1d",
+            "dist_matrixops::dist_constant::constant2d",
             util::generate_error_message(
                 "the constant primitive requires for all arguments to "
                     "be numeric data types"));
     }
-    /////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<execution_tree::primitive_argument_type> dist_constant::eval(
@@ -223,13 +414,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::eval_context ctx) const
     {
         // verify arguments
-        if (operands.size() < 4 || operands.size() > 6)
+        if (operands.size() < 4 || operands.size() > 7)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_constant::eval",
                 generate_error_message(
                     "the constant_d primitive requires "
-                        "at least 4 and at most 6 operands"));
+                        "at least 4 and at most 7 operands"));
         }
 
 
@@ -306,14 +497,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 "and should be smaller than number of tiles"));
                     }
 
+                    std::string given_name = "";
+                    if (valid(args[4]))
+                    {
+                        given_name = extract_string_value(std::move(args[4]),
+                            this_->name_, this_->codename_);
+                    }
                     //using balanced symmetric tiles
                     std::string tiling_type = "sym";
 
                     node_data_type dtype = node_data_type_unknown;
-                    if (valid(args[5]))
+                    if (valid(args[6]))
                     {
                         dtype =
-                            map_dtype(extract_string_value(std::move(args[5]),
+                            map_dtype(extract_string_value(std::move(args[6]),
                                 this_->name_, this_->codename_));
                     }
 
@@ -321,10 +518,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     {
                     case 1:
                         return this_->constant1d(std::move(args[0]), dims,
-                            tile_idx, numtiles, tiling_type, dtype,
-                            this_->name_, this_->codename_);
+                            tile_idx, numtiles, std::move(given_name),
+                            tiling_type, dtype, this_->name_, this_->codename_);
+
                     case 2:
-                    case 3:
+                        return this_->constant2d(std::move(args[0]), dims,
+                            tile_idx, numtiles, std::move(given_name),
+                            tiling_type, dtype, this_->name_, this_->codename_);
+
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_constant::eval",
