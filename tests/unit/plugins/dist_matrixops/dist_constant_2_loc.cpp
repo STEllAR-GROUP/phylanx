@@ -219,6 +219,36 @@ void test_constant_2d_0()
     }
 }
 
+void test_constant_2d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_2loc2d_1", R"(
+            constant_d(42, list(5, 4), 0, 2, "const_42", "column")
+        )", R"(
+            annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0],
+                        [42.0, 42.0], [42.0, 42.0]],
+                "const_42",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 2), list("rows", 0, 5))))
+        )");
+    }
+    else
+    {
+        test_constant_d_operation("test_constant_2loc2d_1", R"(
+            constant_d(42, list(5, 4), 1, 2, "const_42", "column")
+        )", R"(
+            annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0],
+                        [42.0, 42.0], [42.0, 42.0]],
+                "const_42",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 2, 4), list("rows", 0, 5))))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -228,6 +258,7 @@ int hpx_main(int argc, char* argv[])
     test_constant_1d_3();
 
     test_constant_2d_0();
+    test_constant_2d_1();
 
     hpx::finalize();
     return hpx::util::report_errors();

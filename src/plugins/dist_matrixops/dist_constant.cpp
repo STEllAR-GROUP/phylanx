@@ -120,6 +120,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all the numtiles localities.
+                    Other options are `row` or `column` tiling. For a vector
+                    all these three tiling_type are the same.
                 dtype (string, optional): the data-type of the returned array,
                     defaults to 'float'.
 
@@ -158,15 +160,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return std::make_tuple(first, second);
         }
 
-        std::tuple<std::int64_t, std::size_t> tile_calculation(
+        std::tuple<std::int64_t, std::uint32_t> tile_calculation(
             std::uint32_t const& tile_idx, std::size_t const& dim,
             std::uint32_t const& numtiles)
         {
             // calculates start and size or the tile_idx-th tile on the given
             // dimension with th given dim size
             std::int64_t start;
-            std::size_t size = static_cast<std::size_t>(dim / numtiles);
-            std::size_t remainder = dim % numtiles;
+            std::uint32_t size = static_cast<std::size_t>(dim / numtiles);
+            std::uint32_t remainder = dim % numtiles;
             if (tile_idx < remainder)
             {
                 size++;
@@ -186,10 +188,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
-        execution_tree::primitive_argument_type&& value, std::size_t const& dim,
-        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::string const& tiling_type,
-        std::string const& name, std::string const& codename) const
+        execution_tree::primitive_argument_type&& value,
+        std::uint32_t const& dim, std::uint32_t const& tile_idx,
+        std::uint32_t const& numtiles, std::string&& given_name,
+        std::string const& tiling_type, std::string const& name,
+        std::string const& codename) const
     {
         using namespace execution_tree;
 
@@ -197,7 +200,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             extract_scalar_data<T>(std::move(value), name, codename);
 
         std::int64_t start;
-        std::size_t size;
+        std::uint32_t size;
         std::tie(start, size) =
             detail::tile_calculation(tile_idx, dim, numtiles);
 
@@ -287,33 +290,33 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::size_t row_size, column_size;
         std::uint32_t row_dim = dims[0];
         std::uint32_t column_dim = dims[1];
-        if (numtiles == 2)
+
+        if (tiling_type == "row" ||
+            (row_dim > column_dim && numtiles == 2 && tiling_type != "column"))
         {
-            if (row_dim > column_dim)
-            {
-                // larger number of rows -> row_tiling (horizontal tiling)
-                column_start = 0;
-                column_size = column_dim;
-                std::tie(row_start, row_size) =
-                    detail::tile_calculation(tile_idx, row_dim, 2);
-            }
-            else
-            {
-                // column_tiling (vertical tiling)
-                row_start = 0;
-                row_size = row_dim;
-                std::tie(column_start, column_size) =
-                    detail::tile_calculation(tile_idx, column_dim, 2);
-            }
+            // row_tiling (horizontal tiling)
+            column_start = 0;
+            column_size = column_dim;
+            std::tie(row_start, row_size) =
+                detail::tile_calculation(tile_idx, row_dim, numtiles);
         }
-        else if (numtiles == 4)
+        else if (tiling_type == "column" ||
+            (row_dim < column_dim && numtiles == 2))
+        {
+            // column_tiling (vertical tiling)
+            row_start = 0;
+            row_size = row_dim;
+            std::tie(column_start, column_size) =
+                detail::tile_calculation(tile_idx, column_dim, numtiles);
+        }
+        else if (tiling_type == "sym" && numtiles == 4)
         {
             std::tie(row_start, row_size) = detail::tile_calculation(
                 blaze::floor(tile_idx / 2), row_dim, 2);
             std::tie(column_start, column_size) =
                 detail::tile_calculation(tile_idx % 2, column_dim, 2);
         }
-        else
+        else if (tiling_type == "sym")
         {
             // the assumption is tiles are numbered in a row-major fashion
             std::uint32_t first_div,
@@ -335,6 +338,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 std::tie(column_start, column_size) = detail::tile_calculation(
                     tile_idx % second_div, column_dim, second_div);
             }
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_matrixops::dist_constant::constant2d_helper",
+                util::generate_error_message(
+                    "the given tiling_type is invalid"));
         }
 
         tiling_information_2d tile_info(
@@ -505,6 +515,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     }
                     //using balanced symmetric tiles
                     std::string tiling_type = "sym";
+                    if (valid(args[5]))
+                    {
+                        tiling_type = extract_string_value(
+                            std::move(args[5]), this_->name_, this_->codename_);
+                        if ((tiling_type != "sym" && tiling_type != "row") &&
+                            tiling_type != "column")
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "dist_constant::eval",
+                                this_->generate_error_message(
+                                    "invalid tling_type. the tiling_type cane "
+                                    "one of these: `sym`, `row` or `column`"));
+                        }
+                    }
 
                     node_data_type dtype = node_data_type_unknown;
                     if (valid(args[6]))

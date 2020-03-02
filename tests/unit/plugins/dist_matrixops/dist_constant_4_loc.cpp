@@ -145,11 +145,119 @@ void test_constant_4loc_2d_0()
     }
 }
 
+void test_constant_4loc_2d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_4loc2d_1", R"(
+            constant_d(42, list(3, 9), 0, 4, "", "column")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
+                        [42.0, 42.0, 42.0]],
+                "constant_matrix_4_3x9",
+                list("args",
+                    list("locality", 0, 4),
+                    list("tile", list("columns", 0, 3), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_constant_d_operation("test_constant_4loc2d_1", R"(
+            constant_d(42, list(3, 9), 1, 4, "", "column")
+        )", R"(
+            annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0]],
+                "constant_matrix_4_3x9",
+                list("args",
+                    list("locality", 1, 4),
+                    list("tile", list("columns", 3, 5), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_constant_d_operation("test_constant_4loc2d_1", R"(
+            constant_d(42, list(3, 9), 2, 4, "", "column")
+        )", R"(
+            annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0]],
+                "constant_matrix_4_3x9",
+                list("args",
+                    list("locality", 2, 4),
+                    list("tile", list("columns", 5, 7), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_constant_d_operation("test_constant_4loc2d_1", R"(
+            constant_d(42, list(3, 9), 3, 4, "", "column")
+        )", R"(
+            annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0]],
+                "constant_matrix_4_3x9",
+                list("args",
+                    list("locality", 3, 4),
+                    list("tile", list("columns", 7, 9), list("rows", 0, 3))))
+        )");
+    }
+}
+
+void test_constant_4loc_2d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_4loc2d_2", R"(
+            constant_d(42, list(4, 9), 0, 4, "tiled_matrix_1", "row")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                "tiled_matrix_1",
+                list("args",
+                    list("locality", 0, 4),
+                    list("tile", list("columns", 0, 9), list("rows", 0, 1))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_constant_d_operation("test_constant_4loc2d_2", R"(
+            constant_d(42, list(4, 9), 1, 4, "tiled_matrix_1", "row")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                "tiled_matrix_1",
+                list("args",
+                    list("locality", 1, 4),
+                    list("tile", list("columns", 0, 9), list("rows", 1, 2))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_constant_d_operation("test_constant_4loc2d_2", R"(
+            constant_d(42, list(4, 9), 2, 4, "tiled_matrix_1", "row")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                "tiled_matrix_1",
+                list("args",
+                    list("locality", 2, 4),
+                    list("tile", list("columns", 0, 9), list("rows", 2, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_constant_d_operation("test_constant_4loc2d_2", R"(
+            constant_d(42, list(4, 9), 3, 4, "tiled_matrix_1", "row")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                "tiled_matrix_1",
+                list("args",
+                    list("locality", 3, 4),
+                    list("tile", list("columns", 0, 9), list("rows", 3, 4))))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_constant_4loc_1d_0();
+
     test_constant_4loc_2d_0();
+    test_constant_4loc_2d_1();
+    test_constant_4loc_2d_2();
 
     hpx::finalize();
     return hpx::util::report_errors();
