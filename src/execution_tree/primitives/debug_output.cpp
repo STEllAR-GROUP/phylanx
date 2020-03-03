@@ -86,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const locality_match_data =
     {
         hpx::util::make_tuple(
-            "locality", std::vector<std::string>{"locality()"},
+            "find_here", std::vector<std::string>{"find_here()"},
             &create_generic_function< ::locality>,
             &create_primitive<generic_function< ::locality>>, R"(
             locality
