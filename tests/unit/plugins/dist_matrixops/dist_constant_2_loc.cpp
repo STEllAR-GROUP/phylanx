@@ -45,42 +45,6 @@ void test_constant_d_operation(std::string const& name, std::string const& code,
     HPX_TEST_EQ(result, comparison);
 }
 
-//void test_empty_operation(std::string const& code,
-//    std::array<int, 2> const& dims)
-//{
-//    auto f = compile_and_run(code);
-//    auto result_dims =
-//        phylanx::execution_tree::extract_numeric_value_dimensions(f());
-//
-//    HPX_TEST_EQ(dims[0], result_dims[0]);
-//    HPX_TEST_EQ(dims[1], result_dims[1]);
-//}
-//
-//void test_empty_operation(std::string const& code,
-//    std::array<int, 3> const& dims)
-//{
-//    auto f = compile_and_run(code);
-//    auto result_dims =
-//        phylanx::execution_tree::extract_numeric_value_dimensions(f());
-//
-//    HPX_TEST_EQ(dims[0], result_dims[0]);
-//    HPX_TEST_EQ(dims[1], result_dims[1]);
-//    HPX_TEST_EQ(dims[2], result_dims[2]);
-//}
-//
-//void test_empty_operation(std::string const& code,
-//    std::array<int, 4> const& dims)
-//{
-//    auto f = compile_and_run(code);
-//    auto result_dims =
-//        phylanx::execution_tree::extract_numeric_value_dimensions(f());
-//
-//    HPX_TEST_EQ(dims[0], result_dims[0]);
-//    HPX_TEST_EQ(dims[1], result_dims[1]);
-//    HPX_TEST_EQ(dims[2], result_dims[2]);
-//    HPX_TEST_EQ(dims[3], result_dims[3]);
-//}
-
 ///////////////////////////////////////////////////////////////////////////////
 void test_constant_1d_0()
 {

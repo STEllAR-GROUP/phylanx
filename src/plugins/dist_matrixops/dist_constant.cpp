@@ -98,8 +98,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 constant_d(
                     _1_value,
                     _2_shape,
-                    _3_tile_index,
-                    _4_numtiles,
+                    __arg(_3_tile_index, nil),
+                    __arg(_4_numtiles, nil),
                     __arg(_5_name, ""),
                     __arg(_6_tiling_type, "sym"),
                     __arg(_7_dtype, "float64")
@@ -194,6 +194,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string const& tiling_type, std::string const& name,
         std::string const& codename) const
     {
+        if (dim < numtiles)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_matrixops::dist_constant::constant1d_helper",
+                util::generate_error_message("the vector length should not be "
+                                             "less than number of tiles"));
+        }
+
         using namespace execution_tree;
 
         T const_value =
@@ -295,6 +303,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             (row_dim > column_dim && numtiles == 2 && tiling_type != "column"))
         {
             // row_tiling (horizontal tiling)
+            if (row_dim < numtiles)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_matrixops::dist_constant::constant2d_helper",
+                    util::generate_error_message(
+                        "the row dimension should not be "
+                        "less than number of tiles"));
+            }
+
             column_start = 0;
             column_size = column_dim;
             std::tie(row_start, row_size) =
@@ -304,6 +321,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             (row_dim < column_dim && numtiles == 2))
         {
             // column_tiling (vertical tiling)
+            if (column_dim < numtiles)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_matrixops::dist_constant::constant2d_helper",
+                    util::generate_error_message(
+                        "the column dimension should not be "
+                        "less than number of tiles"));
+            }
+
             row_start = 0;
             row_size = row_dim;
             std::tie(column_start, column_size) =
@@ -311,6 +337,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
         else if (tiling_type == "sym" && numtiles == 4)
         {
+            // distributing the matrix over 4 blocks
+            if (column_dim < 2 || row_dim < 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_matrixops::dist_constant::constant2d_helper",
+                    util::generate_error_message(
+                        "each dimension should have at least the length of 2"));
+            }
+
             std::tie(row_start, row_size) = detail::tile_calculation(
                 blaze::floor(tile_idx / 2), row_dim, 2);
             std::tie(column_start, column_size) =
@@ -325,6 +360,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             if (row_dim > column_dim)
             {
                 // larger number of rows (larger row_dim)
+                if (column_dim < first_div || row_dim < second_div)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dist_matrixops::dist_constant::constant2d_helper",
+                        util::generate_error_message(
+                            "at least one of the marix dimensions is smaller "
+                            "than the number of tiles in that direction"));
+                }
                 std::tie(row_start, row_size) = detail::tile_calculation(
                     blaze::floor(tile_idx / first_div), row_dim, second_div);
                 std::tie(column_start, column_size) = detail::tile_calculation(
@@ -333,6 +376,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             else
             {
                 // larger column_dim
+                if (column_dim < second_div || row_dim < first_div)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dist_matrixops::dist_constant::constant2d_helper",
+                        util::generate_error_message(
+                            "at least one of the marix dimensions is smaller "
+                            "than the number of tiles in that direction"));
+                }
                 std::tie(row_start, row_size) = detail::tile_calculation(
                     blaze::floor(tile_idx / second_div), row_dim, first_div);
                 std::tie(column_start, column_size) = detail::tile_calculation(
@@ -424,26 +475,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::eval_context ctx) const
     {
         // verify arguments
-        if (operands.size() < 4 || operands.size() > 7)
+        if (operands.size() < 2 || operands.size() > 7)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_constant::eval",
                 generate_error_message(
                     "the constant_d primitive requires "
-                        "at least 4 and at most 7 operands"));
+                        "at least 2 and at most 7 operands"));
         }
 
-
-        for (auto const& i : operands)
+        if (!valid(operands[0]) || !valid(operands[1]))
         {
-            if (!valid(i))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_constant::eval",
-                    generate_error_message(
-                        "the constant_d primitive requires that the "
-                        "arguments given by the operands array are valid"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_constant::eval",
+                generate_error_message(
+                    "the constant_d primitive requires the first two arguments "
+                    "given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -492,28 +538,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             std::move(args[0]), this_->name_, this_->codename_);
                     }
 
-                    std::size_t tile_idx =
-                        extract_scalar_nonneg_integer_value_strict(
-                            std::move(args[2]), this_->name_, this_->codename_);
-                    std::size_t numtiles =
-                        extract_scalar_positive_integer_value_strict(
-                            std::move(args[3]), this_->name_, this_->codename_);
-                    if (tile_idx >= numtiles)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_constant::eval",
-                            this_->generate_error_message(
-                                "invalid tile index. Tile indices start from 0 "
-                                "and should be smaller than number of tiles"));
-                    }
-
                     std::string given_name = "";
                     if (valid(args[4]))
                     {
                         given_name = extract_string_value(std::move(args[4]),
                             this_->name_, this_->codename_);
                     }
-                    //using balanced symmetric tiles
+                    // using balanced symmetric tiles
                     std::string tiling_type = "sym";
                     if (valid(args[5]))
                     {
@@ -538,24 +569,85 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 this_->name_, this_->codename_));
                     }
 
-                    switch (numdims)
+                    if (valid(args[2]) && valid(args[3]))
                     {
-                    case 1:
-                        return this_->constant1d(std::move(args[0]), dims,
-                            tile_idx, numtiles, std::move(given_name),
-                            tiling_type, dtype, this_->name_, this_->codename_);
+                        std::size_t tile_idx =
+                            extract_scalar_nonneg_integer_value_strict(
+                                std::move(args[2]), this_->name_, this_->codename_);
+                        std::size_t numtiles =
+                            extract_scalar_positive_integer_value_strict(
+                                std::move(args[3]), this_->name_, this_->codename_);
+                        if (tile_idx >= numtiles)
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "dist_constant::eval",
+                                this_->generate_error_message(
+                                    "invalid tile index. Tile indices start from 0 "
+                                    "and should be smaller than number of tiles"));
+                        }
 
-                    case 2:
-                        return this_->constant2d(std::move(args[0]), dims,
-                            tile_idx, numtiles, std::move(given_name),
-                            tiling_type, dtype, this_->name_, this_->codename_);
+                        switch (numdims)
+                        {
+                        case 1:
+                            return this_->constant1d(std::move(args[0]), dims,
+                                tile_idx, numtiles, std::move(given_name),
+                                tiling_type, dtype, this_->name_, this_->codename_);
 
-                    default:
+                        case 2:
+                            return this_->constant2d(std::move(args[0]), dims,
+                                tile_idx, numtiles, std::move(given_name),
+                                tiling_type, dtype, this_->name_, this_->codename_);
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "dist_constant::eval",
+                                util::generate_error_message(
+                                    "the given shape is of an unsupported "
+                                    "dimensionality",
+                                    this_->name_, this_->codename_));
+                        }
+                    }
+                    else if (!valid(args[2]) && !valid(args[3]))
+                    {
+                        switch (numdims)
+                        {
+                        case 0:
+                            return common::constant0d(std::move(args[0]), dtype,
+                                false, this_->name_, this_->codename_);
+
+                        case 1:
+                            return common::constant1d(std::move(args[0]),
+                                dims[0], dtype, false, this_->name_,
+                                this_->codename_);
+
+                        case 2:
+                            return common::constant2d(std::move(args[0]), dims,
+                                dtype, false, this_->name_, this_->codename_);
+
+                        case 3:
+                            return common::constant3d(std::move(args[0]), dims,
+                                dtype, false, this_->name_, this_->codename_);
+
+                        case 4:
+                            return common::constant4d(std::move(args[0]), dims,
+                                dtype, false, this_->name_, this_->codename_);
+
+                        default:
+                            break;
+                        }
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dist_constant::eval",
+                            util ::generate_error_message(
+                                "left hand side operand has unsupported "
+                                "number of dimensions"));
+                    }
+                    else
+                    {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_constant::eval",
                             util::generate_error_message(
-                                "the given shape is of an unsupported "
-                                "dimensionality",
+                                "both tile_idx and numtiles should be given to "
+                                "generate a distributed constant",
                                 this_->name_, this_->codename_));
                     }
 
