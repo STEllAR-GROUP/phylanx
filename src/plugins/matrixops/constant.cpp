@@ -152,38 +152,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     constant::constant(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , implements_like_operations_(detail::extract_if_like(name_))
+      , implements_like_operations_(detail::extract_if_like(name))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type constant::constant_nd(std::size_t numdims,
         primitive_argument_type&& value,
         operand_type::dimensions_type const& dims, node_data_type dtype,
-        std::string const& name_, std::string const& codename_) const
+        bool implements_like_, std::string const& name_,
+        std::string const& codename_) const
     {
         switch (numdims)
         {
         case 0:
             return common::constant0d(
-                std::move(value), dtype, name_, codename_);
+                std::move(value), dtype, implements_like_, name_, codename_);
 
         case 1:
-            return common::constant1d(
-                std::move(value), dims[0], dtype, name_, codename_);
+            return common::constant1d(std::move(value), dims[0], dtype,
+                implements_like_, name_, codename_);
 
         case 2:
-            return common::constant2d(
-                std::move(value), dims, dtype, name_, codename_);
+            return common::constant2d(std::move(value), dims, dtype,
+                implements_like_, name_, codename_);
 
         case 3:
-            return common::constant3d(
-                std::move(value), dims, dtype, name_, codename_);
+            return common::constant3d(std::move(value), dims, dtype,
+                implements_like_, name_, codename_);
 
         case 4:
-            return common::constant4d(
-                std::move(value), dims, dtype, name_, codename_);
+            return common::constant4d(std::move(value), dims, dtype,
+                implements_like_, name_, codename_);
 
         default:
             break;
@@ -336,7 +337,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 return this_->constant_nd(numdims, std::move(value), dims,
-                    dtype, this_->name_, this_->codename_);
+                    dtype, this_->implements_like_operations_, this_->name_,
+                    this_->codename_);
 
             }),
             value_operand(std::move(ops[0]), args, name_, codename_, ctx),

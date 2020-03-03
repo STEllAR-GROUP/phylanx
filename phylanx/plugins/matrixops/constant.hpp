@@ -49,7 +49,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type constant_nd(std::size_t numdims,
             primitive_argument_type&& value,
             operand_type::dimensions_type const& dims, node_data_type dtype,
-            std::string const& name_, std::string const& codename_) const;
+            bool implements_like_, std::string const& name_,
+            std::string const& codename_) const;
 
     private:
         bool implements_like_operations_;
