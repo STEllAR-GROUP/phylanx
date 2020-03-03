@@ -5,8 +5,11 @@
 
 set(tests
     blaze_benchmarks
+    distributed_mat_mult
     simple_loop
    )
+
+set(distributed_mat_mult_PARAMETERS LOCALITIES 4)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
@@ -19,7 +22,7 @@ foreach(test ${tests})
     ${${test}_FLAGS}
     EXCLUDE_FROM_ALL
     FOLDER "Tests/Performance/")
-
+  
   add_phylanx_pseudo_target(tests.performance.${test})
   add_phylanx_pseudo_dependencies(tests.performance tests.performance.${test})
   add_phylanx_pseudo_dependencies(tests.performance.${test} ${test}_test_exe)
