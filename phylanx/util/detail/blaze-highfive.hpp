@@ -79,30 +79,28 @@ struct data_converter<blaze::DynamicVector<T, TF>, void>
 {
     typedef typename blaze::DynamicVector<T, TF> Vector;
 
-    inline data_converter(Vector& vector, DataSpace& space, std::size_t dim = 0)
+    inline data_converter(DataSpace const& space)
             : _dims(space.getDimensions())
     {
         assert(_dims.size() == 1);
-        (void) dim;
-        (void) vector;
     }
 
-    inline typename type_of_array<T>::type* transform_read(Vector& vector)
+    inline typename type_of_array<T>::type* transform_read(Vector& vector) const
     {
         if (_dims[0] != vector.size())
         {
-            std::cout << "resizing, fun!" << std::endl;
             vector.resize(_dims[0]);
         }
         return vector.data();
     }
 
-    inline typename type_of_array<T>::type* transform_write(Vector& vector)
+    inline typename type_of_array<T>::type const* transform_write(
+        Vector const& vector) const noexcept
     {
         return vector.data();
     }
 
-    inline void process_result(Vector& vector)
+    inline void process_result(Vector& vector) const
     {
         (void) vector;
     }
@@ -116,25 +114,24 @@ struct data_converter<blaze::CustomVector<T, AF, PF, TF, RT>, void>
 {
     typedef typename blaze::CustomVector<T, AF, PF, TF, RT> Vector;
 
-    inline data_converter(Vector& vector, DataSpace& space, std::size_t dim = 0)
+    inline data_converter(DataSpace const& space)
             : _dims(space.getDimensions())
     {
         assert(_dims.size() == 1);
-        (void) dim;
-        (void) vector;
     }
 
-    inline typename type_of_array<T>::type* transform_read(Vector& vector)
+    inline typename type_of_array<T>::type* transform_read(Vector& vector) const
     {
         throw std::runtime_error("can't read into blaze::CustomVector");
     }
 
-    inline typename type_of_array<T>::type* transform_write(Vector& vector)
+    inline typename type_of_array<T>::type const* transform_write(
+        Vector const& vector) const noexcept
     {
         return vector.data();
     }
 
-    inline void process_result(Vector& vector)
+    inline void process_result(Vector& vector) const
     {
         (void) vector;
     }
@@ -147,30 +144,28 @@ struct data_converter<blaze::DynamicMatrix<T, SO>, void>
 {
     typedef typename blaze::DynamicMatrix<T, SO> Matrix;
 
-    inline data_converter(Matrix& matrix, DataSpace& space, std::size_t dim = 0)
+    inline data_converter(DataSpace const& space)
       : _dims(space.getDimensions())
     {
         assert(_dims.size() == 2);
-        (void) dim;
-        (void) matrix;
     }
 
-    inline typename type_of_array<T>::type* transform_read(Matrix& matrix)
+    inline typename type_of_array<T>::type* transform_read(Matrix& matrix) const
     {
         if (_dims[0] != matrix.rows() || _dims[1] != matrix.columns())
         {
-            std::cout << "resizing, fun!" << std::endl;
             matrix.resize(_dims[0], _dims[1]);
         }
         return matrix.data();
     }
 
-    inline typename type_of_array<T>::type* transform_write(Matrix& matrix)
+    inline typename type_of_array<T>::type const* transform_write(
+        Matrix const& matrix) const noexcept
     {
         return matrix.data();
     }
 
-    inline void process_result(Matrix& matrix)
+    inline void process_result(Matrix& matrix) const
     {
         (void) matrix;
     }
@@ -184,25 +179,25 @@ struct data_converter<blaze::CustomMatrix<T, AF, PF, SO, RT>, void>
 {
     typedef typename blaze::CustomMatrix<T, AF, PF, SO, RT> Matrix;
 
-    inline data_converter(Matrix& matrix, DataSpace& space, std::size_t dim = 0)
+    inline data_converter(DataSpace const& space)
       : _dims(space.getDimensions())
     {
         assert(_dims.size() == 2);
-        (void) dim;
-        (void) matrix;
     }
 
-    inline typename type_of_array<T>::type* transform_read(Matrix& matrix)
+    inline typename type_of_array<T>::type* transform_read(
+        Matrix& matrix) const
     {
         throw std::runtime_error("can't read into blaze::CustomMatrix");
     }
 
-    inline typename type_of_array<T>::type* transform_write(Matrix& matrix)
+    inline typename type_of_array<T>::type const* transform_write(
+        Matrix const& matrix) const noexcept
     {
         return matrix.data();
     }
 
-    inline void process_result(Matrix& matrix)
+    inline void process_result(Matrix& matrix) const
     {
         (void) matrix;
     }
