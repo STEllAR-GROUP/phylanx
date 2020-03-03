@@ -1083,8 +1083,10 @@ class PhySL:
         symbol = get_symbol_info(node, 'lambda')
         args = self._apply_rule(node.args)
         body = self._block(node.body)
-
-        return [symbol, (args, body)]
+        if args:
+            return [symbol, (args, body)]
+        else:
+            return [symbol, (body)]
 
     def _List(self, node):
         """class List(elts, ctx)"""
