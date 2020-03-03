@@ -26,28 +26,16 @@ namespace phylanx { namespace common
     PHYLANX_COMMON_EXPORT ir::node_data<T> constant0d_helper(
         execution_tree::primitive_argument_type&& op, std::string const& name,
         std::string const& codename);
+
     template <typename T>
     PHYLANX_COMMON_EXPORT ir::node_data<T> constant1d_helper(
         execution_tree::primitive_argument_type&& op, std::size_t dim,
         std::string const& name, std::string const& codename);
+
     template <typename T>
     PHYLANX_COMMON_EXPORT ir::node_data<T> constant2d_helper(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim, std::string const& name,
-        std::string const& codename);
-
-    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant0d(
-        execution_tree::primitive_argument_type&& op,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename);
-    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant1d(
-        execution_tree::primitive_argument_type&& op, std::size_t dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename);
-    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant2d(
-        execution_tree::primitive_argument_type&& op,
-        operand_type::dimensions_type const& dim,
-        execution_tree::node_data_type dtype, std::string const& name,
         std::string const& codename);
 
     template <typename T>
@@ -55,22 +43,41 @@ namespace phylanx { namespace common
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim, std::string const& name,
         std::string const& codename);
+
     template <typename T>
     PHYLANX_COMMON_EXPORT ir::node_data<T> constant4d_helper(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim, std::string const& name,
         std::string const& codename);
 
+
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant0d(
+        execution_tree::primitive_argument_type&& op,
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename);
+
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant1d(
+        execution_tree::primitive_argument_type&& op, std::size_t dim,
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename);
+
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant2d(
+        execution_tree::primitive_argument_type&& op,
+        operand_type::dimensions_type const& dim,
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename);
+
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant3d(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename);
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename);
+
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type constant4d(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename);
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename);
 
 }}
 

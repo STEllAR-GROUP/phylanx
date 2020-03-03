@@ -43,16 +43,16 @@ namespace phylanx { namespace common
 
     execution_tree::primitive_argument_type constant0d(
         execution_tree::primitive_argument_type&& op,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename)
     {
         using namespace execution_tree;
 
-        //if (dtype == node_data_type_unknown)
-        //{
-        //    HPX_ASSERT(implements_like_operations_);
-        //    dtype = extract_common_type(op);
-        //}
+        if (dtype == node_data_type_unknown)
+        {
+            HPX_ASSERT(implements_like_);
+            dtype = extract_common_type(op);
+        }
 
         switch (dtype)
         {
@@ -99,16 +99,16 @@ namespace phylanx { namespace common
 
     execution_tree::primitive_argument_type constant1d(
         execution_tree::primitive_argument_type&& op, std::size_t dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename)
     {
         using namespace execution_tree;
 
-        //if (dtype == node_data_type_unknown)
-        //{
-        //    HPX_ASSERT(implements_like_operations_);
-        //    dtype = extract_common_type(op);
-        //}
+        if (dtype == node_data_type_unknown)
+        {
+            HPX_ASSERT(implements_like_);
+            dtype = extract_common_type(op);
+        }
 
         switch (dtype)
         {
@@ -158,16 +158,16 @@ namespace phylanx { namespace common
     execution_tree::primitive_argument_type constant2d(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename)
     {
         using namespace execution_tree;
 
-        //if (dtype == node_data_type_unknown)
-        //{
-        //    HPX_ASSERT(implements_like_operations_);
-        //    dtype = extract_common_type(op);
-        //}
+        if (dtype == node_data_type_unknown)
+        {
+            HPX_ASSERT(implements_like_);
+            dtype = extract_common_type(op);
+        }
 
         switch (dtype)
         {
@@ -219,16 +219,16 @@ namespace phylanx { namespace common
     execution_tree::primitive_argument_type constant3d(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename)
     {
         using namespace execution_tree;
 
-        //if (dtype == node_data_type_unknown)
-        //{
-        //    HPX_ASSERT(implements_like_operations_);
-        //    dtype = extract_common_type(op);
-        //}
+        if (dtype == node_data_type_unknown)
+        {
+            HPX_ASSERT(implements_like_);
+            dtype = extract_common_type(op);
+        }
 
         switch (dtype)
         {
@@ -281,16 +281,16 @@ namespace phylanx { namespace common
     execution_tree::primitive_argument_type constant4d(
         execution_tree::primitive_argument_type&& op,
         operand_type::dimensions_type const& dim,
-        execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        execution_tree::node_data_type dtype, bool implements_like_,
+        std::string const& name, std::string const& codename)
     {
         using namespace execution_tree;
 
-        //if (dtype == node_data_type_unknown)
-        //{
-        //    HPX_ASSERT(implements_like_operations_);
-        //    dtype = extract_common_type(op);
-        //}
+        if (dtype == node_data_type_unknown)
+        {
+            HPX_ASSERT(implements_like_);
+            dtype = extract_common_type(op);
+        }
 
         switch (dtype)
         {
