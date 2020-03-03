@@ -12,6 +12,7 @@
 #include <phylanx/plugins/matrixops/constant.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>
