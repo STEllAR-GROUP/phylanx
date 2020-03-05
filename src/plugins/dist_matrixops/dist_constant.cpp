@@ -106,27 +106,27 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return std::make_tuple(first, second);
         }
 
-        std::tuple<std::int64_t, std::uint32_t> tile_calculation(
+        std::tuple<std::int64_t, std::size_t> tile_calculation(
             std::uint32_t const& tile_idx, std::size_t const& dim,
             std::uint32_t const& numtiles)
         {
-            // calculates start and size or the tile_idx-th tile on the given
-            // dimension with th given dim size
+            // calculates start and size or the tile_index-th tile on the given
+            // dimension with the given dim size
             std::int64_t start;
-            std::uint32_t size = static_cast<std::size_t>(dim / numtiles);
-            std::uint32_t remainder = dim % numtiles;
+            std::size_t size = static_cast<std::size_t>(dim / numtiles);
+            std::size_t remainder = dim % numtiles;
             if (tile_idx < remainder)
             {
                 size++;
             }
 
-            if (remainder == 0)
-            {
-                start = size * tile_idx;
-            }
-            else if (tile_idx >= remainder)
+            if (remainder != 0 && tile_idx >= remainder)
             {
                 start = (size + 1) * remainder + size * (tile_idx - remainder);
+            }
+            else
+            {
+                start = size * tile_idx;
             }
             return std::make_tuple(start, size);
         }
@@ -178,11 +178,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         annotation_information ann_info(base_name, 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<execution_tree::annotation>(localities_annotation(
+            std::make_shared<annotation>(localities_annotation(
                 locality_ann, tile_info.as_annotation(name, codename), ann_info,
                 name, codename));
 
-        execution_tree::primitive_argument_type res(
+        primitive_argument_type res(
             blaze::DynamicVector<T>(size, const_value), attached_annotation);
 
         return std::move(res);
@@ -362,11 +362,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         annotation_information ann_info(base_name, 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<execution_tree::annotation>(localities_annotation(
+            std::make_shared<annotation>(localities_annotation(
                 locality_ann, tile_info.as_annotation(name, codename), ann_info,
                 name, codename));
 
-        execution_tree::primitive_argument_type res(
+        primitive_argument_type res(
             blaze::DynamicMatrix<T>(row_size, column_size, const_value),
             attached_annotation);
 
