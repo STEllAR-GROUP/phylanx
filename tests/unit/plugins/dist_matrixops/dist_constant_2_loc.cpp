@@ -40,8 +40,7 @@ void test_constant_d_operation(std::string const& name, std::string const& code,
         compile_and_run(name, code);
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
-    //std::cout << "result" << result << ": " << std::endl;
-    //std::cout << "expected result" << comparison << ": " << std::endl;
+
     HPX_TEST_EQ(result, comparison);
 }
 

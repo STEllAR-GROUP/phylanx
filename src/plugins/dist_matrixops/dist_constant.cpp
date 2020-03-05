@@ -37,60 +37,6 @@
 namespace phylanx { namespace dist_matrixops { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        std::size_t extract_num_dimensions(ir::range const& shape)
-        {
-            return shape.size();
-        }
-
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
-            ir::range const& shape)
-        {
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0, 0};
-            if (!shape.empty())
-            {
-                if (shape.size() == 1)
-                {
-                    result[0] = extract_scalar_nonneg_integer_value_strict(
-                        *shape.begin());
-                }
-                else if (shape.size() == 2)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 3)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 4)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[3] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-            }
-            return result;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_constant::match_data =
     {
 
@@ -186,13 +132,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value,
-        std::uint32_t const& dim, std::uint32_t const& tile_idx,
+        std::size_t const& dim, std::uint32_t const& tile_idx,
         std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& tiling_type, std::string const& name,
-        std::string const& codename) const
+        std::string const& name, std::string const& codename) const
     {
         if (dim < numtiles)
         {
@@ -244,9 +190,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     execution_tree::primitive_argument_type dist_constant::constant1d(
         execution_tree::primitive_argument_type&& value,
-        operand_type::dimensions_type const& dims, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& tiling_type, execution_tree::node_data_type dtype,
+        operand_type::dimensions_type const& dims,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, execution_tree::node_data_type dtype,
         std::string const& name_, std::string const& codename_) const
     {
         using namespace execution_tree;
@@ -255,19 +201,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return constant1d_helper<std::uint8_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), name_, codename_);
 
         case node_data_type_int64:
             return constant1d_helper<std::int64_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), name_, codename_);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant1d_helper<double>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), name_, codename_);
 
         default:
             break;
@@ -526,8 +469,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                     "dimensions that is not supported"));
                         }
 
-                        dims = detail::extract_dimensions(overall_shape);
-                        numdims = detail::extract_num_dimensions(overall_shape);
+                        dims =
+                            common::extract_dimensions(overall_shape);
+                        numdims = common::extract_num_dimensions(
+                            overall_shape);
                     }
                     else if (is_numeric_operand(args[1]))
                     {
@@ -535,7 +480,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         // first tile of [42, 42, 42]
                         numdims = 1;
                         dims[0] = extract_scalar_positive_integer_value_strict(
-                            std::move(args[0]), this_->name_, this_->codename_);
+                            std::move(args[1]), this_->name_, this_->codename_);
                     }
 
                     std::string given_name = "";
@@ -571,10 +516,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
                     if (valid(args[2]) && valid(args[3]))
                     {
-                        std::size_t tile_idx =
+                        std::uint32_t tile_idx =
                             extract_scalar_nonneg_integer_value_strict(
                                 std::move(args[2]), this_->name_, this_->codename_);
-                        std::size_t numtiles =
+                        std::uint32_t numtiles =
                             extract_scalar_positive_integer_value_strict(
                                 std::move(args[3]), this_->name_, this_->codename_);
                         if (tile_idx >= numtiles)
@@ -591,7 +536,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         case 1:
                             return this_->constant1d(std::move(args[0]), dims,
                                 tile_idx, numtiles, std::move(given_name),
-                                tiling_type, dtype, this_->name_, this_->codename_);
+                                dtype, this_->name_, this_->codename_);
 
                         case 2:
                             return this_->constant2d(std::move(args[0]), dims,

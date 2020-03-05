@@ -2040,42 +2040,11 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
-        switch (val.index())
+        std::int64_t result =
+            extract_scalar_integer_value_strict(val, name, codename);
+        if (result >= 0)
         {
-        case 2:     // ir::node_data<std::int64_t>
-            if (util::get<2>(val).num_dimensions() == 0)
-                if (util::get<2>(val)[0] >= 0)
-                    return util::get<2>(val)[0];
-            break;
-
-        case 6:     // std::vector<ast::expression>
-            {
-                auto && exprs = util::get<6>(std::move(val));
-                if (exprs.size() == 1)
-                {
-                    if (ast::detail::is_literal_value(exprs[0]))
-                    {
-                        if (to_primitive_int_type(ast::detail::literal_value(
-                                std::move(exprs[0])))[0] >= 0)
-                        {
-                            return to_primitive_int_type(
-                                ast::detail::literal_value(
-                                    std::move(exprs[0])))[0];
-                        }
-                    }
-                }
-            }
-            break;
-
-        case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // ir::node_data<std::uint8_t>
-        case 3: HPX_FALLTHROUGH;    // string
-        case 4: HPX_FALLTHROUGH;    // ir::node_data<double>
-        case 5: HPX_FALLTHROUGH;    // primitive
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
-        default:
-            break;
+            return result;
         }
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
@@ -2083,7 +2052,8 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_scalar_nonneg_integer_value_strict",
             util::generate_error_message(
                 "primitive_argument_type does not hold a non-negative integer "
-                    "value type (type held: '" + type + "')",
+                "value type (type held: '" +
+                    type + "')",
                 name, codename));
     }
 
@@ -2091,42 +2061,11 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
     {
-        switch (val.index())
+        std::int64_t result =
+            extract_scalar_integer_value_strict(std::move(val), name, codename);
+        if (result >= 0)
         {
-        case 2:     // ir::node_data<std::int64_t>
-            if (util::get<2>(val).num_dimensions() == 0)
-                if (util::get<2>(val)[0] >= 0)
-                    return util::get<2>(val)[0];
-            break;
-
-        case 6:     // std::vector<ast::expression>
-            {
-                auto && exprs = util::get<6>(std::move(val));
-                if (exprs.size() == 1)
-                {
-                    if (ast::detail::is_literal_value(exprs[0]))
-                    {
-                        if (to_primitive_int_type(ast::detail::literal_value(
-                                std::move(exprs[0])))[0] >= 0)
-                        {
-                            return to_primitive_int_type(
-                                ast::detail::literal_value(
-                                    std::move(exprs[0])))[0];
-                        }
-                    }
-                }
-            }
-            break;
-
-        case 0:HPX_FALLTHROUGH;    // nil
-        case 1:HPX_FALLTHROUGH;    // ir::node_data<std::uint8_t>
-        case 3:HPX_FALLTHROUGH;    // string
-        case 4:HPX_FALLTHROUGH;    // ir::node_data<double>
-        case 5:HPX_FALLTHROUGH;    // primitive
-        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
-        default:
-            break;
+            return result;
         }
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));

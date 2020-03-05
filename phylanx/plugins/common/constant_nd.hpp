@@ -13,6 +13,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/export_definitions.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -21,6 +22,10 @@
 namespace phylanx { namespace common
 {
     using operand_type = ir::node_data<double>;
+
+    std::size_t extract_num_dimensions(ir::range const& shape);
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
+        ir::range const& shape);
 
     template <typename T>
     PHYLANX_COMMON_EXPORT ir::node_data<T> constant0d_helper(

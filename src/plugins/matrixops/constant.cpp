@@ -30,60 +30,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        std::size_t extract_num_dimensions(ir::range const& shape)
-        {
-            return shape.size();
-        }
-
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
-            ir::range const& shape)
-        {
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0, 0};
-            if (!shape.empty())
-            {
-                if (shape.size() == 1)
-                {
-                    result[0] = extract_scalar_nonneg_integer_value_strict(
-                        *shape.begin());
-                }
-                else if (shape.size() == 2)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 3)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 4)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[3] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-            }
-            return result;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const constant::match_data =
     {
         match_pattern_type{"constant",
@@ -294,8 +240,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "4 entries"));
                     }
 
-                    dims = detail::extract_dimensions(r);
-                    numdims = detail::extract_num_dimensions(r);
+                    dims = common::extract_dimensions(r);
+                    numdims = common::extract_num_dimensions(r);
                 }
                 else if (is_numeric_operand(op1))
                 {

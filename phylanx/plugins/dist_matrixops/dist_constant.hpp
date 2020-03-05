@@ -49,18 +49,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         template <typename T>
         execution_tree::primitive_argument_type constant1d_helper(
             execution_tree::primitive_argument_type&& value,
-            std::uint32_t const& dim, std::uint32_t const& tile_idx,
+            std::size_t const& dim, std::uint32_t const& tile_idx,
             std::uint32_t const& numtiles, std::string&& given_name,
-            std::string const& tiling_type, std::string const& name,
-            std::string const& codename) const;
+            std::string const& name, std::string const& codename) const;
 
         execution_tree::primitive_argument_type constant1d(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-            std::string&& given_name, std::string const& tiling_type,
-            execution_tree::node_data_type dtype, std::string const& name_,
-            std::string const& codename_) const;
+            std::string&& given_name, execution_tree::node_data_type dtype,
+            std::string const& name_, std::string const& codename_) const;
 
         template <typename T>
         execution_tree::primitive_argument_type constant2d_helper(
