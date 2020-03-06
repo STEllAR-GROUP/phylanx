@@ -784,6 +784,32 @@ constant (value, shape, dtype)
             'value' is equal to None, the array elements are uninitialized.
 
 
+constant_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+constant_d (value, shape, tile_index, numtiles, name, tiling_type, dtype)
+            Args:
+
+                value (float): fill value
+                shape (int or list of ints): overall shape of the array. It
+                    only contains positive integers.
+                tile_index (int): the tile index we need to generate the
+                    constant array for. A non-negative integer.
+                numtiles (int): number of tiles of the returned array
+                name (string, optional): the array given name. If not given, a
+                    globally unique name will be generated.
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all the numtiles localities.
+                    Other options are `row` or `column` tiling. For a vector
+                    all these three tiling_type are the same.
+                dtype (string, optional): the data-type of the returned array,
+                    defaults to 'float'.
+
+            Returns:
+
+            A part of an array of size 'shape' with each element equal to
+            'value', which has the tile index of 'tile_index'.
+
+
 constant_like
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 constant_like (value, a, dtype)

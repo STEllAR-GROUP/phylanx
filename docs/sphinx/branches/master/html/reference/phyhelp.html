@@ -143,6 +143,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#clip">clip</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#concatenate">concatenate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#constant">constant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#constant-d">constant_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#constant-like">constant_like</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#conv1d">conv1d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#conv2d">conv2d</a></li>
@@ -1209,6 +1210,40 @@ dtype (string, optional): the data-type of the returned array,</p>
 <p>Returns:</p>
 <p>An array of size ‘shape’ with each element equal to ‘value’. If
 ‘value’ is equal to None, the array elements are uninitialized.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="constant-d">
+<h2>constant_d<a class="headerlink" href="#constant-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>constant_d (value, shape, tile_index, numtiles, name, tiling_type, dtype)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>value (float): fill value
+shape (int or list of ints): overall shape of the array. It</p>
+<blockquote>
+<div><p>only contains positive integers.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>tile_index (int): the tile index we need to generate the</dt><dd><p>constant array for. A non-negative integer.</p>
+</dd>
+</dl>
+<p>numtiles (int): number of tiles of the returned array
+name (string, optional): the array given name. If not given, a</p>
+<blockquote>
+<div><p>globally unique name will be generated.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
+Other options are <cite>row</cite> or <cite>column</cite> tiling. For a vector
+all these three tiling_type are the same.</p>
+</dd>
+<dt>dtype (string, optional): the data-type of the returned array,</dt><dd><p>defaults to ‘float’.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>A part of an array of size ‘shape’ with each element equal to
+‘value’, which has the tile index of ‘tile_index’.</p>
 </dd>
 </dl>
 </div>
@@ -3239,7 +3274,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Mar 04, 2020.
+        Last updated on Mar 06, 2020.
       </span>
 
     </p>
