@@ -23,9 +23,11 @@ namespace phylanx { namespace common
 {
     using operand_type = ir::node_data<double>;
 
-    std::size_t extract_num_dimensions(ir::range const& shape);
-    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
+    PHYLANX_COMMON_EXPORT std::size_t extract_num_dimensions(
         ir::range const& shape);
+
+    PHYLANX_COMMON_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_dimensions(ir::range const& shape);
 
     template <typename T>
     PHYLANX_COMMON_EXPORT ir::node_data<T> constant0d_helper(
@@ -83,7 +85,6 @@ namespace phylanx { namespace common
         operand_type::dimensions_type const& dim,
         execution_tree::node_data_type dtype, bool implements_like_,
         std::string const& name, std::string const& codename);
-
 }}
 
 #endif
