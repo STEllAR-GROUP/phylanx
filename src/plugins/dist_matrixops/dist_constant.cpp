@@ -13,6 +13,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/constant_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_constant.hpp>
+#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/execution_tree/localities_annotation.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -85,54 +86,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        std::tuple<std::uint32_t, std::uint32_t> middle_divisors(
-            std::uint32_t num)
-        {
-            std::uint32_t first = blaze::sqrt(num);
-            std::uint32_t second;
-            while (true)
-            {
-                if (num % first == 0)
-                {
-                    // worst case scenario is a prime number where first
-                    // becomes 1
-                    second = num / first;
-                    break;
-                }
-                first -= 1;
-            }
-            return std::make_tuple(first, second);
-        }
-
-        std::tuple<std::int64_t, std::size_t> tile_calculation(
-            std::uint32_t const& tile_idx, std::size_t const& dim,
-            std::uint32_t const& numtiles)
-        {
-            // calculates start and size or the tile_index-th tile on the given
-            // dimension with the given dim size
-            std::int64_t start;
-            std::size_t size = static_cast<std::size_t>(dim / numtiles);
-            std::size_t remainder = dim % numtiles;
-            if (tile_idx < remainder)
-            {
-                size++;
-            }
-
-            if (remainder != 0 && tile_idx >= remainder)
-            {
-                start = (size + 1) * remainder + size * (tile_idx - remainder);
-            }
-            else
-            {
-                start = size * tile_idx;
-            }
-            return std::make_tuple(start, size);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value,
@@ -156,7 +109,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::int64_t start;
         std::uint32_t size;
         std::tie(start, size) =
-            detail::tile_calculation(tile_idx, dim, numtiles);
+            tile_calculation::tile_calculation_1d(tile_idx, dim, numtiles);
 
         tiling_information_1d tile_info(
             tiling_information_1d::tile1d_type::columns,
@@ -242,104 +195,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t row_dim = dims[0];
         std::uint32_t column_dim = dims[1];
 
-        if (tiling_type == "row" ||
-            (row_dim > column_dim && numtiles == 2 && tiling_type != "column"))
-        {
-            // row_tiling (horizontal tiling)
-            if (row_dim < numtiles)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_matrixops::dist_constant::constant2d_helper",
-                    util::generate_error_message(
-                        "the row dimension should not be "
-                        "less than number of tiles"));
-            }
-
-            column_start = 0;
-            column_size = column_dim;
-            std::tie(row_start, row_size) =
-                detail::tile_calculation(tile_idx, row_dim, numtiles);
-        }
-        else if (tiling_type == "column" ||
-            (row_dim < column_dim && numtiles == 2))
-        {
-            // column_tiling (vertical tiling)
-            if (column_dim < numtiles)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_matrixops::dist_constant::constant2d_helper",
-                    util::generate_error_message(
-                        "the column dimension should not be "
-                        "less than number of tiles"));
-            }
-
-            row_start = 0;
-            row_size = row_dim;
-            std::tie(column_start, column_size) =
-                detail::tile_calculation(tile_idx, column_dim, numtiles);
-        }
-        else if (tiling_type == "sym" && numtiles == 4)
-        {
-            // distributing the matrix over 4 blocks
-            if (column_dim < 2 || row_dim < 2)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_matrixops::dist_constant::constant2d_helper",
-                    util::generate_error_message(
-                        "each dimension should have at least the length of 2"));
-            }
-
-            std::tie(row_start, row_size) = detail::tile_calculation(
-                blaze::floor(tile_idx / 2), row_dim, 2);
-            std::tie(column_start, column_size) =
-                detail::tile_calculation(tile_idx % 2, column_dim, 2);
-        }
-        else if (tiling_type == "sym")
-        {
-            // the assumption is tiles are numbered in a row-major fashion
-            std::uint32_t first_div,
-                second_div;    // first_div is the smaller one
-            std::tie(first_div, second_div) = detail::middle_divisors(numtiles);
-            if (row_dim > column_dim)
-            {
-                // larger number of rows (larger row_dim)
-                if (column_dim < first_div || row_dim < second_div)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_matrixops::dist_constant::constant2d_helper",
-                        util::generate_error_message(
-                            "at least one of the marix dimensions is smaller "
-                            "than the number of tiles in that direction"));
-                }
-                std::tie(row_start, row_size) = detail::tile_calculation(
-                    blaze::floor(tile_idx / first_div), row_dim, second_div);
-                std::tie(column_start, column_size) = detail::tile_calculation(
-                    tile_idx % first_div, column_dim, first_div);
-            }
-            else
-            {
-                // larger column_dim
-                if (column_dim < second_div || row_dim < first_div)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_matrixops::dist_constant::constant2d_helper",
-                        util::generate_error_message(
-                            "at least one of the marix dimensions is smaller "
-                            "than the number of tiles in that direction"));
-                }
-                std::tie(row_start, row_size) = detail::tile_calculation(
-                    blaze::floor(tile_idx / second_div), row_dim, first_div);
-                std::tie(column_start, column_size) = detail::tile_calculation(
-                    tile_idx % second_div, column_dim, second_div);
-            }
-        }
-        else
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_matrixops::dist_constant::constant2d_helper",
-                util::generate_error_message(
-                    "the given tiling_type is invalid"));
-        }
+        std::tie(row_start, column_start, row_size, column_size) =
+            tile_calculation::tile_calculation_2d(
+                tile_idx, row_dim, column_dim, numtiles, tiling_type);
 
         tiling_information_2d tile_info(
             tiling_span(column_start, column_start + column_size),

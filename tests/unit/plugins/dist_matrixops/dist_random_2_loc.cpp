@@ -211,9 +211,39 @@ void test_random_2d_1()
     }
 }
 
+void test_random_2d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_random_d_operation("test_random_2loc2d_2", R"(
+            random_d(list(5, 4), 0, 2, "rand_5_4", "row")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0, 42.0], [42.0, 42.0, 42.0, 42.0],
+                [42.0, 42.0, 42.0, 42.0]],
+                "rand_5_4",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 4), list("rows", 0, 3))))
+        )");
+    }
+    else
+    {
+        test_random_d_operation("test_random_2loc2d_2", R"(
+            random_d(list(5, 4), 1, 2, "rand_5_4", "row")
+        )", R"(
+            annotate_d([[42.0, 42.0, 42.0, 42.0], [42.0, 42.0, 42.0, 42.0]],
+                "rand_5_4",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 4), list("rows", 3, 5))))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
+    // only annotations are compared
     test_random_1d_0();
     test_random_1d_1();
     test_random_1d_2();
@@ -221,6 +251,7 @@ int hpx_main(int argc, char* argv[])
 
     test_random_2d_0();
     test_random_2d_1();
+    test_random_2d_2();
 
     hpx::finalize();
     return hpx::util::report_errors();
