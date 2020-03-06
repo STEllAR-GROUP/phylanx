@@ -11,9 +11,11 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_cannon_product_plugin,
+    phylanx::dist_matrixops::primitives::dist_cannon_product::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_constant_plugin,
+    phylanx::dist_matrixops::primitives::dist_constant::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_dot_operation_plugin,
     phylanx::dist_matrixops::primitives::dist_dot_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_transpose_operation_plugin,
     phylanx::dist_matrixops::primitives::dist_transpose_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(dist_cannon_product_plugin,
-    phylanx::dist_matrixops::primitives::dist_cannon_product::match_data);

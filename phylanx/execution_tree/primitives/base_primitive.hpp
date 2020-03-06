@@ -405,6 +405,16 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>");
 
     ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT std::int64_t extract_scalar_nonneg_integer_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::int64_t extract_scalar_nonneg_integer_value_strict(
+        primitive_argument_type&& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,

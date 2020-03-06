@@ -2036,6 +2036,49 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::int64_t extract_scalar_nonneg_integer_value_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        std::int64_t result =
+            extract_scalar_integer_value_strict(val, name, codename);
+        if (result >= 0)
+        {
+            return result;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_nonneg_integer_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a non-negative integer "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    std::int64_t extract_scalar_nonneg_integer_value_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        std::int64_t result =
+            extract_scalar_integer_value_strict(std::move(val), name, codename);
+        if (result >= 0)
+        {
+            return result;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_nonneg_integer_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a non-negative integer "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     ir::node_data<std::uint8_t> extract_boolean_value(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
