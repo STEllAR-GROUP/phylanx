@@ -793,13 +793,6 @@ class PhySL:
                 return [symbol, ('1', [op, args[0]]) + kwargs]
             else:
                 return [symbol, ('1', args + kwargs)]
-        elif 'full' in symbol:
-            symbol = symbol.replace('full', 'constant')
-            if isinstance(args[0], tuple):
-                op = get_symbol_info(node.func, 'list')
-                return [symbol, (args[1], [op, args[0]]) + kwargs]
-            else:
-                return [symbol, (args[1], (args[0], ) + kwargs)]
         elif 'empty' in symbol:
             symbol = symbol.replace('empty', 'constant')
             if isinstance(args[0], tuple):

@@ -32,8 +32,10 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(concatenate_plugin,
     phylanx::execution_tree::primitives::concatenate::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(constant_plugin,
     phylanx::execution_tree::primitives::constant::match_data[0]);
-PHYLANX_REGISTER_PLUGIN_FACTORY(constant_like_plugin,
+PHYLANX_REGISTER_PLUGIN_FACTORY(full_plugin,
     phylanx::execution_tree::primitives::constant::match_data[1]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(constant_like_plugin,
+    phylanx::execution_tree::primitives::constant::match_data[2]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(cross_operation_plugin,
     phylanx::execution_tree::primitives::cross_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(determinant_plugin,

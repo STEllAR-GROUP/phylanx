@@ -113,6 +113,14 @@ assert (test_full() == np.full((3, 3), 2, dtype=int)).all()
 
 
 @Phylanx
+def test_full_nodtype():
+    return np.full((3, 3), 2.0)
+
+
+assert (test_full_nodtype() == np.full((3, 3), 2.0)).all()
+
+
+@Phylanx
 def test_full_like():
     a = np.zeros((3, 3), dtype='int')
     return np.full_like(a, 42, dtype='int')

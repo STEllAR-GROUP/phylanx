@@ -56,6 +56,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             An array of size 'shape' with each element equal to 'value'. If
             'value' is equal to None, the array elements are uninitialized.)"
         },
+        match_pattern_type{"full",
+            std::vector<std::string>{R"(
+                full(
+                    _1_shape,
+                    _2_value,
+                    __arg(_3_dtype, nil)
+                )
+            )"},
+            &create_constant, &create_primitive<constant>, R"(
+            shape, value, dtype
+            Args:
+
+                shape (int or shape): the number of values
+                value (float): a constant value
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to the data type of 'value', also in this case
+                  'value' should not be 'None'.
+
+            Returns:
+
+            An array of size 'shape' with each element equal to 'value'. If
+            'value' is equal to None, the array elements are uninitialized.)"
+        },
         match_pattern_type{"constant_like",
             std::vector<std::string>{R"(
                 constant_like(
@@ -95,12 +118,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             return name.find("constant_like") == 0;
         }
+
+        bool extract_if_full(std::string const& name)
+        {
+            compiler::primitive_name_parts name_parts;
+            if (compiler::parse_primitive_name(name, name_parts))
+            {
+                return name_parts.primitive == "full";
+            }
+            return name == "full";
+        }
     }
 
     constant::constant(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , implements_like_operations_(detail::extract_if_like(name))
+      , implements_full_operations_(detail::extract_if_full(name))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -146,6 +180,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
+        if (implements_full_operations_)
+        {
+            return eval_full(operands, args, std::move(ctx));
+        }
+
         // verify arguments
         if ((implements_like_operations_ && operands.size() < 2) ||
             (!implements_like_operations_ && operands.empty()) ||
@@ -285,6 +324,92 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->constant_nd(numdims, std::move(value), dims,
                     dtype, this_->implements_like_operations_, this_->name_,
                     this_->codename_);
+
+            }),
+            value_operand(std::move(ops[0]), args, name_, codename_, ctx),
+            value_operand(std::move(ops[1]), args, name_, codename_, ctx),
+            value_operand(std::move(ops[2]), args, name_, codename_, ctx));
+    }
+
+    hpx::future<primitive_argument_type> constant::eval_full(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        HPX_ASSERT(!implements_like_operations_);
+
+        // verify arguments
+        if (operands.size() < 2 || operands.size() > 3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "constant::eval",
+                generate_error_message(
+                    "the full primitive requires "
+                        "at least two and at most 3 operands"));
+        }
+
+        // supply missing default arguments
+        primitive_arguments_type ops = operands;
+        if (operands.size() != 3)
+        {
+            // default 'dtype' for full is extracted from 'value'
+            ops.resize(3);      // fill rest with 'nil'
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& shape,
+                    primitive_argument_type&& value,
+                    primitive_argument_type&& dtype_op)
+            ->  primitive_argument_type
+            {
+                if (!valid(value) || extract_numeric_value_dimension(value) != 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "constant::eval",
+                        this_->generate_error_message(
+                            "the second argument must be a literal "
+                            "scalar value"));
+                }
+
+                // if the second argument is a list of up to four values
+                // (shape) this creates an empty array of the given size
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{0};
+                std::size_t numdims = 0;
+                if (is_list_operand_strict(shape))
+                {
+                    ir::range&& r = extract_list_value_strict(
+                        std::move(shape), this_->name_, this_->codename_);
+
+                    if (r.size() > PHYLANX_MAX_DIMENSIONS)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "constant::eval",
+                            this_->generate_error_message(
+                                "the full primitive requires for the shape not "
+                                "to have more than 4 entries"));
+                    }
+
+                    dims = common::extract_dimensions(r);
+                    numdims = common::extract_num_dimensions(r);
+                }
+                else if (is_numeric_operand(shape))
+                {
+                    // support full(3, 42) == [42, 42, 42]
+                    numdims = 1;
+                    dims[0] = extract_scalar_nonneg_integer_value_strict(
+                        std::move(shape), this_->name_, this_->codename_);
+                }
+
+                // full() without dtype defaults type of operands
+                node_data_type dtype = node_data_type_unknown;
+                if (valid(dtype_op))
+                {
+                    dtype = map_dtype(extract_string_value(
+                        std::move(dtype_op), this_->name_, this_->codename_));
+                }
+
+                return this_->constant_nd(numdims, std::move(value), dims,
+                    dtype, true, this_->name_, this_->codename_);
 
             }),
             value_operand(std::move(ops[0]), args, name_, codename_, ctx),

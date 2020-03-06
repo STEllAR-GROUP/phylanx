@@ -34,6 +34,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
+        hpx::future<primitive_argument_type> eval_full(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
+
         using operand_type = ir::node_data<double>;
         using operands_type = std::vector<operand_type>;
 
@@ -54,6 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         bool implements_like_operations_;
+        bool implements_full_operations_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
