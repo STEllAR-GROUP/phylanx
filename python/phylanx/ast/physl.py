@@ -747,10 +747,12 @@ class PhySL:
             kw = self._apply_rule(k.value)
             return (k.arg, kw)
 
+        oplist = get_symbol_info(node.func, 'list')
+        oparg = get_symbol_info(node.func, '__arg')
+
         symbol = self._apply_rule(node.func)
         args = tuple(self._apply_rule(arg) for arg in node.args)
-        op = get_symbol_info(node.func, '__arg')
-        kwargs = tuple([op, __apply(self, k)] for k in node.keywords)
+        kwargs = tuple([oparg, __apply(self, k)] for k in node.keywords)
 
         dtype = ''
 
@@ -759,54 +761,61 @@ class PhySL:
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol:
             return create_array(args, kwargs)
-        elif 'vstack' in symbol:
-            if args and isinstance(args[0], tuple):
-                args = (['list', (tuple(args), )],)
-        elif 'dstack' in symbol:
-            if args and isinstance(args[0], tuple):
-                args = (['list', (tuple(args), )],)
 
-        elif 'zeros_like' in symbol:
+        if 'vstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = ([oplist, (tuple(args), )],)
+            return [symbol, args + kwargs]
+
+        if 'dstack' in symbol:
+            if args and isinstance(args[0], tuple):
+                args = ([oplist, (tuple(args), )],)
+            return [symbol, args + kwargs]
+
+        if 'zeros_like' in symbol:
             symbol = symbol.replace('zeros_like', 'constant_like')
             return [symbol, ('0', args + kwargs)]
-        elif 'ones_like' in symbol:
+
+        if 'ones_like' in symbol:
             symbol = symbol.replace('ones_like', 'constant_like')
             return [symbol, ('1', args + kwargs)]
-        elif 'full_like' in symbol:
+
+        if 'full_like' in symbol:
             symbol = symbol.replace('full_like', 'constant_like')
             return [symbol, (args[1], (args[0], ) + kwargs)]
-        elif 'empty_like' in symbol:
+
+        if 'empty_like' in symbol:
             symbol = symbol.replace('empty_like', 'constant_like')
             return [symbol, (None, args + kwargs)]
 
-        elif 'zeros' in symbol:
+        if 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant')
             if isinstance(args[0], tuple):
-                op = get_symbol_info(node.func, 'list')
-                return [symbol, ('0', [op, args[0]]) + kwargs]
+                return [symbol, ('0', [oplist, args[0]]) + kwargs]
             else:
                 return [symbol, ('0', args + kwargs)]
-        elif 'ones' in symbol:
+
+        if 'ones' in symbol:
             symbol = symbol.replace('ones', 'constant')
             if isinstance(args[0], tuple):
-                op = get_symbol_info(node.func, 'list')
-                return [symbol, ('1', [op, args[0]]) + kwargs]
+                return [symbol, ('1', [oplist, args[0]]) + kwargs]
             else:
                 return [symbol, ('1', args + kwargs)]
-        elif 'empty' in symbol:
+
+        if 'empty' in symbol:
             symbol = symbol.replace('empty', 'constant')
             if isinstance(args[0], tuple):
-                op = get_symbol_info(node.func, 'list')
-                return [symbol, (None, [op, args[0]]) + kwargs]
+                return [symbol, (None, [oplist, args[0]]) + kwargs]
             else:
                 return [symbol, (None, args + kwargs)]
 
-        else:
-            method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
-            if len(method) == 1:
-                symbol = symbol.replace(method[0], method[0] + dtype)
+        method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
+        if len(method) == 1:
+            symbol = symbol.replace(method[0], method[0] + dtype)
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # wrap all tuples
+        args = tuple([op, a] if isinstance(a, tuple) else a for a in args)
         return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):

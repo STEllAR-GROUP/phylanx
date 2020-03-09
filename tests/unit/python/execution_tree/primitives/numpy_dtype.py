@@ -109,7 +109,9 @@ def test_full():
     return np.full((3, 3), 2, dtype='int')
 
 
-assert (test_full() == np.full((3, 3), 2, dtype=int)).all()
+r = test_full()
+assert (r == np.full((3, 3), 2, dtype=int)).all()
+assert r.dtype == np.int64, r.dtype
 
 
 @Phylanx
@@ -117,7 +119,9 @@ def test_full_nodtype():
     return np.full((3, 3), 2.0)
 
 
-assert (test_full_nodtype() == np.full((3, 3), 2.0)).all()
+r = test_full_nodtype()
+assert (r == np.full((3, 3), 2.0)).all()
+assert (r.dtype == np.float)
 
 
 @Phylanx
