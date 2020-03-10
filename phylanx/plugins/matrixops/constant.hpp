@@ -7,6 +7,8 @@
 #define PHYLANX_PRIMITIVES_CONSTANT_OCT_10_2017_0243PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
@@ -44,41 +46,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        template <typename T>
-        ir::node_data<T> constant0d_helper(primitive_argument_type&& op) const;
-        template <typename T>
-        ir::node_data<T> constant1d_helper(
-            primitive_argument_type&& op, std::size_t dim) const;
-        template <typename T>
-        ir::node_data<T> constant2d_helper(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim) const;
-
-        primitive_argument_type constant0d(
-            primitive_argument_type&& op, node_data_type dtype) const;
-        primitive_argument_type constant1d(primitive_argument_type&& op,
-            std::size_t dim, node_data_type dtype) const;
-        primitive_argument_type constant2d(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim,
-            node_data_type dtype) const;
-
-        template <typename T>
-        ir::node_data<T> constant3d_helper(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim) const;
-        template <typename T>
-        ir::node_data<T> constant4d_helper(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim) const;
-
-        primitive_argument_type constant3d(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim,
-            node_data_type dtype) const;
-        primitive_argument_type constant4d(primitive_argument_type&& op,
-            operand_type::dimensions_type const& dim,
-            node_data_type dtype) const;
+        primitive_argument_type constant_nd(std::size_t numdims,
+            primitive_argument_type&& value,
+            operand_type::dimensions_type const& dims, node_data_type dtype,
+            bool implements_like_, std::string const& name_,
+            std::string const& codename_) const;
 
     private:
         bool implements_like_operations_;
     };
 
+    ///////////////////////////////////////////////////////////////////////////
     inline primitive create_constant(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")

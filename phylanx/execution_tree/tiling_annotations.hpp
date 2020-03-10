@@ -145,6 +145,11 @@ namespace phylanx { namespace execution_tree
     ////////////////////////////////////////////////////////////////////////////
     struct tiling_information_2d
     {
+        tiling_information_2d(
+            tiling_span const& row_span, tiling_span const& column_span)
+          : spans_{column_span, row_span}
+        {}
+
         PHYLANX_EXPORT tiling_information_2d(annotation const& ann,
             std::string const& name, std::string const& codename);
 
@@ -156,7 +161,7 @@ namespace phylanx { namespace execution_tree
 
         PHYLANX_EXPORT void transpose();
 
-        tiling_span spans_[2];
+        tiling_span spans_[2];    // column and row spans
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -174,7 +179,7 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void transpose(
             std::int64_t const* data, std::size_t count);
 
-        tiling_span spans_[3];
+        tiling_span spans_[3];    // column, row and page spans
     };
 }}
 

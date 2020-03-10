@@ -232,6 +232,9 @@ int main(int argc, char* argv[])
         "constant(42, list(2, 2))", "[[42.0, 42.0], [42.0, 42.0]]");
     test_constant_operation("constant(42, list(2, 2, 2))",
         "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
+    test_constant_operation("constant(42, list(2, 3, 1, 2))",
+        "[[[[42., 42.]], [[42., 42.]], [[42., 42.]]],"
+        "[[[42., 42.]], [[42., 42.]], [[42., 42.]]]]");
 
     test_constant_operation(
         R"(constant(42, list(), __arg(dtype, "int")))", "42");
@@ -244,6 +247,10 @@ int main(int argc, char* argv[])
     test_constant_operation(
         R"(constant(42, list(2, 2, 2), __arg(dtype, "int")))",
         "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
+    test_constant_operation(R"(constant(42, list(2, 3, 1, 2),
+        __arg(dtype, "int")))",
+        "[[[[42, 42]], [[42, 42]], [[42, 42]]],"
+        "[[[42, 42]], [[42, 42]], [[42, 42]]]]");
 
     // ...like operations, default dtype is derived from argument
     test_constant_operation("constant_like(42, 1)", "42");
@@ -255,6 +262,9 @@ int main(int argc, char* argv[])
     test_constant_operation(
         "constant_like(42, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
         "[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]");
+    test_constant_operation(
+        "constant_like(42, [[[[1, 2], [3, 4]], [[1, 2], [3, 4]]]])",
+        "[[[[42, 42], [42, 42]], [[42, 42], [42, 42]]]]");
 
     test_constant_operation(
         "constant_like(42.0, 1)", "42.0");
@@ -267,6 +277,9 @@ int main(int argc, char* argv[])
     test_constant_operation(
         "constant_like(42.0, [[[1, 2], [3, 4]], [[1, 2], [3, 4]]])",
         "[[[42.0, 42.0], [42.0, 42.0]], [[42.0, 42.0], [42.0, 42.0]]]");
+        test_constant_operation(
+        "constant_like(42.0, [[[[1, 2], [3, 4]]], [[[1, 2], [3, 4]]]])",
+        "[[[[42.0, 42.0], [42.0, 42.0]]], [[[42.0, 42.0], [42.0, 42.0]]]]");
 
     // empty
     test_empty_operation(
