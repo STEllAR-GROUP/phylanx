@@ -22,7 +22,7 @@
 #include <hpx/errors/throw_exception.hpp>
 
 #include <array>
-#include <cmath>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -86,6 +86,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        static std::atomic<std::size_t> const_count(0);
+        std::string generate_const_name(std::string&& given_name)
+        {
+            if (given_name.empty())
+            {
+                return "full_array_" + std::to_string(++const_count);
+            }
+
+            return std::move(given_name);
+        }
+    }
+
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value,
@@ -93,14 +107,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const& numtiles, std::string&& given_name,
         std::string const& name, std::string const& codename) const
     {
-        if (dim < numtiles)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_matrixops::dist_constant::constant1d_helper",
-                util::generate_error_message("the vector length should not be "
-                                             "less than number of tiles"));
-        }
-
         using namespace execution_tree;
 
         T const_value =
@@ -116,17 +122,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             tiling_span(start, start + size));
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
-        // TODO: check for the name uniqueness
-        std::string base_name;
-        if (given_name.empty())
-        {
-            base_name = "constant_vector_" + std::to_string(numtiles) + "_" +
-                std::to_string(dim);
-        }
-        else
-        {
-            base_name = std::move(given_name);
-        }
+
+        std::string base_name =
+            detail::generate_const_name(std::move(given_name));
 
         annotation_information ann_info(base_name, 0);    //generation 0
 
@@ -205,17 +203,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
-        // TODO: check for the name uniqueness
-        std::string base_name;
-        if (given_name.empty())
-        {
-            base_name = "constant_matrix_" + std::to_string(numtiles) + "_" +
-                std::to_string(dims[0]) + "x" + std::to_string(dims[1]);
-        }
-        else
-        {
-            base_name = std::move(given_name);
-        }
+
+        std::string base_name =
+            detail::generate_const_name(std::move(given_name));
 
         annotation_information ann_info(base_name, 0);    //generation 0
 

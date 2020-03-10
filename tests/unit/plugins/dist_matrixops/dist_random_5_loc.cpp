@@ -119,7 +119,7 @@ void test_random_5loc_2d_1()
         )", R"(
             annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0], [42.0, 42.0],
                 [42.0, 42.0]],
-                "random_matrix_5_5x8",
+                "random_array_1",
                 list("args",
                     list("locality", 0, 5),
                     list("tile", list("columns", 0, 2), list("rows", 0, 5))))
@@ -132,7 +132,7 @@ void test_random_5loc_2d_1()
         )", R"(
             annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0], [42.0, 42.0],
                 [42.0, 42.0]],
-                "random_matrix_5_5x8",
+                "random_array_1",
                 list("args",
                     list("locality", 1, 5),
                     list("tile", list("columns", 2, 4), list("rows", 0, 5))))
@@ -145,7 +145,7 @@ void test_random_5loc_2d_1()
         )", R"(
             annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0], [42.0, 42.0],
                 [42.0, 42.0]],
-                "random_matrix_5_5x8",
+                "random_array_1",
                 list("args",
                     list("locality", 2, 5),
                     list("tile", list("columns", 4, 6), list("rows", 0, 5))))
@@ -157,7 +157,7 @@ void test_random_5loc_2d_1()
             random_d(list(5, 8), 3, 5)
         )", R"(
             annotate_d([[42.0], [42.0], [42.0], [42.0], [42.0]],
-                "random_matrix_5_5x8",
+                "random_array_1",
                 list("args",
                     list("locality", 3, 5),
                     list("tile", list("columns", 6, 7), list("rows", 0, 5))))
@@ -169,7 +169,7 @@ void test_random_5loc_2d_1()
             random_d(list(5, 8), 4, 5)
         )", R"(
             annotate_d([[42.0], [42.0], [42.0], [42.0], [42.0]],
-                "random_matrix_5_5x8",
+                "random_array_1",
                 list("args",
                     list("locality", 4, 5),
                     list("tile", list("columns", 7, 8), list("rows", 0, 5))))

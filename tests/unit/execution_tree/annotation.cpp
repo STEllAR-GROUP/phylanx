@@ -38,9 +38,27 @@ void test_annotation_equality_0()
         compile_and_run("annotation_1", annotation_1));
 }
 
+void test_annotation_equality_1()
+{
+    std::string annotation_0 = R"(
+            annotate_d([[91, 91]], "test2d2d_4_1/1",
+                list("tile", list("columns", 0, 2), list("rows", 0, 1)))
+        )";
+    std::string annotation_1 = R"(
+            annotate_d([[91, 91]], "test2d2d_4_1/1",
+                list("args",
+                    list("locality", 0, 1),
+                    list("tile", list("rows", 0, 1), list("columns", 0, 2))))
+        )";
+
+    HPX_TEST_EQ(compile_and_run("annotation_0", annotation_0),
+        compile_and_run("annotation_1", annotation_1));
+}
+
 int main(int argc, char* argv[])
 {
     test_annotation_equality_0();
+    test_annotation_equality_1();
 
     return hpx::util::report_errors();
 }

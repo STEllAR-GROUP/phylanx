@@ -13,6 +13,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <tuple>
 
 #include <blaze/Math.h>
@@ -24,6 +25,15 @@ namespace tile_calculation
         std::uint32_t const& tile_idx, std::size_t const& dim,
         std::uint32_t const& numtiles)
     {
+        if (dim < numtiles)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_calculation::tile_calculation_1d",
+                phylanx::util::generate_error_message(
+                    "the length of array in each dimension should not be less "
+                    "than number of tiles on that dimension"));
+        }
+
         // calculates start and size or the tile_index-th tile on the given
         // dimension with the given dim size
         std::int64_t start;
@@ -72,18 +82,9 @@ namespace tile_calculation
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
         if (tiling_type == "row" ||
-            (row_dim > column_dim && numtiles == 2 && tiling_type != "column"))
+            (row_dim >= column_dim && numtiles == 2 && tiling_type != "column"))
         {
             // row_tiling (horizontal tiling)
-            if (row_dim < numtiles)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "tile_calculation::tile_calculation_2d",
-                    phylanx::util::generate_error_message(
-                        "the row dimension should not be less than number of "
-                        "tiles"));
-            }
-
             column_start = 0;
             column_size = column_dim;
             std::tie(row_start, row_size) =
@@ -93,15 +94,6 @@ namespace tile_calculation
             (row_dim < column_dim && numtiles == 2))
         {
             // column_tiling (vertical tiling)
-            if (column_dim < numtiles)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "tile_calculation::tile_calculation_2d",
-                    phylanx::util::generate_error_message(
-                        "the column dimension should not be less than number "
-                        "of tiles"));
-            }
-
             row_start = 0;
             row_size = row_dim;
             std::tie(column_start, column_size) =
@@ -110,15 +102,6 @@ namespace tile_calculation
         else if (tiling_type == "sym" && numtiles == 4)
         {
             // distributing the matrix over 4 blocks
-            if (column_dim < 2 || row_dim < 2)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "tile_calculation::tile_calculation_2d",
-                    phylanx::util::generate_error_message(
-                        "each dimension should have at least the length of 2 "
-                        "to make 4 blocks"));
-            }
-
             std::tie(row_start, row_size) =
                 tile_calculation_1d(blaze::floor(tile_idx / 2), row_dim, 2);
             std::tie(column_start, column_size) =
@@ -133,14 +116,6 @@ namespace tile_calculation
             if (row_dim > column_dim)
             {
                 // larger number of rows (larger row_dim)
-                if (column_dim < first_div || row_dim < second_div)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "tile_calculation::tile_calculation_2d",
-                        phylanx::util::generate_error_message(
-                            "at least one of the marix dimensions is smaller "
-                            "than the number of tiles in that direction"));
-                }
                 std::tie(row_start, row_size) = tile_calculation_1d(
                     blaze::floor(tile_idx / first_div), row_dim, second_div);
                 std::tie(column_start, column_size) = tile_calculation_1d(
@@ -149,14 +124,6 @@ namespace tile_calculation
             else
             {
                 // larger column_dim
-                if (column_dim < second_div || row_dim < first_div)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "tile_calculation::tile_calculation_2d",
-                        phylanx::util::generate_error_message(
-                            "at least one of the marix dimensions is smaller "
-                            "than the number of tiles in that direction"));
-                }
                 std::tie(row_start, row_size) = tile_calculation_1d(
                     blaze::floor(tile_idx / second_div), row_dim, first_div);
                 std::tie(column_start, column_size) = tile_calculation_1d(

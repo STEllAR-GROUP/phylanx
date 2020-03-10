@@ -25,8 +25,6 @@ namespace phylanx { namespace common
 
     PHYLANX_COMMON_EXPORT std::size_t extract_num_dimensions(
         ir::range const& shape);
-    PHYLANX_COMMON_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
-    extract_dimensions(ir::range const& shape);
 
     PHYLANX_COMMON_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
     extract_dimensions(ir::range const& shape);

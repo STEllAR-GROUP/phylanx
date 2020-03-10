@@ -11,32 +11,25 @@
 #include <phylanx/execution_tree/meta_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/tiling_annotations.hpp>
-#include <phylanx/execution_tree/primitives/generic_function.hpp>
-#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_random.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/util/random.hpp>
 
-#include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
 #include <array>
-#include <cmath>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <ctime>
-#include <map>
 #include <memory>
 #include <random>
 #include <string>
 #include <utility>
 #include <vector>
-#include <sstream>
-#include <type_traits>
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
@@ -88,12 +81,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::size_t extract_num_dimensions_(ir::range const& shape)
+        static std::atomic<std::size_t> rand_count(0);
+        std::string generate_random_name(std::string&& given_name)
+        {
+            if (given_name.empty())
+            {
+                return "random_array_" + std::to_string(++rand_count);
+            }
+
+            return std::move(given_name);
+        }
+
+        std::size_t extract_num_dimensions(ir::range const& shape)
         {
             return shape.size();
         }
 
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions_(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
             ir::range const& shape)
         {
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0};
@@ -152,39 +156,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         double const& mean, double const& std, std::string const& name_,
         std::string const& codename_) const
     {
-        if (dim < numtiles)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_matrixops::dist_random::dist_random1d",
-                util::generate_error_message("the vector length should not be "
-                                             "less than number of tiles"));
-        }
-
         using namespace execution_tree;
-
-        std::normal_distribution<> dist(mean, std);
 
         std::int64_t start;
         std::size_t size;
         std::tie(start, size) =
             tile_calculation::tile_calculation_1d(tile_idx, dim, numtiles);
 
+        std::normal_distribution<> dist(mean, std);
+
         tiling_information_1d tile_info(
             tiling_information_1d::tile1d_type::columns,
             tiling_span(start, start + size));
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
-        // TODO: check for the name uniqueness
-        std::string base_name;
-        if (given_name.empty())
-        {
-            base_name = "random_vector_" + std::to_string(numtiles) + "_" +
-                std::to_string(dim);
-        }
-        else
-        {
-            base_name = std::move(given_name);
-        }
+
+        std::string base_name =
+            detail::generate_random_name(std::move(given_name));
 
         annotation_information ann_info(base_name, 0);    //generation 0
 
@@ -213,7 +201,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {
         using namespace execution_tree;
 
-        std::normal_distribution<> dist(mean, std);
         std::size_t const rows = dims[0];
         std::size_t const columns = dims[1];
         std::int64_t row_start, column_start;
@@ -223,31 +210,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             tile_calculation::tile_calculation_2d(
                 tile_idx, rows, columns, numtiles, tiling_type);
 
+        std::normal_distribution<> dist(mean, std);
+
         tiling_information_2d tile_info(
             tiling_span(column_start, column_start + column_size),
             tiling_span(row_start, row_start + row_size));
 
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
-        // TODO: check for the name uniqueness
-        std::string base_name;
-        if (given_name.empty())
-        {
-            base_name = "random_matrix_" + std::to_string(numtiles) + "_" +
-                std::to_string(dims[0]) + "x" + std::to_string(dims[1]);
-        }
-        else
-        {
-            base_name = std::move(given_name);
-        }
+
+        std::string base_name =
+            detail::generate_random_name(std::move(given_name));
 
         annotation_information ann_info(base_name, 0);    //generation 0
 
         auto attached_annotation =
             std::make_shared<execution_tree::annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name_, codename_), ann_info,
-                name_, codename_));
-
+                locality_ann, tile_info.as_annotation(name_, codename_),
+                ann_info, name_, codename_));
 
         blaze::DynamicMatrix<double> m(rows, columns);
         for (std::size_t i = 0; i != rows; ++i)
@@ -310,8 +290,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                     "dimensions that is not supported"));
                         }
 
-                        dims = detail::extract_dimensions_(shape);
-                        numdims = detail::extract_num_dimensions_(shape);
+                        dims = detail::extract_dimensions(shape);
+                        numdims = detail::extract_num_dimensions(shape);
                     }
                     else if (is_numeric_operand(args[0]))
                     {

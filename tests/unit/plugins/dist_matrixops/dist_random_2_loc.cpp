@@ -53,7 +53,7 @@ void test_random_1d_0()
         test_random_d_operation("test_random_2loc1d_0", R"(
             random_d(list(4), 0, 2)
         )", R"(
-            annotate_d([42.0, 42.0], "random_vector_2_4",
+            annotate_d([42.0, 42.0], "random_array_1",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 2))))
@@ -64,7 +64,7 @@ void test_random_1d_0()
         test_random_d_operation("test_random_2loc1d_0", R"(
             random_d(list(4), 1, 2)
         )", R"(
-            annotate_d([42.0, 42.0], "random_vector_2_4",
+            annotate_d([42.0, 42.0], "random_array_1",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 2, 4))))
@@ -79,7 +79,7 @@ void test_random_1d_1()
         test_random_d_operation("test_random_2loc1d_1", R"(
             random_d(list(5), 0, 2)
         )", R"(
-            annotate_d([42.0, 42.0, 42.0], "random_vector_2_5",
+            annotate_d([42.0, 42.0, 42.0], "random_array_2",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 3))))
@@ -90,7 +90,7 @@ void test_random_1d_1()
         test_random_d_operation("test_random_2loc1d_1", R"(
             random_d(list(5), 1, 2)
         )", R"(
-            annotate_d([42.0, 42.0], "random_vector_2_5",
+            annotate_d([42.0, 42.0], "random_array_2",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 3, 5))))
@@ -160,7 +160,7 @@ void test_random_2d_0()
         )", R"(
             annotate_d([[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
                         [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
-                "random_matrix_2_4x6",
+                "random_array_3",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 3), list("rows", 0, 4))))
@@ -173,7 +173,7 @@ void test_random_2d_0()
         )", R"(
             annotate_d([[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
                         [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
-                "random_matrix_2_4x6",
+                "random_array_3",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 3, 6), list("rows", 0, 4))))
