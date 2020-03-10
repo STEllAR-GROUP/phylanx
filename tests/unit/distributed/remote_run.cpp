@@ -46,7 +46,7 @@ phylanx::execution_tree::compiler::function compile(
 
 void test_remote_run_on(std::uint32_t there)
 {
-    auto et = compile("debug(locality())", there);
+    auto et = compile("debug(find_here())", there);
     et();
 }
 
