@@ -33,7 +33,7 @@ namespace phylanx { namespace plugin
         // load all components as described in the configuration information
         if (!ini.has_section("phylanx.plugins"))
         {
-            LRT_(info) << "No plugins found/loaded." << std::endl;
+            LRT_(info) << "No plugins found/loaded.\n";
             return true;     // no plugins to load
         }
 
