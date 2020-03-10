@@ -780,10 +780,6 @@ class PhySL:
             symbol = symbol.replace('ones_like', 'constant_like')
             return [symbol, ('1', args + kwargs)]
 
-        if 'full_like' in symbol:
-            symbol = symbol.replace('full_like', 'constant_like')
-            return [symbol, (args[1], (args[0], ) + kwargs)]
-
         if 'empty_like' in symbol:
             symbol = symbol.replace('empty_like', 'constant_like')
             return [symbol, (None, args + kwargs)]
@@ -815,7 +811,7 @@ class PhySL:
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # wrap all tuples
-        args = tuple([op, a] if isinstance(a, tuple) else a for a in args)
+        args = tuple([oplist, a] if isinstance(a, tuple) else a for a in args)
         return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):

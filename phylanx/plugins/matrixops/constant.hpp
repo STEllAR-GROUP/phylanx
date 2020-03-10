@@ -28,6 +28,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<constant>
     {
+    public:
+        enum class operation
+        {
+            constant,
+            constant_like,
+            full,
+            full_like
+        };
+
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
@@ -35,6 +44,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
         hpx::future<primitive_argument_type> eval_full(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
+
+        hpx::future<primitive_argument_type> eval_full_like(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const;
@@ -58,8 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& codename_) const;
 
     private:
-        bool implements_like_operations_;
-        bool implements_full_operations_;
+        operation operation_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

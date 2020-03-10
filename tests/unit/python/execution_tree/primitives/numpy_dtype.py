@@ -131,4 +131,18 @@ def test_full_like():
 
 
 a = np.zeros((3, 3), dtype=int)
-assert (test_full_like() == np.full_like(a, 42, dtype=int)).all()
+r = test_full_like()
+assert (r == np.full_like(a, 42, dtype=int)).all()
+assert (r.dtype == np.int64)
+
+
+@Phylanx
+def test_full_like_nodtype():
+    a = np.zeros((3, 3), dtype='float')
+    return np.full_like(a, 42)
+
+
+a = np.zeros((3, 3), dtype=float)
+r = test_full_like_nodtype()
+assert (r == np.full_like(a, 42)).all()
+assert (r.dtype == np.float)
