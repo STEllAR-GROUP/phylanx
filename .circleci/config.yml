@@ -152,7 +152,7 @@ jobs:
                         -DPHYLANX_WITH_TOOLS=ON                     \
                         -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
                         -DPHYLANX_WITH_DOCUMENTATION=ON             \
-                        -DPHYLANX_WITH_HIGHFIVE=ON                  \
+                        -DPHYLANX_WITH_HIGHFIVE=OFF                 \
                         -DPHYLANX_WITH_CXX17=ON
             - persist_to_workspace:
                 root: /
