@@ -168,10 +168,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#eye">eye</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-read">file_read</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-read-csv">file_read_csv</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-read-hdf5">file_read_hdf5</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-write">file_write</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-write-csv">file_write_csv</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-write-hdf5">file_write_hdf5</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filter">filter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#flatten">flatten</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#flip">flip</a></li>
@@ -1666,19 +1664,6 @@ csv file.</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="file-read-hdf5">
-<h2>file_read_hdf5<a class="headerlink" href="#file-read-hdf5" title="Permalink to this headline">¶</a></h2>
-<dl>
-<dt>file_read_hdf5 (fname,dsetname)</dt><dd><p>Args:</p>
-<blockquote>
-<div><p>fname (string) : a file name
-dsetname (string) : a dataset name</p>
-</div></blockquote>
-<p>Returns:</p>
-<p>The dataset, either a matrix or vector.</p>
-</dd>
-</dl>
-</div>
 <div class="section" id="file-write">
 <h2>file_write<a class="headerlink" href="#file-write" title="Permalink to this headline">¶</a></h2>
 <dl>
@@ -1701,20 +1686,6 @@ m (array or matrix): an object to store in the file.</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>The matrix written.</p>
-</dd>
-</dl>
-</div>
-<div class="section" id="file-write-hdf5">
-<h2>file_write_hdf5<a class="headerlink" href="#file-write-hdf5" title="Permalink to this headline">¶</a></h2>
-<dl>
-<dt>file_write_hdf5 (fname,dsetname,data)</dt><dd><p>Args:</p>
-<blockquote>
-<div><p>fname (string) : a file name
-dsetname (string) : a dataset name
-data (matrix or vector) : a data set</p>
-</div></blockquote>
-<p>Returns:</p>
-<p>Zero on success.</p>
 </dd>
 </dl>
 </div>
@@ -3274,7 +3245,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Mar 06, 2020.
+        Last updated on Mar 12, 2020.
       </span>
 
     </p>

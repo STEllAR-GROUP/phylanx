@@ -1191,19 +1191,6 @@ file_read_csv (fname)
             csv file.
 
 
-file_read_hdf5
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-file_read_hdf5 (fname,dsetname)
-            Args:
-
-                fname (string) : a file name
-                dsetname (string) : a dataset name
-
-            Returns:
-
-            The dataset, either a matrix or vector.
-
-
 file_write
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 file_write (fname, obj)
@@ -1226,20 +1213,6 @@ file_write_csv (fname, m)
             Returns:
 
             The matrix written.
-
-
-file_write_hdf5
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-file_write_hdf5 (fname,dsetname,data)
-            Args:
-
-                fname (string) : a file name
-                dsetname (string) : a dataset name
-                data (matrix or vector) : a data set
-
-            Returns:
-
-            Zero on success.
 
 
 filter
