@@ -181,6 +181,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#for">for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#for-each">for_each</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#format">format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#full">full</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#full-like">full_like</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-seed-action">get_seed_action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient">gradient</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hard-sigmoid">hard_sigmoid</a></li>
@@ -1939,6 +1941,47 @@ def foo():</p>
 <p>A formatted string, with each <cite>{}</cite> in s replaced by
 a value from <cite>*args</cite>.</p>
 </div></blockquote>
+</div>
+<div class="section" id="full">
+<h2>full<a class="headerlink" href="#full" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>full (shape, value, dtype)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>shape (int or shape): the number of values
+value (float): a constant value
+dtype (string, optional): the data-type of the returned array,</p>
+<blockquote>
+<div><p>defaults to the data type of ‘value’, also in this case
+‘value’ should not be ‘None’.</p>
+</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p>An array of size ‘shape’ with each element equal to ‘value’. If
+‘value’ is equal to None, the array elements are uninitialized.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="full-like">
+<h2>full_like<a class="headerlink" href="#full-like" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>full_like (value, a, dtype)</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>a (array-like): the shape of this array-like will be used as</dt><dd><p>to determine the shape of the result</p>
+</dd>
+<dt>value (float): a constant value, if ‘None’ this operation</dt><dd><p>returns an uninitialized array-like</p>
+</dd>
+<dt>dtype (string, optional): the data-type of the returned array,</dt><dd><p>defaults to ‘float’. If not specified the result’s dtype is
+taken from the array ‘a’.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>An array of the same size as ‘a’ with each element equal to
+‘value’. If ‘value’ is equal to None, the array elements are
+uninitialized.</p>
+</dd>
+</dl>
 </div>
 <div class="section" id="get-seed-action">
 <h2>get_seed_action<a class="headerlink" href="#get-seed-action" title="Permalink to this headline">¶</a></h2>

@@ -1439,6 +1439,43 @@ format (s,args)
             a value from `*args`.
 
 
+full
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+full (shape, value, dtype)
+            Args:
+
+                shape (int or shape): the number of values
+                value (float): a constant value
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to the data type of 'value', also in this case
+                  'value' should not be 'None'.
+
+            Returns:
+
+            An array of size 'shape' with each element equal to 'value'. If
+            'value' is equal to None, the array elements are uninitialized.
+
+
+full_like
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+full_like (value, a, dtype)
+            Args:
+
+                a (array-like): the shape of this array-like will be used as
+                                to determine the shape of the result
+                value (float): a constant value, if 'None' this operation
+                  returns an uninitialized array-like
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to 'float'. If not specified the result's dtype is
+                  taken from the array 'a'.
+
+            Returns:
+
+            An array of the same size as 'a' with each element equal to
+            'value'. If 'value' is equal to None, the array elements are
+            uninitialized.
+
+
 get_seed_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 get_seed_action (Args:)
