@@ -9,6 +9,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_cannon_product.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_constant.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_random.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_transpose_operation.hpp>
 
 #endif
