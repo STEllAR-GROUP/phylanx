@@ -125,8 +125,6 @@ namespace phylanx { namespace execution_tree
                     "tile information", name, codename));
         }
 
-        auto a = extract_numeric_value_dimensions(arg, name, codename);
-        auto b = dimensions(name, codename);
         if (extract_numeric_value_dimensions(arg, name, codename) !=
             dimensions(name, codename))
         {

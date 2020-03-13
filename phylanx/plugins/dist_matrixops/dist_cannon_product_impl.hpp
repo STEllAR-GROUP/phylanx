@@ -73,14 +73,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::size_t lhs_num_cols = lhs_localities.columns();
         std::size_t rhs_num_rows = rhs_localities.rows();
         execution_tree::tiling_span const& lhs_col_span =
-            lhs_localities.get_span(0);
-        execution_tree::tiling_span const& lhs_row_span =
             lhs_localities.get_span(1);
+        execution_tree::tiling_span const& lhs_row_span =
+            lhs_localities.get_span(0);
 
         execution_tree::tiling_span const& rhs_col_span =
-            rhs_localities.get_span(0);
-        execution_tree::tiling_span const& rhs_row_span =
             rhs_localities.get_span(1);
+        execution_tree::tiling_span const& rhs_row_span =
+            rhs_localities.get_span(0);
 
         // Maybe this error should be split to be more descriptive
         if (lhs_num_cols % lhs_col_span.size() != 0 ||
@@ -114,13 +114,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // guaranteed to be sorted by locality index
             auto const& tmp_lhs_tile = lhs_localities.tiles_[i];
             auto const& tmp_rhs_tile = rhs_localities.tiles_[i];
-            if (tmp_lhs_tile.spans_[1].start_ == lhs_row_span.start_ &&
-                tmp_lhs_tile.spans_[1].size() == lhs_row_span.size())
+            if (tmp_lhs_tile.spans_[0].start_ == lhs_row_span.start_ &&
+                tmp_lhs_tile.spans_[0].size() == lhs_row_span.size())
             {
                 lhs_tile_row.push_back(count);
             }
-            if (tmp_rhs_tile.spans_[0].start_ == rhs_col_span.start_ &&
-                tmp_rhs_tile.spans_[0].size() == rhs_col_span.size())
+            if (tmp_rhs_tile.spans_[1].start_ == rhs_col_span.start_ &&
+                tmp_rhs_tile.spans_[1].size() == rhs_col_span.size())
             {
                 rhs_tile_col.push_back(count);
             }
@@ -147,13 +147,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::size_t lhs_tile_idx = lhs_tile_row[i];
             std::size_t rhs_tile_idx = rhs_tile_col[i];
             std::size_t lhs_local_width =
-                lhs_localities.tiles_[lhs_tile_idx].spans_[0].size();
+                lhs_localities.tiles_[lhs_tile_idx].spans_[1].size();
             std::size_t rhs_local_height =
-                rhs_localities.tiles_[rhs_tile_idx].spans_[1].size();
-            if (lhs_localities.tiles_[lhs_tile_idx].spans_[0].start_ <
+                rhs_localities.tiles_[rhs_tile_idx].spans_[0].size();
+            if (lhs_localities.tiles_[lhs_tile_idx].spans_[1].start_ <
                     max_start_col ||
                 lhs_local_width != lhs_col_span.size() ||
-                rhs_localities.tiles_[rhs_tile_idx].spans_[1].start_ <
+                rhs_localities.tiles_[rhs_tile_idx].spans_[0].start_ <
                     max_start_row ||
                 rhs_local_height != rhs_row_span.size())
             {
@@ -163,9 +163,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         "tiles not sorted in order of locality"));
             }
             max_start_col =
-                lhs_localities.tiles_[lhs_tile_idx].spans_[0].start_;
+                lhs_localities.tiles_[lhs_tile_idx].spans_[1].start_;
             max_start_row =
-                rhs_localities.tiles_[rhs_tile_idx].spans_[1].start_;
+                rhs_localities.tiles_[rhs_tile_idx].spans_[0].start_;
         }
 
         std::uint32_t lhs_locality_id = lhs_localities.locality_.locality_id_;
@@ -267,10 +267,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             execution_tree::primitive_argument_type{std::move(result_matrix)};
 
         execution_tree::annotation ann{ir::range("tile",
-            ir::range("columns", rhs_localities.get_span(0).start_,
-                rhs_localities.get_span(0).stop_),
-            ir::range("rows", lhs_localities.get_span(1).start_,
-                lhs_localities.get_span(1).stop_))};
+            ir::range("columns", rhs_localities.get_span(1).start_,
+                rhs_localities.get_span(1).stop_),
+            ir::range("rows", lhs_localities.get_span(0).start_,
+                lhs_localities.get_span(0).stop_))};
         // Generate new tiling annotation for the result matrix
         execution_tree::tiling_information_2d tile_info(ann, name_, codename_);
 
