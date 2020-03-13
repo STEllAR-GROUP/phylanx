@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims);
 
         // extract dimensionality and sizes
-        std::size_t dimension() const;
+        std::size_t num_dimensions() const;
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dimensions(
             std::string const& name, std::string const& codename) const;
 

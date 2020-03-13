@@ -292,7 +292,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimension() < 2 || rhs_localities.dimension() < 2)
+        if (lhs_localities.num_dimensions() < 2 ||
+            rhs_localities.num_dimensions() < 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::dot2d2d_par",

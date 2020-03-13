@@ -125,6 +125,8 @@ namespace phylanx { namespace execution_tree
                     "tile information", name, codename));
         }
 
+        auto a = extract_numeric_value_dimensions(arg, name, codename);
+        auto b = dimensions(name, codename);
         if (extract_numeric_value_dimensions(arg, name, codename) !=
             dimensions(name, codename))
         {
@@ -169,7 +171,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    std::size_t localities_information::dimension() const
+    std::size_t localities_information::num_dimensions() const
     {
         HPX_ASSERT(tiles_.size() == locality_.num_localities_);
         return tiles_[locality_.locality_id_].dimension();
@@ -202,21 +204,24 @@ namespace phylanx { namespace execution_tree
             break;
 
         case 2:
-            result[1] = local_tile.spans_[0].size();
-            result[0] = local_tile.spans_[1].size();
+            // (rows, columns)
+            result[0] = local_tile.spans_[0].size();
+            result[1] = local_tile.spans_[1].size();
             break;
 
         case 3:
-            result[2] = local_tile.spans_[0].size();
+            // (pages, rows, columns)
+            result[0] = local_tile.spans_[0].size();
             result[1] = local_tile.spans_[1].size();
-            result[0] = local_tile.spans_[2].size();
+            result[2] = local_tile.spans_[2].size();
             break;
 
         case 4:
-            result[3] = local_tile.spans_[0].size();
-            result[2] = local_tile.spans_[1].size();
-            result[1] = local_tile.spans_[2].size();
-            result[0] = local_tile.spans_[3].size();
+            // (quats, pages, rows, columns)
+            result[0] = local_tile.spans_[0].size();
+            result[1] = local_tile.spans_[1].size();
+            result[2] = local_tile.spans_[2].size();
+            result[3] = local_tile.spans_[3].size();
             break;
 
         default:
@@ -264,31 +269,86 @@ namespace phylanx { namespace execution_tree
         return detail::dimension<0>(tiles_);
     }
 
+    // we assume that all tiles have the same number of dimension
     std::size_t localities_information::quats() const
     {
-        return detail::dimension<3>(tiles_);
+        HPX_ASSERT(tiles_[0].dimension() == 4);
+        return detail::dimension<0>(tiles_);
     }
 
     std::size_t localities_information::pages() const
     {
-        return detail::dimension<2>(tiles_);
+        switch (tiles_[0].dimension())
+        {
+        case 3:
+            return detail::dimension<0>(tiles_);
+
+        case 4:
+            return detail::dimension<1>(tiles_);
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::pages",
+            util::generate_error_message(
+                "unexpected dimensionality for calling pages()"));
     }
 
     std::size_t localities_information::rows() const
     {
-        return detail::dimension<1>(tiles_);
+        switch (tiles_[0].dimension())
+        {
+        case 1:
+            // assertion that it's a row vector
+            return detail::dimension<0>(tiles_);
+
+        case 2:
+            return detail::dimension<0>(tiles_);
+
+        case 3:
+            return detail::dimension<1>(tiles_);
+
+        case 4:
+            return detail::dimension<2>(tiles_);
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::rows",
+            util::generate_error_message(
+                "unexpected dimensionality for calling rows()"));
     }
 
     std::size_t localities_information::columns() const
     {
-        return detail::dimension<0>(tiles_);
+        switch (tiles_[0].dimension())
+        {
+        case 1:
+            return detail::dimension<0>(tiles_);
+
+        case 2:
+            return detail::dimension<1>(tiles_);
+
+        case 3:
+            return detail::dimension<2>(tiles_);
+
+        case 4:
+            return detail::dimension<3>(tiles_);
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "localities_information::columns",
+            util::generate_error_message(
+                "the given dimensionality is unsupported"));
     }
 
     ////////////////////////////////////////////////////////////////////////////
     bool localities_information::has_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(dim < dimension());
+        HPX_ASSERT(dim < num_dimensions());
 
         return tiles_[locality_.locality_id_].spans_[dim].is_valid();
     }
@@ -296,7 +356,7 @@ namespace phylanx { namespace execution_tree
     tiling_span localities_information::get_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(dim < dimension());
+        HPX_ASSERT(dim < num_dimensions());
 
         return tiles_[locality_.locality_id_].spans_[dim];
     }
@@ -306,7 +366,7 @@ namespace phylanx { namespace execution_tree
         std::uint32_t loc, std::size_t dim, tiling_span const& span) const
     {
         HPX_ASSERT(loc < tiles_.size());
-        HPX_ASSERT(dim < dimension());
+        HPX_ASSERT(dim < num_dimensions());
 
         auto const& gspan = tiles_[loc].spans_[dim];
         tiling_span result{
