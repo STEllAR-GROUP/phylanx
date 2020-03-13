@@ -55,6 +55,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             An array of size 'shape' with each element equal to 'value'. If
             'value' is equal to None, the array elements are uninitialized.)"
         },
+        match_pattern_type{"full",
+            std::vector<std::string>{R"(
+                full(
+                    _1_shape,
+                    _2_value,
+                    __arg(_3_dtype, nil)
+                )
+            )"},
+            &create_constant, &create_primitive<constant>, R"(
+            shape, value, dtype
+            Args:
+
+                shape (int or shape): the number of values
+                value (float): a constant value
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to the data type of 'value', also in this case
+                  'value' should not be 'None'.
+
+            Returns:
+
+            An array of size 'shape' with each element equal to 'value'. If
+            'value' is equal to None, the array elements are uninitialized.)"
+        },
         match_pattern_type{"constant_like",
             std::vector<std::string>{R"(
                 constant_like(
@@ -79,57 +102,96 @@ namespace phylanx { namespace execution_tree { namespace primitives
             An array of the same size as 'a' with each element equal to
             'value'. If 'value' is equal to None, the array elements are
             uninitialized.)"
+        },
+        match_pattern_type{"full_like",
+            std::vector<std::string>{R"(
+                full_like(
+                    _1_a,
+                    _2_value,
+                    __arg(_3_dtype, nil)
+                )
+            )"},
+            &create_constant, &create_primitive<constant>, R"(
+            value, a, dtype
+            Args:
+
+                a (array-like): the shape of this array-like will be used as
+                                to determine the shape of the result
+                value (float): a constant value, if 'None' this operation
+                  returns an uninitialized array-like
+                dtype (string, optional): the data-type of the returned array,
+                  defaults to 'float'. If not specified the result's dtype is
+                  taken from the array 'a'.
+
+            Returns:
+
+            An array of the same size as 'a' with each element equal to
+            'value'. If 'value' is equal to None, the array elements are
+            uninitialized.)"
         }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        bool extract_if_like(std::string const& name)
+        constant::operation extract_operation_helper(std::string const& name)
+        {
+            if (name.find("constant_like") == 0)
+                return constant::operation::constant_like;
+
+            if (name == "full")
+                return constant::operation::full;
+
+            if (name.find("full_like") == 0)
+                return constant::operation::full_like;
+
+            return constant::operation::constant;
+        }
+        constant::operation extract_operation(std::string const& name)
         {
             compiler::primitive_name_parts name_parts;
             if (compiler::parse_primitive_name(name, name_parts))
             {
-                return name_parts.primitive.find("constant_like") == 0;
+                return extract_operation_helper(name_parts.primitive);
             }
-            return name.find("constant_like") == 0;
+            return extract_operation_helper(name);
         }
     }
 
     constant::constant(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , implements_like_operations_(detail::extract_if_like(name))
+      , operation_(detail::extract_operation(name))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type constant::constant_nd(std::size_t numdims,
         primitive_argument_type&& value,
         operand_type::dimensions_type const& dims, node_data_type dtype,
-        bool implements_like_, std::string const& name_,
+        bool implements_like, std::string const& name_,
         std::string const& codename_) const
     {
         switch (numdims)
         {
         case 0:
             return common::constant0d(
-                std::move(value), dtype, implements_like_, name_, codename_);
+                std::move(value), dtype, implements_like, name_, codename_);
 
         case 1:
             return common::constant1d(std::move(value), dims[0], dtype,
-                implements_like_, name_, codename_);
+                implements_like, name_, codename_);
 
         case 2:
             return common::constant2d(std::move(value), dims, dtype,
-                implements_like_, name_, codename_);
+                implements_like, name_, codename_);
 
         case 3:
             return common::constant3d(std::move(value), dims, dtype,
-                implements_like_, name_, codename_);
+                implements_like, name_, codename_);
 
         case 4:
             return common::constant4d(std::move(value), dims, dtype,
-                implements_like_, name_, codename_);
+                implements_like, name_, codename_);
 
         default:
             break;
@@ -145,9 +207,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
+        if (operation_ == operation::full)
+        {
+            return eval_full(operands, args, std::move(ctx));
+        }
+        if (operation_ == operation::full_like)
+        {
+            return eval_full_like(operands, args, std::move(ctx));
+        }
+
         // verify arguments
-        if ((implements_like_operations_ && operands.size() < 2) ||
-            (!implements_like_operations_ && operands.empty()) ||
+        if ((operation_ == operation::constant_like && operands.size() < 2) ||
+            (operation_ == operation::constant && operands.empty()) ||
             operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -158,7 +229,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // support empty/empty_like, i.e. allow for operands[0] to be nil
-        if (implements_like_operations_)
+        if (operation_ == operation::constant_like)
         {
             // for constant_like, reference array must be always be given
             if (!valid(operands[1]))
@@ -188,7 +259,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() != 3)
         {
             ops.resize(3);      // fill rest with 'nil'
-            if (!implements_like_operations_)
+            if (operation_ == operation::constant)
             {
                 // default 'dtype' for constant is 'float64'
                 ops[2] = primitive_argument_type{"float"};
@@ -217,7 +288,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t numdims = 0;
                 if (is_list_operand_strict(op1))
                 {
-                    if (this_->implements_like_operations_)
+                    if (this_->operation_ == operation::constant_like)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
@@ -244,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 else if (is_numeric_operand(op1))
                 {
-                    if (this_->implements_like_operations_)
+                    if (this_->operation_ == operation::constant_like)
                     {
                         // support constant_like operations
                         dims = extract_numeric_value_dimensions(
@@ -275,15 +346,177 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // constant() without dtype defaults to float64
-                if (!this_->implements_like_operations_ &&
+                if (this_->operation_ == operation::constant &&
                     dtype == node_data_type_unknown)
                 {
                     dtype = node_data_type_double;
                 }
 
                 return this_->constant_nd(numdims, std::move(value), dims,
-                    dtype, this_->implements_like_operations_, this_->name_,
-                    this_->codename_);
+                    dtype, this_->operation_ == operation::constant_like,
+                    this_->name_, this_->codename_);
+
+            }),
+            value_operand(std::move(ops[0]), args, name_, codename_, ctx),
+            value_operand(std::move(ops[1]), args, name_, codename_, ctx),
+            value_operand(std::move(ops[2]), args, name_, codename_, ctx));
+    }
+
+    hpx::future<primitive_argument_type> constant::eval_full(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        HPX_ASSERT(operation_ == operation::full);
+
+        // verify arguments
+        if (operands.size() < 2 || operands.size() > 3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "constant::eval",
+                generate_error_message(
+                    "the full primitive requires "
+                        "at least two and at most 3 operands"));
+        }
+
+        // supply missing default arguments
+        primitive_arguments_type ops = operands;
+        if (operands.size() != 3)
+        {
+            // default 'dtype' for full is extracted from 'value'
+            ops.resize(3);      // fill rest with 'nil'
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& shape,
+                    primitive_argument_type&& value,
+                    primitive_argument_type&& dtype_op)
+            ->  primitive_argument_type
+            {
+                if (!valid(value) || extract_numeric_value_dimension(value) != 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "constant::eval",
+                        this_->generate_error_message(
+                            "the second argument must be a literal "
+                            "scalar value"));
+                }
+
+                // if the second argument is a list of up to four values
+                // (shape) this creates an empty array of the given size
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{0};
+                std::size_t numdims = 0;
+                if (is_list_operand_strict(shape))
+                {
+                    ir::range&& r = extract_list_value_strict(
+                        std::move(shape), this_->name_, this_->codename_);
+
+                    if (r.size() > PHYLANX_MAX_DIMENSIONS)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "constant::eval",
+                            this_->generate_error_message(
+                                "the full primitive requires for the shape not "
+                                "to have more than 4 entries"));
+                    }
+
+                    dims = common::extract_dimensions(r);
+                    numdims = common::extract_num_dimensions(r);
+                }
+                else if (is_numeric_operand(shape))
+                {
+                    // support full(3, 42) == [42, 42, 42]
+                    numdims = 1;
+                    dims[0] = extract_scalar_nonneg_integer_value_strict(
+                        std::move(shape), this_->name_, this_->codename_);
+                }
+
+                // full() without dtype defaults type of operands
+                node_data_type dtype = node_data_type_unknown;
+                if (valid(dtype_op))
+                {
+                    dtype = map_dtype(extract_string_value(
+                        std::move(dtype_op), this_->name_, this_->codename_));
+                }
+
+                return this_->constant_nd(numdims, std::move(value), dims,
+                    dtype, true, this_->name_, this_->codename_);
+
+            }),
+            value_operand(std::move(ops[0]), args, name_, codename_, ctx),
+            value_operand(std::move(ops[1]), args, name_, codename_, ctx),
+            value_operand(std::move(ops[2]), args, name_, codename_, ctx));
+    }
+
+    hpx::future<primitive_argument_type> constant::eval_full_like(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        HPX_ASSERT(operation_ == operation::full_like);
+
+        // verify arguments
+        if (operands.size() < 2 || operands.size() > 3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "constant::eval",
+                generate_error_message(
+                    "the full primitive requires "
+                        "at least two and at most 3 operands"));
+        }
+
+        // supply missing default arguments
+        primitive_arguments_type ops = operands;
+        if (operands.size() != 3)
+        {
+            // default 'dtype' for full is extracted from 'value'
+            ops.resize(3);      // fill rest with 'nil'
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& arr,
+                    primitive_argument_type&& value,
+                    primitive_argument_type&& dtype_op)
+            ->  primitive_argument_type
+            {
+                if (!valid(value) || extract_numeric_value_dimension(value) != 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "constant::eval",
+                        this_->generate_error_message(
+                            "the second argument of full_like must be a "
+                            "scalar value"));
+                }
+
+                if (!is_numeric_operand(arr))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "constant::eval",
+                        this_->generate_error_message(
+                            "the first argument of full_like must be an "
+                            "array-like value"));
+                }
+
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
+                    extract_numeric_value_dimensions(
+                    arr, this_->name_, this_->codename_);
+                std::size_t numdims = extract_numeric_value_dimension(
+                    arr, this_->name_, this_->codename_);
+
+                // full_like() without dtype defaults type of array
+                node_data_type dtype = node_data_type_unknown;
+                if (valid(dtype_op))
+                {
+                    dtype = map_dtype(extract_string_value(
+                        std::move(dtype_op), this_->name_, this_->codename_));
+                }
+                if (dtype == node_data_type_unknown)
+                {
+                    dtype = extract_common_type(arr);
+                }
+
+                return this_->constant_nd(numdims, std::move(value), dims,
+                    dtype, true, this_->name_, this_->codename_);
 
             }),
             value_operand(std::move(ops[0]), args, name_, codename_, ctx),
