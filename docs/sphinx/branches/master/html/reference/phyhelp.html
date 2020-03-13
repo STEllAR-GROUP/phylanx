@@ -221,6 +221,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#prepend">prepend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prod">prod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random">random</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-d">random_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#range">range</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#relu">relu</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#repeat">repeat</a></li>
@@ -2561,6 +2562,39 @@ followed by up to two numeric parameters.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="random-d">
+<h2>random_d<a class="headerlink" href="#random-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>random_d (shape, tile_index, numtiles, name, tiling_type, mean, std)</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>shape (int or list of ints): overall shape of the array. It</dt><dd><p>only contains positive integers.</p>
+</dd>
+<dt>tile_index (int): the tile index we need to generate the</dt><dd><p>random array for. A non-negative integer.</p>
+</dd>
+</dl>
+<p>numtiles (int): number of tiles of the returned array
+name (string, optional): the array given name. If not given, a</p>
+<blockquote>
+<div><p>globally unique name will be generated.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
+Other options are <cite>row</cite> or <cite>column</cite> tiling. For a vector
+all these three tiling_types are the same.</p>
+</dd>
+<dt>mean (float, optional): the mean value of the distribution. It</dt><dd><p>sets to 0.0 by default.</p>
+</dd>
+<dt>std (float, optional): the standard deviation of the normal</dt><dd><p>distribution. It sets to 1.0 by default.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>A part of an array of random numbers on tile_index-th tile out of
+numtiles using the nrmal distribution</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="range">
 <h2>range<a class="headerlink" href="#range" title="Permalink to this headline">¶</a></h2>
 <dl>
@@ -3245,7 +3279,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Mar 12, 2020.
+        Last updated on Mar 13, 2020.
       </span>
 
     </p>

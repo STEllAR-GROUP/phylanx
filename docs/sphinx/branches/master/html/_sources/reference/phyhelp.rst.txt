@@ -2024,6 +2024,33 @@ random (size, dist, dtype)
             An array of random numbers.
 
 
+random_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+random_d (shape, tile_index, numtiles, name, tiling_type, mean, std)
+            Args:
+
+                shape (int or list of ints): overall shape of the array. It
+                    only contains positive integers.
+                tile_index (int): the tile index we need to generate the
+                    random array for. A non-negative integer.
+                numtiles (int): number of tiles of the returned array
+                name (string, optional): the array given name. If not given, a
+                    globally unique name will be generated.
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all the numtiles localities.
+                    Other options are `row` or `column` tiling. For a vector
+                    all these three tiling_types are the same.
+                mean (float, optional): the mean value of the distribution. It
+                    sets to 0.0 by default.
+                std (float, optional): the standard deviation of the normal
+                    distribution. It sets to 1.0 by default.
+
+            Returns:
+
+            A part of an array of random numbers on tile_index-th tile out of
+            numtiles using the nrmal distribution
+
+
 range
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 range (start, end, step)
