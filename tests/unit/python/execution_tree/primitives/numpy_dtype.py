@@ -109,7 +109,19 @@ def test_full():
     return np.full((3, 3), 2, dtype='int')
 
 
-assert (test_full() == np.full((3, 3), 2, dtype=int)).all()
+r = test_full()
+assert (r == np.full((3, 3), 2, dtype=int)).all()
+assert r.dtype == np.int64, r.dtype
+
+
+@Phylanx
+def test_full_nodtype():
+    return np.full((3, 3), 2.0)
+
+
+r = test_full_nodtype()
+assert (r == np.full((3, 3), 2.0)).all()
+assert (r.dtype == np.float)
 
 
 @Phylanx
@@ -119,4 +131,18 @@ def test_full_like():
 
 
 a = np.zeros((3, 3), dtype=int)
-assert (test_full_like() == np.full_like(a, 42, dtype=int)).all()
+r = test_full_like()
+assert (r == np.full_like(a, 42, dtype=int)).all()
+assert (r.dtype == np.int64)
+
+
+@Phylanx
+def test_full_like_nodtype():
+    a = np.zeros((3, 3), dtype='float')
+    return np.full_like(a, 42)
+
+
+a = np.zeros((3, 3), dtype=float)
+r = test_full_like_nodtype()
+assert (r == np.full_like(a, 42)).all()
+assert (r.dtype == np.float)

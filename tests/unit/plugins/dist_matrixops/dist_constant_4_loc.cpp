@@ -52,7 +52,7 @@ void test_constant_4loc_1d_0()
         test_constant_d_operation("test_constant_4loc1d_0", R"(
             constant_d(42, list(13), 0, 4)
         )", R"(
-            annotate_d([42.0, 42.0, 42.0, 42.0], "constant_vector_4_13",
+            annotate_d([42.0, 42.0, 42.0, 42.0], "full_array_1",
                 list("args",
                     list("locality", 0, 4),
                     list("tile", list("columns", 0, 4))))
@@ -63,7 +63,7 @@ void test_constant_4loc_1d_0()
         test_constant_d_operation("test_constant_4loc1d_0", R"(
             constant_d(42, list(13), 1, 4)
         )", R"(
-            annotate_d([42.0, 42.0, 42.0], "constant_vector_4_13",
+            annotate_d([42.0, 42.0, 42.0], "full_array_1",
                 list("args",
                     list("locality", 1, 4),
                     list("tile", list("columns", 4, 7))))
@@ -74,7 +74,7 @@ void test_constant_4loc_1d_0()
         test_constant_d_operation("test_constant_4loc1d_0", R"(
             constant_d(42, list(13), 2, 4)
         )", R"(
-            annotate_d([42.0, 42.0, 42.0], "constant_vector_4_13",
+            annotate_d([42.0, 42.0, 42.0], "full_array_1",
                 list("args",
                     list("locality", 2, 4),
                     list("tile", list("columns", 7, 10))))
@@ -85,7 +85,7 @@ void test_constant_4loc_1d_0()
         test_constant_d_operation("test_constant_4loc1d_0", R"(
             constant_d(42, list(13), 3, 4)
         )", R"(
-            annotate_d([42.0, 42.0, 42.0], "constant_vector_4_13",
+            annotate_d([42.0, 42.0, 42.0], "full_array_1",
                 list("args",
                     list("locality", 3, 4),
                     list("tile", list("columns", 10, 13))))
@@ -101,7 +101,7 @@ void test_constant_4loc_2d_0()
             constant_d(42, list(4, 7), 0, 4)
         )", R"(
             annotate_d([[42.0, 42.0, 42.0, 42.0], [42.0, 42.0, 42.0, 42.0]],
-                "constant_matrix_4_4x7",
+                "full_array_2",
                 list("args",
                     list("locality", 0, 4),
                     list("tile", list("columns", 0, 4), list("rows", 0, 2))))
@@ -113,7 +113,7 @@ void test_constant_4loc_2d_0()
             constant_d(42, list(4, 7), 1, 4)
         )", R"(
             annotate_d([[42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
-                "constant_matrix_4_4x7",
+                "full_array_2",
                 list("args",
                     list("locality", 1, 4),
                     list("tile", list("columns", 4, 7), list("rows", 0, 2))))
@@ -125,7 +125,7 @@ void test_constant_4loc_2d_0()
             constant_d(42, list(4, 7), 2, 4)
         )", R"(
             annotate_d([[42.0, 42.0, 42.0, 42.0], [42.0, 42.0, 42.0, 42.0]],
-                "constant_matrix_4_4x7",
+                "full_array_2",
                 list("args",
                     list("locality", 2, 4),
                     list("tile", list("columns", 0, 4), list("rows", 2, 4))))
@@ -137,7 +137,7 @@ void test_constant_4loc_2d_0()
             constant_d(42, list(4, 7), 3, 4)
         )", R"(
             annotate_d([[42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
-                "constant_matrix_4_4x7",
+                "full_array_2",
                 list("args",
                     list("locality", 3, 4),
                     list("tile", list("columns", 4, 7), list("rows", 2, 4))))
@@ -154,7 +154,7 @@ void test_constant_4loc_2d_1()
         )", R"(
             annotate_d([[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
                         [42.0, 42.0, 42.0]],
-                "constant_matrix_4_3x9",
+                "full_array_3",
                 list("args",
                     list("locality", 0, 4),
                     list("tile", list("columns", 0, 3), list("rows", 0, 3))))
@@ -166,7 +166,7 @@ void test_constant_4loc_2d_1()
             constant_d(42, list(3, 9), 1, 4, "", "column")
         )", R"(
             annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0]],
-                "constant_matrix_4_3x9",
+                "full_array_3",
                 list("args",
                     list("locality", 1, 4),
                     list("tile", list("columns", 3, 5), list("rows", 0, 3))))
@@ -178,7 +178,7 @@ void test_constant_4loc_2d_1()
             constant_d(42, list(3, 9), 2, 4, "", "column")
         )", R"(
             annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0]],
-                "constant_matrix_4_3x9",
+                "full_array_3",
                 list("args",
                     list("locality", 2, 4),
                     list("tile", list("columns", 5, 7), list("rows", 0, 3))))
@@ -190,7 +190,7 @@ void test_constant_4loc_2d_1()
             constant_d(42, list(3, 9), 3, 4, "", "column")
         )", R"(
             annotate_d([[42.0, 42.0], [42.0, 42.0], [42.0, 42.0]],
-                "constant_matrix_4_3x9",
+                "full_array_3",
                 list("args",
                     list("locality", 3, 4),
                     list("tile", list("columns", 7, 9), list("rows", 0, 3))))
