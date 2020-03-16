@@ -114,7 +114,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto && curr : list)
                 {
                     primitive_arguments_type arg2(1, extract_ref_value(curr));
-                    if (boolean_operand_sync(bound_func, std::move(arg2),
+                    if (scalar_boolean_operand_sync(bound_func, std::move(arg2),
                             this_->name_, this_->codename_, ctx))
                     {
                         result.push_back(std::move(curr));
@@ -123,8 +123,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return primitive_argument_type{std::move(result)};
             }),
-            value_operand(operands_[0], args, name_, codename_,
+            value_operand(operands[0], args, name_, codename_,
                 add_mode(ctx, eval_dont_evaluate_lambdas)),
-            list_operand(operands_[1], args, name_, codename_, ctx));
+            list_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}

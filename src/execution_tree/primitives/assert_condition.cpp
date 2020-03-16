@@ -78,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return {};
             }),
-            boolean_operand(
+            scalar_boolean_operand(
                 operands_[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive::enable_tracing =
-            boolean_operand_sync(
+            scalar_boolean_operand_sync(
                 operands[0], args, name_, codename_, std::move(ctx)) != 0;
 
         return hpx::make_ready_future(primitive_argument_type{});

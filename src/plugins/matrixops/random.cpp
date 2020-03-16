@@ -102,19 +102,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (val.index())
         {
-        case 1:    // phylanx::ir::node_data<std::uint8_t>
+        case primitive_argument_type::bool_index:
             return detail::adjust_dimensions(
                 util::get<1>(val), name, codename);
 
-        case 2:    // std::uint64_t
+        case primitive_argument_type::int64_index:
             return detail::adjust_dimensions(
                 util::get<2>(val), name, codename);
 
-        case 4:    // phylanx::ir::node_data<double>
+        case primitive_argument_type::float64_index:
             return detail::adjust_dimensions(
                 util::get<4>(val), name, codename);
 
-        case 7:    // phylanx::ir::range
+        case primitive_argument_type::list_index:
             {
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};
                 auto const& args = util::get<7>(val);
@@ -172,12 +172,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             break;
 
-        case 0:     // nil
+        case primitive_argument_type::nil_index:
             return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{};
 
-        case 3: HPX_FALLTHROUGH;    // string
-        case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
         default:
             break;
         }
