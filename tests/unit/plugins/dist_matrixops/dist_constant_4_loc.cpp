@@ -41,6 +41,8 @@ void test_constant_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
+    std::cout << "comparison:" << comparison << "\n";
+    std::cout << "result" << result << "\n";
     HPX_TEST_EQ(result, comparison);
 }
 
@@ -253,11 +255,11 @@ void test_constant_4loc_2d_2()
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    test_constant_4loc_1d_0();
+    //test_constant_4loc_1d_0();
 
     test_constant_4loc_2d_0();
-    test_constant_4loc_2d_1();
-    test_constant_4loc_2d_2();
+    //test_constant_4loc_2d_1();
+    //test_constant_4loc_2d_2();
 
     hpx::finalize();
     return hpx::util::report_errors();

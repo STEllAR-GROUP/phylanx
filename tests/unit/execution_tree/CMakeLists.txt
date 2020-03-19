@@ -4,7 +4,8 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-	annotation
+    annotation
+    annotation_2_loc
     compiler
     compiler_component
     expression_topology
@@ -13,6 +14,8 @@ set(tests
     parse_primitive_name
     variable_definition
    )
+
+set(annotation_2_loc_PARAMETERS LOCALITIES 2)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

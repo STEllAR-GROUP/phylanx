@@ -204,30 +204,45 @@ namespace phylanx { namespace execution_tree {
         // l_data should be a annotation->ir::range->range_type->
         // recursive_wrapper->primitive_arguments_type
         // ->std::vector<primitive_argument_type>
-        ir::range l_data = lhs.get_data();
+        if (lhs.get_type() != rhs.get_type() || lhs.get_type() != "localities")
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "annotation::operator==",
+                util::generate_error_message(
+                    "invalid annotation. Annotations should have `localities` "
+                    "as their upper most keys"));
+        }
+
         bool eq = true;
+        ir::range l_data = lhs.get_data();
         ir::range_iterator it = l_data.begin();
+
         while (it != l_data.end())
         {
-            // l_meta_level_list = list("meta_0",
+            // l_meta_level_list = list("meta_?",
             //                          list("tile", list("rows", 0, 1),
             //                                       list("columns", 0, 2)))
-
+            // or
+            // l_meta_level_list = list("name", "the_name")
+            // or
+            // l_meta_level_list = list("locality", 0, 4)
             ir::range l_meta_level_list_with_key =
                 phylanx::execution_tree::extract_list_value_strict(*it);
             std::string key =
                 extract_string_value(*l_meta_level_list_with_key.begin());
 
             annotation r_meta_level_ann;
-            if (lhs.find(key, r_meta_level_ann))
+            if (rhs.find(key, r_meta_level_ann))
             {
-                ir::range_iterator tmp = l_meta_level_list_with_key.begin();
-                tmp++;
                 ir::range l_meta_level_data_list(
-                    tmp, l_meta_level_list_with_key.end());
+                    ++l_meta_level_list_with_key.begin(),
+                    l_meta_level_list_with_key.end());
                 ir::range r_meta_level_data_list = r_meta_level_ann.get_data();
                 if (key.substr(0, 4) == "meta")
                 {
+                    // as meta objects are in order in annotations, we don't
+                    // check if we are comparing the same object
+                    // if rhs has more meta objects, the array comparison would
+                    // fail
                     ir::range l_tile_level_list =
                         phylanx::execution_tree::extract_list_value_strict(
                             *(l_meta_level_data_list.begin()));
@@ -240,23 +255,27 @@ namespace phylanx { namespace execution_tree {
                             *l_tile) == "tile" &&
                         *l_tile == *r_tile)
                     {
-                        l_tile++;
+                        // rhs cannot have more dimensions, otherwise the array
+                        // comparison would fail
                         r_tile++;
-                        while (l_tile != l_tile_level_list.end())
+                        while (++l_tile != l_tile_level_list.end())
                         {
                             auto found = std::find(
                                 r_tile, r_tile_level_list.end(), *l_tile);
                             if (found == r_tile_level_list.end())
+                            {
                                 eq = false;
-                            l_tile++;
+                                break;
+                            }
                         }
                     }
                     else
                     {
-                        // That string should be equal to 'tile', if not,
-                        // something's wrong
-                        // Maybe it should throw actually
-                        eq = false;
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "annotation::operator==",
+                            util::generate_error_message(
+                                "there is a meta object that does not have "
+                                "tile information"));
                     }
                 }
                 else if (key == "locality")
@@ -271,12 +290,18 @@ namespace phylanx { namespace execution_tree {
                 {
                     if (*l_meta_level_data_list.begin() !=
                         *r_meta_level_data_list.begin())
+                    {
                         eq = false;
+                    }
                 }
                 else
                 {
-                    // There are problems somewhere
-                    eq = false;
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "annotation::operator==",
+                        util::generate_error_message(
+                            "the data of `localities` annotation has a key "
+                            "that is not any of `meta_{d}`, `name` or "
+                            "`locality`"));
                 }
             }
             else
