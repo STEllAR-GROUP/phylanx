@@ -237,8 +237,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs
+        std::size_t lhs_span_index = 0;
+        if (!lhs_localities.has_span(0))
+        {
+            HPX_ASSERT(lhs_localities.has_span(1));
+            lhs_span_index = 1;
+        }
         execution_tree::tiling_span const& lhs_span =
-            lhs_localities.get_span(0);
+            lhs_localities.get_span(lhs_span_index);
 
         // go over all tiles of rhs matrix, the result size is determined by
         // the number of columns of the entire RHS
@@ -267,7 +273,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // project global coordinates onto local ones
             execution_tree::tiling_span lhs_intersection =
                 lhs_localities.project_coords(
-                    lhs_localities.locality_.locality_id_, 0, intersection);
+                    lhs_localities.locality_.locality_id_, lhs_span_index,
+                    intersection);
             execution_tree::tiling_span rhs_intersection =
                 rhs_localities.project_coords(
                     loc, rhs_span_index, intersection);

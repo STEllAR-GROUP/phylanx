@@ -264,7 +264,10 @@ namespace phylanx { namespace execution_tree
     // Is this helpful? It may only introduce confusion
     std::size_t localities_information::size() const
     {
-        return detail::dimension<0>(tiles_);
+        if (tiles_[0].spans_[0].is_valid())
+            return detail::dimension<0>(tiles_);
+
+        return detail::dimension<1>(tiles_);
     }
 
     // we assume that all tiles have the same number of dimension
@@ -298,7 +301,8 @@ namespace phylanx { namespace execution_tree
         {
         case 1:
             // assertion that it's a row vector
-            return detail::dimension<0>(tiles_);
+            HPX_ASSERT(tiles_[0].spans_[1].is_valid());
+            return detail::dimension<1>(tiles_);
 
         case 2:
             return detail::dimension<0>(tiles_);
@@ -346,7 +350,8 @@ namespace phylanx { namespace execution_tree
     bool localities_information::has_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(dim < num_dimensions());
+        HPX_ASSERT(
+            dim < num_dimensions() || (dim == 1 && dim == num_dimensions()));
 
         return tiles_[locality_.locality_id_].spans_[dim].is_valid();
     }
@@ -354,7 +359,8 @@ namespace phylanx { namespace execution_tree
     tiling_span localities_information::get_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(dim < num_dimensions());
+        HPX_ASSERT(
+            dim < num_dimensions() || (dim == 1 && dim == num_dimensions()));
 
         return tiles_[locality_.locality_id_].spans_[dim];
     }
@@ -364,7 +370,8 @@ namespace phylanx { namespace execution_tree
         std::uint32_t loc, std::size_t dim, tiling_span const& span) const
     {
         HPX_ASSERT(loc < tiles_.size());
-        HPX_ASSERT(dim < num_dimensions());
+        HPX_ASSERT(
+            dim < num_dimensions() || (dim == 1 && dim == num_dimensions()));
 
         auto const& gspan = tiles_[loc].spans_[dim];
         tiling_span result{

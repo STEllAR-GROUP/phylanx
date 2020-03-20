@@ -23,17 +23,6 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
     return code.run().arg_;
 }
 
-void test_equality(std::string const& name, std::string const& code,
-    std::string const& expected_str)
-{
-    HPX_TEST_EQ(compile_and_run(name, code), compile_and_run(name, expected_str));
-}
-
-void test_non_equality(std::string const& name, std::string const& code,
-    std::string const& expected_str)
-{
-    HPX_TEST_EQ(compile_and_run(name, code), compile_and_run(name, expected_str));
-}
 
 void test_annotation_equality_0()
 {

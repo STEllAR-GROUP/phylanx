@@ -74,6 +74,14 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
+        annotation temp_tile_ann;
+        if (!ann.find(get_span_name(0), temp_tile_ann, name, codename))
+        {
+            // having a row vector, the first span should be empty
+            // so, a row vectoe has a spans size of 2
+            spans_.emplace_back();
+        }
+
         for (std::size_t i = PHYLANX_MAX_DIMENSIONS; i != 0; --i)
         {
             annotation tile_ann;
@@ -133,12 +141,12 @@ namespace phylanx { namespace execution_tree
 
         if (tile.spans_[0].is_valid())
         {
-            span_ = tile.spans_[0];
+            span_ = tile.spans_[0];    // column vector
         }
-        else if (tile.spans_.size() >= 2 && tile.spans_[1].is_valid())
+        else if (tile.spans_.size() == 2 && tile.spans_[1].is_valid())
         {
             type_ = rows;
-            span_ = tile.spans_[1];
+            span_ = tile.spans_[1];    //row vector
         }
         else
         {
