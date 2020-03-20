@@ -34,7 +34,8 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 void test_dot_operation(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
-    HPX_TEST_EQ(compile_and_run(name, code), compile_and_run(name, expected_str));
+    HPX_TEST_EQ(
+        compile_and_run(name, code), compile_and_run(name, expected_str));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

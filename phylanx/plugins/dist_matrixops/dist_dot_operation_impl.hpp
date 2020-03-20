@@ -668,10 +668,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 result = execution_tree::primitive_argument_type{
                     std::move(result_matrix)};
                 execution_tree::annotation ann{ir::range("tile",
-                    ir::range("rows", rhs_localities.get_span(0).start_,
-                        rhs_localities.get_span(0).stop_),
-                    ir::range("columns", lhs_localities.get_span(1).start_,
-                        lhs_localities.get_span(1).stop_))};
+                    ir::range("rows", lhs_localities.get_span(0).start_,
+                        lhs_localities.get_span(0).stop_),
+                    ir::range("columns", static_cast<std::int64_t>(0),
+                        static_cast<std::int64_t>(rhs_localities.columns())))};
                 // Generate new tiling annotation for the result vector
                 execution_tree::tiling_information_2d tile_info(
                     ann, name_, codename_);
