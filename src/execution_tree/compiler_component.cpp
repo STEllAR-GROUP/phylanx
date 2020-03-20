@@ -71,6 +71,12 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    physl_compiler::physl_compiler(hpx::id_type& id)
+      : base_type(id)
+    {
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     physl_compiler::physl_compiler(hpx::id_type&& id)
       : base_type(std::move(id))
     {
