@@ -34,13 +34,13 @@ set(tests
     allow_return_nil_432
    )
 
-set(817_cout_nil_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(cout_noargs_prints_nothing_159_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(define_loses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(out_of_scope_variable_232_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(external_functions_337_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(817_cout_nil_FLAGS DEPENDENCIES HPX::iostreams_component)
+set(assign_wrong_variable_245_FLAGS DEPENDENCIES HPX::iostreams_component)
+set(cout_noargs_prints_nothing_159_FLAGS DEPENDENCIES HPX::iostreams_component)
+set(cout_prints_twice_155_FLAGS DEPENDENCIES HPX::iostreams_component)
+set(define_loses_values_177_FLAGS DEPENDENCIES HPX::iostreams_component)
+set(out_of_scope_variable_232_FLAGS DEPENDENCIES HPX::iostreams_component)
+set(external_functions_337_FLAGS DEPENDENCIES HPX::iostreams_component)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

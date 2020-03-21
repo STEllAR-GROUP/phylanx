@@ -10,7 +10,7 @@ set(example_programs
 
 foreach(example_program ${example_programs})
 
-  set(${example_program}_FLAGS DEPENDENCIES iostreams_component)
+  set(${example_program}_FLAGS DEPENDENCIES HPX::iostreams_component)
 
   set(sources ${example_program}.cpp)
 
@@ -20,8 +20,7 @@ foreach(example_program ${example_programs})
   add_phylanx_executable(${example_program}
                      SOURCES ${sources}
                      ${${example_program}_FLAGS}
-                     FOLDER "Examples/Interpreter"
-                     COMPONENT_DEPENDENCIES iostreams)
+                     FOLDER "Examples/Interpreter")
 
   # add a custom target for this example
   add_phylanx_pseudo_target(examples.interpreter_.${example_program})

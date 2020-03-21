@@ -15,7 +15,7 @@ set_property(TARGET inspect PROPERTY FOLDER "Tools\\Inspect")
 target_compile_definitions(inspect PRIVATE
   "PHYLANX_HAVE_GIT_COMMIT=\"${PHYLANX_WITH_GIT_COMMIT}\"")
 
-target_link_libraries(inspect PRIVATE hpx phylanx::boost::regex)
+target_link_libraries(inspect PRIVATE HPX::hpx phylanx::boost::regex)
 
 # add dependencies to pseudo-target
 add_hpx_pseudo_dependencies(tools.inspect inspect)

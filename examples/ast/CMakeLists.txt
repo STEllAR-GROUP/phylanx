@@ -11,7 +11,7 @@ set(example_programs
 
 foreach(example_program ${example_programs})
 
-  set(${example_program}_FLAGS DEPENDENCIES iostreams_component)
+  set(${example_program}_FLAGS DEPENDENCIES HPX::iostreams_component)
 
   set(sources ${example_program}.cpp)
 
