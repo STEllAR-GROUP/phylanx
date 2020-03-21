@@ -11,7 +11,7 @@ set(tests
    )
 
 foreach(test ${tests})
-  set(${test}_FLAGS DEPENDENCIES iostreams_component)
+  set(${test}_FLAGS DEPENDENCIES HPX::iostreams_component)
   set(${test}_PARAMETERS LOCALITIES 2)
 
   set(sources ${test}.cpp)

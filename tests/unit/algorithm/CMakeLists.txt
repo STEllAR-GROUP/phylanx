@@ -8,7 +8,7 @@ set(tests
     simple_lra
    )
 
-set(simple_lra_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(simple_lra_FLAGS DEPENDENCIES HPX::iostreams_component)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

@@ -200,7 +200,7 @@ function(add_phylanx_primitive_plugin name)
   )
 
   target_link_libraries(${name}_primitive
-    ${HPX_TLL_PUBLIC} ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+    ${HPX_TLL_PUBLIC} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
   target_link_libraries(${name}_primitive
     ${HPX_TLL_PRIVATE} blaze::blaze BlazeTensor::BlazeTensor)
 

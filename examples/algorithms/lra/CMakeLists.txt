@@ -14,7 +14,7 @@ set(lra_csv_distributed_PARAMETERS LOCALITIES 2)
 
 foreach(example_program ${example_programs})
 
-  set(${example_program}_FLAGS DEPENDENCIES iostreams_component)
+  set(${example_program}_FLAGS DEPENDENCIES HPX::iostreams_component)
 
   set(sources ${example_program}.cpp)
 
