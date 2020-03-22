@@ -1243,6 +1243,14 @@ filter (func, iter)
             Prints [2, 3, 4]
 
 
+find_all_localities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+find_all_localities (Args:)
+
+            Returns:
+              All the localities available on the system.
+
+
 flatten
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 flatten (a, order)
