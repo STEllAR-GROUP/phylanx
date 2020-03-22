@@ -67,7 +67,8 @@ namespace phylanx { namespace execution_tree
     {
         static char const* get_span_name(std::size_t i)
         {
-            static const char* const names[] = {"columns", "rows", "pages"};
+            static const char* const names[] = {
+                "columns", "rows", "pages", "quats"};
             return names[i];
         }
 
@@ -81,10 +82,10 @@ namespace phylanx { namespace execution_tree
             std::string const& name, std::string const& codename) const
         {
             annotation ann("tile");
-            for (std::size_t i = 0; i != spans_.size(); ++i)
+            for (std::size_t i = spans_.size(); i != 0; --i)
             {
-                ann.add_annotation(get_span_name(i),
-                    ir::range(spans_[i].start_, spans_[i].stop_), name,
+                ann.add_annotation(get_span_name(i - 1),
+                    ir::range(spans_[i - 1].start_, spans_[i - 1].stop_), name,
                     codename);
             }
             return ann;
@@ -147,7 +148,7 @@ namespace phylanx { namespace execution_tree
     {
         tiling_information_2d(
             tiling_span const& row_span, tiling_span const& column_span)
-          : spans_{column_span, row_span}
+          : spans_{row_span, column_span}
         {}
 
         PHYLANX_EXPORT tiling_information_2d(annotation const& ann,
@@ -161,7 +162,7 @@ namespace phylanx { namespace execution_tree
 
         PHYLANX_EXPORT void transpose();
 
-        tiling_span spans_[2];    // column and row spans
+        tiling_span spans_[2];    // row and column spans
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -179,7 +180,7 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void transpose(
             std::int64_t const* data, std::size_t count);
 
-        tiling_span spans_[3];    // column, row and page spans
+        tiling_span spans_[3];    // page, row and column spans
     };
 }}
 

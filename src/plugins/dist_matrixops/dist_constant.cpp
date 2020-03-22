@@ -198,8 +198,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tile_idx, row_dim, column_dim, numtiles, tiling_type);
 
         tiling_information_2d tile_info(
-            tiling_span(column_start, column_start + column_size),
-            tiling_span(row_start, row_start + row_size));
+            tiling_span(row_start, row_start + row_size),
+            tiling_span(column_start, column_start + column_size));
 
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();

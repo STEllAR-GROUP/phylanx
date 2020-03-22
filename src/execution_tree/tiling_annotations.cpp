@@ -74,17 +74,21 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        for (std::size_t i = 0; i != 3; ++i)
+        annotation temp_tile_ann;
+        if (!ann.find(get_span_name(0), temp_tile_ann, name, codename))
+        {
+            // having a row vector, the first span should be empty
+            // so, a row vectoe has a spans size of 2
+            spans_.emplace_back();
+        }
+
+        for (std::size_t i = PHYLANX_MAX_DIMENSIONS; i != 0; --i)
         {
             annotation tile_ann;
-            if (!ann.find(get_span_name(i), tile_ann, name, codename))
-            {
-                spans_.emplace_back();
-            }
-            else
+            if (ann.find(get_span_name(i - 1), tile_ann, name, codename))
             {
                 spans_.push_back(detail::extract_span(
-                    tile_ann, get_span_name(i), name, codename));
+                    tile_ann, get_span_name(i - 1), name, codename));
             }
         }
     }
@@ -93,11 +97,11 @@ namespace phylanx { namespace execution_tree
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
     {
         spans_.reserve(dim);
-        for (std::size_t i = dim; i != 0; --i)
+        for (std::size_t i = 0; i != dim; ++i)
         {
-            spans_.emplace_back(0, dims[i - 1]);
+            spans_.emplace_back(0, dims[i]);
         }
-        for (std::size_t i = dim; i != 3; ++i)
+        for (std::size_t i = dim; i != PHYLANX_MAX_DIMENSIONS; ++i)
         {
             spans_.emplace_back(0, 0);
         }
@@ -137,12 +141,12 @@ namespace phylanx { namespace execution_tree
 
         if (tile.spans_[0].is_valid())
         {
-            span_ = tile.spans_[0];
+            span_ = tile.spans_[0];    // column vector
         }
-        else if (tile.spans_.size() >= 2 && tile.spans_[1].is_valid())
+        else if (tile.spans_.size() == 2 && tile.spans_[1].is_valid())
         {
             type_ = rows;
-            span_ = tile.spans_[1];
+            span_ = tile.spans_[1];    //row vector
         }
         else
         {
@@ -180,8 +184,8 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        spans_[1] = detail::extract_span(ann, "rows", name, codename);
-        spans_[0] = detail::extract_span(ann, "columns", name, codename);
+        spans_[0] = detail::extract_span(ann, "rows", name, codename);
+        spans_[1] = detail::extract_span(ann, "columns", name, codename);
     }
 
     tiling_information_2d::tiling_information_2d(tiling_information const& tile,
@@ -204,8 +208,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename) const
     {
         return annotation{ir::range("tile",
-            ir::range("rows", spans_[1].start_, spans_[1].stop_),
-            ir::range("columns", spans_[0].start_, spans_[0].stop_))};
+            ir::range("rows", spans_[0].start_, spans_[0].stop_),
+            ir::range("columns", spans_[1].start_, spans_[1].stop_))};
     }
 
     void tiling_information_2d::transpose()
@@ -227,9 +231,9 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        spans_[2] = detail::extract_span(ann, "pages", name, codename);
+        spans_[0] = detail::extract_span(ann, "pages", name, codename);
         spans_[1] = detail::extract_span(ann, "rows", name, codename);
-        spans_[0] = detail::extract_span(ann, "columns", name, codename);
+        spans_[2] = detail::extract_span(ann, "columns", name, codename);
     }
 
     tiling_information_3d::tiling_information_3d(tiling_information const& tile,
@@ -253,9 +257,9 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename) const
     {
         return annotation{ir::range("tile",
-            ir::range("pages", spans_[2].start_, spans_[2].stop_),
+            ir::range("pages", spans_[0].start_, spans_[0].stop_),
             ir::range("rows", spans_[1].start_, spans_[1].stop_),
-            ir::range("columns", spans_[0].start_, spans_[0].stop_))};
+            ir::range("columns", spans_[2].start_, spans_[2].stop_))};
     }
 
     void tiling_information_3d::transpose(

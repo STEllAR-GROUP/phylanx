@@ -93,6 +93,7 @@ void test_constant_4loc_1d_0()
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void test_constant_4loc_2d_0()
 {
     if (hpx::get_locality_id() == 0)

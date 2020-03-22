@@ -101,7 +101,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimension() < 1 || rhs_localities.dimension() < 1)
+        if (lhs_localities.num_dimensions() < 1 ||
+            rhs_localities.num_dimensions() < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d1d",
@@ -212,7 +213,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimension() < 1 || rhs_localities.dimension() < 2)
+        if (lhs_localities.num_dimensions() < 1 ||
+            rhs_localities.num_dimensions() < 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d2d",
@@ -235,26 +237,31 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs
+        std::size_t lhs_span_index = 0;
+        if (!lhs_localities.has_span(0))
+        {
+            HPX_ASSERT(lhs_localities.has_span(1));
+            lhs_span_index = 1;
+        }
         execution_tree::tiling_span const& lhs_span =
-            lhs_localities.get_span(0);
+            lhs_localities.get_span(lhs_span_index);
 
         // go over all tiles of rhs matrix, the result size is determined by
         // the number of columns of the entire RHS
         blaze::DynamicVector<T> dot_result(rhs_localities.columns(), T{0});
 
         std::uint32_t loc = 0;
+        std::size_t rhs_span_index = 0;
         for (auto const& rhs_tile : rhs_localities.tiles_)
         {
-            std::size_t rhs_span_index = 1;
-            HPX_ASSERT(rhs_tile.spans_[1].is_valid());
+            HPX_ASSERT(rhs_tile.spans_[0].is_valid());
 
             execution_tree::tiling_span const& rhs_span =
                 rhs_tile.spans_[rhs_span_index];
 
-            HPX_ASSERT(rhs_tile.spans_[0].is_valid());
-            std::size_t rhs_column_start = rhs_tile.spans_[0].start_;
-            std::size_t rhs_column_size =
-                rhs_tile.spans_[0].stop_ - rhs_column_start;
+            HPX_ASSERT(rhs_tile.spans_[1].is_valid());
+            std::size_t rhs_column_start = rhs_tile.spans_[1].start_;
+            std::size_t rhs_column_size = rhs_tile.spans_[1].size();
 
             execution_tree::tiling_span intersection;
             if (!intersect(lhs_span, rhs_span, intersection))
@@ -266,7 +273,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // project global coordinates onto local ones
             execution_tree::tiling_span lhs_intersection =
                 lhs_localities.project_coords(
-                    lhs_localities.locality_.locality_id_, 0, intersection);
+                    lhs_localities.locality_.locality_id_, lhs_span_index,
+                    intersection);
             execution_tree::tiling_span rhs_intersection =
                 rhs_localities.project_coords(
                     loc, rhs_span_index, intersection);
@@ -302,39 +310,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type result;
         if (lhs_localities.locality_.num_localities_ > 1)
         {
-            if (lhs.dimension(0) == lhs_localities.columns())
-            {
-                // If the lhs number of rows is equal to the overall number
-                // of rows we don't have to all_reduce the result. Instead,
-                // the overall result is a tiled vector.
-                result = execution_tree::primitive_argument_type{
-                    std::move(dot_result)};
+            result =
+                execution_tree::primitive_argument_type{hpx::all_reduce(
+                    ("all_reduce_" + lhs_localities.annotation_.name_)
+                        .c_str(),
+                    dot_result, blaze::Add{},
+                    lhs_localities.locality_.num_localities_,
+                    std::size_t(-1), lhs_localities.locality_.locality_id_)
+                                                            .get()};
 
-                // Generate new tiling annotation for the result vector
-                execution_tree::tiling_information_1d tile_info(
-                    execution_tree::tiling_information_1d::columns,
-                    lhs_localities.get_span(0));
-
-                ++lhs_localities.annotation_.generation_;
-
-                auto locality_ann = lhs_localities.locality_.as_annotation();
-                result.set_annotation(
-                    execution_tree::localities_annotation(locality_ann,
-                        tile_info.as_annotation(name_, codename_),
-                        lhs_localities.annotation_, name_, codename_),
-                    name_, codename_);
-            }
-            else
-            {
-                result =
-                    execution_tree::primitive_argument_type{hpx::all_reduce(
-                        ("all_reduce_" + lhs_localities.annotation_.name_)
-                            .c_str(),
-                        dot_result, blaze::Add{},
-                        lhs_localities.locality_.num_localities_,
-                        std::size_t(-1), lhs_localities.locality_.locality_id_)
-                                                                .get()};
-            }
         }
         else
         {
@@ -424,7 +408,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimension() < 2 || rhs_localities.dimension() < 1)
+        if (lhs_localities.num_dimensions() < 2 ||
+            rhs_localities.num_dimensions() < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d1d",
@@ -445,25 +430,29 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             rhs.vector(), rhs_localities.locality_.num_localities_,
             rhs_localities.locality_.locality_id_);
 
+        // we need to get the lhs column span
+        std::size_t lhs_span_index = 1;
         // use the local tile of lhs and calculate the dot product with all
-        // corresponding tiles of rhs
+        // corresponding tiles of rhs, lhs column span
         execution_tree::tiling_span const& lhs_span =
-            lhs_localities.get_span(0);
+            lhs_localities.get_span(lhs_span_index);
 
         // go over all tiles of rhs vector, the result size is determined by the
         // number of rows of the lhs tile
         blaze::DynamicVector<T> dot_result(lhs.dimension(0), T{0});
 
         std::uint32_t loc = 0;
+        // rhs can be a row or column vector. all the tile should have the same
+        // type (column or row)
+        std::size_t rhs_span_index = 0;
+        if (!rhs_localities.tiles_[0].spans_[0].is_valid())
+        {
+            HPX_ASSERT(rhs_localities.tiles_[0].spans_[1].is_valid());
+            rhs_span_index = 1;
+        }
+
         for (auto const& rhs_tile : rhs_localities.tiles_)
         {
-            std::size_t rhs_span_index = 0;
-            if (!rhs_tile.spans_[0].is_valid())
-            {
-                HPX_ASSERT(rhs_tile.spans_[1].is_valid());
-                rhs_span_index = 1;
-            }
-
             execution_tree::tiling_span const& rhs_span =
                 rhs_tile.spans_[rhs_span_index];
 
@@ -477,7 +466,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // project global coordinates onto local ones
             execution_tree::tiling_span lhs_intersection =
                 lhs_localities.project_coords(
-                    lhs_localities.locality_.locality_id_, 0, intersection);
+                    lhs_localities.locality_.locality_id_, lhs_span_index,
+                    intersection);
             execution_tree::tiling_span rhs_intersection =
                 rhs_localities.project_coords(
                     loc, rhs_span_index, intersection);
@@ -518,9 +508,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     std::move(dot_result)};
 
                 // Generate new tiling annotation for the result vector
+                // result vector has the size of lhs rows
                 execution_tree::tiling_information_1d tile_info(
                     execution_tree::tiling_information_1d::columns,
-                    lhs_localities.get_span(1));
+                    lhs_localities.get_span(0));
 
                 ++lhs_localities.annotation_.generation_;
 
@@ -570,7 +561,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.dimension() < 2 || rhs_localities.dimension() < 2)
+        if (lhs_localities.num_dimensions() < 2 ||
+            rhs_localities.num_dimensions() < 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d2d_par",
@@ -592,9 +584,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             rhs_localities.locality_.locality_id_);
 
         // use the local tile of lhs and calculate the dot product with all
-        // corresponding tiles of rhs
+        // corresponding tiles of rhs, lhs column span
         execution_tree::tiling_span const& lhs_span =
-            lhs_localities.get_span(0);
+            lhs_localities.get_span(1);
 
         // Go over all tiles of rhs matrix, the result size is determined
         // by the number of rows of the lhs tile
@@ -607,20 +599,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             lhs.dimension(0), rhs_localities.columns(), T{0});
 
         std::uint32_t loc = 0;
+        std::size_t lhs_span_index = 1;
+        std::size_t rhs_span_index = 0;
+        HPX_ASSERT(rhs_localities.tiles_[0].spans_[rhs_span_index].is_valid());
+
         // 2d2d doesn't use every tile of the RHS, only those that contain
         // the rows with the same index as the columns the LHS has
         for (auto const& rhs_tile : rhs_localities.tiles_)
         {
-            std::size_t rhs_span_index = 1;
-            HPX_ASSERT(rhs_tile.spans_[rhs_span_index].is_valid());
-
+            // rhs row span
             execution_tree::tiling_span const& rhs_span =
                 rhs_tile.spans_[rhs_span_index];
 
-            HPX_ASSERT(rhs_tile.spans_[0].is_valid());
-            std::size_t rhs_column_start = rhs_tile.spans_[0].start_;
-            std::size_t rhs_column_size =
-                rhs_tile.spans_[0].stop_ - rhs_column_start;
+            HPX_ASSERT(rhs_tile.spans_[1].is_valid());
+            std::size_t rhs_column_start = rhs_tile.spans_[1].start_;
+            std::size_t rhs_column_size = rhs_tile.spans_[1].size();
 
             execution_tree::tiling_span intersection;
             if (!intersect(lhs_span, rhs_span, intersection))
@@ -633,7 +626,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // project global coordinates onto local ones
             execution_tree::tiling_span lhs_intersection =
                 lhs_localities.project_coords(
-                    lhs_localities.locality_.locality_id_, 0, intersection);
+                    lhs_localities.locality_.locality_id_, lhs_span_index,
+                    intersection);
             // What does this end up looking like? Does it start at 0?
             execution_tree::tiling_span rhs_intersection =
                 rhs_localities.project_coords(
@@ -654,7 +648,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             else
             {
                 // calculate the dot product with remote tile
-                //dot_result += blaze::DynamicVector<T>{1};
+                // dot_result += blaze::DynamicVector<T>{1};
                 blaze::submatrix(result_matrix, 0, rhs_column_start,
                     lhs.dimension(0), rhs_column_size) +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
@@ -681,10 +675,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 result = execution_tree::primitive_argument_type{
                     std::move(result_matrix)};
                 execution_tree::annotation ann{ir::range("tile",
-                    ir::range("columns", rhs_localities.get_span(0).start_,
-                        rhs_localities.get_span(0).stop_),
-                    ir::range("rows", lhs_localities.get_span(1).start_,
-                        lhs_localities.get_span(1).stop_))};
+                    ir::range("rows", lhs_localities.get_span(0).start_,
+                        lhs_localities.get_span(0).stop_),
+                    ir::range("columns", static_cast<std::int64_t>(0),
+                        static_cast<std::int64_t>(rhs_localities.columns())))};
                 // Generate new tiling annotation for the result vector
                 execution_tree::tiling_information_2d tile_info(
                     ann, name_, codename_);
@@ -713,9 +707,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         else
         {
             // the result is completely local, no need to all_reduce it
-            //result =
-            // execution_tree::primitive_argument_type{
-            // std::move(dot_result)};
             result = execution_tree::primitive_argument_type{
                 std::move(result_matrix)};
             // if the rhs is distributed we should synchronize with all
