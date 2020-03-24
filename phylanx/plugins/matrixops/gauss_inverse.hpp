@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 eval_context ctx) const override;
 
         public:
-            
+
             // Declare match_data type that appears in cpp file
             static match_pattern_type const match_data;
  
