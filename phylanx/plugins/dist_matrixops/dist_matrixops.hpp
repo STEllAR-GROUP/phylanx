@@ -12,6 +12,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_identity.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_random.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_transpose_operation.hpp>
+#include <phylanx/plugins/dist_matrixops/retile_annotations.hpp>
 
 
 #endif
