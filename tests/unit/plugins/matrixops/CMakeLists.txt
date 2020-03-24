@@ -21,6 +21,7 @@ set(tests
     extract_shape
     eye_operation
     flip_operation
+    gauss_inverse
     gradient_operation
     hsplit_operation
     hstack_operation

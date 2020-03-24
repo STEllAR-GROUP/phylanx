@@ -24,6 +24,7 @@
 #include <phylanx/plugins/matrixops/extract_shape.hpp>
 #include <phylanx/plugins/matrixops/eye_operation.hpp>
 #include <phylanx/plugins/matrixops/flip_operation.hpp>
+#include <phylanx/plugins/matrixops/gauss_inverse.hpp>
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
 #include <phylanx/plugins/matrixops/hsplit_operation.hpp>
 #include <phylanx/plugins/matrixops/identity.hpp>
