@@ -39,8 +39,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     constexpr char const* const help_string = R"(
         invGJE(matrix)
         Args:
+
             matrix (vector<vector<double>>)
+
         Returns:
+
             the inverse of the matrix
     )";
 
