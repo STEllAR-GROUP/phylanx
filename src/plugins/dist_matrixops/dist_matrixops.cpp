@@ -17,6 +17,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(dist_constant_plugin,
     phylanx::dist_matrixops::primitives::dist_constant::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_dot_operation_plugin,
     phylanx::dist_matrixops::primitives::dist_dot_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_inverse_operation_plugin,
+    phylanx::dist_matrixops::primitives::dist_inverse::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_random_plugin,
     phylanx::dist_matrixops::primitives::dist_random::match_data)
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_transpose_operation_plugin,
