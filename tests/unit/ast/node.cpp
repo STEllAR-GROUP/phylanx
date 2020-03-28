@@ -112,9 +112,9 @@ void test_expression()
 {
     phylanx::ast::primary_expr p1(true);
     phylanx::ast::operand op1(p1);
-    phylanx::ast::expression e1(std::move(op1));
+    phylanx::ast::expression e1(op1);
 
-    phylanx::ast::operation u1(phylanx::ast::optoken::op_plus, op1);
+    phylanx::ast::operation u1(phylanx::ast::optoken::op_plus, std::move(op1));
     e1.append(u1);
 
     std::vector<phylanx::ast::operation> ops = {u1, u1};

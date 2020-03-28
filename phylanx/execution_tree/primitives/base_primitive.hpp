@@ -15,7 +15,6 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/generate_error_message.hpp>
-#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -73,8 +72,8 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct value_operand_sync
         {
             template <typename... Ts>
@@ -84,7 +83,7 @@ namespace phylanx { namespace execution_tree
                     std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT primitive_argument_type value_operand_ref_sync(
         primitive_argument_type const& val,
@@ -188,6 +187,7 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a literal type from a given primitive_argument_type, throw
     // if it doesn't hold one.
     PHYLANX_EXPORT primitive_argument_type extract_literal_value(
@@ -205,6 +205,7 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_literal_operand(primitive_argument_type const& val);
 
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a ir::node_data<double> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
@@ -215,6 +216,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT double extract_scalar_numeric_value(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -229,6 +231,15 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
     PHYLANX_EXPORT ir::node_data<double>&& extract_numeric_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT double extract_scalar_numeric_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT double extract_scalar_numeric_value_strict(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
@@ -254,14 +265,14 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>");
 
     ///////////////////////////////////////////////////////////////////////////
-    // Extract a ir::node_data<std::uint8_t> type from a given primitive_argument_type,
-    // throw if it doesn't hold one.
+    // Extract a ir::node_data<std::uint8_t> type from a given
+    // primitive_argument_type, throw if it doesn't hold one.
     PHYLANX_EXPORT bool is_boolean_data_operand(
         primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
-    // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
-    // throw if it doesn't hold one.
+    // Extract a ir::node_data<std::int64_t> type from a given
+    // primitive_argument_type, throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -305,17 +316,18 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct integer_operand
         {
             template <typename... Ts>
-            hpx::future<ir::node_data<std::int64_t>> operator()(Ts&&... ts) const
+            hpx::future<ir::node_data<std::int64_t>> operator()(
+                Ts&&... ts) const
             {
                 return execution_tree::integer_operand(std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
@@ -336,6 +348,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT std::int64_t extract_scalar_integer_value_strict(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -371,17 +384,19 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct integer_operand_strict
         {
             template <typename... Ts>
-            hpx::future<ir::node_data<std::int64_t>> operator()(Ts&&... ts) const
+            hpx::future<ir::node_data<std::int64_t>> operator()(
+                Ts&&... ts) const
             {
-                return execution_tree::integer_operand_strict(std::forward<Ts>(ts)...);
+                return execution_tree::integer_operand_strict(
+                    std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT bool is_integer_operand_strict(
         primitive_argument_type const& val);
@@ -395,6 +410,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT std::int64_t extract_scalar_positive_integer_value_strict(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -452,67 +468,69 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT bool is_boolean_operand(primitive_argument_type const& val);
     PHYLANX_EXPORT bool is_boolean_operand_strict(
         primitive_argument_type const& val);
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    ir::node_data<T> extract_node_data(
-        primitive_argument_type const& val,
+    ir::node_data<T> extract_node_data(primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     template <>
     inline ir::node_data<double> extract_node_data(
-        primitive_argument_type const& val,
-        std::string const& name,
+        primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
         return extract_numeric_value(val, name, codename);
     }
     template <>
     inline ir::node_data<std::int64_t> extract_node_data(
-        primitive_argument_type const& val,
-        std::string const& name,
+        primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
         return extract_integer_value(val, name, codename);
     }
     template <>
     inline ir::node_data<std::uint8_t> extract_node_data(
-        primitive_argument_type const& val,
-        std::string const& name,
+        primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
         return extract_boolean_value(val, name, codename);
     }
 
     template <typename T>
-    ir::node_data<T> extract_node_data(
-        primitive_argument_type && val,
+    ir::node_data<T> extract_node_data(primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     template <>
     inline ir::node_data<double> extract_node_data(
-        primitive_argument_type && val,
-        std::string const& name,
+        primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
     {
         return extract_numeric_value(std::move(val), name, codename);
     }
     template <>
     inline ir::node_data<std::int64_t> extract_node_data(
-        primitive_argument_type && val,
-        std::string const& name,
+        primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
     {
         return extract_integer_value(std::move(val), name, codename);
     }
     template <>
     inline ir::node_data<std::uint8_t> extract_node_data(
-        primitive_argument_type && val,
-        std::string const& name,
+        primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
     {
         return extract_boolean_value(std::move(val), name, codename);
@@ -520,65 +538,162 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    T extract_scalar_data(
-        primitive_argument_type const& val,
+    ir::node_data<T> extract_node_data_strict(
+        primitive_argument_type const& val, std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline ir::node_data<double> extract_node_data_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_numeric_value_strict(val, name, codename);
+    }
+    template <>
+    inline ir::node_data<std::int64_t> extract_node_data_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_integer_value_strict(val, name, codename);
+    }
+    template <>
+    inline ir::node_data<std::uint8_t> extract_node_data_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_boolean_value_strict(val, name, codename);
+    }
+
+    template <typename T>
+    ir::node_data<T> extract_node_data_strict(primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     template <>
-    inline double extract_scalar_data(
-        primitive_argument_type const& val,
-        std::string const& name,
+    inline ir::node_data<double> extract_node_data_strict(
+        primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
+    {
+        return extract_numeric_value_strict(std::move(val), name, codename);
+    }
+    template <>
+    inline ir::node_data<std::int64_t> extract_node_data_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_integer_value_strict(std::move(val), name, codename);
+    }
+    template <>
+    inline ir::node_data<std::uint8_t> extract_node_data_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_boolean_value_strict(std::move(val), name, codename);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    T extract_scalar_data(primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline double extract_scalar_data(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         return extract_scalar_numeric_value(val, name, codename);
     }
     template <>
-    inline std::int64_t extract_scalar_data(
-        primitive_argument_type const& val,
-        std::string const& name,
-        std::string const& codename)
+    inline std::int64_t extract_scalar_data(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         return extract_scalar_integer_value(val, name, codename);
     }
     template <>
-    inline std::uint8_t extract_scalar_data(
-        primitive_argument_type const& val,
-        std::string const& name,
-        std::string const& codename)
+    inline std::uint8_t extract_scalar_data(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         return extract_scalar_boolean_value(val, name, codename);
     }
 
     template <typename T>
-    T extract_scalar_data(
-        primitive_argument_type && val,
+    T extract_scalar_data(primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     template <>
-    inline double extract_scalar_data(
-        primitive_argument_type && val,
-        std::string const& name,
-        std::string const& codename)
+    inline double extract_scalar_data(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         return extract_scalar_numeric_value(std::move(val), name, codename);
     }
     template <>
-    inline std::int64_t extract_scalar_data(
-        primitive_argument_type && val,
-        std::string const& name,
-        std::string const& codename)
+    inline std::int64_t extract_scalar_data(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         return extract_scalar_integer_value(std::move(val), name, codename);
     }
     template <>
-    inline std::uint8_t extract_scalar_data(
-        primitive_argument_type && val,
-        std::string const& name,
-        std::string const& codename)
+    inline std::uint8_t extract_scalar_data(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         return extract_scalar_boolean_value(std::move(val), name, codename);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    T extract_scalar_data_strict(primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline double extract_scalar_data_strict(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
+    {
+        return extract_scalar_numeric_value_strict(val, name, codename);
+    }
+    template <>
+    inline std::int64_t extract_scalar_data_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_integer_value_strict(val, name, codename);
+    }
+    template <>
+    inline std::uint8_t extract_scalar_data_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_boolean_value_strict(val, name, codename);
+    }
+
+    template <typename T>
+    T extract_scalar_data_strict(primitive_argument_type&& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline double extract_scalar_data_strict(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
+    {
+        return extract_scalar_numeric_value_strict(
+            std::move(val), name, codename);
+    }
+    template <>
+    inline std::int64_t extract_scalar_data_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_integer_value_strict(
+            std::move(val), name, codename);
+    }
+    template <>
+    inline std::uint8_t extract_scalar_data_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_boolean_value_strict(
+            std::move(val), name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -607,19 +722,7 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT bool is_string_operand_strict(
         primitive_argument_type const& val);
 
-    // Extract an AST type from a given primitive_argument_type,
-    // throw if it doesn't hold one.
-    PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
-        primitive_argument_type const& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
-        primitive_argument_type && val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
-    PHYLANX_EXPORT bool is_ast_operand(primitive_argument_type const& val);
-
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a list type from a given primitive_argument_type,
     // Create a list from argument if it does not hold one.
     PHYLANX_EXPORT ir::range extract_list_value(
@@ -672,6 +775,7 @@ namespace phylanx { namespace execution_tree
         compiler::primitive_name_parts const& parts,
         std::string const& codename = "<unknown>");
 
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive_argument_type from a primitive_argument_type (that
     // could be a value type).
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
@@ -704,8 +808,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "", std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct value_operand
         {
             template <typename... Ts>
@@ -714,7 +818,7 @@ namespace phylanx { namespace execution_tree
                 return execution_tree::value_operand(std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     // was declared above
     //     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
@@ -748,8 +852,8 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct literal_operand
         {
             template <typename... Ts>
@@ -758,7 +862,7 @@ namespace phylanx { namespace execution_tree
                 return execution_tree::literal_operand(std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT primitive_argument_type literal_operand_sync(
         primitive_argument_type const& val,
@@ -800,8 +904,8 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct numeric_operand
         {
             template <typename... Ts>
@@ -810,7 +914,7 @@ namespace phylanx { namespace execution_tree
                 return execution_tree::numeric_operand(std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT ir::node_data<double> numeric_operand_sync(
         primitive_argument_type const& val,
@@ -821,13 +925,13 @@ namespace phylanx { namespace execution_tree
 
     // Extract a boolean from a primitive_argument_type (that
     // could be a primitive or a literal value).
-    PHYLANX_EXPORT hpx::future<std::uint8_t> boolean_operand(
+    PHYLANX_EXPORT hpx::future<ir::node_data<uint8_t>> boolean_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
-    PHYLANX_EXPORT std::uint8_t boolean_operand_sync(
+    PHYLANX_EXPORT std::uint8_t scalar_boolean_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
@@ -903,18 +1007,17 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct list_operand
         {
             template <typename... Ts>
-            hpx::future<ir::range> operator()(
-                Ts&&... ts) const
+            hpx::future<ir::range> operator()(Ts&&... ts) const
             {
                 return execution_tree::list_operand(std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT ir::range list_operand_sync(
         primitive_argument_type const& val,
@@ -950,19 +1053,18 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
-    namespace functional
-    {
+    namespace functional {
+
         struct list_operand_strict
         {
             template <typename... Ts>
-            hpx::future<ir::range> operator()(
-                Ts&&... ts) const
+            hpx::future<ir::range> operator()(Ts&&... ts) const
             {
                 return execution_tree::list_operand_strict(
                     std::forward<Ts>(ts)...);
             }
         };
-    }
+    }    // namespace functional
 
     PHYLANX_EXPORT ir::range list_operand_strict_sync(
         primitive_argument_type const& val,
@@ -1039,47 +1141,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (auto && d : in)
             {
                 out.emplace_back(
-                    hpx::util::invoke(f, std::move(d), std::ref(ts)...));
-            }
-            return out;
-        }
-
-        // Invoke the given function on all items in the input vector, while
-        // returning another vector holding the respective results.
-        template <typename T, typename Allocator, typename F, typename ... Ts>
-        auto map_operands_sv(std::vector<T, Allocator> const& in, F && f,
-                Ts && ... ts)
-        ->  util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )>
-        {
-            util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )> out;
-            out.reserve(in.size());
-
-            for (auto const& d : in)
-            {
-                out.push_back(hpx::util::invoke(f, d, std::ref(ts)...));
-            }
-            return out;
-        }
-
-        template <typename T, typename Allocator, typename F, typename ... Ts>
-        auto map_operands_sv(std::vector<T, Allocator> && in, F && f,
-                Ts && ... ts)
-        ->  util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )>
-        {
-            util::small_vector<decltype(
-                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-                )> out;
-            out.reserve(in.size());
-
-            for (auto && d : in)
-            {
-                out.push_back(
                     hpx::util::invoke(f, std::move(d), std::ref(ts)...));
             }
             return out;

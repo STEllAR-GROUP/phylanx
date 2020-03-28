@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,8 @@ PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(apply_plugin,
     phylanx::execution_tree::primitives::apply::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(async_operation_plugin,
+    phylanx::execution_tree::primitives::async_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(block_operation_plugin,
     phylanx::execution_tree::primitives::block_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(filter_operation_plugin,

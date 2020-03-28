@@ -651,7 +651,7 @@ namespace phylanx { namespace bindings
                 case primitive_argument_type::primitive_index:
                     return pybind11::dtype("O");
 
-                case primitive_argument_type::expression_index:
+                case primitive_argument_type::future_index:
                     return pybind11::dtype("O");
 
                 case primitive_argument_type::list_index:
