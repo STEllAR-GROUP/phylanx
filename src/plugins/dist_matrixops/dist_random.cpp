@@ -153,8 +153,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type dist_random::dist_random1d(
         std::size_t dim, std::uint32_t const& tile_idx,
         std::uint32_t const& numtiles, std::string&& given_name,
-        double const& mean, double const& std, std::string const& name_,
-        std::string const& codename_) const
+        double const& mean, double const& std) const
     {
         using namespace execution_tree;
 
@@ -174,7 +173,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string base_name =
             detail::generate_random_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
             std::make_shared<execution_tree::annotation>(localities_annotation(
@@ -187,17 +187,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             v[i] = dist(util::rng_);
         }
 
-        primitive_argument_type res(std::move(v), attached_annotation);
-
-        return std::move(res);
+        return primitive_argument_type(std::move(v), attached_annotation);
     }
 
     execution_tree::primitive_argument_type dist_random::dist_random2d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        double const& mean, double const& std, std::string const& name_,
-        std::string const& codename_) const
+        double const& mean, double const& std) const
     {
         using namespace execution_tree;
 
@@ -222,25 +219,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string base_name =
             detail::generate_random_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
             std::make_shared<execution_tree::annotation>(localities_annotation(
                 locality_ann, tile_info.as_annotation(name_, codename_),
                 ann_info, name_, codename_));
 
-        blaze::DynamicMatrix<double> m(rows, columns);
-        for (std::size_t i = 0; i != rows; ++i)
+        blaze::DynamicMatrix<double> m(row_size, column_size);
+        for (std::size_t i = 0; i != row_size; ++i)
         {
-            for (std::size_t j = 0; j != columns; ++j)
+            for (std::size_t j = 0; j != column_size; ++j)
             {
                 m(i, j) = dist(util::rng_);
             }
         }
 
-        primitive_argument_type res(std::move(m), attached_annotation);
-
-        return std::move(res);
+        return primitive_argument_type(std::move(m), attached_annotation);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -334,7 +330,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_constant::eval",
                                 this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type cane "
+                                    "invalid tling_type. the tiling_type can be "
                                     "one of these: `sym`, `row` or `column`"));
                         }
                     }
@@ -357,13 +353,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     {
                     case 1:
                         return this_->dist_random1d(dims[0], tile_idx, numtiles,
-                            std::move(given_name), mean, std, this_->name_,
-                            this_->codename_);
+                            std::move(given_name), mean, std);
 
                     case 2:
                         return this_->dist_random2d(dims, tile_idx, numtiles,
-                            std::move(given_name), tiling_type, mean, std,
-                            this_->name_, this_->codename_);
+                            std::move(given_name), tiling_type, mean, std);
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

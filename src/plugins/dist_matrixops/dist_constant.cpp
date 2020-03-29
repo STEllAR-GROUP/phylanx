@@ -104,13 +104,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value,
         std::size_t const& dim, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& name, std::string const& codename) const
+        std::uint32_t const& numtiles, std::string&& given_name) const
     {
         using namespace execution_tree;
 
         T const_value =
-            extract_scalar_data<T>(std::move(value), name, codename);
+            extract_scalar_data<T>(std::move(value), name_, codename_);
 
         std::int64_t start;
         std::uint32_t size;
@@ -126,25 +125,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string base_name =
             detail::generate_const_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name, codename), ann_info,
-                name, codename));
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
 
-        primitive_argument_type res(
+        return primitive_argument_type(
             blaze::DynamicVector<T>(size, const_value), attached_annotation);
-
-        return std::move(res);
     }
 
     execution_tree::primitive_argument_type dist_constant::constant1d(
         execution_tree::primitive_argument_type&& value,
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, execution_tree::node_data_type dtype,
-        std::string const& name_, std::string const& codename_) const
+        std::string&& given_name, execution_tree::node_data_type dtype) const
     {
         using namespace execution_tree;
 
@@ -152,16 +149,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return constant1d_helper<std::uint8_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), name_, codename_);
+                tile_idx, numtiles, std::move(given_name));
 
         case node_data_type_int64:
             return constant1d_helper<std::int64_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), name_, codename_);
+                tile_idx, numtiles, std::move(given_name));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant1d_helper<double>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), name_, codename_);
+                tile_idx, numtiles, std::move(given_name));
 
         default:
             break;
@@ -180,13 +177,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type&& value,
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::string const& tiling_type,
-        std::string const& name, std::string const& codename) const
+        std::string&& given_name, std::string const& tiling_type) const
     {
         using namespace execution_tree;
 
         T const_value =
-            extract_scalar_data<T>(std::move(value), name, codename);
+            extract_scalar_data<T>(std::move(value), name_, codename_);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -207,18 +203,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string base_name =
             detail::generate_const_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name, codename), ann_info,
-                name, codename));
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
 
-        primitive_argument_type res(
+        return primitive_argument_type(
             blaze::DynamicMatrix<T>(row_size, column_size, const_value),
             attached_annotation);
-
-        return std::move(res);
     }
 
     execution_tree::primitive_argument_type dist_constant::constant2d(
@@ -226,8 +221,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        execution_tree::node_data_type dtype, std::string const& name_,
-        std::string const& codename_) const
+        execution_tree::node_data_type dtype) const
     {
         using namespace execution_tree;
 
@@ -235,18 +229,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return constant2d_helper<std::uint8_t>(std::move(value), dims,
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_int64:
             return constant2d_helper<std::int64_t>(std::move(value), dims,
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant2d_helper<double>(std::move(value), dims, tile_idx,
-                numtiles, std::move(given_name), tiling_type, name_, codename_);
+                numtiles, std::move(given_name), tiling_type);
 
         default:
             break;
@@ -349,7 +341,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_constant::eval",
                                 this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type cane "
+                                    "invalid tling_type. the tiling_type can be "
                                     "one of these: `sym`, `row` or `column`"));
                         }
                     }
@@ -384,12 +376,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         case 1:
                             return this_->constant1d(std::move(args[0]), dims,
                                 tile_idx, numtiles, std::move(given_name),
-                                dtype, this_->name_, this_->codename_);
+                                dtype);
 
                         case 2:
                             return this_->constant2d(std::move(args[0]), dims,
                                 tile_idx, numtiles, std::move(given_name),
-                                tiling_type, dtype, this_->name_, this_->codename_);
+                                tiling_type, dtype);
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,

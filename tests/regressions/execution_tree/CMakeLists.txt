@@ -24,6 +24,7 @@ set(tests
     negative_integral_value_131
     no_integers_313
     out_of_scope_variable_232
+    random_d_1139
     shape1d_357
     shape_2nd_argument_406
     slicing_nil_358
@@ -41,6 +42,8 @@ set(cout_prints_twice_155_FLAGS DEPENDENCIES HPX::iostreams_component)
 set(define_loses_values_177_FLAGS DEPENDENCIES HPX::iostreams_component)
 set(out_of_scope_variable_232_FLAGS DEPENDENCIES HPX::iostreams_component)
 set(external_functions_337_FLAGS DEPENDENCIES HPX::iostreams_component)
+
+set(random_d_1139_PARAMETERS LOCALITIES 2)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

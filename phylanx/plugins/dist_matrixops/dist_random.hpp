@@ -52,14 +52,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         execution_tree::primitive_argument_type dist_random1d(std::size_t dim,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-            std::string&& given_name, double const& mean, double const& std,
-            std::string const& name_, std::string const& codename_) const;
+            std::string&& given_name, double const& mean,
+            double const& std) const;
         execution_tree::primitive_argument_type dist_random2d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,
-            double const& mean, double const& std, std::string const& name_,
-            std::string const& codename_) const;
+            double const& mean, double const& std) const;
     };
 
     inline execution_tree::primitive create_dist_random(hpx::id_type const& locality,
