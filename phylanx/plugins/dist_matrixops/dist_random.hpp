@@ -29,9 +29,6 @@
 
 namespace phylanx { namespace dist_matrixops { namespace primitives
 {
-    using distribution_parameters_type =
-        std::tuple<std::string, int, double, double>;
-
     class dist_random
       : public execution_tree::primitives::primitive_component_base
       , public std::enable_shared_from_this<dist_random>
