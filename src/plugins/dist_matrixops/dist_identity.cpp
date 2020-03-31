@@ -117,7 +117,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::size_t size = static_cast<std::size_t>(sz);
         
         T const_value =
-            extract_scalar_data<T>(std::move(value), name, codename);
+            extract_scalar_data<T>(std::move(sz), name, codename);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -145,9 +145,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 locality_ann, tile_info.as_annotation(name, codename), ann_info,
                 name, codename));
 
-        primitive_argument_type res(
-            blaze::DynamicMatrix<T>(row_size, column_size, const_value),
-            attached_annotation);
+        blaze::DynamicMatrix<T> m(row_size, column_size, 0);
+        if (tiling_type == 'row' && numtiles == sz)
+        {
+            for (std::size_t i = row_start; i != row_start + row_size; ++i)
+            {
+                m(i, i) = 1;
+            }
+        }
+        for (std::size_t i = 0; i != row_dim; ++i)
+        {
+            for (std::size_t j = 0; j != column_dim; ++j)
+            {
+                m(i, j) = dist(util::rng_);
+            }
+        }
+
+        primitive_argument_type res(std::move(m), attached_annotation);
 
         return std::move(res);
     }
