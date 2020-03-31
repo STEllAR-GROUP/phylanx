@@ -146,11 +146,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 name, codename));
 
         blaze::DynamicMatrix<T> m(row_size, column_size, 0);
-        if (tiling_type == 'row' && numtiles == sz)
+        if (tiling_type == 'row')
         {
-            for (std::size_t i = row_start; i != row_start + row_size; ++i)
+            for (std::size_t i = 0; i != row_size; ++i)
             {
-                m(i, i) = 1;
+                std::size_t j = i + row_start;
+                m(i, j) = 1;
+            }
+        }
+        else if (tiling_type == 'column')
+        {
+            for (std::size_t i = 0; i != column_size; ++i)
+            {
+                std::size_t j = i + column_start;
+                m(j, i) = 1;
             }
         }
         for (std::size_t i = 0; i != row_dim; ++i)
