@@ -5,8 +5,15 @@
 
 set(tests
     blaze_benchmarks
+    dist_cannon_4_loc
+    dist_cannon_9_loc
+    dist_cannon_16_loc
     simple_loop
    )
+
+set(dist_cannon_4_loc_PARAMETERS LOCALITIES 4)
+set(dist_cannon_9_loc_PARAMETERS LOCALITIES 9)
+set(dist_cannon_16_loc_PARAMETERS LOCALITIES 16)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
