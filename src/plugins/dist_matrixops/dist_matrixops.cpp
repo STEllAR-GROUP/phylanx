@@ -21,3 +21,5 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(dist_random_plugin,
     phylanx::dist_matrixops::primitives::dist_random::match_data)
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_transpose_operation_plugin,
     phylanx::dist_matrixops::primitives::dist_transpose_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_identity_plugin,
+    phylanx::dist_matrixops::primitives::dist_identity::match_data)
