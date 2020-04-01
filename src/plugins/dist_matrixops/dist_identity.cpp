@@ -223,21 +223,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::eval_context ctx) const
     {
         // verify arguments
-        if (operands.size() < 2 || operands.size() > 7)
+        if (operands.size() < 1 || operands.size() > 6)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_constant::eval",
+                "dist_identity::eval",
                 generate_error_message(
-                    "the constant_d primitive requires "
-                        "at least 2 and at most 7 operands"));
+                    "the identity_d primitive requires "
+                        "at least 1 and at most 6 operands"));
         }
 
-        if (!valid(operands[0]) || !valid(operands[1]))
+        if (!valid(operands[0]))
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_constant::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_identity::eval",
                 generate_error_message(
-                    "the constant_d primitive requires the first two arguments "
-                    "given by the operands array are valid"));
+                    "the constant_d primitive requires the first argument"
+                    "given by the operands array is valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -252,7 +252,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         extract_numeric_value_dimension(args[0]) != 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_constant::eval",
+                            "dist_identity::eval",
                             this_->generate_error_message(
                                 "the first argument must be a literal "
                                 "scalar value"));
