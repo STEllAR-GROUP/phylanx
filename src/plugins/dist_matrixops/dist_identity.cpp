@@ -258,35 +258,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 "scalar value"));
                     }
 
-                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{0};
-                    std::size_t numdims = 0;
-                    if (is_list_operand_strict(args[1]))
-                    {
-                        ir::range&& overall_shape = extract_list_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
-
-                        if (overall_shape.size() > PHYLANX_MAX_DIMENSIONS)
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_constant::eval",
-                                this_->generate_error_message(
-                                    "the given shape has a number of "
-                                    "dimensions that is not supported"));
-                        }
-
-                        dims =
-                            common::extract_dimensions(overall_shape);
-                        numdims = common::extract_num_dimensions(
-                            overall_shape);
-                    }
-                    else if (is_numeric_operand(args[1]))
-                    {
-                        // support constant_d(42, 3, 0, 3), to annotate the
-                        // first tile of [42, 42, 42]
-                        numdims = 1;
-                        dims[0] = extract_scalar_positive_integer_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
-                    }
 
                     std::string given_name = "";
                     if (valid(args[4]))
