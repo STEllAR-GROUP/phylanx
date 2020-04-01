@@ -258,24 +258,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 "scalar value"));
                     }
 
-
                     std::string given_name = "";
-                    if (valid(args[4]))
+                    if (valid(args[3]))
                     {
-                        given_name = extract_string_value(std::move(args[4]),
+                        given_name = extract_string_value(std::move(args[3]),
                             this_->name_, this_->codename_);
                     }
                     // using balanced symmetric tiles
                     std::string tiling_type = "sym";
-                    if (valid(args[5]))
+                    if (valid(args[4]))
                     {
                         tiling_type = extract_string_value(
-                            std::move(args[5]), this_->name_, this_->codename_);
+                            std::move(args[4]), this_->name_, this_->codename_);
                         if ((tiling_type != "sym" && tiling_type != "row") &&
                             tiling_type != "column")
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_constant::eval",
+                                "dist_identity::eval",
                                 this_->generate_error_message(
                                     "invalid tling_type. the tiling_type cane "
                                     "one of these: `sym`, `row` or `column`"));
@@ -283,81 +282,53 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     }
 
                     node_data_type dtype = node_data_type_unknown;
-                    if (valid(args[6]))
+                    if (valid(args[5]))
                     {
                         dtype =
-                            map_dtype(extract_string_value(std::move(args[6]),
+                            map_dtype(extract_string_value(std::move(args[5]),
                                 this_->name_, this_->codename_));
                     }
 
-                    if (valid(args[2]) && valid(args[3]))
+                    if (valid(args[1]) && valid(args[2]))
                     {
                         std::uint32_t tile_idx =
                             extract_scalar_nonneg_integer_value_strict(
-                                std::move(args[2]), this_->name_, this_->codename_);
+                                std::move(args[1]), this_->name_, this_->codename_);
                         std::uint32_t numtiles =
                             extract_scalar_positive_integer_value_strict(
-                                std::move(args[3]), this_->name_, this_->codename_);
+                                std::move(args[2]), this_->name_, this_->codename_);
                         if (tile_idx >= numtiles)
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_constant::eval",
+                                "dist_identity::eval",
                                 this_->generate_error_message(
                                     "invalid tile index. Tile indices start from 0 "
                                     "and should be smaller than number of tiles"));
                         }
 
-                        switch (numdims)
-                        {
-                        case 1:
-                            return this_->constant1d(std::move(args[0]), dims,
-                                tile_idx, numtiles, std::move(given_name),
-                                dtype, this_->name_, this_->codename_);
-
-                        case 2:
-                            return this_->constant2d(std::move(args[0]), dims,
-                                tile_idx, numtiles, std::move(given_name),
-                                tiling_type, dtype, this_->name_, this_->codename_);
+                        
+                        
+                        return this_->constant2d(std::move(args[0]), 
+                            tile_idx, numtiles, std::move(given_name),
+                            tiling_type, dtype, this_->name_, this_->codename_);
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_constant::eval",
+                                "dist_identity::eval",
                                 util::generate_error_message(
                                     "the given shape is of an unsupported "
                                     "dimensionality",
                                     this_->name_, this_->codename_));
-                        }
+                        
                     }
-                    else if (!valid(args[2]) && !valid(args[3]))
+                    else if (!valid(args[1]) && !valid(args[2]))
                     {
-                        switch (numdims)
-                        {
-                        case 0:
-                            return common::constant0d(std::move(args[0]), dtype,
-                                false, this_->name_, this_->codename_);
-
-                        case 1:
-                            return common::constant1d(std::move(args[0]),
-                                dims[0], dtype, false, this_->name_,
-                                this_->codename_);
-
-                        case 2:
-                            return common::constant2d(std::move(args[0]), dims,
-                                dtype, false, this_->name_, this_->codename_);
-
-                        case 3:
-                            return common::constant3d(std::move(args[0]), dims,
-                                dtype, false, this_->name_, this_->codename_);
-
-                        case 4:
-                            return common::constant4d(std::move(args[0]), dims,
-                                dtype, false, this_->name_, this_->codename_);
-
-                        default:
-                            break;
-                        }
+                                           
+                        return common::constant2d(std::move(args[0]),
+                            dtype, false, this_->name_, this_->codename_);
+                   
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_constant::eval",
+                            "dist_identity::eval",
                             util ::generate_error_message(
                                 "left hand side operand has unsupported "
                                 "number of dimensions"));
@@ -365,7 +336,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     else
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_constant::eval",
+                            "dist_identity::eval",
                             util::generate_error_message(
                                 "both tile_idx and numtiles should be given to "
                                 "generate a distributed constant",
