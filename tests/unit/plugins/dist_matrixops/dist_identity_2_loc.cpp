@@ -1,5 +1,5 @@
-// Copyright (c) 2020 Hartmut Kaiser
-// Copyright (c) 2020 Bita Hasheminezhad
+// Copyright (c) 2020 Nanmiao Wu
+
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -33,7 +33,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
     return code.run().arg_;
 }
 
-void test_random_d_operation(std::string const& name, std::string const& code,
+void test_identity_d_operation(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
     phylanx::execution_tree::primitive_argument_type result =
@@ -46,12 +46,12 @@ void test_random_d_operation(std::string const& name, std::string const& code,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_random_1d_0()
+void test_identity_0()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_random_d_operation("test_random_2loc1d_0", R"(
-            random_d(list(4), 0, 2)
+        test_random_d_operation("test_identity_2loc_0", R"(
+            identity_d(5, 0, 2)
         )", R"(
             annotate_d([42.0, 42.0], "random_array_1",
                 list("args",
