@@ -186,7 +186,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
         execution_tree::node_data_type dtype, std::string const& name_,
-        std::string const& codename_) const
+        std::string const& codename_) 
     {
         using namespace execution_tree;
 
@@ -217,7 +217,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<execution_tree::primitive_argument_type> dist_constant::eval(
+    hpx::future<execution_tree::primitive_argument_type> dist_identity::eval(
         execution_tree::primitive_arguments_type const& operands,
         execution_tree::primitive_arguments_type const& args,
         execution_tree::eval_context ctx) const
