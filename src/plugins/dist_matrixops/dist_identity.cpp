@@ -1,4 +1,3 @@
-// Copyright (c) 2017-2020 Hartmut Kaiser
 // Copyright (c) 2020 Nanmiao Wu
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -11,8 +10,7 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/common/constant_nd.hpp>
-#include <phylanx/plugins/dist_matrixops/dist_constant.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_identity.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/execution_tree/localities_annotation.hpp>
 
@@ -90,7 +88,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
             if (given_name.empty())
             {
-                return "full_array_" + std::to_string(++const_count);
+                return "identity_array_" + std::to_string(++const_count);
             }
 
             return std::move(given_name);

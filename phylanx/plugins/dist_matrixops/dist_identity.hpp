@@ -3,14 +3,16 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_DIST_RANDOM)
-#define PHYLANX_PRIMITIVES_DIST_RANDOM
+#if !defined(PHYLANX_PRIMITIVES_DIST_IDENTITY)
+#define PHYLANX_PRIMITIVES_DIST_IDENTITY
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
-#include <phylanx/util/random.hpp>
+
 
 #include <hpx/lcos/future.hpp>
 
