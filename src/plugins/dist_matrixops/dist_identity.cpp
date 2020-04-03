@@ -142,7 +142,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             for (std::size_t i = 0; i != row_size; ++i)
             {
                 std::size_t j = i + row_start;
-                m(i, j) = 1;
+                m(i, j) = 1.0;
             }
         }
         else if (tiling_type == "column")
@@ -150,7 +150,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             for (std::size_t i = 0; i != column_size; ++i)
             {
                 std::size_t j = i + column_start;
-                m(j, i) = 1;
+                m(j, i) = 1.0;
             }
         }
         else if (tiling_type == "sym" && numtiles == 4)
@@ -162,7 +162,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 {
                     break;
                 }
-                m(j, i) = 1;
+                m(j, i) = 1.0;
             }
         }
         else

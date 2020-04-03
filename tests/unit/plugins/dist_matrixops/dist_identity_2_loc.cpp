@@ -81,6 +81,34 @@ void test_identity_0()
     }
 }
 
+void test_identity_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_identity_d_operation("test_identity_2loc_1", R"(
+            identity_d(4, 0, 2, "my_identity_2", "row")
+        )", R"(
+            annotate_d([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]], 
+                "my_identity_2",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 4), list("rows", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_identity_d_operation("test_identity_2loc_0", R"(
+            identity_d(4, 1, 2, "my_identity_2", "row")
+        )", R"(
+            annotate_d([[0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]], 
+                "my_identity_2",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 4), list("rows", 2, 4))))
+        )");
+    }
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,6 +116,7 @@ int hpx_main(int argc, char* argv[])
 {
     // only annotations are compared
     test_identity_0();
+    test_identity_1();
     
 
     hpx::finalize();
