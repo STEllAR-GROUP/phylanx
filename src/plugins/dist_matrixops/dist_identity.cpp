@@ -100,19 +100,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
    
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    execution_tree::primitive_argument_type dist_identity::identity_helper(
+    execution_tree::primitive_argument_type dist_identity::dist_identity_helper(
         std::int64_t&& sz,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type) const
     {
         using namespace execution_tree;
-        if (sz < 0)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_identity::identity_helper",
-                generate_error_message("input should be greater than zero"));
-        }
-
+        
         std::size_t size = static_cast<std::size_t>(sz);
 
         std::int64_t row_start, column_start;
@@ -182,7 +176,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         return primitive_argument_type(std::move(m), attached_annotation);
     }
 
-    execution_tree::primitive_argument_type dist_identity::identity_nd(
+    execution_tree::primitive_argument_type dist_identity::dist_identity_nd(
         std::int64_t&& sz,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
@@ -193,16 +187,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         switch (dtype)
         {
         case node_data_type_bool:
-            return identity_helper<std::uint8_t>(std::move(sz), tile_idx, 
+            return dist_identity_helper<std::uint8_t>(std::move(sz), tile_idx, 
             numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_int64:
-            return identity_helper<std::int64_t>(std::move(sz), tile_idx, 
+            return dist_identity_helper<std::int64_t>(std::move(sz), tile_idx, 
             numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
-            return identity_helper<double>(std::move(sz), tile_idx, 
+            return dist_identity_helper<double>(std::move(sz), tile_idx, 
             numtiles, std::move(given_name), tiling_type);
 
         default:
@@ -210,7 +204,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_matrixops::dist_identity::identity_nd",
+            "dist_matrixops::dist_identity::dist_identity",
             util::generate_error_message(
                 "the constant primitive requires for all arguments to "
                     "be numeric data types"));

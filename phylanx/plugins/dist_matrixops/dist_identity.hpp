@@ -50,12 +50,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             execution_tree::primitive_arguments_type const& args,
             execution_tree::eval_context ctx) const override;
 
-        execution_tree::primitive_argument_type identity_helper(
+        execution_tree::primitive_argument_type dist_identity_helper(
             std::size_t const& sz, std::uint32_t const& tile_idx, 
             std::uint32_t const& numtiles, std::string&& given_name, 
             std::string const& tiling_type) const;   
 
-        execution_tree::primitive_argument_type identity_nd(
+        execution_tree::primitive_argument_type dist_identity_nd(
             std::size_t const& sz, std::uint32_t const& tile_idx, 
             std::uint32_t const& numtiles, std::string&& given_name, 
             std::string const& tiling_type, 
