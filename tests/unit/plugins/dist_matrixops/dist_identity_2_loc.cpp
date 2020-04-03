@@ -16,6 +16,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+
 #include <utility>
 #include <vector>
 
@@ -55,7 +56,7 @@ void test_identity_0()
     if (hpx::get_locality_id() == 0)
     {
         test_identity_d_operation("test_identity_2loc_0", R"(
-            identity_d(4, 0, 2)
+            identity_d(4, 0, 2, "column")
         )", R"(
             annotate_d([[1.0, 0.0], [0.0, 1.0], [0.0, 0.0], 
                 [0.0, 0.0]], 
@@ -68,7 +69,7 @@ void test_identity_0()
     else
     {
         test_identity_d_operation("test_identity_2loc_0", R"(
-            identity_d(4, 1, 2)
+            identity_d(4, 1, 2, "column")
         )", R"(
             annotate_d([[0.0, 0.0], [0.0, 0.0], [1.0, 0.0], 
                 [0.0, 1.0]], 
