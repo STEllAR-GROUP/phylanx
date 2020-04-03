@@ -292,7 +292,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 this_->name_, this_->codename_));
                     }
 
-                    return this_->dist_identity_nd(sz, 
+                    return this_->dist_identity_nd(std::move(sz), 
                                 tile_idx, numtiles, std::move(given_name),
                                 tiling_type, dtype);
 
