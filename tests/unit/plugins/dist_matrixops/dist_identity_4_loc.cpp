@@ -215,7 +215,7 @@ void test_identity_4loc_3()
             identity_d(4, 0, 4, "", "row")
         )", R"(
             annotate_d([1.0, 0.0, 0.0, 0.0], 
-                "identity_array_4",
+                "identity_array_2",
                 list("args",
                     list("locality", 0, 4),
                     list("tile", list("columns", 0, 4), list("rows", 0, 1))))
@@ -227,7 +227,7 @@ void test_identity_4loc_3()
             identity_d(4, 1, 4, "", "row")
         )", R"(
             annotate_d([0.0, 1.0, 0.0, 0.0],  
-                "identity_array_4",
+                "identity_array_2",
                 list("args",
                     list("locality", 1, 4),
                     list("tile", list("columns", 0, 4), list("rows", 1, 2))))
@@ -239,7 +239,7 @@ void test_identity_4loc_3()
             identity_d(4, 2, 4, "", "row")
         )", R"(
             annotate_d([0.0, 0.0, 1.0, 0.0], 
-                "identity_array_4",
+                "identity_array_2",
                 list("args",
                     list("locality", 2, 4),
                     list("tile", list("columns", 0, 4), list("rows", 2, 3))))
@@ -251,7 +251,7 @@ void test_identity_4loc_3()
             identity_d(4, 3, 4, "", "row")
         )", R"(
             annotate_d([0.0, 0.0, 0.0, 1.0], 
-                "identity_array_4",
+                "identity_array_2",
                 list("args",
                     list("locality", 3, 4),
                     list("tile", list("columns", 0, 4), list("rows", 3, 4))))
@@ -269,7 +269,7 @@ int hpx_main(int argc, char* argv[])
     test_identity_4loc_0();
     test_identity_4loc_1();
     test_identity_4loc_2();
-  //  test_identity_4loc_3();
+    test_identity_4loc_3();
 
     
 
