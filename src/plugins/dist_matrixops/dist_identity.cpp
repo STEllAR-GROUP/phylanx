@@ -291,7 +291,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             map_dtype(extract_string_value(std::move(args[5]),
                                 this_->name_, this_->codename_));
                     }
-       
+
+                    return this_->dist_identity_nd(std::move(args[0]), 
+                                tile_idx, numtiles, std::move(given_name),
+                                tiling_type, dtype);
+
                 }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
