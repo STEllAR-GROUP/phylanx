@@ -146,7 +146,7 @@ void test_identity_2loc_3()
         test_identity_d_operation("test_identity_2loc_3", R"(
             identity_d(5, 0, 2, "my_identity_4", "row")
         )", R"(
-            annotate_d([[1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0]
+            annotate_d([[1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0], 
                 [0.0, 0.0, 1.0, 0.0, 0.0]], 
                 "my_identity_4",
                 list("args",
@@ -159,7 +159,7 @@ void test_identity_2loc_3()
         test_identity_d_operation("test_identity_2loc_3", R"(
             identity_d(5, 1, 2, "my_identity_4", "row")
         )", R"(
-            annotate_d([[0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0]], 
+            annotate_d([[0.0, 0.0, 0.0, 1.0, 0.0], [0.0 0.0, 0.0, 0.0, 1.0]], 
                 "my_identity_4",
                 list("args",
                     list("locality", 1, 2),
