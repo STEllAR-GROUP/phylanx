@@ -5,15 +5,8 @@
 
 set(tests
     blaze_benchmarks
-    dist_cannon_4_loc
-    dist_cannon_9_loc
-    dist_cannon_16_loc
     simple_loop
    )
-
-set(dist_cannon_4_loc_PARAMETERS LOCALITIES 4)
-set(dist_cannon_9_loc_PARAMETERS LOCALITIES 9)
-set(dist_cannon_16_loc_PARAMETERS LOCALITIES 16)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
@@ -31,4 +24,29 @@ foreach(test ${tests})
   add_phylanx_pseudo_dependencies(tests.performance tests.performance.${test})
   add_phylanx_pseudo_dependencies(tests.performance.${test} ${test}_test_exe)
 
+endforeach()
+
+set(args
+    4
+    9
+    16
+    )
+	
+foreach(param ${args})
+  set(dist_cannon_${param}_PARAMETERS LOCALITIES ${param})
+  set(sources dist_cannon.cpp)
+
+  source_group("Source Files" FILES ${sources})
+
+  # add executable
+  add_phylanx_executable(dist_cannon_${param}_test
+    SOURCES ${sources}
+    ${dist_cannon_${param}_FLAGS}
+    EXCLUDE_FROM_ALL
+    FOLDER "Tests/Performance/")
+
+  # add_phylanx_unit_test("performance" dist_cannon_${param} ${dist_cannon_${param}_PARAMETERS})
+  add_phylanx_pseudo_target(tests.performance.dist_cannon_${param})
+  add_phylanx_pseudo_dependencies(tests.performance tests.performance.dist_cannon_${param})
+  add_phylanx_pseudo_dependencies(tests.performance.dist_cannon_${param} dist_cannon_${param}_test_exe)
 endforeach()

@@ -22,8 +22,10 @@
 char const* const cannon_product_code = R"(block(
     define(cannon, dim_size,
         block(
-            define(array1, random_d(list(dim_size, dim_size), find_here(), 16)),
-            define(array2, random_d(list(dim_size, dim_size), find_here(), 16)),
+            define(array1,
+                random_d(list(dim_size, dim_size), find_here(), num_localities())),
+            define(array2,
+                random_d(list(dim_size, dim_size), find_here(), num_localities())),
             cannon_product(array1, array2)
         )
     ),
@@ -42,6 +44,8 @@ int hpx_main(int argc, char* argv[])
 
     std::vector<std::int64_t> dim_sizes = {
         12, 120, 240, 480, 960, 4800, 9600, 96000, 960000};
+
+    std::cout << "Having " << hpx::get_num_localities().get() << " localities:\n";
 
     for (std::int64_t const& dim_size : dim_sizes)
     {
