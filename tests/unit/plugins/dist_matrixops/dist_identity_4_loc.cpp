@@ -268,8 +268,8 @@ int hpx_main(int argc, char* argv[])
     // only annotations are compared
     test_identity_4loc_0();
     test_identity_4loc_1();
-    test_identity_4loc_2();
-    test_identity_4loc_3();
+ //   test_identity_4loc_2();
+  //  test_identity_4loc_3();
 
     
 
