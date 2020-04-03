@@ -74,7 +74,7 @@ void test_identity_0()
                 [0.0, 1.0]], 
                 "identity_array_1",
                 list("args",
-                    list("locality", 0, 2),
+                    list("locality", 1, 2),
                     list("tile", list("columns", 2, 4), list("rows", 0, 4))))
         )");
     }
