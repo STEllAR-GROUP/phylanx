@@ -168,7 +168,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         else
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "identity::identity_helper",
+                "dist_identity::dist_identity_helper",
                 generate_error_message("wrong numtiles input when tiling_type is sym"));
         }
         
@@ -204,7 +204,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_matrixops::dist_identity::dist_identity",
+            "dist_matrixops::dist_identity::dist_identity_nd",
             util::generate_error_message(
                 "the constant primitive requires for all arguments to "
                     "be numeric data types"));
