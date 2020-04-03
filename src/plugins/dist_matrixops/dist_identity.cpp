@@ -86,7 +86,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     namespace detail
     {
         static std::atomic<std::size_t> const_count(0);
-        std::string generate_const_name(std::string&& given_name)
+        std::string generate_identity_name(std::string&& given_name)
         {
             if (given_name.empty())
             {
@@ -103,8 +103,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type dist_identity::identity_helper(
         std::int64_t&& sz,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::string const& tiling_type,
-        std::string const& name, std::string const& codename) 
+        std::string&& given_name, std::string const& tiling_type) const
     {
         using namespace execution_tree;
         if (sz < 0)
@@ -115,14 +114,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         std::size_t size = static_cast<std::size_t>(sz);
-        
-        T const_value =
-            extract_scalar_data<T>(std::move(sz), name, codename);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
-        std::uint32_t row_dim = size;
-        std::uint32_t column_dim = size;
+        std::uint32_t const row_dim = size;
+        std::uint32_t const column_dim = size;
 
         std::tie(row_start, column_start, row_size, column_size) =
             tile_calculation::tile_calculation_2d(
@@ -136,16 +132,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         annotation locality_ann = locality_info.as_annotation();
 
         std::string base_name =
-            detail::generate_const_name(std::move(given_name));
+            detail::generate_identity_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
             std::make_shared<annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name, codename), ann_info,
-                name, codename));
+                locality_ann, tile_info.as_annotation(name_, codename_), ann_info,
+                name_, codename_));
 
-        blaze::DynamicMatrix<T> m(row_size, column_size, 0);
+        blaze::DynamicMatrix<T> m(row_size, column_size, 0.0);
         if (tiling_type == "row")
         {
             for (std::size_t i = 0; i != row_size; ++i)
@@ -174,19 +171,22 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 m(j, i) = 1;
             }
         }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "identity::identity_helper",
+                generate_error_message("wrong numtiles input when tiling_type is sym"));
+        }
         
-
-        primitive_argument_type res(std::move(m), attached_annotation);
-
-        return std::move(res);
+        
+        return primitive_argument_type(std::move(m), attached_annotation);
     }
 
     execution_tree::primitive_argument_type dist_identity::identity_nd(
         std::int64_t&& sz,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        execution_tree::node_data_type dtype, std::string const& name_,
-        std::string const& codename_) 
+        execution_tree::node_data_type dtype) const
     {
         using namespace execution_tree;
 
@@ -194,16 +194,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return identity_helper<std::uint8_t>(std::move(sz), tile_idx, 
-            numtiles, std::move(given_name), tiling_type, name_, codename_);
+            numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_int64:
             return identity_helper<std::int64_t>(std::move(sz), tile_idx, 
-            numtiles, std::move(given_name), tiling_type, name_, codename_);
+            numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return identity_helper<double>(std::move(sz), tile_idx, 
-            numtiles, std::move(given_name), tiling_type, name_, codename_);
+            numtiles, std::move(given_name), tiling_type);
 
         default:
             break;
@@ -248,16 +248,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 {
                     using namespace execution_tree;
 
-                    if (valid(args[0]) &&
-                        extract_numeric_value_dimension(args[0]) != 0)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_identity::eval",
-                            this_->generate_error_message(
-                                "the first argument must be a literal "
-                                "scalar value"));
-                    }
-
+                    std::int64_t sz =
+                        extract_scalar_integer_value_strict(
+                            std::move(args[0]), this_->name_, this_->codename_);
                     std::uint32_t tile_idx =
                         extract_scalar_nonneg_integer_value_strict(
                             std::move(args[1]), this_->name_, this_->codename_);
@@ -304,14 +297,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             map_dtype(extract_string_value(std::move(args[5]),
                                 this_->name_, this_->codename_));
                     }
-
-                             
-                    return this_->identity_nd(std::move(args[0]), 
-                        tile_idx, numtiles, std::move(given_name),
-                        tiling_type, dtype, this_->name_, this_->codename_);
-                       
-                        
-                    
+       
                 }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
