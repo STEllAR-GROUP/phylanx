@@ -104,7 +104,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::int64_t&& sz,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        std::string const& name, std::string const& codename) const
+        std::string const& name, std::string const& codename) 
     {
         using namespace execution_tree;
         if (sz < 0)
