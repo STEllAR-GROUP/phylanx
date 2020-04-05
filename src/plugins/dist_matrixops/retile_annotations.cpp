@@ -16,11 +16,13 @@
 #include <phylanx/plugins/dist_matrixops/retile_annotations.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -73,21 +75,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        //static std::atomic<std::size_t> rand_count(0);
-        //std::string generate_random_name(std::string&& given_name)
-        //{
-        //    if (given_name.empty())
-        //    {
-        //        return "random_array_" + std::to_string(++rand_count);
-        //    }
-
-        //    return std::move(given_name);
-        //}
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     retile_annotations::retile_annotations(
         execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
@@ -130,6 +117,41 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // label is "tile"
             return tile_extraction_1d_helper(std::move(it));
         }
+
+        std::tuple<std::size_t, std::size_t, std::size_t> retile_calculation_1d(
+            execution_tree::tiling_span const& loc_span,
+            std::int64_t const& des_start, std::int64_t const& cur_start)
+        {
+            execution_tree::tiling_span pre_span(des_start, cur_start);
+            execution_tree::tiling_span intersection;
+            if (intersect(pre_span, loc_span, intersection))
+            {
+                std::int64_t rel_loc_start =
+                    intersection.start_ - loc_span.start_;
+                HPX_ASSERT(rel_loc_start >= 0);
+                return std::make_tuple(intersection.start_ - des_start,
+                    intersection.size(), rel_loc_start);
+            }
+            return std::make_tuple(0, 0, 0);
+        }
+
+        std::tuple<std::size_t, std::size_t, std::size_t> retile_calculation_1d(
+            execution_tree::tiling_span const& loc_span,
+            std::int64_t const& des_stop, std::int64_t const& cur_stop,
+            std::int64_t const& des_start)
+        {
+            execution_tree::tiling_span post_span(cur_stop, des_stop);
+            execution_tree::tiling_span intersection;
+            if (intersect(post_span, loc_span, intersection))
+            {
+                std::int64_t rel_loc_start =
+                    intersection.start_ - loc_span.start_;
+                HPX_ASSERT(rel_loc_start >= 0);
+                return std::make_tuple(intersection.start_ - des_start,
+                    intersection.size(), rel_loc_start);
+            }
+            return std::make_tuple(0, 0, 0);
+        }
     }    // namespace detail
 
     ///////////////////////////////////////////////////////////////////////////
@@ -167,20 +189,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "than its stop point"));
         }
 
-        // updating the tile information
-        if (type_)    // rows
-        {
-            tile_info =
-                tiling_information_1d(tiling_information_1d::tile1d_type::rows,
-                    tiling_span(des_start, des_stop));
-        }
-        else    // columns
-        {
-            tile_info = tiling_information_1d(
-                tiling_information_1d::tile1d_type::columns,
-                tiling_span(des_start, des_stop));
-        }
-
         std::size_t span_index = 0;
         if (!arr_localities.has_span(0))
         {
@@ -194,9 +202,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         util::distributed_vector<T> v_data(arr_localities.annotation_.name_, v,
             arr_localities.locality_.num_localities_, loc_id);
 
-        if (des_start < cur_start || des_stop > cur_stop)
+        std::int64_t rel_start = des_start - cur_start;
+        if (rel_start < 0 || des_stop > cur_stop)
         {
-            blaze::subvector(result, cur_start - des_start, v.size()) = v;
+            // copying the local part
+            if (des_start < cur_stop && des_stop > cur_start)
+            {
+                std::int64_t local_intersection_size =
+                    (std::min)(des_stop, cur_stop) -
+                    (std::max)(des_start, cur_start);
+                std::int64_t res_intersection_start =
+                    rel_start < 0 ? -rel_start : 0;
+                std::int64_t v_intersection_start =
+                    rel_start > 0 ? rel_start : 0;
+                blaze::subvector(result, res_intersection_start,
+                    local_intersection_size) = blaze::subvector(v,
+                    v_intersection_start, local_intersection_size);
+            }
+
             for (std::uint32_t loc = 0;
                  loc != arr_localities.locality_.num_localities_; ++loc)
             {
@@ -208,40 +231,34 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 // the array span in locality loc
                 tiling_span loc_span =
                     arr_localities.tiles_[loc].spans_[span_index];
-                if (des_start < cur_start)
+                std::size_t res_start, res_size, rel_loc_start;
+
+                if (rel_start < 0)
                 {
-                    tiling_span pre_span(des_start, cur_start);
-                    tiling_span intersection;
-                    if (intersect(pre_span, loc_span, intersection))
+                    std::tie(res_start, res_size, rel_loc_start) =
+                        detail::retile_calculation_1d(loc_span, des_start,
+                            (std::min)(cur_start, des_stop));
+                    if (res_size > 0)
                     {
-                        tiling_span outersection =
-                            arr_localities.project_coords(
-                                loc_id, span_index, intersection);
-                        blaze::subvector(result,
-                            des_start - intersection.start_,
-                            intersection.size()) =
+                        blaze::subvector(result, res_start, res_size) =
                             v_data
-                                .fetch(loc,
-                                    loc_span.stop_ + outersection.start_,
-                                    loc_span.stop_)
+                                .fetch(loc, rel_loc_start,
+                                    rel_loc_start + res_size)
                                 .get();
                     }
-
                 }
 
                 if (des_stop > cur_stop)
                 {
-                    tiling_span post_span(cur_stop, des_stop);
-                    tiling_span intersection;
-                    if (intersect(post_span, loc_span, intersection))
+                    std::tie(res_start, res_size, rel_loc_start) =
+                        detail::retile_calculation_1d(loc_span, des_stop,
+                            (std::max)(cur_stop, des_start), des_start);
+                    if (res_size > 0)
                     {
-                        blaze::subvector(
-                            result, intersection.start_, intersection.size()) =
+                        blaze::subvector(result, res_start, res_size) =
                             v_data
-                                .fetch(loc,
-                                    loc_span.start_ - intersection.start_,
-                                    loc_span.start_ - intersection.start_ +
-                                        intersection.size())
+                                .fetch(loc, rel_loc_start,
+                                    rel_loc_start + res_size)
                                 .get();
                     }
                 }
@@ -249,7 +266,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
         else // the new array is a subset of the origina array
         {
-            result = blaze::subvector(v, des_start - cur_start, des_size);
+            result = blaze::subvector(v, rel_start, des_size);
+        }
+
+        // updating the tile information
+        if (type_)    // rows
+        {
+            tile_info =
+                tiling_information_1d(tiling_information_1d::tile1d_type::rows,
+                    tiling_span(des_start, des_stop));
+        }
+        else    // columns
+        {
+            tile_info = tiling_information_1d(
+                tiling_information_1d::tile1d_type::columns,
+                tiling_span(des_start, des_stop));
         }
 
         auto locality_ann = arr_localities.locality_.as_annotation();
