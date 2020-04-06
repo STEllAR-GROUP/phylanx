@@ -6,7 +6,6 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
@@ -44,10 +43,9 @@ void test_identity_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-
-    std::cout << result<<"\n";
+    std::cout << result << "\n";
     // comparing annotations
-    HPX_TEST_EQ(*(result.annotation()),*(comparison.annotation()));
+    HPX_TEST_EQ(*(result.annotation()), *(comparison.annotation()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +55,8 @@ void test_identity_2loc_0()
     {
         test_identity_d_operation("test_identity_2loc_0", R"(
             identity_d(4, 0, 2, "my_identity_1", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([[1.0, 0.0], [0.0, 1.0], [0.0, 0.0], 
                 [0.0, 0.0]], 
                 "my_identity_1",
@@ -70,7 +69,8 @@ void test_identity_2loc_0()
     {
         test_identity_d_operation("test_identity_2loc_0", R"(
             identity_d(4, 1, 2, "my_identity_1", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([[0.0, 0.0], [0.0, 0.0], [1.0, 0.0], 
                 [0.0, 1.0]], 
                 "my_identity_1",
@@ -87,7 +87,8 @@ void test_identity_2loc_1()
     {
         test_identity_d_operation("test_identity_2loc_1", R"(
             identity_d(4, 0, 2, "my_identity_2", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]], 
                 "my_identity_2",
                 list("args",
@@ -99,7 +100,8 @@ void test_identity_2loc_1()
     {
         test_identity_d_operation("test_identity_2loc_0", R"(
             identity_d(4, 1, 2, "my_identity_2", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([[0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]], 
                 "my_identity_2",
                 list("args",
@@ -115,7 +117,8 @@ void test_identity_2loc_2()
     {
         test_identity_d_operation("test_identity_2loc_2", R"(
             identity_d(5, 0, 2, "my_identity_3", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
                 [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], 
                 "my_identity_3",
@@ -128,7 +131,8 @@ void test_identity_2loc_2()
     {
         test_identity_d_operation("test_identity_2loc_2", R"(
             identity_d(5, 1, 2, "my_identity_3", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1.0, 0.0], 
                 [0.0, 1.0]], 
                 "my_identity_3",
@@ -145,7 +149,8 @@ void test_identity_2loc_3()
     {
         test_identity_d_operation("test_identity_2loc_3", R"(
             identity_d(5, 0, 2, "my_identity_4", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([[1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0], 
                 [0.0, 0.0, 1.0, 0.0, 0.0]], 
                 "my_identity_4",
@@ -158,7 +163,8 @@ void test_identity_2loc_3()
     {
         test_identity_d_operation("test_identity_2loc_3", R"(
             identity_d(5, 1, 2, "my_identity_4", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([[0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0]], 
                 "my_identity_4",
                 list("args",
@@ -168,7 +174,6 @@ void test_identity_2loc_3()
     }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -177,17 +182,13 @@ int hpx_main(int argc, char* argv[])
     test_identity_2loc_1();
     test_identity_2loc_2();
     test_identity_2loc_3();
-    
 
     hpx::finalize();
     return hpx::util::report_errors();
 }
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> cfg = {
-        "hpx.run_hpx_main!=1"
-    };
+    std::vector<std::string> cfg = {"hpx.run_hpx_main!=1"};
 
     return hpx::init(argc, argv, cfg);
 }
-

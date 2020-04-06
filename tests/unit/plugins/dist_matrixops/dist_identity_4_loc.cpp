@@ -6,7 +6,6 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
@@ -44,10 +43,9 @@ void test_identity_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-
-    std::cout << result<<"\n";
+    std::cout << result << "\n";
     // comparing annotations
-    HPX_TEST_EQ(*(result.annotation()),*(comparison.annotation()));
+    HPX_TEST_EQ(*(result.annotation()), *(comparison.annotation()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +55,8 @@ void test_identity_4loc_0()
     {
         test_identity_d_operation("test_identity_4loc_0", R"(
             identity_d(4, 0, 4, "", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([1.0, 0.0, 0.0, 0.0], 
                 "identity_array_1",
                 list("args",
@@ -69,7 +68,8 @@ void test_identity_4loc_0()
     {
         test_identity_d_operation("test_identity_4loc_0", R"(
             identity_d(4, 1, 4, "", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 1.0, 0.0, 0.0],  
                 "identity_array_1",
                 list("args",
@@ -81,7 +81,8 @@ void test_identity_4loc_0()
     {
         test_identity_d_operation("test_identity_4loc_0", R"(
             identity_d(4, 2, 4, "", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 1.0, 0.0], 
                 "identity_array_1",
                 list("args",
@@ -93,7 +94,8 @@ void test_identity_4loc_0()
     {
         test_identity_d_operation("test_identity_4loc_0", R"(
             identity_d(4, 3, 4, "", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 0.0, 1.0], 
                 "identity_array_1",
                 list("args",
@@ -109,7 +111,8 @@ void test_identity_4loc_1()
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
             identity_d(4, 0, 4, "my_identity_2", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([1.0, 0.0, 0.0, 0.0], 
                 "my_identity_2",
                 list("args",
@@ -121,7 +124,8 @@ void test_identity_4loc_1()
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
             identity_d(4, 1, 4, "my_identity_2", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 1.0, 0.0, 0.0],  
                 "my_identity_2",
                 list("args",
@@ -133,7 +137,8 @@ void test_identity_4loc_1()
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
             identity_d(4, 2, 4, "my_identity_2", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 1.0, 0.0], 
                 "my_identity_2",
                 list("args",
@@ -145,7 +150,8 @@ void test_identity_4loc_1()
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
             identity_d(4, 3, 4, "my_identity_2", "column")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 0.0, 1.0], 
                 "my_identity_2",
                 list("args",
@@ -161,7 +167,8 @@ void test_identity_4loc_2()
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
             identity_d(4, 0, 4, "my_identity_3", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([1.0, 0.0, 0.0, 0.0], 
                 "my_identity_3",
                 list("args",
@@ -173,7 +180,8 @@ void test_identity_4loc_2()
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
             identity_d(4, 1, 4, "my_identity_3", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 1.0, 0.0, 0.0],  
                 "my_identity_3",
                 list("args",
@@ -185,7 +193,8 @@ void test_identity_4loc_2()
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
             identity_d(4, 2, 4, "my_identity_3", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 1.0, 0.0], 
                 "my_identity_3",
                 list("args",
@@ -197,7 +206,8 @@ void test_identity_4loc_2()
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
             identity_d(4, 3, 4, "my_identity_3", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 0.0, 1.0], 
                 "my_identity_3",
                 list("args",
@@ -213,7 +223,8 @@ void test_identity_4loc_3()
     {
         test_identity_d_operation("test_identity_4loc_3", R"(
             identity_d(4, 0, 4, "", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([1.0, 0.0, 0.0, 0.0], 
                 "identity_array_2",
                 list("args",
@@ -225,7 +236,8 @@ void test_identity_4loc_3()
     {
         test_identity_d_operation("test_identity_4loc_3", R"(
             identity_d(4, 1, 4, "", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 1.0, 0.0, 0.0],  
                 "identity_array_2",
                 list("args",
@@ -237,7 +249,8 @@ void test_identity_4loc_3()
     {
         test_identity_d_operation("test_identity_4loc_3", R"(
             identity_d(4, 2, 4, "", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 1.0, 0.0], 
                 "identity_array_2",
                 list("args",
@@ -249,7 +262,8 @@ void test_identity_4loc_3()
     {
         test_identity_d_operation("test_identity_4loc_3", R"(
             identity_d(4, 3, 4, "", "row")
-        )", R"(
+        )",
+            R"(
             annotate_d([0.0, 0.0, 0.0, 1.0], 
                 "identity_array_2",
                 list("args",
@@ -258,11 +272,6 @@ void test_identity_4loc_3()
         )");
     }
 }
-
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
@@ -278,10 +287,7 @@ int hpx_main(int argc, char* argv[])
 }
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> cfg = {
-        "hpx.run_hpx_main!=1"
-    };
+    std::vector<std::string> cfg = {"hpx.run_hpx_main!=1"};
 
     return hpx::init(argc, argv, cfg);
 }
-
