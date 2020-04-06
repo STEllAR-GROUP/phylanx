@@ -273,9 +273,6 @@ int hpx_main(int argc, char* argv[])
     test_identity_4loc_2();
     test_identity_4loc_3();
 
-
-    
-
     hpx::finalize();
     return hpx::util::report_errors();
 }
