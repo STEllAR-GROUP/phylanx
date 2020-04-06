@@ -255,17 +255,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "and should be smaller than number of tiles"));
                     }
 */
-                    std::uint32_t const& tile_idx = extract_scalar_nonneg_integer_value_strict(
-                                std::move(args[1]));
-                    std::uint32_t const& numtiles= extract_scalar_positive_integer_value_strict(
-                                std::move(args[2]));
+                    std::uint32_t tile_idx;
+                    std::uint32_t numtiles;
                     if (valid(args[1]) && valid(args[2]))
                     {
-                        std::uint32_t tile_idx =
+                        tile_idx =
                             extract_scalar_nonneg_integer_value_strict(
                                 std::move(args[1]), this_->name_, 
                                 this_->codename_);
-                        std::uint32_t numtiles =
+                        numtiles =
                             extract_scalar_positive_integer_value_strict(
                                 std::move(args[2]), this_->name_, 
                                 this_->codename_);
