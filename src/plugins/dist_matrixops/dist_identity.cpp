@@ -41,7 +41,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         hpx::util::make_tuple("identity_d", std::vector<std::string>{R"(
                 identity_d(
-                    _1_size, 
+                    _1_sz, 
                     __arg(_2_tile_index, nil),
                     __arg(_3_numtiles, nil),
                     __arg(_4_name, ""),
@@ -221,12 +221,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                        "at least 1 and at most 6 operands"));
         }
 
-        if (!valid(operands[0]))
+        if (!valid(operands[1]) || !valid(operands[2]) || !valid(operands[3]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_identity::eval",
                 generate_error_message(
-                    "the identity_d primitive requires the first argument"
-                    "given by the operands array is valid"));
+                    "the identity_d primitive requires the arguments"
+                    "given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
