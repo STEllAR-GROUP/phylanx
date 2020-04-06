@@ -239,6 +239,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                     std::int64_t sz = extract_scalar_integer_value_strict(
                         std::move(args[0]), this_->name_, this_->codename_);
+/*                        
                     std::uint32_t tile_idx =
                         extract_scalar_nonneg_integer_value_strict(
                             std::move(args[1]), this_->name_, this_->codename_);
@@ -253,22 +254,28 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "invalid tile index. Tile indices start from 0 "
                                 "and should be smaller than number of tiles"));
                     }
-/*
+*/
+                    std::uint32_t const& tile_idx = extract_scalar_nonneg_integer_value_strict(
+                                std::move(args[1]));
+                    std::uint32_t const& numtiles= extract_scalar_positive_integer_value_strict(
+                                std::move(args[2]));
                     if (valid(args[1]) && valid(args[2]))
                     {
                         std::uint32_t tile_idx =
                             extract_scalar_nonneg_integer_value_strict(
-                                std::move(args[1]), this_->name_, this_->codename_);
+                                std::move(args[1]), this_->name_, 
+                                this_->codename_);
                         std::uint32_t numtiles =
                             extract_scalar_positive_integer_value_strict(
-                                std::move(args[2]), this_->name_, this_->codename_);
+                                std::move(args[2]), this_->name_, 
+                                this_->codename_);
                         if (tile_idx >= numtiles)
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_identity::eval",
-                                this_->generate_error_message(
-                                    "invalid tile index. Tile indices start from 0 "
-                                    "and should be smaller than number of tiles"));
+                             "dist_identity::eval",
+                             this_->generate_error_message(
+                                "invalid tile index. Tile indices start from 0 "
+                                "and should be smaller than number of tiles"));
                         }
                     }
                     else
@@ -280,8 +287,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "generate a distributed identity",
                                 this_->name_, this_->codename_));
                     }
+                   
 
-*/
                     std::string given_name = "";
                     if (valid(args[3]))
                     {
