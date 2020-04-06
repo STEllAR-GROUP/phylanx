@@ -15,6 +15,7 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
+
 #include <hpx/lcos/future.hpp>
 
 #include <array>
@@ -29,7 +30,8 @@
 
 #include <blaze/Math.h>
 
-namespace phylanx { namespace dist_matrixops { namespace primitives {
+namespace phylanx { namespace dist_matrixops { namespace primitives
+{
     class dist_identity
       : public execution_tree::primitives::primitive_component_base
       , public std::enable_shared_from_this<dist_identity>
@@ -50,25 +52,26 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         template <typename T>
         execution_tree::primitive_argument_type dist_identity_helper(
-            std::int64_t&& sz, std::uint32_t const& tile_idx,
-            std::uint32_t const& numtiles, std::string&& given_name,
-            std::string const& tiling_type) const;
+            std::int64_t&& sz, std::uint32_t const& tile_idx, 
+            std::uint32_t const& numtiles, std::string&& given_name, 
+            std::string const& tiling_type) const;   
 
         execution_tree::primitive_argument_type dist_identity_nd(
-            std::int64_t&& sz, std::uint32_t const& tile_idx,
-            std::uint32_t const& numtiles, std::string&& given_name,
-            std::string const& tiling_type,
+            std::int64_t&& sz, std::uint32_t const& tile_idx, 
+            std::uint32_t const& numtiles, std::string&& given_name, 
+            std::string const& tiling_type, 
             execution_tree::node_data_type dtype) const;
+
+        
     };
 
-    inline execution_tree::primitive create_dist_identity(
-        hpx::id_type const& locality,
+    inline execution_tree::primitive create_dist_identity(hpx::id_type const& locality,
         execution_tree::primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(
             locality, "identity_d", std::move(operands), name, codename);
     }
-}}}    // namespace phylanx::dist_matrixops::primitives
+}}}
 
 #endif
