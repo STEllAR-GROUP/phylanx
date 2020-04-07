@@ -141,23 +141,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             blaze::band(m, -column_start) = T(1);
         }
         else if (tiling_type == "sym" && numtiles == 4)
-        {   
+        {
             if (column_start - row_start == 0)
             {
                 blaze::band(m, 0) = T(1);
             }
-            
-            /*
-            for (std::size_t i = 0; i != column_size; ++i)
-            {
-                std::int64_t j = i + column_start - row_start;
-                if (j >= row_size || j < 0)
-                {
-                    break;
-                }
-                m(j, i) = 1.0;
-            }
-            */
         }
         else
         {
