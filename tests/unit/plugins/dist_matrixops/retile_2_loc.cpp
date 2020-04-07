@@ -13,6 +13,7 @@
 
 #include <array>
 #include <cstdint>
+#include <iosteram>
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,7 +48,7 @@ void test_retile_d_operation(std::string const& name, std::string const& code,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_retile_1d_0()
+void test_retile_2loc_1d_0()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -83,7 +84,7 @@ void test_retile_1d_0()
     }
 }
 
-void test_retile_1d_1()
+void test_retile_2loc_1d_1()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -119,7 +120,7 @@ void test_retile_1d_1()
     }
 }
 
-void test_retile_1d_2()
+void test_retile_2loc_1d_2()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -159,7 +160,7 @@ void test_retile_1d_2()
     }
 }
 
-void test_retile_1d_3()
+void test_retile_2loc_1d_3()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -199,7 +200,7 @@ void test_retile_1d_3()
     }
 }
 
-void test_retile_1d_4()
+void test_retile_2loc_1d_4()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -235,7 +236,7 @@ void test_retile_1d_4()
     }
 }
 
-void test_retile_1d_5()
+void test_retile_2loc_1d_5()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -305,12 +306,12 @@ void test_retile_1d_5()
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    test_retile_1d_0();
-    test_retile_1d_1();
-    test_retile_1d_2();
-    test_retile_1d_3();
-    test_retile_1d_4();
-    test_retile_1d_5();
+    test_retile_2loc_1d_0();
+    test_retile_2loc_1d_1();
+    test_retile_2loc_1d_2();
+    test_retile_2loc_1d_3();
+    test_retile_2loc_1d_4();
+    test_retile_2loc_1d_5();
 
     //test_retile_2d_0();
     //test_retile_2d_1();

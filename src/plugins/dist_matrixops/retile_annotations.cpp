@@ -56,17 +56,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     only contains positive integers.
                 new_tiling (a list): the tile index we need to generate the
                     random array for. A non-negative integer.
-                numtiles (int): number of tiles of the returned array
-                name (string, optional): the array given name. If not given, a
-                    globally unique name will be generated.
-                tiling_type (string, optional): defaults to `sym` which is a
-                    balanced way of tiling among all the numtiles localities.
-                    Other options are `row` or `column` tiling. For a vector
-                    all these three tiling_types are the same.
-                mean (float, optional): the mean value of the distribution. It
-                    sets to 0.0 by default.
-                std (float, optional): the standard deviation of the normal
-                    distribution. It sets to 1.0 by default.
 
             Returns:
 
@@ -240,6 +229,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             (std::min)(cur_start, des_stop));
                     if (res_size > 0)
                     {
+                        // loc_span has the part of result that we need
                         blaze::subvector(result, res_start, res_size) =
                             v_data
                                 .fetch(loc, rel_loc_start,
@@ -255,6 +245,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             (std::max)(cur_stop, des_start), des_start);
                     if (res_size > 0)
                     {
+                        // loc_span has the part of result that we need
                         blaze::subvector(result, res_start, res_size) =
                             v_data
                                 .fetch(loc, rel_loc_start,
@@ -378,7 +369,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     }
                     ir::range&& new_tiling = extract_list_value_strict(
                         std::move(args[1]), this_->name_, this_->codename_);
-                    auto label = extract_string_value_strict(*new_tiling.begin());
+                    auto label =
+                        extract_string_value_strict(*new_tiling.begin());
                     if (label != "args" && label != "tile")
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
@@ -386,43 +378,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 "the given shape is of an unsupported "
                                 "dimensionality"));
                     }
-                    //annotation_information ann_info{std::move(ann_name), 0ll};
-                    //annotation localities;
-                    //if (phylanx::execution_tree::extract_string_value(*args.begin()) ==
-                    //    "args")
-                    //{
-                    //    annotation tmp(args);
-                    //    annotation locality_ann;
-                    //    annotation tiles_ann;
-                    //    if (tmp.find("locality", locality_ann) &&
-                    //        tmp.find("tile", tiles_ann))
-                    //    {
-                    //        ir::range tmp = tiles_ann.get_range();
-                    //        localities = localities_annotation(locality_ann,
-                    //            annotation{std::move(tmp)}, ann_info, name_, codename_);
-                    //    }
-                    //    else
-                    //    {
-                    //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    //            "annotate_primitive::annotate_d",
-                    //            generate_error_message(
-                    //                "locality and/or tile annotation not found"));
-                    //    }
-                    //}
-                    //else if (phylanx::execution_tree::extract_string_value(*args.begin()) ==
-                    //    "tile")
-                    //{
-                    //    annotation locality_ann;
-                    //    localities = localities_annotation(locality_ann,
-                    //        annotation{std::move(args)}, ann_info, name_, codename_);
-                    //}
-                    //else
-                    //{
-                    //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    //        "annotate_primitive::annotate_d",
-                    //        generate_error_message(
-                    //            "no args annotation and tiles annotation not first"));
-                    //}
+
 
                     switch (numdims)
                     {
@@ -431,8 +387,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             std::move(new_tiling));
 
                         //case 2:
-                        //    return this_->retile2d(dims, tile_idx, numtiles,
-                        //        std::move(given_name), tiling_type, mean, std);
+                        //    return this_->retile2d();
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
