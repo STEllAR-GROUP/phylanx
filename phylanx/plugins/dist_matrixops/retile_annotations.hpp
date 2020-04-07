@@ -14,7 +14,6 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -53,11 +52,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type retile1d(ir::node_data<T>&& arr,
             ir::range&& new_tiling,
             execution_tree::localities_information&& arr_localities) const;
-        //execution_tree::primitive_argument_type retile2d(
-        //    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        //    std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        //    std::string&& given_name, std::string const& tiling_type,
-        //    double const& mean, double const& std) const;
+
+        execution_tree::primitive_argument_type retile2d(
+            execution_tree::primitive_argument_type&& arr,
+            ir::range&& new_tiling) const;
+        template <typename T>
+        execution_tree::primitive_argument_type retile2d(ir::node_data<T>&& arr,
+            ir::range&& new_tiling,
+            execution_tree::localities_information&& arr_localities) const;
     };
 
     inline execution_tree::primitive create_retile_annotations(
