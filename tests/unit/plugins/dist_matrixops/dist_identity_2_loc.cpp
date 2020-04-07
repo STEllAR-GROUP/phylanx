@@ -56,8 +56,8 @@ void test_identity_2loc_0()
             identity_d(4, 0, 2, "my_identity_1", "column")
         )",
             R"(
-            annotate_d([[1.0, 0.0], [0.0, 1.0], [0.0, 0.0], 
-                [0.0, 0.0]], 
+            annotate_d([[1.0, 0.0], [0.0, 1.0], [0.0, 0.0],
+                [0.0, 0.0]],
                 "my_identity_1",
                 list("args",
                     list("locality", 0, 2),
@@ -70,8 +70,8 @@ void test_identity_2loc_0()
             identity_d(4, 1, 2, "my_identity_1", "column")
         )",
             R"(
-            annotate_d([[0.0, 0.0], [0.0, 0.0], [1.0, 0.0], 
-                [0.0, 1.0]], 
+            annotate_d([[0.0, 0.0], [0.0, 0.0], [1.0, 0.0],
+                [0.0, 1.0]],
                 "my_identity_1",
                 list("args",
                     list("locality", 1, 2),
@@ -88,7 +88,7 @@ void test_identity_2loc_1()
             identity_d(4, 0, 2, "my_identity_2", "row")
         )",
             R"(
-            annotate_d([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]], 
+            annotate_d([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]],
                 "my_identity_2",
                 list("args",
                     list("locality", 0, 2),
@@ -101,7 +101,7 @@ void test_identity_2loc_1()
             identity_d(4, 1, 2, "my_identity_2", "row")
         )",
             R"(
-            annotate_d([[0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]], 
+            annotate_d([[0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]],
                 "my_identity_2",
                 list("args",
                     list("locality", 1, 2),
@@ -118,8 +118,8 @@ void test_identity_2loc_2()
             identity_d(5, 0, 2, "my_identity_3", "column")
         )",
             R"(
-            annotate_d([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
-                [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], 
+            annotate_d([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0],
+                [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
                 "my_identity_3",
                 list("args",
                     list("locality", 0, 2),
@@ -132,8 +132,8 @@ void test_identity_2loc_2()
             identity_d(5, 1, 2, "my_identity_3", "column")
         )",
             R"(
-            annotate_d([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1.0, 0.0], 
-                [0.0, 1.0]], 
+            annotate_d([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1.0, 0.0],
+                [0.0, 1.0]],
                 "my_identity_3",
                 list("args",
                     list("locality", 1, 2),
@@ -150,8 +150,8 @@ void test_identity_2loc_3()
             identity_d(5, 0, 2, "my_identity_4", "row")
         )",
             R"(
-            annotate_d([[1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0], 
-                [0.0, 0.0, 1.0, 0.0, 0.0]], 
+            annotate_d([[1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0]],
                 "my_identity_4",
                 list("args",
                     list("locality", 0, 2),
@@ -164,7 +164,7 @@ void test_identity_2loc_3()
             identity_d(5, 1, 2, "my_identity_4", "row")
         )",
             R"(
-            annotate_d([[0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0]], 
+            annotate_d([[0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0]],
                 "my_identity_4",
                 list("args",
                     list("locality", 1, 2),
