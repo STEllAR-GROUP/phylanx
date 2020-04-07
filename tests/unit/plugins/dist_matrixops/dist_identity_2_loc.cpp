@@ -43,8 +43,7 @@ void test_identity_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    // comparing annotations
-    HPX_TEST_EQ(*(result.annotation()), *(comparison.annotation()));
+    HPX_TEST_EQ(result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,7 +175,6 @@ void test_identity_2loc_3()
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    // only annotations are compared
     test_identity_2loc_0();
     test_identity_2loc_1();
     test_identity_2loc_2();

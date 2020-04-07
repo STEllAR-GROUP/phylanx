@@ -81,12 +81,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail {
-        static std::atomic<std::size_t> const_count(0);
+        static std::atomic<std::size_t> identity_count(0);
         std::string generate_identity_name(std::string&& given_name)
         {
             if (given_name.empty())
             {
-                return "identity_array_" + std::to_string(++const_count);
+                return "identity_array_" + std::to_string(++identity_count);
             }
 
             return std::move(given_name);
@@ -131,25 +131,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 tile_info.as_annotation(name_, codename_), ann_info, name_,
                 codename_));
 
-        blaze::DynamicMatrix<T> m(row_size, column_size, 0.0);
+        blaze::DynamicMatrix<T> m(row_size, column_size, T(0));
         if (tiling_type == "row")
         {
-            for (std::size_t i = 0; i != row_size; ++i)
-            {
-                std::size_t j = i + row_start;
-                m(i, j) = 1.0;
-            }
+            blaze::band(m, row_start) = T(1);
         }
         else if (tiling_type == "column")
         {
-            for (std::size_t i = 0; i != column_size; ++i)
-            {
-                std::size_t j = i + column_start;
-                m(j, i) = 1.0;
-            }
+            blaze::band(m, -column_start) = T(1);
         }
         else if (tiling_type == "sym" && numtiles == 4)
-        {
+        {   
+            if (column_start - row_start == 0)
+            {
+                blaze::band(m, 0) = T(1);
+            }
+            
+            /*
             for (std::size_t i = 0; i != column_size; ++i)
             {
                 std::int64_t j = i + column_start - row_start;
@@ -159,6 +157,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 }
                 m(j, i) = 1.0;
             }
+            */
         }
         else
         {
@@ -220,12 +219,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                        "at least 1 and at most 6 operands"));
         }
 
-        if (!valid(operands[1]) || !valid(operands[2]) || !valid(operands[3]))
+        if (!valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_identity::eval",
                 generate_error_message(
-                    "the identity_d primitive requires the arguments"
-                    "given by the operands array are valid"));
+                    "the identity_d primitive requires the first argument"
+                    "given by the operands array is valid"));
         }
 
         auto this_ = this->shared_from_this();

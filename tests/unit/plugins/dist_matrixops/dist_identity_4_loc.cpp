@@ -43,8 +43,7 @@ void test_identity_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    // comparing annotations
-    HPX_TEST_EQ(*(result.annotation()), *(comparison.annotation()));
+    HPX_TEST_EQ(result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,7 +55,7 @@ void test_identity_4loc_0()
             identity_d(4, 0, 4, "", "column")
         )",
             R"(
-            annotate_d([1.0, 0.0, 0.0, 0.0],
+            annotate_d([[1.0], [0.0], [0.0], [0.0]],
                 "identity_array_1",
                 list("args",
                     list("locality", 0, 4),
@@ -69,7 +68,7 @@ void test_identity_4loc_0()
             identity_d(4, 1, 4, "", "column")
         )",
             R"(
-            annotate_d([0.0, 1.0, 0.0, 0.0],
+            annotate_d([[0.0], [1.0], [0.0], [0.0]],
                 "identity_array_1",
                 list("args",
                     list("locality", 1, 4),
@@ -82,7 +81,7 @@ void test_identity_4loc_0()
             identity_d(4, 2, 4, "", "column")
         )",
             R"(
-            annotate_d([0.0, 0.0, 1.0, 0.0],
+            annotate_d([[0.0], [0.0], [1.0], [0.0]],
                 "identity_array_1",
                 list("args",
                     list("locality", 2, 4),
@@ -95,7 +94,7 @@ void test_identity_4loc_0()
             identity_d(4, 3, 4, "", "column")
         )",
             R"(
-            annotate_d([0.0, 0.0, 0.0, 1.0],
+            annotate_d([[0.0], [0.0], [0.0], [1.0]],
                 "identity_array_1",
                 list("args",
                     list("locality", 3, 4),
@@ -109,11 +108,11 @@ void test_identity_4loc_1()
     if (hpx::get_locality_id() == 0)
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
-            identity_d(4, 0, 4, "my_identity_2", "column")
+            identity_d(4, 0, 4, "my_identity_1", "column")
         )",
             R"(
-            annotate_d([1.0, 0.0, 0.0, 0.0],
-                "my_identity_2",
+            annotate_d([[1.0], [0.0], [0.0], [0.0]],
+                "my_identity_1",
                 list("args",
                     list("locality", 0, 4),
                     list("tile", list("columns", 0, 1), list("rows", 0, 4))))
@@ -122,11 +121,11 @@ void test_identity_4loc_1()
     else if (hpx::get_locality_id() == 1)
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
-            identity_d(4, 1, 4, "my_identity_2", "column")
+            identity_d(4, 1, 4, "my_identity_1", "column")
         )",
             R"(
-            annotate_d([0.0, 1.0, 0.0, 0.0],
-                "my_identity_2",
+            annotate_d([[0.0], [1.0], [0.0], [0.0]],
+                "my_identity_1",
                 list("args",
                     list("locality", 1, 4),
                     list("tile", list("columns", 1, 2), list("rows", 0, 4))))
@@ -135,11 +134,11 @@ void test_identity_4loc_1()
     else if (hpx::get_locality_id() == 2)
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
-            identity_d(4, 2, 4, "my_identity_2", "column")
+            identity_d(4, 2, 4, "my_identity_1", "column")
         )",
             R"(
-            annotate_d([0.0, 0.0, 1.0, 0.0],
-                "my_identity_2",
+            annotate_d([[0.0], [0.0], [1.0], [0.0]],
+                "my_identity_1",
                 list("args",
                     list("locality", 2, 4),
                     list("tile", list("columns", 2, 3), list("rows", 0, 4))))
@@ -148,11 +147,11 @@ void test_identity_4loc_1()
     else if (hpx::get_locality_id() == 3)
     {
         test_identity_d_operation("test_identity_4loc_1", R"(
-            identity_d(4, 3, 4, "my_identity_2", "column")
+            identity_d(4, 3, 4, "my_identity_1", "column")
         )",
             R"(
-            annotate_d([0.0, 0.0, 0.0, 1.0],
-                "my_identity_2",
+            annotate_d([[0.0], [0.0], [0.0], [1.0]],
+                "my_identity_1",
                 list("args",
                     list("locality", 3, 4),
                     list("tile", list("columns", 3, 4), list("rows", 0, 4))))
@@ -165,11 +164,11 @@ void test_identity_4loc_2()
     if (hpx::get_locality_id() == 0)
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
-            identity_d(4, 0, 4, "my_identity_3", "row")
+            identity_d(4, 0, 4, "my_identity_2", "row")
         )",
             R"(
-            annotate_d([1.0, 0.0, 0.0, 0.0],
-                "my_identity_3",
+            annotate_d([[1.0, 0.0, 0.0, 0.0]],
+                "my_identity_2",
                 list("args",
                     list("locality", 0, 4),
                     list("tile", list("columns", 0, 4), list("rows", 0, 1))))
@@ -178,11 +177,11 @@ void test_identity_4loc_2()
     else if (hpx::get_locality_id() == 1)
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
-            identity_d(4, 1, 4, "my_identity_3", "row")
+            identity_d(4, 1, 4, "my_identity_2", "row")
         )",
             R"(
-            annotate_d([0.0, 1.0, 0.0, 0.0],
-                "my_identity_3",
+            annotate_d([[0.0, 1.0, 0.0, 0.0]],
+                "my_identity_2",
                 list("args",
                     list("locality", 1, 4),
                     list("tile", list("columns", 0, 4), list("rows", 1, 2))))
@@ -191,11 +190,11 @@ void test_identity_4loc_2()
     else if (hpx::get_locality_id() == 2)
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
-            identity_d(4, 2, 4, "my_identity_3", "row")
+            identity_d(4, 2, 4, "my_identity_2", "row")
         )",
             R"(
-            annotate_d([0.0, 0.0, 1.0, 0.0],
-                "my_identity_3",
+            annotate_d([[0.0, 0.0, 1.0, 0.0]],
+                "my_identity_2",
                 list("args",
                     list("locality", 2, 4),
                     list("tile", list("columns", 0, 4), list("rows", 2, 3))))
@@ -204,11 +203,11 @@ void test_identity_4loc_2()
     else if (hpx::get_locality_id() == 3)
     {
         test_identity_d_operation("test_identity_4loc_2", R"(
-            identity_d(4, 3, 4, "my_identity_3", "row")
+            identity_d(4, 3, 4, "my_identity_2", "row")
         )",
             R"(
-            annotate_d([0.0, 0.0, 0.0, 1.0],
-                "my_identity_3",
+            annotate_d([[0.0, 0.0, 0.0, 1.0]],
+                "my_identity_2",
                 list("args",
                     list("locality", 3, 4),
                     list("tile", list("columns", 0, 4), list("rows", 3, 4))))
@@ -224,7 +223,7 @@ void test_identity_4loc_3()
             identity_d(4, 0, 4, "", "row")
         )",
             R"(
-            annotate_d([1.0, 0.0, 0.0, 0.0],
+            annotate_d([[1.0, 0.0, 0.0, 0.0]],
                 "identity_array_2",
                 list("args",
                     list("locality", 0, 4),
@@ -237,7 +236,7 @@ void test_identity_4loc_3()
             identity_d(4, 1, 4, "", "row")
         )",
             R"(
-            annotate_d([0.0, 1.0, 0.0, 0.0],
+            annotate_d([[0.0, 1.0, 0.0, 0.0]],
                 "identity_array_2",
                 list("args",
                     list("locality", 1, 4),
@@ -250,7 +249,7 @@ void test_identity_4loc_3()
             identity_d(4, 2, 4, "", "row")
         )",
             R"(
-            annotate_d([0.0, 0.0, 1.0, 0.0],
+            annotate_d([[0.0, 0.0, 1.0, 0.0]],
                 "identity_array_2",
                 list("args",
                     list("locality", 2, 4),
@@ -263,7 +262,7 @@ void test_identity_4loc_3()
             identity_d(4, 3, 4, "", "row")
         )",
             R"(
-            annotate_d([0.0, 0.0, 0.0, 1.0],
+            annotate_d([[0.0, 0.0, 0.0, 1.0]],
                 "identity_array_2",
                 list("args",
                     list("locality", 3, 4),
@@ -272,14 +271,126 @@ void test_identity_4loc_3()
     }
 }
 
+void test_identity_4loc_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_identity_d_operation("test_identity_4loc_4", R"(
+            identity_d(4, 0, 4, "my_identity_3", "sym")
+        )",
+            R"(
+            annotate_d([[1.0, 0.0], [0.0, 1.0]],
+                "my_identity_3",
+                list("args",
+                    list("locality", 0, 4),
+                    list("tile", list("columns", 0, 2), list("rows", 0, 2))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_identity_d_operation("test_identity_4loc_4", R"(
+            identity_d(4, 1, 4, "my_identity_3", "sym")
+        )",
+            R"(
+            annotate_d([[0.0, 0.0], [0.0, 0.0]],
+                "my_identity_3",
+                list("args",
+                    list("locality", 1, 4),
+                    list("tile", list("columns", 2, 4), list("rows", 0, 2))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_identity_d_operation("test_identity_4loc_4", R"(
+            identity_d(4, 2, 4, "my_identity_3", "sym")
+        )",
+            R"(
+            annotate_d([[0.0, 0.0], [0.0, 0.0]],
+                "my_identity_3",
+                list("args",
+                    list("locality", 2, 4),
+                    list("tile", list("columns", 0, 2), list("rows", 2, 4))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_identity_d_operation("test_identity_4loc_4", R"(
+            identity_d(4, 3, 4, "my_identity_3", "sym")
+        )",
+            R"(
+            annotate_d([[1.0, 0.0], [0.0, 1.0]],
+                "my_identity_3",
+                list("args",
+                    list("locality", 3, 4),
+                    list("tile", list("columns", 2, 4), list("rows", 2, 4))))
+        )");
+    }
+}
+
+void test_identity_4loc_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_identity_d_operation("test_identity_4loc_5", R"(
+            identity_d(4, 0, 4, "", "sym")
+        )",
+            R"(
+            annotate_d([[1.0, 0.0], [0.0, 1.0]],
+                "identity_array_3",
+                list("args",
+                    list("locality", 0, 4),
+                    list("tile", list("columns", 0, 2), list("rows", 0, 2))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_identity_d_operation("test_identity_4loc_5", R"(
+            identity_d(4, 1, 4, "", "sym")
+        )",
+            R"(
+            annotate_d([[0.0, 0.0], [0.0, 0.0]],
+                "identity_array_3",
+                list("args",
+                    list("locality", 1, 4),
+                    list("tile", list("columns", 2, 4), list("rows", 0, 2))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_identity_d_operation("test_identity_4loc_5", R"(
+            identity_d(4, 2, 4, "", "sym")
+        )",
+            R"(
+            annotate_d([[0.0, 0.0], [0.0, 0.0]],
+                "identity_array_3",
+                list("args",
+                    list("locality", 2, 4),
+                    list("tile", list("columns", 0, 2), list("rows", 2, 4))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_identity_d_operation("test_identity_4loc_5", R"(
+            identity_d(4, 3, 4, "", "sym")
+        )",
+            R"(
+            annotate_d([[1.0, 0.0], [0.0, 1.0]],
+                "identity_array_3",
+                list("args",
+                    list("locality", 3, 4),
+                    list("tile", list("columns", 2, 4), list("rows", 2, 4))))
+        )");
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    // only annotations are compared
     test_identity_4loc_0();
     test_identity_4loc_1();
     test_identity_4loc_2();
     test_identity_4loc_3();
+    test_identity_4loc_4();
+    test_identity_4loc_5();
 
     hpx::finalize();
     return hpx::util::report_errors();
