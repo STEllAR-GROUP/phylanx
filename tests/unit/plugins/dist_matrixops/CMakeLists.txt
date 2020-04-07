@@ -15,7 +15,6 @@ set(tests
     dist_transpose_operation
     dist_random_2_loc
     dist_random_5_loc
-    
    )
 
 

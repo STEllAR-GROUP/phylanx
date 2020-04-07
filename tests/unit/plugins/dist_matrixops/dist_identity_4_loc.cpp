@@ -43,7 +43,6 @@ void test_identity_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    std::cout << result << "\n";
     // comparing annotations
     HPX_TEST_EQ(*(result.annotation()), *(comparison.annotation()));
 }

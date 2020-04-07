@@ -41,7 +41,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         hpx::util::make_tuple("identity_d", std::vector<std::string>{R"(
                 identity_d(
-                    _1_sz, 
+                    _1_sz,
                     __arg(_2_tile_index, nil),
                     __arg(_3_numtiles, nil),
                     __arg(_4_name, ""),
@@ -52,7 +52,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             )"},
             &create_dist_identity,
             &execution_tree::create_primitive<dist_identity>, R"(
-            sz, dtype, tile_index, numtiles, name, tiling_type, 
+            sz, dtype, tile_index, numtiles, name, tiling_type,
             Args:
                 sz (int): the size of a created (n x n) matrix.
                 tile_index (int): the tile index we need to generate the
@@ -62,10 +62,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all the numtiles localities.
-                    Other options are `row` or `column` tiling. 
+                    Other options are `row` or `column` tiling.
                 dtype (string, optional): the data-type of the returned array,
                     defaults to 'float'.
-                
 
             Returns:
 
