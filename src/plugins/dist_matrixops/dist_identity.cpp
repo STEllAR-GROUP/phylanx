@@ -207,7 +207,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                        "at least 1 and at most 6 operands"));
         }
 
-        if (!valid(operands[1]))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_identity::eval",
                 generate_error_message(
