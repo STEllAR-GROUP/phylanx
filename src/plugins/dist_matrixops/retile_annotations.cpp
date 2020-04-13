@@ -23,7 +23,6 @@
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -32,8 +31,8 @@
 #include <utility>
 #include <vector>
 
-//#include <blaze/Math.h>
-//#include <blaze_tensor/Math.h>
+#include <blaze/Math.h>
+#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives
@@ -52,15 +51,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             a, new_tiling
             Args:
 
-                a (array): overall shape of the array. It
-                    only contains positive integers.
-                new_tiling (a list): the tile index we need to generate the
-                    random array for. A non-negative integer.
+                a (array): a part of an array with its attached annotation that
+                    locates on the current locality
+                new_tiling (list): a new tiling specification for the current
+                    locality, e.g. for a matrix we can have
+                    list("tile", list("columns", 0, 2), list("rows", 0, 2)) or
+                    list("args", list("locality", 0, 4),
+                       list("tile", list("columns", 0, 2), list("rows", 0, 2)))
 
             Returns:
 
-            A part of an array of random numbers on tile_index-th tile out of
-            numtiles using the nrmal distribution)")
+            The part of array on the current locality according to the
+            new_tiling)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -129,9 +131,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         indices_pack retile_calculation_1d(
             execution_tree::tiling_span const& loc_span,
-            std::int64_t des_start, std::int64_t cur_start)
+            std::int64_t des_start, std::int64_t des_stop)
         {
-            execution_tree::tiling_span span(des_start, cur_start);
+            execution_tree::tiling_span span(des_start, des_stop);
             execution_tree::tiling_span intersection;
             if (intersect(span, loc_span, intersection))
             {
@@ -419,7 +421,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // copying the local part
             if ((des_row_start < cur_row_stop &&
                     des_row_stop > cur_row_start) &&
-                (des_col_start < cur_col_stop && des_row_stop > cur_row_start))
+                (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
             {
                 auto row_indices = detail::index_calculation_1d(
                     des_row_start, des_row_stop, cur_row_start, cur_row_stop);
@@ -451,7 +453,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 auto col_indices = detail::retile_calculation_1d(
                     loc_col_span, des_col_start, des_col_stop);
                 if (row_indices.intersection_size_ > 0 &&
-                    col_indices.intersection_size_)
+                    col_indices.intersection_size_ > 0)
                 {
                     // loc_span has the block of result that we need
                     blaze::submatrix(result, row_indices.projected_start_,
@@ -469,7 +471,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 }
             }
         }
-        else // the new array is a subset of the origina array
+        else // the new array is a subset of the original array
         {
             result = blaze::submatrix(
                 m, rel_row_start, rel_col_start, des_row_size, des_col_size);
@@ -580,8 +582,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
                             this_->generate_error_message(
-                                "the given shape is of an unsupported "
-                                "dimensionality"));
+                                "the new_tiling should start with either of "
+                                "`tile` or `args` tags"));
                     }
 
                     switch (numdims)
@@ -590,9 +592,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         return this_->retile1d(std::move(args[0]),
                             std::move(new_tiling));
 
-                        case 2:
-                            return this_->retile2d(
-                                std::move(args[0]), std::move(new_tiling));
+                    case 2:
+                        return this_->retile2d(
+                            std::move(args[0]), std::move(new_tiling));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

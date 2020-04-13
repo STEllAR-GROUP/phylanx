@@ -11,15 +11,9 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
-#include <array>
-#include <cstdint>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -42,8 +36,6 @@ void test_retile_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    std::cout << "result:" << result << "\n";
-    std::cout << "comparison:" << comparison << "\n";
     HPX_TEST_EQ(result, comparison);
 }
 
@@ -310,6 +302,45 @@ void test_retile_2loc_2d_0()
     }
 }
 
+void test_retile_2loc_2d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc2d_1", R"(
+            retile_d(
+                annotate_d([[1, 2, 3, 4, 5, 6], [11, 12, 13, 14, 15, 16]],
+                    "tiled_array_2d_1",
+                    list("tile", list("columns", 0, 6), list("rows", 0, 2))
+                ),
+                list("tile", list("columns", 0, 2), list("rows", 0, 3))
+            )
+        )", R"(
+            annotate_d([[1, 2], [11, 12], [-1, -2]],
+                "tiled_array_2d_1_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("rows", 0, 3), list("columns", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc2d_1", R"(
+            retile_d(
+                annotate_d([[-1, -2, -3, -4, -5, -6]], "tiled_array_2d_1",
+                    list("tile", list("rows", 2, 3), list("columns", 0, 6))
+                ),
+                list("tile", list("rows", 0, 3), list("columns", 2, 6))
+            )
+        )", R"(
+            annotate_d([[3, 4, 5, 6], [13, 14, 15, 16],[-3, -4, -5, -6]],
+            "tiled_array_2d_1_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 0, 3), list("columns", 2, 6))))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -321,7 +352,7 @@ int hpx_main(int argc, char* argv[])
     test_retile_2loc_1d_5();
 
     test_retile_2loc_2d_0();
-    //test_retile_2loc_2d_1();
+    test_retile_2loc_2d_1();
 
     hpx::finalize();
     return hpx::util::report_errors();

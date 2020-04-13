@@ -9,7 +9,6 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-//#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <hpx/lcos/future.hpp>
@@ -21,8 +20,6 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-
-//#include <blaze/Math.h>
 
 namespace phylanx { namespace dist_matrixops { namespace primitives
 {
