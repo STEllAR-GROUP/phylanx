@@ -146,35 +146,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (shape.size() == 1)
                 {
-                    result[0] =
-                        extract_scalar_positive_integer_value(*shape.begin());
+                    result[0] = extract_scalar_nonneg_integer_value_strict(
+                        *shape.begin());
                 }
                 else if (shape.size() == 2)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
                 else if (shape.size() == 3)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[2] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
                 else if (shape.size() == 4)
                 {
                     auto elem_1 = shape.begin();
-                    result[0] = extract_scalar_positive_integer_value(*elem_1);
+                    result[0] =
+                        extract_scalar_nonneg_integer_value_strict(*elem_1);
                     result[1] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[2] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                     result[3] =
-                        extract_scalar_positive_integer_value(*++elem_1);
+                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
                 }
             }
             return result;

@@ -11,6 +11,7 @@
 
 #include <hpx/errors/throw_exception.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>

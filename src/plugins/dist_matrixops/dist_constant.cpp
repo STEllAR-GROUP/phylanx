@@ -102,6 +102,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value,
