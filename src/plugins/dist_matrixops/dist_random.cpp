@@ -43,8 +43,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         hpx::util::make_tuple("random_d", std::vector<std::string>{R"(
                 random_d(
                     _1_shape,
-                    _2_tile_index,
-                    _3_numtiles,
+                    __arg(_2_tile_index, find_here()),
+                    __arg(_3_numtiles, num_localities()),
                     __arg(_4_name, ""),
                     __arg(_5_tiling_type, "sym"),
                     __arg(_6_mean, 0.0),
@@ -58,9 +58,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
                 shape (int or list of ints): overall shape of the array. It
                     only contains positive integers.
-                tile_index (int): the tile index we need to generate the
-                    random array for. A non-negative integer.
-                numtiles (int): number of tiles of the returned array
+                tile_index (int, optional): the tile index we need to generate
+                    the random array for. A non-negative integer. If not given,
+                    it sets to current locality.
+                numtiles (int, optional): number of tiles of the returned array
+                    if not given it sets to the number of localities in the
+                    application.
                 name (string, optional): the array given name. If not given, a
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
@@ -75,7 +78,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             Returns:
 
             A part of an array of random numbers on tile_index-th tile out of
-            numtiles using the nrmal distribution)")
+            numtiles using the normal distribution)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -151,9 +154,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type dist_random::dist_random1d(
-        std::size_t dim, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        double const& mean, double const& std) const
+        std::size_t dim, std::uint32_t tile_idx, std::uint32_t numtiles,
+        std::string&& given_name, double const& mean, double const& std) const
     {
         using namespace execution_tree;
 
@@ -177,9 +179,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<execution_tree::annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name_, codename_),
-                ann_info, name_, codename_));
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
 
         blaze::DynamicVector<double> v(size);
         for (std::size_t i = 0; i != size; ++i)
@@ -192,7 +194,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     execution_tree::primitive_argument_type dist_random::dist_random2d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::uint32_t tile_idx, std::uint32_t numtiles,
         std::string&& given_name, std::string const& tiling_type,
         double const& mean, double const& std) const
     {
@@ -245,15 +247,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_arguments_type const& args,
         execution_tree::eval_context ctx) const
     {
-        if (operands.size() < 3 || operands.size() > 7)
+        if (operands.empty() || operands.size() > 7)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_random::eval",
                 generate_error_message(
-                    "the random_d primitive requires at most three operand"));
+                    "the random_d primitive requires at least one operand"));
         }
 
-        if (!valid(operands[1]) || !valid(operands[2]) || !valid(operands[3]))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_random::eval",
@@ -296,12 +298,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             std::move(args[0]), this_->name_, this_->codename_);
                     }
 
-                    std::uint32_t tile_idx =
-                        extract_scalar_nonneg_integer_value_strict(
+                    std::uint32_t tile_idx = hpx::get_locality_id();
+                    if (valid(args[1]))
+                    {
+                        tile_idx = extract_scalar_nonneg_integer_value_strict(
                             std::move(args[1]), this_->name_, this_->codename_);
+                    }
                     std::uint32_t numtiles =
-                        extract_scalar_positive_integer_value_strict(
+                        hpx::get_num_localities(hpx::launch::sync);
+                    if (valid(args[2]))
+                    {
+                        numtiles = extract_scalar_positive_integer_value_strict(
                             std::move(args[2]), this_->name_, this_->codename_);
+                    }
                     if (tile_idx >= numtiles)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

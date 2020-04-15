@@ -12,6 +12,7 @@ set(tests
     dist_dot_operation
     dist_transpose_operation
     dist_random_2_loc
+    dist_random_4_loc
     dist_random_5_loc
    )
 
@@ -23,6 +24,7 @@ set(dist_constant_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_constant_6_loc_PARAMETERS LOCALITIES 6)
 set(dist_dot_operation_PARAMETERS LOCALITIES 2)
 set(dist_random_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_random_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_random_5_loc_PARAMETERS LOCALITIES 5)
 
 
