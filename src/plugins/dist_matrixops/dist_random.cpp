@@ -94,56 +94,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
             return std::move(given_name);
         }
-
-        std::size_t extract_num_dimensions(ir::range const& shape)
-        {
-            return shape.size();
-        }
-
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
-            ir::range const& shape)
-        {
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0};
-            if (!shape.empty())
-            {
-                if (shape.size() == 1)
-                {
-                    result[0] = extract_scalar_positive_integer_value_strict(
-                        *shape.begin());
-                }
-                else if (shape.size() == 2)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_positive_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_positive_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 3)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_positive_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_positive_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_positive_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 4)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_positive_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_positive_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_positive_integer_value_strict(*++elem_1);
-                    result[3] =
-                        extract_scalar_positive_integer_value_strict(*++elem_1);
-                }
-            }
-            return result;
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -288,8 +238,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                     "dimensions that is not supported"));
                         }
 
-                        dims = detail::extract_dimensions(shape);
-                        numdims = detail::extract_num_dimensions(shape);
+                        dims = tile_calculation::extract_dimensions(shape);
+                        numdims =
+                            tile_calculation::extract_num_dimensions(shape);
                     }
                     else if (is_numeric_operand(args[0]))
                     {
