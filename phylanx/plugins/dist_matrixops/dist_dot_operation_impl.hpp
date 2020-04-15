@@ -37,7 +37,6 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#include <blaze/math/DynamicMatrix.h>
 #include <blaze_tensor/Math.h>
 
 using std_int64_t = std::int64_t;
@@ -48,6 +47,10 @@ REGISTER_DISTRIBUTED_VECTOR_DECLARATION(double);
 REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_int64_t);
 REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_uint8_t);
 
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(double);
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_int64_t);
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_uint8_t);
+
 HPX_REGISTER_ALLREDUCE_DECLARATION(double);
 HPX_REGISTER_ALLREDUCE_DECLARATION(std_int64_t);
 HPX_REGISTER_ALLREDUCE_DECLARATION(std_uint8_t);
@@ -56,9 +59,17 @@ using blaze_vector_double = blaze::DynamicVector<double>;
 using blaze_vector_std_int64_t = blaze::DynamicVector<std::int64_t>;
 using blaze_vector_std_uint8_t = blaze::DynamicVector<std::uint8_t>;
 
+using blaze_matrix_double = blaze::DynamicMatrix<double>;
+using blaze_matrix_std_int64_t = blaze::DynamicMatrix<std::int64_t>;
+using blaze_matrix_std_uint8_t = blaze::DynamicMatrix<std::uint8_t>;
+
 HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_double);
 HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_int64_t);
 HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_uint8_t);
+
+HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_matrix_double);
+HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_matrix_std_int64_t);
+HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_matrix_std_uint8_t);
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
@@ -297,8 +308,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     dot_result, rhs_column_start, rhs_column_size) +=
                     blaze::trans(
                         rhs_data
-                            .fetch(loc, rhs_intersection.start_,
-                                rhs_intersection.stop_, 0, rhs_column_size)
+                            .fetch(loc, rhs_intersection.start_, 0,
+                                rhs_intersection.stop_, rhs_column_size)
                             .get()) *
                     blaze::subvector(lhs.vector(), lhs_intersection.start_,
                         lhs_intersection.size());
@@ -654,8 +665,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
                         lhs.dimension(0), lhs_intersection.size()) *
                     rhs_data
-                        .fetch(loc, rhs_intersection.start_,
-                            rhs_intersection.stop_, 0, rhs_column_size)
+                        .fetch(loc, rhs_intersection.start_, 0,
+                            rhs_intersection.stop_, rhs_column_size)
                         .get();
             }
             ++loc;

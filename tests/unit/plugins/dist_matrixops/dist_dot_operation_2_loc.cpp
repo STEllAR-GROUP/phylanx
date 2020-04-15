@@ -12,7 +12,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
-#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>

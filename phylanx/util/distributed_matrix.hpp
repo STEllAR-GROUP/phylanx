@@ -86,8 +86,8 @@ namespace phylanx { namespace util { namespace server
 
         HPX_DEFINE_COMPONENT_ACTION(distributed_matrix_part, fetch);
 
-        data_type fetch_part(std::size_t start_row, std::size_t stop_row,
-            std::size_t start_column, std::size_t stop_column) const
+        data_type fetch_part(std::size_t start_row, std::size_t start_column,
+            std::size_t stop_row, std::size_t stop_column) const
         {
             return data_type{
                 blaze::submatrix(data_, start_row, start_column,
@@ -283,7 +283,7 @@ namespace phylanx { namespace util
         /// local data copy.
         /// It is suggested to use star operator to access local data.
         hpx::future<data_type> fetch(std::size_t idx, std::size_t start_row,
-            std::size_t stop_row, std::size_t start_column,
+            std::size_t start_column, std::size_t stop_row,
             std::size_t stop_column) const
         {
             /// \cond NOINTERNAL
@@ -292,7 +292,7 @@ namespace phylanx { namespace util
                 typename server::distributed_matrix_part<T>::fetch_part_action;
 
             return hpx::async<action_type>(get_part_id(idx), start_row,
-                stop_row, start_column, stop_column);
+                start_column, stop_row, stop_column);
             /// \endcond
         }
 
