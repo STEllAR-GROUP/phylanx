@@ -37,7 +37,6 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#include <blaze/math/DynamicMatrix.h>
 #include <blaze_tensor/Math.h>
 
 using std_int64_t = std::int64_t;
