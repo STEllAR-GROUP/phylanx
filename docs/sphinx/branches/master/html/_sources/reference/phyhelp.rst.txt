@@ -1613,6 +1613,19 @@ insert (arr, obj, values, axis, dtype)
             A copy of arr with values inserted.
 
 
+invGJE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+invGJE (invGJE(matrix))
+        Args:
+
+            matrix (vector<vector<double>>)
+
+        Returns:
+
+            the inverse of the matrix
+    
+
+
 inverse
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 inverse (m)
