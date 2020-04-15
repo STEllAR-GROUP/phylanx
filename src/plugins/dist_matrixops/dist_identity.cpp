@@ -143,8 +143,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         else if (tiling_type == "sym")
         {
             std::int64_t num_band = row_start - column_start;
-            std::int64_t upper_band = static_cast<std::size_t>(column_size - 1);
-            std::int64_t lower_band = static_cast<std::size_t>(1 - row_size);
+            std::int64_t upper_band = column_size - 1;
+            std::int64_t lower_band = 1 - row_size;
 
             if (num_band <= (std::max)(int64_t(0), upper_band) &&
                 num_band >= (std::min)(int64_t(0), lower_band))
