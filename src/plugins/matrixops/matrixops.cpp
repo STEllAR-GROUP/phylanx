@@ -80,6 +80,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(linearmatrix_plugin,
     phylanx::execution_tree::primitives::linearmatrix::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(linspace_plugin,
     phylanx::execution_tree::primitives::linspace::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(matrix_GJE_Inverse_plugin,
+    phylanx::execution_tree::primitives::matrix_GJE_Inverse::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(ndim_plugin,
     phylanx::execution_tree::primitives::ndim::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(outer_operation_plugin,
