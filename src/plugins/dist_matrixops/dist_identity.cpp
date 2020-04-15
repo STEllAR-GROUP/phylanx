@@ -21,7 +21,6 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 
-#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -109,12 +108,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
-        std::uint32_t const row_dim = size;
-        std::uint32_t const column_dim = size;
 
         std::tie(row_start, column_start, row_size, column_size) =
             tile_calculation::tile_calculation_2d(
-                tile_idx, row_dim, column_dim, numtiles, tiling_type);
+                tile_idx, size, size ,numtiles, tiling_type);
 
         tiling_information_2d tile_info(
             tiling_span(row_start, row_start + row_size),
@@ -234,33 +231,26 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     std::int64_t sz = extract_scalar_integer_value_strict(
                         std::move(args[0]), this_->name_, this_->codename_);
 
-                    std::uint32_t tile_idx;
-                    std::uint32_t numtiles;
-                    if (valid(args[1]) && valid(args[2]))
+                    std::uint32_t tile_idx = hpx::get_locality_id();
+                    if (valid(args[1]))
                     {
                         tile_idx = extract_scalar_nonneg_integer_value_strict(
                             std::move(args[1]), this_->name_, this_->codename_);
+                    }
+                    std::uint32_t numtiles =
+                        hpx::get_num_localities(hpx::launch::sync);
+                    if (valid(args[2]))
+                    {
                         numtiles = extract_scalar_positive_integer_value_strict(
                             std::move(args[2]), this_->name_, this_->codename_);
-                        if (tile_idx >= numtiles)
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_identity::eval",
-                                this_->generate_error_message(
-                                    "invalid tile index. Tile indices start "
-                                    "from 0 "
-                                    "and should be smaller than number of "
-                                    "tiles"));
-                        }
                     }
-                    else
+                    if (tile_idx >= numtiles)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_identity::eval",
-                            util::generate_error_message(
-                                "both tile_idx and numtiles should be given to "
-                                "generate a distributed identity",
-                                this_->name_, this_->codename_));
+                            this_->generate_error_message(
+                                "invalid tile index. Tile indices start from 0 "
+                                "and should be smaller than number of tiles"));
                     }
 
                     std::string given_name = "";

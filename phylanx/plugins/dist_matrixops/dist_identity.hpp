@@ -17,16 +17,12 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <array>
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
-
-#include <blaze/Math.h>
 
 namespace phylanx { namespace dist_matrixops { namespace primitives {
     class dist_identity

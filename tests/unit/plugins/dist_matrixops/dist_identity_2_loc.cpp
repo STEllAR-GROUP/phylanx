@@ -12,15 +12,9 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
-#include <array>
-#include <cstdint>
 #include <string>
-
 #include <utility>
 #include <vector>
-
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
