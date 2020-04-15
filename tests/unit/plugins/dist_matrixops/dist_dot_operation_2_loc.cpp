@@ -231,8 +231,9 @@ void test_dot_2d2d_2()
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
+    hpx::cout << "Sanity check" << hpx::endl;
     test_dot_2d2d_1();
-    test_dot_2d2d_2();
+    //test_dot_2d2d_2();
 
     hpx::finalize();
     return hpx::util::report_errors();
@@ -243,6 +244,5 @@ int main(int argc, char* argv[])
     std::vector<std::string> cfg = {
         "hpx.run_hpx_main!=1"
     };
-    hpx::cout << "Sanity check" << hpx::endl;
     return hpx::init(argc, argv, cfg);
 }
