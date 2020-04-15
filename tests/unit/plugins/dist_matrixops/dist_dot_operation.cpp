@@ -38,6 +38,11 @@ void test_dot_operation(std::string const& name, std::string const& code,
         compile_and_run(name, code), compile_and_run(name, expected_str));
 }
 
+void test_dot_operation_throws(std::string const& name, std::string const& code)
+{
+    HPX_TEST_THROW(compile_and_run(name, code), std::exception);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void test_dot_1d_0()
 {
@@ -558,6 +563,8 @@ void test_dot_2d2d_5()
         )");
     }
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])

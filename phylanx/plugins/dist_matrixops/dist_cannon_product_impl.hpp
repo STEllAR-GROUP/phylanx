@@ -27,6 +27,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -82,16 +83,29 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::tiling_span const& rhs_row_span =
             rhs_localities.get_span(0);
 
-        // Maybe this error should be split to be more descriptive
-        if (lhs_num_cols % lhs_col_span.size() != 0 ||
-            rhs_num_rows % rhs_row_span.size() != 0)
+        // The dimensions of all tiles involved in producing the partial sums
+        // must have the same dimension to produce the tile of the output
+        // matrix
+        // As long as tile rows (cols) have homogeneous boundaries, different
+        // row spans on the LHS (or col spans on the RHS) are not an error.
+        // The previous fact is why we don't simply check that all tiles in
+        // the LHS are equal in dimension, or the same for the RHS
+        if (lhs_num_cols % lhs_col_span.size() != 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::product",
                 generate_error_message(
-                    "All tiles in the tile row/column do not have "
-                    "equal height/width"));
+                    "All tiles in the LHS tile row do not have equal width"));
         }
+        if (rhs_num_rows % rhs_row_span.size() != 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_cannon_product::product",
+                generate_error_message(
+                    "All tiles in the RHS tile column do not have "
+                    "equal height"));
+        }
+
         std::vector<std::size_t> lhs_tile_row;
         std::vector<std::size_t> rhs_tile_col;
         std::size_t count = 0;
@@ -106,7 +120,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::product",
                 generate_error_message(
-                    "number of tiles in lhs and rhs must be equal"));
+                    "total number of tiles in lhs and rhs must be equal"));
         }
         for (std::size_t i = 0; i < lhs_num_localities; i++)
         {
@@ -124,11 +138,44 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             {
                 rhs_tile_col.push_back(count);
             }
+            // This situation is an error because the LHS tile row index
+            // and the RHS tile column index are used to decide which result
+            // is being calculated (that is, the (i,j) address of the output
+            // tile) If it's duplicated, that means one output tile isn't
+            // being calculated
+            if (tmp_lhs_tile.spans_[0].start_ == lhs_row_span.start_ &&
+                tmp_rhs_tile.spans_[1].start_ == rhs_col_span.start_)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_cannon_product::product",
+                    generate_error_message(
+                        "Original tile alignment produces non-unique tile "
+                        "address for output"));
+            }
             count++;
         }
-
         std::size_t lhs_tile_row_size = lhs_tile_row.size();
         std::size_t rhs_tile_col_size = rhs_tile_col.size();
+
+        if (lhs_tile_row_size != rhs_tile_col_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_cannon_product::product",
+                generate_error_message("number of tiles in lhs tile row and "
+                                       "rhs tile column must be equal"));
+        }
+
+        // This has the side effect of validating that all tile rows have
+        // homogeneous boundaries, since they will only be added to the
+        // tile row (or tile col) if they have homogeneous boundaries
+        if (lhs_tile_row_size * lhs_tile_row_size != lhs_num_localities)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_cannon_product::product",
+                generate_error_message(
+                    "number of tiles must be a perfect square"));
+        }
+
         if (lhs_tile_row_size < 2 || rhs_tile_col_size < 2)
         {
             // This is debateable, maybe we should allow single tile

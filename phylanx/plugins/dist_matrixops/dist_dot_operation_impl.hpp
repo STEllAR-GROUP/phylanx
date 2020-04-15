@@ -87,8 +87,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         default:
             // lhs_order == 1 && rhs_order != 2
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot0d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot0d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
@@ -224,8 +223,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         if (lhs_localities.size() != rhs_localities.rows())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot1d2d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dot1d2d",
                 util::generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
@@ -310,15 +308,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type result;
         if (lhs_localities.locality_.num_localities_ > 1)
         {
-            result =
-                execution_tree::primitive_argument_type{hpx::all_reduce(
-                    ("all_reduce_" + lhs_localities.annotation_.name_)
-                        .c_str(),
-                    dot_result, blaze::Add{},
-                    lhs_localities.locality_.num_localities_,
-                    std::size_t(-1), lhs_localities.locality_.locality_id_)
-                                                            .get()};
-
+            result = execution_tree::primitive_argument_type{hpx::all_reduce(
+                ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
+                dot_result, blaze::Add{},
+                lhs_localities.locality_.num_localities_, std::size_t(-1),
+                lhs_localities.locality_.locality_id_)
+                                                                 .get()};
         }
         else
         {
@@ -394,8 +389,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return dot1d3d(std::move(lhs), std::move(rhs));
 
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot1d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot1d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
         }
@@ -578,6 +572,33 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operands have incompatible number of dimensions"));
         }
 
+        execution_tree::tiling_span const& lhs_row_span =
+            lhs_localities.get_span(0);
+        for (std::size_t i = 0; i < lhs_localities.locality_.num_localities_;
+             i++)
+        {
+            execution_tree::tiling_span intersection;
+            execution_tree::tiling_span const& tmp_lhs_span =
+                lhs_localities.tiles_[i].spans_[0];
+            if (intersect(lhs_row_span, tmp_lhs_span, intersection))
+            {
+                // This situation is an error because the LHS tile row index
+                // and the RHS tile column index are used to decide which result
+                // is being calculated (that is, the (i,j) address of the output
+                // tile) If it's duplicated, that means one output tile isn't
+                // being calculated
+                if (tmp_lhs_span.start_ != lhs_row_span.start_ ||
+                    tmp_lhs_span.size() != lhs_row_span.size())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dist_cannon_product::product",
+                        generate_error_message(
+                            "dot_d requires all tiles in tile row have "
+                            "identical bounds for LHS operand"));
+                }
+            }
+        }
+
         // construct a distributed matrix object for the rhs
         util::distributed_matrix<T> rhs_data(rhs_localities.annotation_.name_,
             rhs.matrix(), rhs_localities.locality_.num_localities_,
@@ -585,7 +606,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs, lhs column span
-        execution_tree::tiling_span const& lhs_span =
+        execution_tree::tiling_span const& lhs_col_span =
             lhs_localities.get_span(1);
 
         // Go over all tiles of rhs matrix, the result size is determined
@@ -608,7 +629,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         for (auto const& rhs_tile : rhs_localities.tiles_)
         {
             // rhs row span
-            execution_tree::tiling_span const& rhs_span =
+            execution_tree::tiling_span const& rhs_row_span =
                 rhs_tile.spans_[rhs_span_index];
 
             HPX_ASSERT(rhs_tile.spans_[1].is_valid());
@@ -616,7 +637,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::size_t rhs_column_size = rhs_tile.spans_[1].size();
 
             execution_tree::tiling_span intersection;
-            if (!intersect(lhs_span, rhs_span, intersection))
+            if (!intersect(lhs_col_span, rhs_row_span, intersection))
             {
                 // So each locality is restricted to have one tile?
                 ++loc;
@@ -694,6 +715,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             }
             else
             {
+                // This result is distributed, while also not being,
+                // because it has no tiling information
+                // TODO - Add tiling info
                 result =
                     execution_tree::primitive_argument_type{hpx::all_reduce(
                         ("all_reduce_" + lhs_localities.annotation_.name_)
@@ -779,8 +803,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return dot2d3d(std::move(lhs), std::move(rhs));
 
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot2d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot2d",
                 generate_error_message("the operands have incompatible "
                                        "number of dimensions"));
         }
@@ -844,8 +867,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message("the operands have incompatible "
                                        "number of dimensions"));
         }
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_dot_operation::dot3d3d",
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot3d3d",
             generate_error_message("it is not supported by Phylanx yet"));
     }
 
@@ -875,12 +897,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return dot3d3d(std::move(lhs), std::move(rhs));
 
         default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot3d",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_dot_operation::dot3d",
                 generate_error_message("the operands have incompatible "
                                        "number of dimensions"));
         }
     }
-}}}
+}}}    // namespace phylanx::dist_matrixops::primitives
 
 #endif
