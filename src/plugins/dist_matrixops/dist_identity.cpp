@@ -42,8 +42,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         hpx::util::make_tuple("identity_d", std::vector<std::string>{R"(
                 identity_d(
                     _1_sz,
-                    __arg(_2_tile_index, nil),
-                    __arg(_3_numtiles, nil),
+                    __arg(_2_tile_index, find_here()),
+                    __arg(_3_numtiles, num_localities()),
                     __arg(_4_name, ""),
                     __arg(_5_tiling_type, "sym"),
                     __arg(_6_dtype, nil)
@@ -55,9 +55,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             sz, dtype, tile_index, numtiles, name, tiling_type,
             Args:
                 sz (int): the size of a created (n x n) matrix.
-                tile_index (int): the tile index we need to generate the
-                    constant array for. A non-negative integer.
-                numtiles (int): number of tiles of the returned array
+                tile_index (int, optional): the tile index we need to generate
+                    the identity array for. A non-negative integer. If not
+                    given, it sets to current locality.
+                numtiles (int, optional): number of tiles of the returned array.
+                    If not given it sets to the number of localities in the
+                    application.
                 name (string, optional): the array given name. If not given, a
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
