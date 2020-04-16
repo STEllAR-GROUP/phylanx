@@ -18,8 +18,6 @@
 #include <utility>
 #include <vector>
 
-// will need to change all appearances of dist_inv to inverse_d
-// to match with convention
 
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& name, std::string const& codestr)
@@ -51,7 +49,7 @@ void test_ginv_operation(std::string const& name, std::string const& code,
 // and then do other annotate_d similarly for info in other locality
 void test_gauss_inverse_0()
 {
-    if (hpx::get_locality_id() == 1)
+    if (hpx::get_locality_id() == 0)
     {
         test_ginv_operation("test_0", R"(
 			inverse_d(
@@ -68,7 +66,7 @@ void test_gauss_inverse_0()
         test_ginv_operation("test_0", R"(
 			inverse_d(
 				annotate_d( [[7.0], [6.0]],
-					"test_0_2",
+					"test_0_1",
 					list("tile", list("columns", 1, 2), list("rows", 0,2)))
 
 			)
@@ -77,24 +75,6 @@ void test_gauss_inverse_0()
     }
 }
 
-// Only include tests running in the same number of localities
-// to the same file. However, this is left here for the purpose of
-// moving it in the future, if necessary.
-/*
-// Try running the same test on a single locality
-// Simplest case
-void test_gauss_inverse_1()
-{
-    test_ginv_operation("test_1", R"(
-			inverse_d(
-				annotate_d( [[4.0, 7.0], [2.0, 6.0]],
-					"test_1_1",
-					list("tile", list("columns", 0, 2), list("rows", 0,2)))
-			)
-		)",
-        "[[0.6, -0.7], [-0.2, 0.4]]");
-}
-*/
 
 // send off the tiled (by columns) matrix
 // except send two cols to one locality, one col to other
@@ -120,7 +100,7 @@ void test_gauss_inverse_2()
         test_ginv_operation("test_2", R"(
 			inverse_d(
 				annotate_d( [[4.0], [4.0], [1.0]],
-					"test_2_2",
+					"test_2_1",
 					list("tile", list("columns", 2, 3), list("rows", 0,3)))
 
 			)
@@ -161,8 +141,7 @@ inline std::string wrapInputString(std::string inString, std::uint64_t n,
                                "    annotate_d(" +
         inString +
         ",\n"
-        "        \"test_3_" +
-        std::to_string(id) +
+        "        \"test_3_1" +
         "\",\n"
         "        list(\"tile\", list(\"columns\", " +
         std::to_string(startCol) + "," + std::to_string(endCol + 1) +
@@ -173,8 +152,7 @@ inline std::string wrapInputString(std::string inString, std::uint64_t n,
     return wrappedInput;
 }
 
-// Random nxn matrix test compared to blaze::inv converted to string
-// Runs on 1 locality right now
+// Test random nxn matrix test compared to blaze::inv converted to string
 void test_gauss_inverse_3(std::uint64_t n)
 {
     // Check to ensure matrix is at least 2x2
@@ -190,10 +168,6 @@ void test_gauss_inverse_3(std::uint64_t n)
     blaze::DynamicMatrix<double> m = gen.generate(n, n);
     std::string inverseString = matToString(blaze::inv(m), n, 0, n);
     std::uint64_t id = hpx::get_locality_id();
-
-    //std::cout<<wrapInputString(matToString(m, n, 0, n/2-1), n, 0,  0, n/2-1);
-    //std::cout<<std::endl<<std::endl;
-    //std::cout<<wrapInputString(matToString(m, n, (n/2), n-1), n, 1,  n/2, n-1);
 
     if (id == 0)
     {
@@ -213,9 +187,9 @@ void test_gauss_inverse_3(std::uint64_t n)
 
 int hpx_main(int argc, char* argv[])
 {
-    test_gauss_inverse_0();
-    // test_gauss_inverse_2();
-    //test_gauss_inverse_3(5);
+    //test_gauss_inverse_0();
+    //test_gauss_inverse_2();
+    test_gauss_inverse_3(5);
 
     hpx::finalize();
     return hpx::util::report_errors();

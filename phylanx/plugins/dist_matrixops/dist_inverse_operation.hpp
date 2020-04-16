@@ -1,4 +1,3 @@
-
 // Copyright (c) 2020 Rory Hector
 // Copyright (c) 2017-2018 Hartmut Kaiser
 //
@@ -66,11 +65,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     };
 
     // Creation function for the node
-    // Takes arguements from before and also an HPX locality for
+    // Takes arguments from before and also an HPX locality for
     // the component. What it does is calls a predefined function
     // create_primitive_component where you give it the name and
     // you're done.
-    // Pretty much boilerplate, just change the name
+    // Pretty much boilerplate, just change the name.
     inline execution_tree::primitive create_dist_inverse(
         hpx::id_type const& locality,
         execution_tree::primitive_arguments_type&& operands,

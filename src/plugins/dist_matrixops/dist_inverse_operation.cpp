@@ -1,4 +1,3 @@
-
 // Copyright (c) 2020 Rory Hector
 // Copyright (c) 2018-2020 Hartmut Kaiser
 //
@@ -95,60 +94,43 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message("the input must be a 2d matrix"));
         }
 
-        std::cout << "Input received. Computation being performed on"
-                  << std::endl;
+        std::cout << "This is locality "
+                  << lhs_localities.locality_.locality_id_ << std::endl;
+
+        std::cout << "Data belonging to this locality:"<< std::endl;
         std::cout << arg.matrix() << std::endl;
 
-        std::cout << "Number of Localities = "
+        std::cout << "Total number of localities = "
                   << lhs_localities.locality_.num_localities_ << std::endl;
 
         std::cout << "The localities information is as follows: " << std::endl;
         std::cout << "   Columns = " << lhs_localities.columns() << std::endl;
-        // std::cout << "   Dimension = " << lhs_localities.dimensions()
-        //          << std::endl;
-        //std::cout << "   Get_Span = " << lhs_localities.get_span() << std::endl;
-        //std::cout << "   num dimensions = " << lhs_localities.num_dimensions()
-        //          << std::endl;
         std::cout << "   Rows = " << lhs_localities.rows() << std::endl;
         std::cout << "   Size = " << lhs_localities.size() << std::endl;
-        //std::cout << "   Annotation = " << lhs_localities.annotation_
-        //          << std::endl;
-        //std::cout << "   Locality = " << lhs_localities.locality_ << std::endl;
-        //std::cout << "   Tiles = " << lhs_localities.tiles_. << std::endl;
 
-        if (lhs_localities.locality_.locality_id_ == 0)
-        {
-            std::cout << "Hey you're locality 0" << std::endl;
-        }
-        if (lhs_localities.locality_.locality_id_ != 0)
-        {
-            std::cout << "Hey you're not locality 0" << std::endl;
-        }
-
+        std::cout << "Tile information: " << std::endl;
+        std::size_t numTilesSeen = 1;
         for (auto const& lhsTile : lhs_localities.tiles_)
         {
-            std::cout << lhsTile.dimension() << std::endl;
+            std::cout << "    "<< "Tile " << numTilesSeen <<
+                " Dimension = "<< lhsTile.dimension() << std::endl;
+            std::cout << "    "
+                      << "Tile " << numTilesSeen
+                      << " Span Name 1 = " << lhsTile.get_span_name(1) << std::endl;
+            numTilesSeen++;
         }
 
         util::distributed_matrix<T> lhs_data(lhs_localities.annotation_.name_,
         arg.matrix(), lhs_localities.locality_.num_localities_,
         lhs_localities.locality_.locality_id_);
 
-                // use the local tile of lhs and calculate the dot product with all
-        // corresponding tiles of rhs, lhs column span
         execution_tree::tiling_span const& lhs_span =
             lhs_localities.get_span(1);
 
-
-                // Go over all tiles of rhs matrix, the result size is determined
-        // by the number of rows of the lhs tile
-        // An optimization is that the local result matrix only has as
-        // many rows as the LHS tile does, not as many as the entire LHS
-        // has. But this is only a side-effect of this algorithm, I think
-        // it could also be the reverse if the LHS tiles were retrieved
-        // instead of the RHS
         blaze::DynamicMatrix<T> result_matrix(
             arg.dimension(0), lhs_localities.columns(), T{0});
+
+        std::cout << result_matrix << std::endl;
 
         //for (auto const& lhs_tile : lhs_localities.tiles_)
         //{
@@ -158,8 +140,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         blaze::DynamicMatrix<double> myMatrix = arg.matrix();
         std::size_t numRows = myMatrix.rows();
         std::size_t numCols = myMatrix.columns();
-
-
 
         // Definition of a nxn double row-major identity matrix
         blaze::DynamicMatrix<double> invMatrix =
