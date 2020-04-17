@@ -48,11 +48,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type dist_diag_0d_helper(
             ir::node_data<T>&& arr, std::int64_t k,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+            std::string&& given_name, std::string const& tiling_type) const;
+
+        execution_tree::primitive_argument_type dist_diag_0d(
+            execution_tree::primitive_argument_type&& arr, std::int64_t k,
+            std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,
             execution_tree::node_data_type dtype) const;
 
+        template <typename T>
+        execution_tree::primitive_argument_type dist_diag_1d_helper(
+            ir::node_data<T>&& arr, std::int64_t k,
+            std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+            std::string&& given_name, std::string const& tiling_type) const;
 
-        execution_tree::primitive_argument_type dist_diag_0d(
+        execution_tree::primitive_argument_type dist_diag_1d(
             execution_tree::primitive_argument_type&& arr, std::int64_t k,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,

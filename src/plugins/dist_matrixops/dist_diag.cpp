@@ -218,6 +218,147 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 "be numeric data types"));
     }
 
+    template <typename T>
+    execution_tree::primitive_argument_type dist_diag::dist_diag1d_helper(
+        ir::node_data<T>&& arr, std::int64_t k,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type) const;
+    {
+        using namespace execution_tree;
+
+        std::size_t size = a.dimension(0);
+        std::int64_t incr = std::abs(k);
+
+        std::int64_t row_start, column_start;
+        std::size_t row_size, column_size;
+
+        std::tie(row_start, column_start, row_size, column_size) =
+            tile_calculation::tile_calculation_2d(
+                tile_idx, size, size ,numtiles, tiling_type);
+
+        tiling_information_2d tile_info(
+            tiling_span(row_start, row_start + row_size),
+            tiling_span(column_start, column_start + column_size));
+
+        locality_information locality_info(tile_idx, numtiles);
+        annotation locality_ann = locality_info.as_annotation();
+
+        std::string base_name =
+            detail::generate_identity_name(std::move(given_name));
+
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
+
+        blaze::DynamicMatrix<T> result(row_size, column_size, T(0));
+        std::int64_t num_band;
+        std::int64_t upper_band = column_size - 1;
+        std::int64_t lower_band = 1 - row_size;
+
+        if (tiling_type == "row")
+        {
+            num_band = row_start + k;
+            if (num_band <= (std::max)(int64_t(0), upper_band) &&
+                    num_band >= (std::min)(int64_t(0), lower_band))
+            {
+                std::int64_t des_start = k < 0 ?
+                    (std::max)(int64_t(0), num_band) : row_start;
+
+                std::int64_t des_size = num_band < 0 ?
+                    (std::min)(column_size, row_size + num_band) :
+                    (std::min)(row_size, column_size - num_band);
+
+                blaze::band(result, num_band) =
+                    blaze::subvector(arr, des_start, des_size);
+            }
+        }
+        else if (tiling_type == "column")
+        {
+            num_band = k - column_start;
+            if (num_band <= (std::max)(int64_t(0), upper_band) &&
+                    num_band >= (std::min)(int64_t(0), lower_band))
+            {
+                std::int64_t des_start = k < 0 ?
+                    column_start : (std::max)(int64_t(0), column_start - k);
+
+                std::int64_t des_size = num_band < 0 ?
+                    (std::min)(column_size, row_size + num_band) :
+                    (std::min)(row_size, column_size - num_band);
+
+                blaze::band(result, num_band) =
+                    blaze::subvector(arr, des_start, des_size);
+            }
+        }
+        else if (tiling_type == "sym")
+        {
+            num_band = k - (column_start - row_start);
+            if (num_band <= (std::max)(int64_t(0), upper_band) &&
+                    num_band >= (std::min)(int64_t(0), lower_band))
+            {
+                std::int64_t des_start = k < 0 ?
+                    (std::max)(column_start, row_start + k) :
+                    (std::max)(row_start, column_start - k);
+
+                std::int64_t des_size = num_band < 0 ?
+                    (std::min)(column_size, row_size + num_band) :
+                    (std::min)(row_size, column_size - num_band);
+
+                blaze::band(result, num_band) =
+                    blaze::subvector(arr, des_start, des_size);
+            }
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_diag::dist_diag1d_helper",
+                generate_error_message(
+                    "wrong numtiles input when tiling_type is sym"));
+        }
+
+        return primitive_argument_type(std::move(result), attached_annotation);
+    }
+
+    execution_tree::primitive_argument_type dist_diag::dist_diag1d(
+        execution_tree::primitive_argument_type&& arr, std::int64_t k,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type,
+        execution_tree::node_data_type dtype) const;
+    {
+        using namespace execution_tree;
+
+        switch (dtype)
+        {
+        case node_data_type_bool:
+            return dist_diag0d_helper<std::uint8_t>(std::move(arr),
+                std::move(k), tile_idx, numtiles, std::move(given_name),
+                tiling_type);
+
+        case node_data_type_int64:
+            return dist_diag0d_helper<std::int64_t>(std::move(arr),
+                std::move(k), tile_idx, numtiles, std::move(given_name),
+                tiling_type);
+
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
+
+        case node_data_type_double:
+            return dist_diag0d_helper<double>(std::move(arr), std::move(k),
+                tile_idx, numtiles, std::move(given_name), tiling_type);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_matrixops::dist_diag::dist_diag0d",
+            util::generate_error_message(
+                "the constant primitive requires for all arguments to "
+                "be numeric data types"));
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
