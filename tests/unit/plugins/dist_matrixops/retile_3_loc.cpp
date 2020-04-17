@@ -49,7 +49,7 @@ void test_retile_3loc_1d_0()
                 annotate_d([1, 2, 3], "tiled_array_1d_0",
                     list("tile", list("columns", 0, 3))
                 ),
-                list("tile", list("rows", 0, 2))
+                "user", nil, list("tile", list("rows", 0, 2))
             )
         )", R"(
             annotate_d([1, 2], "tiled_array_1d_0_retiled/1",
@@ -65,7 +65,7 @@ void test_retile_3loc_1d_0()
                 annotate_d([4, 5, 6], "tiled_array_1d_0",
                     list("tile", list("columns", 3, 6))
                 ),
-                list("tile", list("rows", 2, 7))
+                "user", nil, list("tile", list("rows", 2, 7))
             )
         )", R"(
             annotate_d([3, 4, 5, 6, 7], "tiled_array_1d_0_retiled/1",
@@ -81,7 +81,7 @@ void test_retile_3loc_1d_0()
                 annotate_d([7, 8, 9], "tiled_array_1d_0",
                     list("tile", list("columns", 6, 9))
                 ),
-                list("tile", list("rows", 7, 9))
+                "user", nil, list("tile", list("rows", 7, 9))
             )
         )", R"(
             annotate_d([8, 9], "tiled_array_1d_0_retiled/1",
@@ -101,7 +101,7 @@ void test_retile_3loc_1d_1()
                 annotate_d([1, 2, 3], "tiled_array_1d_1",
                     list("tile", list("columns", 0, 3))
                 ),
-                list("tile", list("columns", 0, 4))
+                "user", nil, list("tile", list("columns", 0, 4))
             )
         )", R"(
             annotate_d([1, 2, 3, 4], "tiled_array_1d_1_retiled/1",
@@ -117,7 +117,7 @@ void test_retile_3loc_1d_1()
                 annotate_d([4, 5, 6], "tiled_array_1d_1",
                     list("tile", list("columns", 3, 6))
                 ),
-                list("tile", list("columns", 4, 7))
+                "user", nil, list("tile", list("columns", 4, 7))
             )
         )", R"(
             annotate_d([5, 6, 7], "tiled_array_1d_1_retiled/1",
@@ -133,7 +133,7 @@ void test_retile_3loc_1d_1()
                 annotate_d([7, 8, 9], "tiled_array_1d_1",
                     list("tile", list("columns", 6, 9))
                 ),
-                list("tile", list("columns", 7, 9))
+                "user", nil, list("tile", list("columns", 7, 9))
             )
         )", R"(
             annotate_d([8, 9], "tiled_array_1d_1_retiled/1",
@@ -153,7 +153,7 @@ void test_retile_3loc_1d_2()
                 annotate_d([1, 2, 3], "tiled_array_1d_2",
                     list("tile", list("columns", 0, 3))
                 ),
-                list("tile", list("columns", 0, 2))
+                "user", nil, list("tile", list("columns", 0, 2))
             )
         )", R"(
             annotate_d([1, 2], "tiled_array_1d_2_retiled/1",
@@ -169,7 +169,7 @@ void test_retile_3loc_1d_2()
                 annotate_d([4, 5, 6], "tiled_array_1d_2",
                     list("tile", list("columns", 3, 6))
                 ),
-                list("tile", list("columns", 2, 5))
+                "user", nil, list("tile", list("columns", 2, 5))
             )
         )", R"(
             annotate_d([3, 4, 5], "tiled_array_1d_2_retiled/1",
@@ -185,7 +185,7 @@ void test_retile_3loc_1d_2()
                 annotate_d([7, 8, 9], "tiled_array_1d_2",
                     list("tile", list("columns", 6, 9))
                 ),
-                list("tile", list("columns", 5, 9))
+                "user", nil, list("tile", list("columns", 5, 9))
             )
         )", R"(
             annotate_d([6, 7, 8, 9], "tiled_array_1d_2_retiled/1",
@@ -205,7 +205,7 @@ void test_retile_3loc_1d_3()
                 annotate_d([1, 2, 3], "tiled_array_1d_3",
                     list("tile", list("columns", 0, 3))
                 ),
-                list("tile", list("columns", 3, 7))
+                "user", nil, list("tile", list("columns", 3, 7))
             )
         )", R"(
             annotate_d([4, 5, 6, 7], "tiled_array_1d_3_retiled/1",
@@ -221,7 +221,7 @@ void test_retile_3loc_1d_3()
                 annotate_d([4, 5, 6], "tiled_array_1d_3",
                     list("tile", list("columns", 3, 6))
                 ),
-                list("tile", list("columns", 7, 9))
+                "user", nil, list("tile", list("columns", 7, 9))
             )
         )", R"(
             annotate_d([8, 9], "tiled_array_1d_3_retiled/1",
@@ -237,7 +237,7 @@ void test_retile_3loc_1d_3()
                 annotate_d([7, 8, 9], "tiled_array_1d_3",
                     list("tile", list("columns", 6, 9))
                 ),
-                list("tile", list("columns", 0, 3))
+                "user", nil, list("tile", list("columns", 0, 3))
             )
         )", R"(
             annotate_d([1, 2, 3], "tiled_array_1d_3_retiled/1",
@@ -257,7 +257,7 @@ void test_retile_3loc_1d_4()
                 annotate_d([1, 2, 3], "tiled_array_1d_4",
                     list("tile", list("columns", 0, 3))
                 ),
-                list("tile", list("columns", 4, 7))
+                "user", nil, list("tile", list("columns", 4, 7))
             )
         )", R"(
             annotate_d([5, 6, 7], "tiled_array_1d_4_retiled/1",
@@ -274,7 +274,7 @@ void test_retile_3loc_1d_4()
                 annotate_d([4, 5, 6], "tiled_array_1d_4",
                     list("tile", list("columns", 3, 6))
                 ),
-                list("tile", list("columns", 0, 4))
+                "user", nil, list("tile", list("columns", 0, 4))
             )
         )", R"(
             annotate_d([1, 2, 3, 4], "tiled_array_1d_4_retiled/1",
@@ -290,7 +290,7 @@ void test_retile_3loc_1d_4()
                 annotate_d([7, 8, 9], "tiled_array_1d_4",
                     list("tile", list("columns", 6, 9))
                 ),
-                list("tile", list("columns", 7, 9))
+                "user", nil, list("tile", list("columns", 7, 9))
             )
         )", R"(
             annotate_d([8, 9], "tiled_array_1d_4_retiled/1",
@@ -310,7 +310,7 @@ void test_retile_3loc_1d_5()
                 annotate_d([1, 2, 3], "tiled_array_1d_5",
                     list("tile", list("columns", 0, 3))
                 ),
-                list("tile", list("columns", 4, 7))
+                "user", nil, list("tile", list("columns", 4, 7))
             )
         )", R"(
             annotate_d([5, 6, 7], "tiled_array_1d_5_retiled/1",
@@ -328,7 +328,7 @@ void test_retile_3loc_1d_5()
                 annotate_d([4, 5, 6], "tiled_array_1d_5",
                     list("tile", list("columns", 3, 6))
                 ),
-                list("tile", list("columns", 7, 9))
+                "user", nil, list("tile", list("columns", 7, 9))
             )
         )", R"(
             annotate_d([8, 9], "tiled_array_1d_5_retiled/1",
@@ -343,7 +343,7 @@ void test_retile_3loc_1d_5()
                 annotate_d([7, 8, 9], "tiled_array_1d_5",
                     list("tile", list("columns", 6, 9))
                 ),
-                list("tile", list("columns", 0, 4))
+                "user", nil, list("tile", list("columns", 0, 4))
             )
         )", R"(
             annotate_d([1, 2, 3, 4], "tiled_array_1d_5_retiled/1",
@@ -532,9 +532,9 @@ int hpx_main(int argc, char* argv[])
     test_retile_3loc_1d_4();
     test_retile_3loc_1d_5();
 
-    test_retile_3loc_2d_0();
-    test_retile_3loc_2d_1();
-    test_retile_3loc_2d_2();
+    //test_retile_3loc_2d_0();
+    //test_retile_3loc_2d_1();
+    //test_retile_3loc_2d_2();
 
 
     hpx::finalize();

@@ -14,6 +14,7 @@
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/retile_annotations.hpp>
+#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 
@@ -43,21 +44,33 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         hpx::util::make_tuple("retile_d", std::vector<std::string>{R"(
                 retile_d(
                     _1_a,
-                    _2_new_tiling
+                    __arg(_2_tiling_type, "sym"),
+                    __arg(_3_numtiles, num_localities()),
+                    __arg(_4_new_tiling, nil),
+                    __arg(_5_intersection, nil)
                 )
             )"},
             &create_retile_annotations,
             &execution_tree::create_primitive<retile_annotations>, R"(
-            a, new_tiling
+            a, tiling_type, numtiles, new_tiling, intersection
             Args:
 
                 a (array): a part of an array with its attached annotation that
                     locates on the current locality
-                new_tiling (list): a new tiling specification for the current
-                    locality, e.g. for a matrix we can have
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all the numtiles localities.
+                    Other options are `row` or `column` tiling. For a vector
+                    all these three tiling_type are the same.
+                numtiles (int, optional): number of tiles of the returned array
+                    If not given it sets to the number of localities in the
+                    application.
+                new_tiling (list, optional): a new tiling specification for the
+                    current locality, e.g. for a matrix we can have
                     list("tile", list("columns", 0, 2), list("rows", 0, 2)) or
                     list("args", list("locality", 0, 4),
                        list("tile", list("columns", 0, 2), list("rows", 0, 2)))
+                intersection (int or list of ints, optional): the size of
+                    overlapped part on each dimension
 
             Returns:
 
@@ -104,9 +117,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 return tile_extraction_1d_helper(
                     extract_list_value_strict(*++it).begin());
             }
-
-            // label is "tile"
-            return tile_extraction_1d_helper(std::move(it));
+            else if (label == "tile")
+            {
+                return tile_extraction_1d_helper(std::move(it));
+            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
+                util::generate_error_message(
+                    "the new_tiling should start with either of "
+                    "`tile` or `args` tags"));
         }
 
         struct indices_pack
@@ -209,7 +227,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type retile_annotations::retile1d(
-        ir::node_data<T>&& arr, ir::range&& new_tiling,
+        ir::node_data<T>&& arr, std::string const& tiling_type,
+        std::uint32_t numtiles, ir::range&& new_tiling,
         execution_tree::localities_information&& arr_localities) const
     {
         using namespace execution_tree;
@@ -228,21 +247,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         arr_localities.annotation_.name_ += "_retiled";
         ++arr_localities.annotation_.generation_;
 
-        // desired annotation information
-        std::int64_t des_start, des_stop;
-        bool type_;
-        std::tie(type_, des_start, des_stop) =
-            detail::tile_extraction_1d(std::move(new_tiling));
-        std::int64_t des_size = des_stop - des_start;
-        if (des_size <= 0)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_matrixops::primitives::retile_annotations::retile1d",
-                generate_error_message(
-                    "the given start point of the new_tiling should be less "
-                    "than its stop point"));
-        }
-
+        // is it a rwo vector or a column vector?
         std::size_t span_index = 0;
         if (!arr_localities.has_span(0))
         {
@@ -250,7 +255,44 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             span_index = 1;
         }
 
-        // updating the array
+        // desired annotation information
+        std::int64_t des_start, des_stop, des_size;
+        bool type_ = span_index;    // initialized by the current type
+
+        if (tiling_type == "sym" || tiling_type == "row" ||
+            tiling_type == "column")
+        {
+            if (tiling_type == "row")
+            {
+                type_ = true;
+            }
+            else if (tiling_type == "column")
+            {
+                type_ = false;
+            }
+            std::tie(des_start, des_size) =
+                tile_calculation::tile_calculation_1d(
+                    hpx::get_locality_id(), arr_localities.size(), numtiles);
+            des_stop = des_start + des_size;
+        }
+        else if (tiling_type == "user")
+        {
+            std::tie(type_, des_start, des_stop) =
+                detail::tile_extraction_1d(std::move(new_tiling));
+            des_size = des_stop - des_start;
+            if (des_size <= 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_matrixops::primitives::retile_annotations::retile1d",
+                    generate_error_message(
+                        "the given start point of the new_tiling should be less "
+                        "than its stop point"));
+            }
+        }
+        else    // overlapped tiling types
+        { }
+
+        // having the updated array as result
         auto v = arr.vector();
         blaze::DynamicVector<T> result(des_size);
         util::distributed_vector<T> v_data(
@@ -266,7 +308,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     des_start, des_stop, cur_start, cur_stop);
                 blaze::subvector(result, indices.projected_start_,
                     indices.intersection_size_) = blaze::subvector(v,
-                    indices.local_start_, indices.intersection_size_);
+                        indices.local_start_, indices.intersection_size_);
             }
 
             for (std::uint32_t loc = 0; loc != num_localities; ++loc)
@@ -288,10 +330,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     blaze::subvector(result, indices.projected_start_,
                         indices.intersection_size_) =
                         v_data
-                            .fetch(loc, indices.local_start_,
-                                indices.local_start_ +
-                                    indices.intersection_size_)
-                            .get();
+                        .fetch(loc, indices.local_start_,
+                            indices.local_start_ +
+                            indices.intersection_size_)
+                        .get();
                 }
             }
         }
@@ -325,6 +367,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     execution_tree::primitive_argument_type retile_annotations::retile1d(
         execution_tree::primitive_argument_type&& arr,
+        std::string const& tiling_type, std::uint32_t numtiles,
         ir::range&& new_tiling) const
     {
         using namespace execution_tree;
@@ -336,22 +379,26 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         case node_data_type_bool:
             return retile1d(
                 extract_boolean_value_strict(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+                tiling_type, numtiles, std::move(new_tiling),
+                std::move(arr_localities));
 
         case node_data_type_int64:
             return retile1d(
                 extract_integer_value_strict(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+                tiling_type, numtiles, std::move(new_tiling),
+                std::move(arr_localities));
 
         case node_data_type_double:
             return retile1d(
                 extract_numeric_value_strict(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+                tiling_type, numtiles, std::move(new_tiling),
+                std::move(arr_localities));
 
         case node_data_type_unknown:
             return retile1d(
                 extract_numeric_value(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+                tiling_type, numtiles, std::move(new_tiling),
+                std::move(arr_localities));
 
         default:
             break;
@@ -365,172 +412,172 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    execution_tree::primitive_argument_type retile_annotations::retile2d(
-        ir::node_data<T>&& arr, ir::range&& new_tiling,
-        execution_tree::localities_information&& arr_localities) const
-    {
-        using namespace execution_tree;
+    //template <typename T>
+    //execution_tree::primitive_argument_type retile_annotations::retile2d(
+    //    ir::node_data<T>&& arr, ir::range&& new_tiling,
+    //    execution_tree::localities_information&& arr_localities) const
+    //{
+    //    using namespace execution_tree;
 
-        // current annotation information
-        std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
-        std::uint32_t const num_localities =
-            arr_localities.locality_.num_localities_;
-        tiling_information_2d tile_info(
-            arr_localities.tiles_[loc_id], name_, codename_);
+    //    // current annotation information
+    //    std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
+    //    std::uint32_t const num_localities =
+    //        arr_localities.locality_.num_localities_;
+    //    tiling_information_2d tile_info(
+    //        arr_localities.tiles_[loc_id], name_, codename_);
 
-        std::int64_t cur_row_start = tile_info.spans_[0].start_;
-        std::int64_t cur_row_stop = tile_info.spans_[0].stop_;
-        std::int64_t cur_col_start = tile_info.spans_[1].start_;
-        std::int64_t cur_col_stop = tile_info.spans_[1].stop_;
+    //    std::int64_t cur_row_start = tile_info.spans_[0].start_;
+    //    std::int64_t cur_row_stop = tile_info.spans_[0].stop_;
+    //    std::int64_t cur_col_start = tile_info.spans_[1].start_;
+    //    std::int64_t cur_col_stop = tile_info.spans_[1].stop_;
 
-        // updating the annotation_ part of localities annotation
-        arr_localities.annotation_.name_ += "_retiled";
-        ++arr_localities.annotation_.generation_;
+    //    // updating the annotation_ part of localities annotation
+    //    arr_localities.annotation_.name_ += "_retiled";
+    //    ++arr_localities.annotation_.generation_;
 
-        // desired annotation information
-        std::int64_t des_row_start, des_row_stop, des_col_start,
-            des_col_stop;
-        std::tie(des_row_start, des_col_start, des_row_stop,
-            des_col_stop) =
-            detail::tile_extraction_2d(std::move(new_tiling));
+    //    // desired annotation information
+    //    std::int64_t des_row_start, des_row_stop, des_col_start,
+    //        des_col_stop;
+    //    std::tie(des_row_start, des_col_start, des_row_stop,
+    //        des_col_stop) =
+    //        detail::tile_extraction_2d(std::move(new_tiling));
 
-        std::int64_t des_row_size = des_row_stop - des_row_start;
-        std::int64_t des_col_size = des_col_stop - des_col_start;
-        if (des_row_size <= 0 || des_col_size <= 0)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_matrixops::primitives::retile_annotations::retile2d",
-                generate_error_message(
-                    "the given start point of the new_tiling should be less "
-                    "than its stop point on each dimension"));
-        }
+    //    std::int64_t des_row_size = des_row_stop - des_row_start;
+    //    std::int64_t des_col_size = des_col_stop - des_col_start;
+    //    if (des_row_size <= 0 || des_col_size <= 0)
+    //    {
+    //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+    //            "dist_matrixops::primitives::retile_annotations::retile2d",
+    //            generate_error_message(
+    //                "the given start point of the new_tiling should be less "
+    //                "than its stop point on each dimension"));
+    //    }
 
-        // updating the array
-        auto m = arr.matrix();
-        blaze::DynamicMatrix<T> result(des_row_size, des_col_size);
-        util::distributed_matrix<T> m_data(
-            arr_localities.annotation_.name_, m, num_localities, loc_id);
+    //    // updating the array
+    //    auto m = arr.matrix();
+    //    blaze::DynamicMatrix<T> result(des_row_size, des_col_size);
+    //    util::distributed_matrix<T> m_data(
+    //        arr_localities.annotation_.name_, m, num_localities, loc_id);
 
-        // relative starts
-        std::int64_t rel_row_start = des_row_start - cur_row_start;
-        std::int64_t rel_col_start = des_col_start - cur_col_start;
-        if ((rel_row_start < 0 || des_row_stop > cur_row_stop) ||
-            (rel_col_start < 0 || des_col_stop > cur_col_stop))
-        {
-            // copying the local part
-            if ((des_row_start < cur_row_stop &&
-                    des_row_stop > cur_row_start) &&
-                (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
-            {
-                auto row_indices = detail::index_calculation_1d(
-                    des_row_start, des_row_stop, cur_row_start, cur_row_stop);
-                auto col_indices = detail::index_calculation_1d(
-                    des_col_start, des_col_stop, cur_col_start, cur_col_stop);
+    //    // relative starts
+    //    std::int64_t rel_row_start = des_row_start - cur_row_start;
+    //    std::int64_t rel_col_start = des_col_start - cur_col_start;
+    //    if ((rel_row_start < 0 || des_row_stop > cur_row_stop) ||
+    //        (rel_col_start < 0 || des_col_stop > cur_col_stop))
+    //    {
+    //        // copying the local part
+    //        if ((des_row_start < cur_row_stop &&
+    //                des_row_stop > cur_row_start) &&
+    //            (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
+    //        {
+    //            auto row_indices = detail::index_calculation_1d(
+    //                des_row_start, des_row_stop, cur_row_start, cur_row_stop);
+    //            auto col_indices = detail::index_calculation_1d(
+    //                des_col_start, des_col_stop, cur_col_start, cur_col_stop);
 
-                blaze::submatrix(result, row_indices.projected_start_,
-                    col_indices.projected_start_,
-                    row_indices.intersection_size_,
-                    col_indices.intersection_size_) = blaze::submatrix(m,
-                    row_indices.local_start_, col_indices.local_start_,
-                    row_indices.intersection_size_,
-                    col_indices.intersection_size_);
-            }
+    //            blaze::submatrix(result, row_indices.projected_start_,
+    //                col_indices.projected_start_,
+    //                row_indices.intersection_size_,
+    //                col_indices.intersection_size_) = blaze::submatrix(m,
+    //                row_indices.local_start_, col_indices.local_start_,
+    //                row_indices.intersection_size_,
+    //                col_indices.intersection_size_);
+    //        }
 
-            for (std::uint32_t loc = 0; loc != num_localities; ++loc)
-            {
-                if (loc == loc_id)
-                {
-                    continue;
-                }
+    //        for (std::uint32_t loc = 0; loc != num_localities; ++loc)
+    //        {
+    //            if (loc == loc_id)
+    //            {
+    //                continue;
+    //            }
 
-                // the array span in locality loc
-                tiling_span loc_row_span = arr_localities.tiles_[loc].spans_[0];
-                tiling_span loc_col_span = arr_localities.tiles_[loc].spans_[1];
+    //            // the array span in locality loc
+    //            tiling_span loc_row_span = arr_localities.tiles_[loc].spans_[0];
+    //            tiling_span loc_col_span = arr_localities.tiles_[loc].spans_[1];
 
-                auto row_indices = detail::retile_calculation_1d(
-                    loc_row_span, des_row_start, des_row_stop);
-                auto col_indices = detail::retile_calculation_1d(
-                    loc_col_span, des_col_start, des_col_stop);
-                if (row_indices.intersection_size_ > 0 &&
-                    col_indices.intersection_size_ > 0)
-                {
-                    // loc_span has the block of result that we need
-                    blaze::submatrix(result, row_indices.projected_start_,
-                        col_indices.projected_start_,
-                        row_indices.intersection_size_,
-                        col_indices.intersection_size_) =
-                        m_data
-                            .fetch(loc, row_indices.local_start_,
-                                row_indices.local_start_ +
-                                    row_indices.intersection_size_,
-                                col_indices.local_start_,
-                                col_indices.local_start_ +
-                                    col_indices.intersection_size_)
-                            .get();
-                }
-            }
-        }
-        else // the new array is a subset of the original array
-        {
-            result = blaze::submatrix(
-                m, rel_row_start, rel_col_start, des_row_size, des_col_size);
-        }
+    //            auto row_indices = detail::retile_calculation_1d(
+    //                loc_row_span, des_row_start, des_row_stop);
+    //            auto col_indices = detail::retile_calculation_1d(
+    //                loc_col_span, des_col_start, des_col_stop);
+    //            if (row_indices.intersection_size_ > 0 &&
+    //                col_indices.intersection_size_ > 0)
+    //            {
+    //                // loc_span has the block of result that we need
+    //                blaze::submatrix(result, row_indices.projected_start_,
+    //                    col_indices.projected_start_,
+    //                    row_indices.intersection_size_,
+    //                    col_indices.intersection_size_) =
+    //                    m_data
+    //                        .fetch(loc, row_indices.local_start_,
+    //                            row_indices.local_start_ +
+    //                                row_indices.intersection_size_,
+    //                            col_indices.local_start_,
+    //                            col_indices.local_start_ +
+    //                                col_indices.intersection_size_)
+    //                        .get();
+    //            }
+    //        }
+    //    }
+    //    else // the new array is a subset of the original array
+    //    {
+    //        result = blaze::submatrix(
+    //            m, rel_row_start, rel_col_start, des_row_size, des_col_size);
+    //    }
 
-        // updating the tile information
-        tile_info =
-            tiling_information_2d(tiling_span(des_row_start, des_row_stop),
-                tiling_span(des_col_start, des_col_stop));
+    //    // updating the tile information
+    //    tile_info =
+    //        tiling_information_2d(tiling_span(des_row_start, des_row_stop),
+    //            tiling_span(des_col_start, des_col_stop));
 
-        auto locality_ann = arr_localities.locality_.as_annotation();
-        auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(locality_ann,
-                tile_info.as_annotation(name_, codename_),
-                arr_localities.annotation_, name_, codename_));
+    //    auto locality_ann = arr_localities.locality_.as_annotation();
+    //    auto attached_annotation =
+    //        std::make_shared<annotation>(localities_annotation(locality_ann,
+    //            tile_info.as_annotation(name_, codename_),
+    //            arr_localities.annotation_, name_, codename_));
 
-        return primitive_argument_type(result, attached_annotation);
-    }
+    //    return primitive_argument_type(result, attached_annotation);
+    //}
 
-    execution_tree::primitive_argument_type retile_annotations::retile2d(
-        execution_tree::primitive_argument_type&& arr,
-        ir::range&& new_tiling) const
-    {
-        using namespace execution_tree;
-        execution_tree::localities_information arr_localities =
-            extract_localities_information(arr, name_, codename_);
+    //execution_tree::primitive_argument_type retile_annotations::retile2d(
+    //    execution_tree::primitive_argument_type&& arr,
+    //    ir::range&& new_tiling) const
+    //{
+    //    using namespace execution_tree;
+    //    execution_tree::localities_information arr_localities =
+    //        extract_localities_information(arr, name_, codename_);
 
-        switch (extract_common_type(arr))
-        {
-        case node_data_type_bool:
-            return retile2d(
-                extract_boolean_value_strict(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+    //    switch (extract_common_type(arr))
+    //    {
+    //    case node_data_type_bool:
+    //        return retile2d(
+    //            extract_boolean_value_strict(std::move(arr), name_, codename_),
+    //            std::move(new_tiling), std::move(arr_localities));
 
-        case node_data_type_int64:
-            return retile2d(
-                extract_integer_value_strict(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+    //    case node_data_type_int64:
+    //        return retile2d(
+    //            extract_integer_value_strict(std::move(arr), name_, codename_),
+    //            std::move(new_tiling), std::move(arr_localities));
 
-        case node_data_type_double:
-            return retile2d(
-                extract_numeric_value_strict(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+    //    case node_data_type_double:
+    //        return retile2d(
+    //            extract_numeric_value_strict(std::move(arr), name_, codename_),
+    //            std::move(new_tiling), std::move(arr_localities));
 
-        case node_data_type_unknown:
-            return retile2d(
-                extract_numeric_value(std::move(arr), name_, codename_),
-                std::move(new_tiling), std::move(arr_localities));
+    //    case node_data_type_unknown:
+    //        return retile2d(
+    //            extract_numeric_value(std::move(arr), name_, codename_),
+    //            std::move(new_tiling), std::move(arr_localities));
 
-        default:
-            break;
-        }
+    //    default:
+    //        break;
+    //    }
 
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_matrixops::primitives::retile_annotations::retile2d",
-            generate_error_message(
-                "the retile_d primitive requires for all arguments to "
-                "be numeric data types"));
-    }
+    //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+    //        "dist_matrixops::primitives::retile_annotations::retile2d",
+    //        generate_error_message(
+    //            "the retile_d primitive requires for all arguments to "
+    //            "be numeric data types"));
+    //}
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<execution_tree::primitive_argument_type>
@@ -539,15 +586,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_arguments_type const& args,
         execution_tree::eval_context ctx) const
     {
-        if (operands.size() != 2)
+        if (operands.empty() || operands.size() > 5)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "retile::eval",
-                generate_error_message(
-                    "the retile_d primitive requires two operands"));
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
+                generate_error_message("the retile_d primitive requires at "
+                                       "least one and at most 5 operands"));
         }
 
-        if (!valid(operands[0]) || !valid(operands[1]))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "retile::eval",
@@ -567,34 +613,72 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     std::size_t numdims = extract_numeric_value_dimension(
                         args[0], this_->name_, this_->codename_);
 
-                    if (!is_list_operand_strict(args[1]))
+                    //if (!is_list_operand_strict(args[1]))
+                    //{
+                    //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    //        "retile_d::eval",
+                    //        this_->generate_error_message(
+                    //            "the new tiling should be a list containing "
+                    //            "`tile` or `args`"));
+                    //}
+                    std::string tiling_type = "sym";
+                    if (valid(args[1]))
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "retile_d::eval",
-                            this_->generate_error_message(
-                                "the new tiling should be a list containing "
-                                "`tile` or `args`"));
+                        tiling_type = extract_string_value(
+                            std::move(args[1]), this_->name_, this_->codename_);
+                        //if ((tiling_type != "sym" && tiling_type != "row") &&
+                        //    tiling_type != "column")
+                        //{
+                        //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        //        "dist_constant::eval",
+                        //        this_->generate_error_message(
+                        //            "invalid tling_type. the tiling_type can be "
+                        //            "one of these: `sym`, `row` or `column`"));
+                        //}
                     }
-                    ir::range&& new_tiling = extract_list_value_strict(
-                        std::move(args[1]), this_->name_, this_->codename_);
-                    auto label = extract_string_value_strict(*new_tiling.begin());
-                    if (label != "args" && label != "tile")
+                    std::uint32_t numtiles =
+                        hpx::get_num_localities(hpx::launch::sync);
+                    if (valid(args[2]))
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
-                            this_->generate_error_message(
-                                "the new_tiling should start with either of "
-                                "`tile` or `args` tags"));
+                        extract_scalar_positive_integer_value_strict(
+                            std::move(args[2]), this_->name_, this_->codename_);
+                    }
+                    ir::range new_tiling(0);    // empty range
+                    if (valid(args[3]))
+                    {
+                        new_tiling = extract_list_value_strict(
+                            std::move(args[3]), this_->name_, this_->codename_);
+                    }
+
+                    if (valid(args[4]) && is_list_operand_strict(args[4])) {
+                        ir::range&& intersection_list =
+                            extract_list_value_strict(std::move(args[4]),
+                                this_->name_, this_->codename_);
+
+                        if (intersection_list.size() != 1 &&
+                            intersection_list.size() != numtiles)
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "retile::eval",
+                                this_->generate_error_message(
+                                    "intersection should have the same number "
+                                    "of dimensions as the array, or be "
+                                    "represented with an integer for all "
+                                    "dimensions"));
+                        }
+
                     }
 
                     switch (numdims)
                     {
                     case 1:
                         return this_->retile1d(std::move(args[0]),
+                            std::move(tiling_type), numtiles,
                             std::move(new_tiling));
 
-                    case 2:
-                        return this_->retile2d(
-                            std::move(args[0]), std::move(new_tiling));
+                        //case 2:
+                        //    return this_->retile2d(
+                        //        std::move(args[0]), std::move(new_tiling));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
