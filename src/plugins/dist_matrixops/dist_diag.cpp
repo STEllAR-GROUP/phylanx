@@ -40,7 +40,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         hpx::util::make_tuple("diag_d", std::vector<std::string>{R"(
                 diag_d(
-                    _1_a,
+                    _1_arr,
                     __arg(_2_k, 0),
                     __arg(_3_tile_index, find_here()),
                     __arg(_4_numtiles, num_localities()),
@@ -52,9 +52,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             )"},
             &create_dist_diag,
             &execution_tree::create_primitive<dist_diag>, R"(
-            a, k, tile_index, numtiles, name, tiling_type, dtype
+            arr, k, tile_index, numtiles, name, tiling_type, dtype
             Args:
-                a (array): a scalar, vector or matrix.
+                arr (array): a scalar, vector or matrix.
                 k (int, optional): The default is 0. Denote the diagonal above
                     the main diagonal when k > 0 and the diagonal below the main
                     diagonal when k < 0.
@@ -75,7 +75,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             Returns:
 
             A 1-D array of its k-th diagonal when a is a 2-D array; a 2-D array
-            with a on th ek-th diagonal.)")};
+            with a on thek-th diagonal.)")};
 
     ///////////////////////////////////////////////////////////////////////////
     dist_diag::dist_diag(
@@ -101,14 +101,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    execution_tree::primitive_argument_type dist_diag::dist_diag_helper(
-        std::int64_t&& sz, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& tiling_type) const
+    execution_tree::primitive_argument_type dist_diag::dist_diag0d_helper(
+        ir::node_data<T>&& arr, std::int64_t k,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type) const;
     {
         using namespace execution_tree;
 
-        std::size_t size = static_cast<std::size_t>(sz);
+        std::size_t size = a.dimension(0);
+        std::int64_t incr = std::abs(k);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -135,72 +136,89 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 tile_info.as_annotation(name_, codename_), ann_info, name_,
                 codename_));
 
-        blaze::DynamicMatrix<T> m(row_size, column_size, T(0));
+        blaze::DynamicMatrix<T> result(row_size, column_size, T(0));
+        std::int64_t num_band;
+        std::int64_t upper_band = column_size - 1;
+        std::int64_t lower_band = 1 - row_size;
+
         if (tiling_type == "row")
         {
-            blaze::band(m, row_start) = T(1);
+            num_band = row_start + k;
+            if (num_band <= (std::max)(int64_t(0), upper_band) &&
+                num_band >= (std::min)(int64_t(0), lower_band))
+            {
+                blaze::band(result, num_band) = arr;
+            }
         }
         else if (tiling_type == "column")
         {
-            blaze::band(m, -column_start) = T(1);
+            num_band = k - column_start;
+            if (num_band <= (std::max)(int64_t(0), upper_band) &&
+                num_band >= (std::min)(int64_t(0), lower_band))
+            {
+                blaze::band(result, num_band) = arr;
+            }
         }
         else if (tiling_type == "sym")
         {
-            std::int64_t num_band = row_start - column_start;
-            std::int64_t upper_band = column_size - 1;
-            std::int64_t lower_band = 1 - row_size;
+            num_band = k - (column_start - row_start);
 
             if (num_band <= (std::max)(int64_t(0), upper_band) &&
                 num_band >= (std::min)(int64_t(0), lower_band))
             {
-                blaze::band(m, num_band) = T(1);
+                blaze::band(result, num_band) = arr;
             }
         }
         else
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_diag::dist_diag_helper",
+                "dist_diag::dist_diag0d_helper",
                 generate_error_message(
                     "wrong numtiles input when tiling_type is sym"));
         }
 
-        return primitive_argument_type(std::move(m), attached_annotation);
+        return primitive_argument_type(std::move(result), attached_annotation);
     }
 
-    execution_tree::primitive_argument_type dist_diag::dist_diag_nd(
-        std::int64_t&& sz, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& tiling_type,
-        execution_tree::node_data_type dtype) const
+    execution_tree::primitive_argument_type dist_diag::dist_diag0d(
+        execution_tree::primitive_argument_type&& arr, std::int64_t k,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type,
+        execution_tree::node_data_type dtype) const;
     {
         using namespace execution_tree;
 
         switch (dtype)
         {
         case node_data_type_bool:
-            return dist_diag_helper<std::uint8_t>(std::move(sz), tile_idx,
-                numtiles, std::move(given_name), tiling_type);
+            return dist_diag0d_helper<std::uint8_t>(std::move(arr),
+                std::move(k), tile_idx, numtiles, std::move(given_name),
+                tiling_type);
 
         case node_data_type_int64:
-            return dist_diag_helper<std::int64_t>(std::move(sz), tile_idx,
-                numtiles, std::move(given_name), tiling_type);
+            return dist_diag0d_helper<std::int64_t>(std::move(arr),
+                std::move(k), tile_idx, numtiles, std::move(given_name),
+                tiling_type);
 
         case node_data_type_unknown:
             HPX_FALLTHROUGH;
+
         case node_data_type_double:
-            return dist_diag_helper<double>(std::move(sz), tile_idx,
-                numtiles, std::move(given_name), tiling_type);
+            return dist_diag0d_helper<double>(std::move(arr), std::move(k),
+                tile_idx, numtiles, std::move(given_name), tiling_type);
 
         default:
             break;
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_matrixops::dist_diag::dist_diag_nd",
+            "dist_matrixops::dist_diag::dist_diag0d",
             util::generate_error_message(
                 "the constant primitive requires for all arguments to "
                 "be numeric data types"));
     }
+
+
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<execution_tree::primitive_argument_type> dist_diag::eval(
