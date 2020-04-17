@@ -24,6 +24,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -45,14 +46,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 retile_d(
                     _1_a,
                     __arg(_2_tiling_type, "sym"),
-                    __arg(_3_numtiles, num_localities()),
-                    __arg(_4_new_tiling, nil),
-                    __arg(_5_intersection, nil)
+                    __arg(_3_intersection, nil),
+                    __arg(_4_numtiles, num_localities()),
+                    __arg(_5_new_tiling, nil)
                 )
             )"},
             &create_retile_annotations,
             &execution_tree::create_primitive<retile_annotations>, R"(
-            a, tiling_type, numtiles, new_tiling, intersection
+            a, tiling_type, intersection, numtiles, new_tiling
             Args:
 
                 a (array): a part of an array with its attached annotation that
@@ -61,6 +62,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     balanced way of tiling among all the numtiles localities.
                     Other options are `row` or `column` tiling. For a vector
                     all these three tiling_type are the same.
+                intersection (int or list of ints, optional): the size of
+                    overlapped part on each dimension
                 numtiles (int, optional): number of tiles of the returned array
                     If not given it sets to the number of localities in the
                     application.
@@ -69,8 +72,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     list("tile", list("columns", 0, 2), list("rows", 0, 2)) or
                     list("args", list("locality", 0, 4),
                        list("tile", list("columns", 0, 2), list("rows", 0, 2)))
-                intersection (int or list of ints, optional): the size of
-                    overlapped part on each dimension
 
             Returns:
 
@@ -229,7 +230,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type retile_annotations::retile1d(
         ir::node_data<T>&& arr, std::string const& tiling_type,
         std::uint32_t numtiles, ir::range&& new_tiling,
-        execution_tree::localities_information&& arr_localities) const
+        execution_tree::localities_information&& arr_localities,
+        std::size_t intersection) const
     {
         using namespace execution_tree;
 
@@ -237,6 +239,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         std::uint32_t const num_localities =
             arr_localities.locality_.num_localities_;
+        std::size_t dim = arr_localities.size();
         tiling_information_1d tile_info(
             arr_localities.tiles_[loc_id], name_, codename_);
 
@@ -272,11 +275,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             }
             std::tie(des_start, des_size) =
                 tile_calculation::tile_calculation_1d(
-                    hpx::get_locality_id(), arr_localities.size(), numtiles);
+                    loc_id, dim, numtiles);
+
+            if (intersection != 0) // there should be some overlapped sections
+            {
+                std::tie(des_start, des_size) =
+                    tile_calculation::tile_calculation_overlap_1d(
+                        des_start, des_size, dim, intersection);
+            }
             des_stop = des_start + des_size;
         }
-        else if (tiling_type == "user")
+        else // tiling_type == "user"
         {
+
             std::tie(type_, des_start, des_stop) =
                 detail::tile_extraction_1d(std::move(new_tiling));
             des_size = des_stop - des_start;
@@ -289,8 +300,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "than its stop point"));
             }
         }
-        else    // overlapped tiling types
-        { }
 
         // having the updated array as result
         auto v = arr.vector();
@@ -368,10 +377,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type retile_annotations::retile1d(
         execution_tree::primitive_argument_type&& arr,
         std::string const& tiling_type, std::uint32_t numtiles,
-        ir::range&& new_tiling) const
+        ir::range&& new_tiling, std::size_t intersection) const
     {
         using namespace execution_tree;
-        execution_tree::localities_information arr_localities =
+        localities_information arr_localities =
             extract_localities_information(arr, name_, codename_);
 
         switch (extract_common_type(arr))
@@ -380,25 +389,25 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return retile1d(
                 extract_boolean_value_strict(std::move(arr), name_, codename_),
                 tiling_type, numtiles, std::move(new_tiling),
-                std::move(arr_localities));
+                std::move(arr_localities), intersection);
 
         case node_data_type_int64:
             return retile1d(
                 extract_integer_value_strict(std::move(arr), name_, codename_),
                 tiling_type, numtiles, std::move(new_tiling),
-                std::move(arr_localities));
+                std::move(arr_localities), intersection);
 
         case node_data_type_double:
             return retile1d(
                 extract_numeric_value_strict(std::move(arr), name_, codename_),
                 tiling_type, numtiles, std::move(new_tiling),
-                std::move(arr_localities));
+                std::move(arr_localities), intersection);
 
         case node_data_type_unknown:
             return retile1d(
                 extract_numeric_value(std::move(arr), name_, codename_),
                 tiling_type, numtiles, std::move(new_tiling),
-                std::move(arr_localities));
+                std::move(arr_localities), intersection);
 
         default:
             break;
@@ -613,60 +622,107 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     std::size_t numdims = extract_numeric_value_dimension(
                         args[0], this_->name_, this_->codename_);
 
-                    //if (!is_list_operand_strict(args[1]))
-                    //{
-                    //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    //        "retile_d::eval",
-                    //        this_->generate_error_message(
-                    //            "the new tiling should be a list containing "
-                    //            "`tile` or `args`"));
-                    //}
                     std::string tiling_type = "sym";
                     if (valid(args[1]))
                     {
                         tiling_type = extract_string_value(
                             std::move(args[1]), this_->name_, this_->codename_);
-                        //if ((tiling_type != "sym" && tiling_type != "row") &&
-                        //    tiling_type != "column")
-                        //{
-                        //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        //        "dist_constant::eval",
-                        //        this_->generate_error_message(
-                        //            "invalid tling_type. the tiling_type can be "
-                        //            "one of these: `sym`, `row` or `column`"));
-                        //}
+                        if ((tiling_type != "sym" && tiling_type != "row") &&
+                            (tiling_type != "column" && tiling_type != "user"))
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "retile_d::eval",
+                                this_->generate_error_message(
+                                    "invalid tling_type. the tiling_type can "
+                                    "be one of these: `sym`, `row`, `column` "
+                                    "or `user`"));
+                        }
                     }
+
                     std::uint32_t numtiles =
                         hpx::get_num_localities(hpx::launch::sync);
-                    if (valid(args[2]))
-                    {
-                        extract_scalar_positive_integer_value_strict(
-                            std::move(args[2]), this_->name_, this_->codename_);
-                    }
-                    ir::range new_tiling(0);    // empty range
                     if (valid(args[3]))
                     {
-                        new_tiling = extract_list_value_strict(
+                        extract_scalar_positive_integer_value_strict(
                             std::move(args[3]), this_->name_, this_->codename_);
                     }
 
-                    if (valid(args[4]) && is_list_operand_strict(args[4])) {
-                        ir::range&& intersection_list =
-                            extract_list_value_strict(std::move(args[4]),
-                                this_->name_, this_->codename_);
-
-                        if (intersection_list.size() != 1 &&
-                            intersection_list.size() != numtiles)
+                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+                        intersections{0};
+                    if (valid(args[2]))
+                    {
+                        if (tiling_type == "user")
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "retile::eval",
+                                "retile_d::eval",
                                 this_->generate_error_message(
-                                    "intersection should have the same number "
-                                    "of dimensions as the array, or be "
-                                    "represented with an integer for all "
-                                    "dimensions"));
+                                    "for the `user` tiling type, the new "
+                                    "tiling should precisely indicate the "
+                                    "tiles and intersection cannot be used"));
                         }
 
+                        if (is_list_operand_strict(args[2]))
+                        {
+                            ir::range&& intersection_list =
+                                extract_list_value_strict(std::move(args[2]),
+                                    this_->name_, this_->codename_);
+
+                            if (intersection_list.size() != 1 &&
+                                intersection_list.size() != numtiles)
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "retile::eval",
+                                    this_->generate_error_message(
+                                        "intersection should have the same "
+                                        "number of dimensions as the array, or "
+                                        "be represented with an integer for "
+                                        "all dimensions"));
+                            }
+                            intersections =
+                                tile_calculation::extract_dimensions(
+                                    intersection_list);
+                        }
+                        else if (is_numeric_operand(args[2]))
+                        {
+                            intersections[0] =
+                                extract_scalar_nonneg_integer_value_strict(
+                                    std::move(args[2]), this_->name_,
+                                    this_->codename_);
+
+                            // we assume all dimensions have the same
+                            // intersection which is the given one
+                            for (std::size_t i = 1; i != PHYLANX_MAX_DIMENSIONS;
+                                 ++i)
+                            {
+                                if (i == numdims)
+                                    break;
+                                intersections[i] = intersections[0];
+                            }
+                        }
+                    }
+
+                    ir::range new_tiling(0);    // empty range
+                    if (valid(args[4]))
+                    {
+                        if (tiling_type != "user")
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "retile_d::eval",
+                                this_->generate_error_message(
+                                    "new tiling is only a parameter of `user` "
+                                    "tiling type"));
+                        }
+
+                        if (!is_list_operand_strict(args[4]))
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "retile_d::eval",
+                                this_->generate_error_message(
+                                    "the new tiling should be a list "
+                                    "containing `tile` or `args`"));
+                        }
+                        new_tiling = extract_list_value_strict(
+                            std::move(args[4]), this_->name_, this_->codename_);
                     }
 
                     switch (numdims)
@@ -674,7 +730,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     case 1:
                         return this_->retile1d(std::move(args[0]),
                             std::move(tiling_type), numtiles,
-                            std::move(new_tiling));
+                            std::move(new_tiling), intersections[0]);
 
                         //case 2:
                         //    return this_->retile2d(

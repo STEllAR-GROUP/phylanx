@@ -45,12 +45,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type retile1d(
             execution_tree::primitive_argument_type&& arr,
             std::string const& tiling_type, std::uint32_t numtiles,
-            ir::range&& new_tiling) const;
+            ir::range&& new_tiling, std::size_t intersection) const;
         template <typename T>
         execution_tree::primitive_argument_type retile1d(ir::node_data<T>&& arr,
             std::string const& tiling_type, std::uint32_t numtiles,
             ir::range&& new_tiling,
-            execution_tree::localities_information&& arr_localities) const;
+            execution_tree::localities_information&& arr_localities,
+            std::size_t intersection) const;
 
         //execution_tree::primitive_argument_type retile2d(
         //    execution_tree::primitive_argument_type&& arr,

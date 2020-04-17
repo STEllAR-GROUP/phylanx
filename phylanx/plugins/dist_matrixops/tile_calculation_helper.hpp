@@ -55,6 +55,41 @@ namespace tile_calculation
         return std::make_tuple(start, size);
     }
 
+    inline std::tuple<std::int64_t, std::size_t> tile_calculation_overlap_1d(
+        std::int64_t start, std::size_t size, std::size_t dim,
+        std::size_t intersection)
+    {
+        if (start == 0)
+        {
+        }
+        else if (start + size == dim)
+        {
+            start -= intersection;
+        }
+        else
+        {
+            start -= static_cast<std::size_t>(intersection / 2);
+        }
+        size += intersection;
+
+        if (start < 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_calculation::tile_calculation_overlap_1d",
+                phylanx::util::generate_error_message(
+                    "the given intersection produces negative start for the "
+                    "array"));
+        }
+        if (start + size > dim)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_calculation::tile_calculation_overlap_1d",
+                phylanx::util::generate_error_message(
+                    "the given intersection need an end point larger than the "
+                    "array size"));
+        }
+        return std::make_tuple(start, size);
+    }
     ///////////////////////////////////////////////////////////////////////////
     inline std::tuple<std::size_t, std::size_t> middle_divisors(std::size_t num)
     {
