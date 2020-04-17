@@ -1244,15 +1244,14 @@ shape (int or list of ints): overall shape of the array. It</p>
 <div><p>only contains positive integers.</p>
 </div></blockquote>
 <dl class="simple">
-<dt>tile_index (int): the tile index we need to generate the</dt><dd><p>constant array for. A non-negative integer.</p>
+<dt>tile_index (int, optional): the tile index we need to generate</dt><dd><p>the constant array for. A non-negative integer. If not given,
+it sets to current locality.</p>
 </dd>
-</dl>
-<p>numtiles (int): number of tiles of the returned array
-name (string, optional): the array given name. If not given, a</p>
-<blockquote>
-<div><p>globally unique name will be generated.</p>
-</div></blockquote>
-<dl class="simple">
+<dt>numtiles (int, optional): number of tiles of the returned array.</dt><dd><p>if not given it sets to the number of localities in the
+application.</p>
+</dd>
+<dt>name (string, optional): the array given name. If not given, a</dt><dd><p>globally unique name will be generated.</p>
+</dd>
 <dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
 Other options are <cite>row</cite> or <cite>column</cite> tiling. For a vector
 all these three tiling_type are the same.</p>
@@ -2656,15 +2655,14 @@ followed by up to two numeric parameters.</p>
 <div><dl class="simple">
 <dt>shape (int or list of ints): overall shape of the array. It</dt><dd><p>only contains positive integers.</p>
 </dd>
-<dt>tile_index (int): the tile index we need to generate the</dt><dd><p>random array for. A non-negative integer.</p>
+<dt>tile_index (int, optional): the tile index we need to generate</dt><dd><p>the random array for. A non-negative integer. If not given,
+it sets to current locality.</p>
 </dd>
-</dl>
-<p>numtiles (int): number of tiles of the returned array
-name (string, optional): the array given name. If not given, a</p>
-<blockquote>
-<div><p>globally unique name will be generated.</p>
-</div></blockquote>
-<dl class="simple">
+<dt>numtiles (int, optional): number of tiles of the returned array</dt><dd><p>if not given it sets to the number of localities in the
+application.</p>
+</dd>
+<dt>name (string, optional): the array given name. If not given, a</dt><dd><p>globally unique name will be generated.</p>
+</dd>
 <dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
 Other options are <cite>row</cite> or <cite>column</cite> tiling. For a vector
 all these three tiling_types are the same.</p>
@@ -2677,7 +2675,7 @@ all these three tiling_types are the same.</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>A part of an array of random numbers on tile_index-th tile out of
-numtiles using the nrmal distribution</p>
+numtiles using the normal distribution</p>
 </dd>
 </dl>
 </div>
@@ -3365,7 +3363,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 15, 2020.
+        Last updated on Apr 17, 2020.
       </span>
 
     </p>
