@@ -1578,6 +1578,31 @@ identity (n, dtype)
             An identity matrix of size `sz` by `sz`.
 
 
+identity_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+identity_d (sz, dtype, tile_index, numtiles, name, tiling_type,)
+            Args:
+                sz (int): the size of a created (n x n) matrix.
+                tile_index (int, optional): the tile index we need to generate
+                    the identity array for. A non-negative integer. If not
+                    given, it sets to current locality.
+                numtiles (int, optional): number of tiles of the returned array.
+                    If not given it sets to the number of localities in the
+                    application.
+                name (string, optional): the array given name. If not given, a
+                    globally unique name will be generated.
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all the numtiles localities.
+                    Other options are `row` or `column` tiling.
+                dtype (string, optional): the data-type of the returned array,
+                    defaults to 'float'.
+
+            Returns:
+
+            A part of an array of size 'size', which has the tile index of
+             'tile_index'.
+
+
 if
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 if (cond, thenf, elsef)

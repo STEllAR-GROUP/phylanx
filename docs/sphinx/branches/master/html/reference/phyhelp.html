@@ -191,6 +191,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#hsplit">hsplit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hstack">hstack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#identity">identity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#identity-d">identity_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#if">if</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#insert">insert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#invgje">invGJE</a></li>
@@ -2087,6 +2088,38 @@ dtype (optional, string) : the data-type of the returned array,</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>An identity matrix of size <cite>sz</cite> by <cite>sz</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="identity-d">
+<h2>identity_d<a class="headerlink" href="#identity-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>identity_d (sz, dtype, tile_index, numtiles, name, tiling_type,)</dt><dd><dl>
+<dt>Args:</dt><dd><p>sz (int): the size of a created (n x n) matrix.
+tile_index (int, optional): the tile index we need to generate</p>
+<blockquote>
+<div><p>the identity array for. A non-negative integer. If not
+given, it sets to current locality.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>numtiles (int, optional): number of tiles of the returned array.</dt><dd><p>If not given it sets to the number of localities in the
+application.</p>
+</dd>
+<dt>name (string, optional): the array given name. If not given, a</dt><dd><p>globally unique name will be generated.</p>
+</dd>
+<dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
+Other options are <cite>row</cite> or <cite>column</cite> tiling.</p>
+</dd>
+<dt>dtype (string, optional): the data-type of the returned array,</dt><dd><p>defaults to ‘float’.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns:</p>
+<dl class="simple">
+<dt>A part of an array of size ‘size’, which has the tile index of</dt><dd><p>‘tile_index’.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
