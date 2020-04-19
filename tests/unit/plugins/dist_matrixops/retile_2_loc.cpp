@@ -380,6 +380,7 @@ void test_retile_2loc_2d_0()
                 annotate_d([[1, 2, 3], [-1, -2, -3]], "tiled_array_2d_0",
                     list("tile", list("columns", 0, 3), list("rows", 0, 2))
                 ),
+                "user", nil, nil,
                 list("tile", list("rows", 0, 2), list("columns", 0, 5))
             )
         )", R"(
@@ -397,6 +398,7 @@ void test_retile_2loc_2d_0()
                 annotate_d([[4, 5, 6], [-4, -5, -6]], "tiled_array_2d_0",
                     list("tile", list("rows", 0, 2), list("columns", 3, 6))
                 ),
+                "user", nil, nil,
                 list("tile", list("rows", 0, 2), list("columns", 5, 6))
             )
         )", R"(
@@ -418,6 +420,7 @@ void test_retile_2loc_2d_1()
                     "tiled_array_2d_1",
                     list("tile", list("columns", 0, 6), list("rows", 0, 2))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 0, 2), list("rows", 0, 3))
             )
         )", R"(
@@ -435,6 +438,7 @@ void test_retile_2loc_2d_1()
                 annotate_d([[-1, -2, -3, -4, -5, -6]], "tiled_array_2d_1",
                     list("tile", list("rows", 2, 3), list("columns", 0, 6))
                 ),
+                "user", nil, nil,
                 list("tile", list("rows", 0, 3), list("columns", 2, 6))
             )
         )", R"(
@@ -443,6 +447,85 @@ void test_retile_2loc_2d_1()
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("rows", 0, 3), list("columns", 2, 6))))
+        )");
+    }
+}
+
+void test_retile_2loc_2d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc2d_2", R"(
+            retile_d(
+                annotate_d([[1, 2, 3, 4, 5], [-1, -2, -3, -4, -5]],
+                    "tiled_array_2d_2",
+                    list("tile", list("columns", 0, 5), list("rows", 0, 2))
+                )
+            )
+        )", R"(
+            annotate_d([[1, 2, 3], [-1, -2, -3], [11, 12, 13]],
+                "tiled_array_2d_2_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("rows", 0, 3), list("columns", 0, 3))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc2d_2", R"(
+            retile_d(
+                annotate_d([[11, 12, 13, 14, 15]], "tiled_array_2d_2",
+                    list("tile", list("rows", 2, 3), list("columns", 0, 5))
+                )
+            )
+        )", R"(
+            annotate_d([[4, 5], [-4, -5], [14, 15]],
+                "tiled_array_2d_2_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 0, 3), list("columns", 3, 5))))
+        )");
+    }
+}
+
+void test_retile_2loc_2d_3()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc2d_3", R"(
+            retile_d(
+                annotate_d([[1, 2, 3, 4, 5], [-1, -2, -3, -4, -5]],
+                    "tiled_array_2d_3",
+                    list("tile", list("columns", 0, 5), list("rows", 0, 2))
+                ),
+                "row", 2
+            )
+        )", R"(
+            annotate_d([[1, 2, 3, 4, 5], [-1, -2, -3, -4, -5],
+                        [11, 12, 13, 14, 15], [-11, -12, -13, -14, -15]],
+                "tiled_array_2d_3_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("rows", 0, 4), list("columns", 0, 5))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc2d_3", R"(
+            retile_d(
+                annotate_d([[11, 12, 13, 14, 15], [-11, -12, -13, -14, -15]],
+                    "tiled_array_2d_3",
+                    list("tile", list("rows", 2, 4), list("columns", 0, 5))
+                ),
+                "row", 2
+            )
+        )", R"(
+            annotate_d([[1, 2, 3, 4, 5], [-1, -2, -3, -4, -5],
+                        [11, 12, 13, 14, 15], [-11, -12, -13, -14, -15]],
+                "tiled_array_2d_3_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 0, 4), list("columns", 0, 5))))
         )");
     }
 }
@@ -460,8 +543,10 @@ int hpx_main(int argc, char* argv[])
     test_retile_2loc_1d_7();
     test_retile_2loc_1d_8();
 
-    //test_retile_2loc_2d_0();
-    //test_retile_2loc_2d_1();
+    test_retile_2loc_2d_0();
+    test_retile_2loc_2d_1();
+    test_retile_2loc_2d_2();
+    test_retile_2loc_2d_3();
 
     hpx::finalize();
     return hpx::util::report_errors();

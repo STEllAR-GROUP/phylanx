@@ -90,6 +90,7 @@ namespace tile_calculation
         }
         return std::make_tuple(start, size);
     }
+
     ///////////////////////////////////////////////////////////////////////////
     inline std::tuple<std::size_t, std::size_t> middle_divisors(std::size_t num)
     {
@@ -221,6 +222,51 @@ namespace tile_calculation
                     extract_scalar_positive_integer_value_strict(*++elem_1);
                 result[3] =
                     extract_scalar_positive_integer_value_strict(*++elem_1);
+            }
+        }
+        return result;
+    }
+
+    inline std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_nonneg_dimensions(phylanx::ir::range const& shape)
+    {
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0};
+        if (!shape.empty())
+        {
+            if (shape.size() == 1)
+            {
+                result[0] = extract_scalar_nonneg_integer_value_strict(
+                    *shape.begin());
+            }
+            else if (shape.size() == 2)
+            {
+                auto elem_1 = shape.begin();
+                result[0] =
+                    extract_scalar_nonneg_integer_value_strict(*elem_1);
+                result[1] =
+                    extract_scalar_nonneg_integer_value_strict(*++elem_1);
+            }
+            else if (shape.size() == 3)
+            {
+                auto elem_1 = shape.begin();
+                result[0] =
+                    extract_scalar_nonneg_integer_value_strict(*elem_1);
+                result[1] =
+                    extract_scalar_nonneg_integer_value_strict(*++elem_1);
+                result[2] =
+                    extract_scalar_nonneg_integer_value_strict(*++elem_1);
+            }
+            else if (shape.size() == 4)
+            {
+                auto elem_1 = shape.begin();
+                result[0] =
+                    extract_scalar_nonneg_integer_value_strict(*elem_1);
+                result[1] =
+                    extract_scalar_nonneg_integer_value_strict(*++elem_1);
+                result[2] =
+                    extract_scalar_nonneg_integer_value_strict(*++elem_1);
+                result[3] =
+                    extract_scalar_nonneg_integer_value_strict(*++elem_1);
             }
         }
         return result;

@@ -417,6 +417,7 @@ void test_retile_3loc_2d_0()
                 annotate_d([[1, 2, 3], [-1, -2, -3]], "tiled_array_2d_0",
                     list("tile", list("columns", 0, 3), list("rows", 0, 2))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 0, 2), list("rows", 0, 4))
             )
         )", R"(
@@ -437,6 +438,7 @@ void test_retile_3loc_2d_0()
                     "tiled_array_2d_0",
                     list("tile", list("columns", 3, 5), list("rows", 0, 4))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 2, 4), list("rows", 0, 4))
             )
         )", R"(
@@ -453,6 +455,7 @@ void test_retile_3loc_2d_0()
                 annotate_d([[11, 12, 13], [-11, -12, -13]], "tiled_array_2d_0",
                     list("tile", list("columns", 0, 3), list("rows", 2, 4))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 4, 5), list("rows", 0, 4))
             )
         )", R"(
@@ -474,6 +477,7 @@ void test_retile_3loc_2d_1()
                     "tiled_array_2d_1",
                     list("tile", list("columns", 3, 5), list("rows", 0, 4))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 0, 3), list("rows", 0, 4))
             )
         )", R"(
@@ -492,6 +496,7 @@ void test_retile_3loc_2d_1()
                     "tiled_array_2d_1",
                     list("tile", list("columns", 2, 3), list("rows", 0, 4))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 3, 4), list("rows", 0, 4))
             )
         )", R"(
@@ -510,6 +515,7 @@ void test_retile_3loc_2d_1()
                     "tiled_array_2d_1",
                     list("tile", list("columns", 0, 2), list("rows", 0, 4))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 4, 5), list("rows", 0, 4))
             )
         )", R"(
@@ -532,6 +538,7 @@ void test_retile_3loc_2d_2()
                     "tiled_array_2d_2",
                     list("tile", list("columns", 4, 6), list("rows", 0, 2))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 0, 2), list("rows", 0, 2))
             )
         )", R"(
@@ -548,6 +555,7 @@ void test_retile_3loc_2d_2()
                 annotate_d([[1], [-1]], "tiled_array_2d_2",
                     list("tile", list("columns", 0, 1), list("rows", 0, 2))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 2, 4), list("rows", 0, 2))
             )
         )", R"(
@@ -564,6 +572,7 @@ void test_retile_3loc_2d_2()
                 annotate_d([[2, 3, 4], [-2, -3, -4]], "tiled_array_2d_2",
                     list("tile", list("columns", 1, 4), list("rows", 0, 2))
                 ),
+                "user", nil, nil,
                 list("tile", list("columns", 4, 6), list("rows", 0, 2))
             )
         )", R"(
@@ -571,6 +580,62 @@ void test_retile_3loc_2d_2()
                 list("args",
                     list("locality", 2, 3),
                     list("tile", list("columns", 4, 6), list("rows", 0, 2))))
+        )");
+    }
+}
+
+void test_retile_3loc_2d_3()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_3loc2d_3", R"(
+            retile_d(
+                annotate_d([[1, 2, 3, 4, 5]],
+                    "tiled_array_2d_3",
+                    list("tile", list("columns", 0, 5), list("rows", 0, 1))
+                ),
+                "sym", 1
+            )
+        )", R"(
+            annotate_d([[1, 2, 3], [-1, -2, -3], [11, 12, 13]],
+                "tiled_array_2d_3_retiled/1",
+                list("args",
+                    list("locality", 0, 3),
+                    list("tile", list("columns", 0, 3), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_retile_d_operation("test_retile_3loc2d_3", R"(
+            retile_d(
+                annotate_d([[-1, -2, -3, -4, -5]], "tiled_array_2d_3",
+                    list("tile", list("columns", 0, 5), list("rows", 1, 2))
+                ),
+                "sym", 1
+            )
+        )", R"(
+            annotate_d([[3, 4, 5], [-3, -4, -5], [13, 14, 15]],
+                "tiled_array_2d_3_retiled/1",
+                list("args",
+                    list("locality", 1, 3),
+                    list("tile", list("columns", 2, 5), list("rows", 0, 3))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_3loc2d_3", R"(
+            retile_d(
+                annotate_d([[11, 12, 13, 14, 15]], "tiled_array_2d_3",
+                    list("tile", list("columns", 0, 5), list("rows", 2, 3))
+                ),
+                "sym", 1
+            )
+        )", R"(
+            annotate_d([[4, 5], [-4, -5], [14, 15]],
+                "tiled_array_2d_3_retiled/1",
+                list("args",
+                    list("locality", 2, 3),
+                    list("tile", list("columns", 3, 5), list("rows", 0, 3))))
         )");
     }
 }
@@ -586,9 +651,10 @@ int hpx_main(int argc, char* argv[])
     test_retile_3loc_1d_5();
     test_retile_3loc_1d_6();
 
-    //test_retile_3loc_2d_0();
-    //test_retile_3loc_2d_1();
-    //test_retile_3loc_2d_2();
+    test_retile_3loc_2d_0();
+    test_retile_3loc_2d_1();
+    test_retile_3loc_2d_2();
+    test_retile_3loc_2d_3();
 
 
     hpx::finalize();

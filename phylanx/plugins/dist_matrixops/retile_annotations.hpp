@@ -9,10 +9,12 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -44,22 +46,25 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     private:
         execution_tree::primitive_argument_type retile1d(
             execution_tree::primitive_argument_type&& arr,
-            std::string const& tiling_type, std::uint32_t numtiles,
-            ir::range&& new_tiling, std::size_t intersection) const;
+            std::string const& tiling_type, std::size_t intersection,
+            std::uint32_t numtiles, ir::range&& new_tiling) const;
         template <typename T>
         execution_tree::primitive_argument_type retile1d(ir::node_data<T>&& arr,
-            std::string const& tiling_type, std::uint32_t numtiles,
-            ir::range&& new_tiling,
-            execution_tree::localities_information&& arr_localities,
-            std::size_t intersection) const;
+            std::string const& tiling_type, std::size_t intersection,
+            std::uint32_t numtiles, ir::range&& new_tiling,
+            execution_tree::localities_information&& arr_localities) const;
 
-        //execution_tree::primitive_argument_type retile2d(
-        //    execution_tree::primitive_argument_type&& arr,
-        //    ir::range&& new_tiling) const;
-        //template <typename T>
-        //execution_tree::primitive_argument_type retile2d(ir::node_data<T>&& arr,
-        //    ir::range&& new_tiling,
-        //    execution_tree::localities_information&& arr_localities) const;
+        execution_tree::primitive_argument_type retile2d(
+            execution_tree::primitive_argument_type&& arr,
+            std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersection,
+            std::uint32_t numtiles, ir::range&& new_tiling) const;
+        template <typename T>
+        execution_tree::primitive_argument_type retile2d(ir::node_data<T>&& arr,
+            std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersection,
+            std::uint32_t numtiles, ir::range&& new_tiling,
+            execution_tree::localities_information&& arr_localities) const;
     };
 
     inline execution_tree::primitive create_retile_annotations(
