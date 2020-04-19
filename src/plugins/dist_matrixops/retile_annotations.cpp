@@ -34,7 +34,6 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives
@@ -56,27 +55,33 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             a, tiling_type, intersection, numtiles, new_tiling
             Args:
 
-                a (array): a part of an array with its attached annotation that
-                    locates on the current locality
+                a (array): a distributed array. A vector or a matrix
                 tiling_type (string, optional): defaults to `sym` which is a
-                    balanced way of tiling among all the numtiles localities.
-                    Other options are `row` or `column` tiling. For a vector
-                    all these three tiling_type are the same.
+                    balanced way of tiling among all localities. Other options
+                    are `row`, `column` or `user` tiling types. If an
+                    intersection is given, retile produces overlapped parts of
+                    arrays. In the `user` mode, using new_tiling, tiles are
+                    specified with their spans.
                 intersection (int or list of ints, optional): the size of
-                    overlapped part on each dimension
+                    overlapped part on each dimension. If an integer is given,
+                    that would be the intersection length on all dimensions
+                    that are tiled. If the given intersection is odd, the extra
+                    overlapped vector will be at the end of the part.
+                    In the `user` mode, intersection cannot be used.
                 numtiles (int, optional): number of tiles of the returned array
                     If not given it sets to the number of localities in the
                     application.
                 new_tiling (list, optional): a new tiling specification for the
-                    current locality, e.g. for a matrix we can have
+                    current locality that is specified only for the `user` mode
+                    E.g. for a matrix we can have:
                     list("tile", list("columns", 0, 2), list("rows", 0, 2)) or
                     list("args", list("locality", 0, 4),
                        list("tile", list("columns", 0, 2), list("rows", 0, 2)))
 
             Returns:
 
-            The part of array on the current locality according to the
-            new_tiling)")
+            A retiled array according to the tiling type on numtiles localities
+            The returned array can contain overlapped parts)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -122,47 +127,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             {
                 return tile_extraction_1d_helper(std::move(it));
             }
-            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "retile_annotations::tile_extraction_1d",
                 util::generate_error_message(
                     "the new_tiling should start with either of "
                     "`tile` or `args` tags"));
-        }
-
-        struct indices_pack
-        {
-            std::int64_t intersection_size_;
-            std::int64_t projected_start_;
-            std::int64_t local_start_;
-        };
-
-        indices_pack index_calculation_1d(std::int64_t des_start,
-            std::int64_t des_stop, std::int64_t cur_start,
-            std::int64_t cur_stop)
-        {
-            std::int64_t local_intersection_size =
-                (std::min)(des_stop, cur_stop) -
-                (std::max)(des_start, cur_start);
-            std::int64_t rel_start = des_start - cur_start;
-
-            return indices_pack{local_intersection_size,
-                rel_start < 0 ? -rel_start : 0, rel_start > 0 ? rel_start : 0};
-        }
-
-        indices_pack retile_calculation_1d(
-            execution_tree::tiling_span const& loc_span,
-            std::int64_t des_start, std::int64_t des_stop)
-        {
-            execution_tree::tiling_span span(des_start, des_stop);
-            execution_tree::tiling_span intersection;
-            if (intersect(span, loc_span, intersection))
-            {
-                std::int64_t rel_loc_start =
-                    intersection.start_ - loc_span.start_;
-                HPX_ASSERT(rel_loc_start >= 0);
-                return indices_pack{intersection.size(),
-                    intersection.start_ - des_start, rel_loc_start};
-            }
-            return indices_pack{0, 0, 0};
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -223,6 +192,46 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // label is "tile"
             return tile_extraction_2d_helper(std::move(it));
         }
+
+        ///////////////////////////////////////////////////////////////////////
+        struct indices_pack
+        {
+            std::int64_t intersection_size_;
+            std::int64_t projected_start_;
+            std::int64_t local_start_;
+        };
+
+        indices_pack index_calculation_1d(std::int64_t des_start,
+            std::int64_t des_stop, std::int64_t cur_start,
+            std::int64_t cur_stop)
+        {
+            std::int64_t local_intersection_size =
+                (std::min)(des_stop, cur_stop) -
+                (std::max)(des_start, cur_start);
+            std::int64_t rel_start = des_start - cur_start;
+
+            return indices_pack{local_intersection_size,
+                rel_start < 0 ? -rel_start : 0, rel_start > 0 ? rel_start : 0};
+        }
+
+        indices_pack retile_calculation_1d(
+            execution_tree::tiling_span const& loc_span,
+            std::int64_t des_start, std::int64_t des_stop)
+        {
+            execution_tree::tiling_span span(des_start, des_stop);
+            execution_tree::tiling_span intersection;
+            if (intersect(span, loc_span, intersection))
+            {
+                std::int64_t rel_loc_start =
+                    intersection.start_ - loc_span.start_;
+                HPX_ASSERT(rel_loc_start >= 0);
+                return indices_pack{intersection.size(),
+                    intersection.start_ - des_start, rel_loc_start};
+            }
+            return indices_pack{0, 0, 0};
+        }
+
+
     }    // namespace detail
 
     ///////////////////////////////////////////////////////////////////////////
@@ -239,7 +248,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         std::uint32_t const num_localities =
             arr_localities.locality_.num_localities_;
-        std::size_t dim = arr_localities.size();
+        std::size_t dim = arr_localities.size();    // size of the whole array
         tiling_information_1d tile_info(
             arr_localities.tiles_[loc_id], name_, codename_);
 
@@ -262,30 +271,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::int64_t des_start, des_stop, des_size;
         bool type_ = span_index;    // initialized by the current type
 
-        if (tiling_type == "sym" || tiling_type == "row" ||
-            tiling_type == "column")
-        {
-            if (tiling_type == "row")
-            {
-                type_ = true;
-            }
-            else if (tiling_type == "column")
-            {
-                type_ = false;
-            }
-            std::tie(des_start, des_size) =
-                tile_calculation::tile_calculation_1d(
-                    loc_id, dim, numtiles);
-
-            if (intersection != 0) // there should be some overlapped sections
-            {
-                std::tie(des_start, des_size) =
-                    tile_calculation::tile_calculation_overlap_1d(
-                        des_start, des_size, dim, intersection);
-            }
-            des_stop = des_start + des_size;
-        }
-        else // tiling_type == "user"
+        if (tiling_type == "user")
         {
 
             std::tie(type_, des_start, des_stop) =
@@ -300,16 +286,41 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "than its stop point"));
             }
         }
+        else    // tiling_type is one of "sym", "row" or "column"
+        {
+            if (tiling_type == "row")
+            {
+                type_ = true;
+            }
+            else if (tiling_type == "column")
+            {
+                type_ = false;
+            }
+            std::tie(des_start, des_size) =
+                tile_calculation::tile_calculation_1d(loc_id, dim, numtiles);
 
-        // having the updated array as result
+            if (intersection != 0) // there should be some overlapped sections
+            {
+                std::tie(des_start, des_size) =
+                    tile_calculation::tile_calculation_overlap_1d(
+                        des_start, des_size, dim, intersection);
+            }
+            des_stop = des_start + des_size;
+        }
+
+
+        // creating the updated array as result
         auto v = arr.vector();
         blaze::DynamicVector<T> result(des_size);
         util::distributed_vector<T> v_data(
             arr_localities.annotation_.name_, v, num_localities, loc_id);
 
+        // relative start
         std::int64_t rel_start = des_start - cur_start;
         if (rel_start < 0 || des_stop > cur_stop)
         {
+            // there is a need to fetch some part
+
             // copying the local part
             if (des_start < cur_stop && des_stop > cur_start)
             {
@@ -320,6 +331,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         indices.local_start_, indices.intersection_size_);
             }
 
+            // collecting other parts from remote localities
             for (std::uint32_t loc = 0; loc != num_localities; ++loc)
             {
                 if (loc == loc_id)
@@ -452,8 +464,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::int64_t des_row_start, des_row_stop, des_col_start, des_col_stop,
             des_row_size, des_col_size;
 
-        if (tiling_type == "sym" || tiling_type == "row" ||
-            tiling_type == "column")
+        if (tiling_type == "user")
+        {
+            std::tie(des_row_start, des_col_start, des_row_stop, des_col_stop) =
+                detail::tile_extraction_2d(std::move(new_tiling));
+
+            des_row_size = des_row_stop - des_row_start;
+            des_col_size = des_col_stop - des_col_start;
+
+            if (des_row_size <= 0 || des_col_size <= 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_matrixops::primitives::retile_annotations::retile2d",
+                    generate_error_message(
+                        "the given start point of the new_tiling should be "
+                        "smaller than its stop point on each dimension"));
+            }
+        }
+        else    // tiling_type is one of "sym", "row" or "column"
         {
             std::tie(des_row_start, des_col_start, des_row_size, des_col_size) =
                 tile_calculation::tile_calculation_2d(
@@ -477,23 +505,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             des_row_stop = des_row_start + des_row_size;
             des_col_stop = des_col_start + des_col_size;
         }
-        else    // tiling_type == "user"
-        {
-            std::tie(des_row_start, des_col_start, des_row_stop, des_col_stop) =
-                detail::tile_extraction_2d(std::move(new_tiling));
 
-            des_row_size = des_row_stop - des_row_start;
-            des_col_size = des_col_stop - des_col_start;
-
-            if (des_row_size <= 0 || des_col_size <= 0)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_matrixops::primitives::retile_annotations::retile2d",
-                    generate_error_message(
-                        "the given start point of the new_tiling should be "
-                        "smaller than its stop point on each dimension"));
-            }
-        }
 
         // updating the array
         auto m = arr.matrix();
@@ -636,7 +648,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {
         if (operands.empty() || operands.size() > 5)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retile_annotations::eval",
                 generate_error_message("the retile_d primitive requires at "
                                        "least one and at most 5 operands"));
         }
@@ -644,7 +656,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "retile::eval",
+                "retile_annotations::eval",
                 generate_error_message(
                     "the retile_d primitive requires that the arguments "
                         "given by the operands array are valid"));
@@ -670,9 +682,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             (tiling_type != "column" && tiling_type != "user"))
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "retile_d::eval",
+                                "retile_annotations::eval",
                                 this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type can "
+                                    "invalid tiling_type. The tiling_type can "
                                     "be one of these: `sym`, `row`, `column` "
                                     "or `user`"));
                         }
@@ -693,11 +705,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         if (tiling_type == "user")
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "retile_d::eval",
+                                "retile_annotations::eval",
                                 this_->generate_error_message(
                                     "for the `user` tiling type, the new "
-                                    "tiling should precisely indicate the "
-                                    "tiles and intersection cannot be used"));
+                                    "tiling should indicate the tile spans and "
+                                    "intersection cannot be used"));
                         }
 
                         if (is_list_operand_strict(args[2]))
@@ -710,7 +722,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 intersection_list.size() != numdims)
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "retile::eval",
+                                    "retile_annotations::eval",
                                     this_->generate_error_message(
                                         "intersection should have the same "
                                         "number of dimensions as the array, or "
@@ -729,7 +741,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                     this_->codename_);
 
                             // we assume all dimensions have the same
-                            // intersection which is the given one
+                            // intersection length which is the given one
                             for (std::size_t i = 1; i != PHYLANX_MAX_DIMENSIONS;
                                  ++i)
                             {
@@ -737,6 +749,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                     break;
                                 intersections[i] = intersections[0];
                             }
+                        }
+                        else
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "retile_annotations::eval",
+                                this_->generate_error_message(
+                                    "intersection can be an integer or a list "
+                                    "of integers"));
                         }
                     }
 
@@ -746,7 +766,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         if (tiling_type != "user")
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "retile_d::eval",
+                                "retile_annotations::eval",
                                 this_->generate_error_message(
                                     "new tiling is only a parameter of `user` "
                                     "tiling type"));
@@ -755,7 +775,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         if (!is_list_operand_strict(args[4]))
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "retile_d::eval",
+                                "retile_annotations::eval",
                                 this_->generate_error_message(
                                     "the new tiling should be a list "
                                     "containing `tile` or `args`"));
@@ -776,7 +796,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "retile::eval",
+                            "retile_annotations::eval",
                             this_->generate_error_message(
                                 "the given shape is of an unsupported "
                                 "dimensionality"));
@@ -786,7 +806,5 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 execution_tree::functional::value_operand{}, args, name_,
                 codename_, std::move(ctx)));
     }
-
-
 }}}
 

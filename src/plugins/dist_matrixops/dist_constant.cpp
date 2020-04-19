@@ -366,8 +366,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_constant::eval",
                                 this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type can be "
-                                    "one of these: `sym`, `row` or `column`"));
+                                    "invalid tiling_type. The tiling_type can "
+                                    "be one of these: `sym`, `row` or "
+                                    "`column`"));
                         }
                     }
 
