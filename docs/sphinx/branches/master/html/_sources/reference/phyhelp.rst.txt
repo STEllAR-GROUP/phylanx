@@ -690,13 +690,13 @@ block (stmt)
             The value of the last statement.
 
 
-cannon_product
+cannon_product_d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-cannon_product (a, b)
+cannon_product_d (a, b)
              Args:
 
-                 a (array) : a scalar, vector, matrix or a tensor
-                 b (array) : a scalar, vector, matrix or a tensor
+                 a (array) : a matrix
+                 b (array) : a matrix
 
              Returns:
 

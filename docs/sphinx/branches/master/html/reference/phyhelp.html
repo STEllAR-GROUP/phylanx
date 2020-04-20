@@ -138,7 +138,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#bias-add">bias_add</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#binary-crossentropy">binary_crossentropy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#block">block</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cannon-product">cannon_product</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cannon-product-d">cannon_product_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#car-cdr">car_cdr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#categorical-crossentropy">categorical_crossentropy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#clip">clip</a></li>
@@ -1114,13 +1114,13 @@ output = np.log(output / (1 - output))</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="cannon-product">
-<h2>cannon_product<a class="headerlink" href="#cannon-product" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="cannon-product-d">
+<h2>cannon_product_d<a class="headerlink" href="#cannon-product-d" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>cannon_product (a, b)</dt><dd><p>Args:</p>
+<dt>cannon_product_d (a, b)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>a (array) : a scalar, vector, matrix or a tensor
-b (array) : a scalar, vector, matrix or a tensor</p>
+<div><p>a (array) : a matrix
+b (array) : a matrix</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>The dot product of two matrices: <cite>a</cite> and <cite>b</cite> using Cannon’s algorithm.
@@ -3396,7 +3396,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 17, 2020.
+        Last updated on Apr 20, 2020.
       </span>
 
     </p>
