@@ -12,7 +12,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
-#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,7 +48,7 @@ void test_cannon_product_2()
     {
     case 0: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[1, 1], [2, 2], [3, 3]], "test2d2d_2_1",
                     list("args",
                         list("locality", 0, 9),
@@ -71,7 +70,7 @@ void test_cannon_product_2()
     }
     case 1: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[1, 0], [2, 0], [3, 0]], "test2d2d_2_1",
                     list("args",
                         list("locality", 1, 9),
@@ -93,7 +92,7 @@ void test_cannon_product_2()
     }
     case 2: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[1, 1], [2, 2], [3, 3]], "test2d2d_2_1",
                     list("args",
                         list("locality", 2, 9),
@@ -115,7 +114,7 @@ void test_cannon_product_2()
     }
     case 3: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[4, 4], [5, 5], [6, 6]], "test2d2d_2_1",
                     list("args",
                         list("locality", 3, 9),
@@ -137,7 +136,7 @@ void test_cannon_product_2()
     }
     case 4: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[0, 1], [0, 2], [0, 3]], "test2d2d_2_1",
                     list("args",
                         list("locality", 4, 9),
@@ -159,7 +158,7 @@ void test_cannon_product_2()
     }
     case 5: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[4, 4], [5, 5], [6, 6]], "test2d2d_2_1",
                     list("args",
                         list("locality", 5, 9),
@@ -181,7 +180,7 @@ void test_cannon_product_2()
     }
     case 6: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[7, 0], [8, 8], [9, 0]], "test2d2d_2_1",
                     list("args",
                         list("locality", 6, 9),
@@ -203,7 +202,7 @@ void test_cannon_product_2()
     }
     case 7: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[7, 0], [0, 0], [0, 0]], "test2d2d_2_1",
                     list("args",
                         list("locality", 7, 9),
@@ -225,7 +224,7 @@ void test_cannon_product_2()
     }
     case 8: {
         test_cannon_product("test2d2d_2", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[7, 0], [8, 8], [0, 9]], "test2d2d_2_1",
                     list("args",
                         list("locality", 8, 9),

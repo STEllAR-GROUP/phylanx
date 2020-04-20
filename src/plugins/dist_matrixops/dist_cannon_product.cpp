@@ -32,14 +32,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
      execution_tree::match_pattern_type const dist_cannon_product::match_data =
      {
          execution_tree::match_pattern_type{
-             "cannon_product", std::vector<std::string>{"cannon_product(_1, _2)"},
+             "cannon_product_d",
+             std::vector<std::string>{"cannon_product_d(_1, _2)"},
              &create_dist_cannon_product,
              &execution_tree::create_primitive<dist_cannon_product>,
              R"(a, b
              Args:
 
-                 a (array) : a scalar, vector, matrix or a tensor
-                 b (array) : a scalar, vector, matrix or a tensor
+                 a (array) : a matrix
+                 b (array) : a matrix
 
              Returns:
 

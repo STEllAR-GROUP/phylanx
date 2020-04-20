@@ -18,10 +18,8 @@
 #include <phylanx/plugins/common/dot_operation_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_cannon_product.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
-#include <phylanx/util/distributed_vector.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/collectives/all_reduce.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -37,28 +35,14 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#include <blaze/math/DynamicMatrix.h>
-#include <blaze_tensor/Math.h>
 
 using std_int64_t = std::int64_t;
 using std_uint8_t = std::uint8_t;
 
 ////////////////////////////////////////////////////////////////////////////////
-REGISTER_DISTRIBUTED_VECTOR_DECLARATION(double);
-REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_int64_t);
-REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_uint8_t);
-
-HPX_REGISTER_ALLREDUCE_DECLARATION(double);
-HPX_REGISTER_ALLREDUCE_DECLARATION(std_int64_t);
-HPX_REGISTER_ALLREDUCE_DECLARATION(std_uint8_t);
-
-using blaze_vector_double = blaze::DynamicVector<double>;
-using blaze_vector_std_int64_t = blaze::DynamicVector<std_int64_t>;
-using blaze_vector_std_uint8_t = blaze::DynamicVector<std_uint8_t>;
-
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_double);
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_int64_t);
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_uint8_t);
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(double);
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_int64_t);
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_uint8_t);
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {

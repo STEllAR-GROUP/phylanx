@@ -23,8 +23,7 @@ namespace tile_calculation
 {
     ///////////////////////////////////////////////////////////////////////////
     inline std::tuple<std::int64_t, std::size_t> tile_calculation_1d(
-        std::uint32_t const& tile_idx, std::size_t const& dim,
-        std::uint32_t const& numtiles)
+        std::uint32_t tile_idx, std::size_t dim, std::uint32_t numtiles)
     {
         if (dim < numtiles)
         {
@@ -76,9 +75,8 @@ namespace tile_calculation
     }
 
     inline std::tuple<std::int64_t, std::int64_t, std::size_t, std::size_t>
-    tile_calculation_2d(std::uint32_t const& tile_idx,
-        std::size_t const& row_dim, std::size_t const& column_dim,
-        std::uint32_t const& numtiles, std::string const& tiling_type)
+    tile_calculation_2d(std::uint32_t tile_idx, std::size_t row_dim,
+        std::size_t column_dim, std::uint32_t numtiles, std::string tiling_type)
     {
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;

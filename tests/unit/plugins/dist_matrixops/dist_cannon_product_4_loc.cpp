@@ -12,7 +12,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
-#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -50,7 +49,7 @@ void test_cannon_product_0()
     if (hpx::get_locality_id() == 0)
     {
         test_cannon_product("test2d2d_0", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[1], [2], [3]], "test2d2d_0_1",
                     list("args",
                         list("locality", 0, 4),
@@ -72,7 +71,7 @@ void test_cannon_product_0()
     else if (hpx::get_locality_id() == 1)
     {
         test_cannon_product("test2d2d_0", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[0], [2], [3]], "test2d2d_0_1",
                     list("args",
                         list("locality", 1, 4),
@@ -94,7 +93,7 @@ void test_cannon_product_0()
     else if (hpx::get_locality_id() == 2)
     {
         test_cannon_product("test2d2d_0", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[4], [5], [6]], "test2d2d_0_1",
                     list("args",
                         list("locality", 2, 4),
@@ -116,7 +115,7 @@ void test_cannon_product_0()
     else
     {
         test_cannon_product("test2d2d_0", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[4], [5], [0]], "test2d2d_0_1",
                     list("args",
                         list("locality", 3, 4),
@@ -142,7 +141,7 @@ void test_cannon_product_1()
     if (hpx::get_locality_id() == 0)
     {
         test_cannon_product("test2d2d_1", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[1, 1], [2, 2], [3, 3]], "test2d2d_1_1",
                     list("args",
                         list("locality", 0, 4),
@@ -164,7 +163,7 @@ void test_cannon_product_1()
     else if (hpx::get_locality_id() == 1)
     {
         test_cannon_product("test2d2d_1", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[1, 0], [2, 0], [3, 0]], "test2d2d_1_1",
                     list("args",
                         list("locality", 1, 4),
@@ -186,7 +185,7 @@ void test_cannon_product_1()
     else if (hpx::get_locality_id() == 2)
     {
         test_cannon_product("test2d2d_1", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[4, 4], [5, 5], [6, 6]], "test2d2d_1_1",
                     list("args",
                         list("locality", 2, 4),
@@ -208,7 +207,7 @@ void test_cannon_product_1()
     else
     {
         test_cannon_product("test2d2d_1", R"(
-            cannon_product(
+            cannon_product_d(
                 annotate_d([[0, 1], [0, 2], [0, 3]], "test2d2d_1_1",
                     list("args",
                         list("locality", 3, 4),
