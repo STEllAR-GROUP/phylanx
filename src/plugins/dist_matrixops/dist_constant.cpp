@@ -14,6 +14,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_constant.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/execution_tree/localities_annotation.hpp>
+#include <phylanx/util/detail/range_dimension.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -312,9 +313,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                     "dimensions that is not supported"));
                         }
 
-                        dims =
-                            tile_calculation::extract_dimensions(overall_shape);
-                        numdims = tile_calculation::extract_num_dimensions(
+                        dims = util::detail::extract_positive_range_dimensions(
+                            overall_shape);
+                        numdims = util::detail::extract_range_num_dimensions(
                             overall_shape);
                     }
                     else if (is_numeric_operand(args[1]))

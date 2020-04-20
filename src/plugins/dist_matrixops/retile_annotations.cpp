@@ -15,8 +15,9 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/retile_annotations.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
-#include <phylanx/util/distributed_vector.hpp>
+#include <phylanx/util/detail/range_dimension.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
+#include <phylanx/util/distributed_vector.hpp>
 
 #include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
@@ -55,14 +56,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             a, tiling_type, intersection, numtiles, new_tiling
             Args:
 
-                a (array): a distributed array. A vector or a matrix
+                a (array): and array (local or distributed). A vector or a
+                    matrix.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all localities. Other options
                     are `row`, `column` or `user` tiling types. If an
                     intersection is given, retile produces overlapped parts of
                     arrays. In the `user` mode, using new_tiling, tiles are
                     specified with their spans.
-                intersection (int or list of ints, optional): the size of
+                intersection (int or tuple of ints, optional): the size of
                     overlapped part on each dimension. If an integer is given,
                     that would be the intersection length on all dimensions
                     that are tiled. If the given intersection is odd, the extra
@@ -730,7 +732,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                         "all dimensions"));
                             }
                             intersections =
-                                tile_calculation::extract_nonneg_dimensions(
+                                util::detail::extract_nonneg_range_dimensions(
                                     intersection_list);
                         }
                         else if (is_numeric_operand(args[2]))
