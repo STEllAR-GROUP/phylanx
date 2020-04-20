@@ -56,20 +56,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             a, tiling_type, intersection, numtiles, new_tiling
             Args:
 
-                a (array): and array (local or distributed). A vector or a
-                    matrix.
+                a (array): a distributed array. A vector or a matrix.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all localities. Other options
                     are `row`, `column` or `user` tiling types. If an
-                    intersection is given, retile produces overlapped parts of
-                    arrays. In the `user` mode, using new_tiling, tiles are
-                    specified with their spans.
+                    intersection is given, retile produces tiles that have
+                    overlapped parts. In the `user` mode, using new_tiling,
+                    tiles are specified with their spans.
                 intersection (int or tuple of ints, optional): the size of
                     overlapped part on each dimension. If an integer is given,
                     that would be the intersection length on all dimensions
                     that are tiled. If the given intersection is odd, the extra
                     overlapped vector will be at the end of the part.
-                    In the `user` mode, intersection cannot be used.
+                    In the `user` mode, `intersection` cannot be used.
                 numtiles (int, optional): number of tiles of the returned array
                     If not given it sets to the number of localities in the
                     application.
@@ -565,9 +564,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         col_indices.intersection_size_) =
                         m_data
                             .fetch(loc, row_indices.local_start_,
+                                col_indices.local_start_,
                                 row_indices.local_start_ +
                                     row_indices.intersection_size_,
-                                col_indices.local_start_,
                                 col_indices.local_start_ +
                                     col_indices.intersection_size_)
                             .get();
