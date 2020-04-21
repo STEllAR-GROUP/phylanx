@@ -166,7 +166,7 @@ void test_gauss_inverse_3(std::uint64_t n)
     // Generate a random nxn matrix
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(n, n);
-    std::string inverseString = matToString(blaze::inv(m), n, 0, n);
+    std::string inverseString = matToString(blaze::inv(m), n, 0, n-1);
     std::uint64_t id = hpx::get_locality_id();
 
     if (id == 0)
@@ -187,9 +187,9 @@ void test_gauss_inverse_3(std::uint64_t n)
 
 int hpx_main(int argc, char* argv[])
 {
-    //test_gauss_inverse_0();
-    //test_gauss_inverse_2();
-    test_gauss_inverse_3(5);
+    test_gauss_inverse_0();
+   // test_gauss_inverse_2();
+    //test_gauss_inverse_3(5);
 
     hpx::finalize();
     return hpx::util::report_errors();

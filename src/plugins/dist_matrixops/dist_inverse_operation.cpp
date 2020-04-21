@@ -90,18 +90,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         if (lhs_localities.num_dimensions() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::distGaussInv",
+                "dist_inverse::distGaussInv",
                 generate_error_message("the input must be a 2d matrix"));
         }
 
-        std::cout << "This is locality "
-                  << lhs_localities.locality_.locality_id_ << std::endl;
+        std::size_t thisLocalityID = lhs_localities.locality_.locality_id_;
+        std::cout << "This is locality " << thisLocalityID << std::endl;
 
         std::cout << "Data belonging to this locality:"<< std::endl;
         std::cout << arg.matrix() << std::endl;
 
-        std::cout << "Total number of localities = "
-                  << lhs_localities.locality_.num_localities_ << std::endl;
+        std::size_t numLocalities = lhs_localities.locality_.num_localities_;
+        std::cout << "Total number of localities = " << numLocalities
+                  << std::endl;
 
         std::cout << "The localities information is as follows: " << std::endl;
         std::cout << "   Columns = " << lhs_localities.columns() << std::endl;
@@ -124,30 +125,286 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         arg.matrix(), lhs_localities.locality_.num_localities_,
         lhs_localities.locality_.locality_id_);
 
+
+
+        // Gets the span of the columns, i.e. startCol, endCol+1
         execution_tree::tiling_span const& lhs_span =
             lhs_localities.get_span(1);
 
+
+
+        ///////////////////////////////////////////////////////////////////
+
+//        util::distributed_matrix<T> inv_data(lhs_localities.annotation_.name_,
+//            arg.matrix(), lhs_localities.locality_.num_localities_,
+//            lhs_localities.locality_.locality_id_);
+
+        //execution_tree::tiling_span const& inv_span =
+        //    lhs_localities.get_span(1);
+
+        //std::size_t const rows = 2;
+        //std::size_t const columns = 2;
+        //std::int64_t row_start, column_start;
+        //std::size_t row_size, column_size;
+
+        //std::tie(row_start, column_start, row_size, column_size) =
+        //    tile_calculation::tile_calculation_2d(0, 2, 2, 2, "column");
+
+        //execution_tree::tiling_information_2d tile_info(
+        //    execution_tree::tiling_span(0, 2),
+        //    execution_tree::tiling_span(0, 1));
+
+        //execution_tree::locality_information locality_info(thisLocalityID, 2);
+        //execution_tree::annotation locality_ann = locality_info.as_annotation();
+
+        //std::string base_name = "invMatrixName";
+
+        //execution_tree::annotation_information ann_info(
+        //    std::move(base_name), 0);    //generation 0
+
+        //auto attached_annotation =
+        //    std::make_shared<execution_tree::annotation>(localities_annotation(
+        //        locality_ann, tile_info.as_annotation(name_, codename_),
+        //        ann_info, name_, codename_));
+        //std::cout << attached_annotation << std::endl;
+
+
+        ///////////////////////////////////////////////////////////////////
+
+
+
+        // Create a matrix of the proper size initialized to zeros
+        // of type T
         blaze::DynamicMatrix<T> result_matrix(
-            arg.dimension(0), lhs_localities.columns(), T{0});
+            arg.dimension(0), 2*lhs_localities.columns(), T{0});
 
         std::cout << result_matrix << std::endl;
 
+        // Generic barrier. Give each barrier a unique identifier
+        if (numLocalities > 1)
+        {
+            hpx::lcos::barrier b("barrier1_" + lhs_localities.annotation_.name_,
+                lhs_localities.locality_.num_localities_,
+                lhs_localities.locality_.locality_id_);
+            b.wait();
+        }
+
+
+        //// Iterate over all of the tiles of the input matrix
         //for (auto const& lhs_tile : lhs_localities.tiles_)
         //{
-        //    lhs_data.fetch(1).get();
+        //    // do something with each tile
         //}
 
-        blaze::DynamicMatrix<double> myMatrix = arg.matrix();
-        std::size_t numRows = myMatrix.rows();
-        std::size_t numCols = myMatrix.columns();
+        // Pull the information from the other locality
+        if (thisLocalityID == 0)
+        {
+            std::size_t locToFetchFrom = 1;
+            std::size_t startRow = 0;
+            std::size_t stopRow = lhs_localities.rows();
+            std::size_t startCol = 0;
+            std::size_t stopCol = 1;
+            auto pulledMatrixData =
+                lhs_data
+                    .fetch(locToFetchFrom, startRow, stopRow,
+                                startCol, stopCol)
+                    .get();
+            std::cout << pulledMatrixData << std::endl;
+
+            // Put the local and pulled matrix data into a local matrix
+            // params: mat, startRow, startCol, rows, cols
+            blaze::submatrix(result_matrix, 0, 0, arg.matrix().rows(),
+                arg.matrix().columns()) += blaze::submatrix(arg.matrix(),
+                    0, 0, arg.matrix().rows(), arg.matrix().columns());
+            blaze::submatrix(result_matrix, 0, 1,
+                pulledMatrixData.rows(), pulledMatrixData.columns()) +=
+                blaze::submatrix(pulledMatrixData, 0, 0,
+                    pulledMatrixData.rows(), pulledMatrixData.columns());
+            std::cout << result_matrix << std::endl;
+        }
+
+
+        blaze::DynamicMatrix<double> myMatrix = result_matrix;
+        std::size_t numRows = arg.matrix().rows();
+        std::size_t numCols = arg.matrix().columns();
+
+        // Define some additional information on where
+        // columns lie in the full input
+        execution_tree::primitive_argument_type result1 =
+            execution_tree::primitive_argument_type{std::move(result_matrix)};
+        std::size_t startCol = thisLocalityID * (numRows / numLocalities) +
+            std::min(thisLocalityID, numRows % numLocalities);
+        std::size_t endCol = startCol + numCols - 1;
 
         // Definition of a nxn double row-major identity matrix
         blaze::DynamicMatrix<double> invMatrix =
             blaze::IdentityMatrix<double>(numRows);
-        //invMatrix = lhs_data.fetch(0, 1, 2, 0, lhs_tile.spans_[1].size()).get();
 
-        //arg = blaze::inv(arg.matrix());
-        execution_tree::primitive_argument_type result{std::move(arg)};
+
+        //if (lhs_localities.locality_.locality_id_ == 0)
+        //{
+        //    execution_tree::primitive_argument_type result2 =
+        //        execution_tree::primitive_argument_type{std::move(invMatrix)};
+        //    execution_tree::annotation ann{ir::range("tile",
+        //        ir::range("rows", lhs_localities.get_span(0).start_,
+        //            lhs_localities.get_span(0).stop_),
+        //        ir::range("columns", static_cast<std::int64_t>(0),
+        //            static_cast<std::int64_t>(1)))};
+        //    // Generate new tiling annotation for the result vector
+        //    execution_tree::tiling_information_2d tile_info(
+        //        ann, name_, codename_);
+
+        //    ++lhs_localities.annotation_.generation_;
+
+        //    auto locality_ann = lhs_localities.locality_.as_annotation();
+        //    std::cout << "at first locality: " << locality_ann << std::endl;
+        //    result2.set_annotation(
+        //        execution_tree::localities_annotation(locality_ann,
+        //            tile_info.as_annotation(name_, codename_),
+        //            lhs_localities.annotation_, name_, codename_),
+        //        name_, codename_);
+        //}
+        //else
+        //{
+        //    execution_tree::primitive_argument_type result2 =
+        //        execution_tree::primitive_argument_type{std::move(invMatrix)};
+        //    execution_tree::annotation ann{ir::range("tile",
+        //        ir::range("rows", lhs_localities.get_span(0).start_,
+        //            lhs_localities.get_span(0).stop_),
+        //        ir::range("columns", static_cast<std::int64_t>(1),
+        //            static_cast<std::int64_t>(2)))};
+        //    // Generate new tiling annotation for the result vector
+        //    execution_tree::tiling_information_2d tile_info(
+        //        ann, name_, codename_);
+
+        //    ++lhs_localities.annotation_.generation_;
+
+        //    auto locality_ann = lhs_localities.locality_.as_annotation();
+        //    std::cout << "at other locality: " << locality_ann << std::endl;
+        //    result2.set_annotation(
+        //        execution_tree::localities_annotation(locality_ann,
+        //            tile_info.as_annotation(name_, codename_),
+        //            lhs_localities.annotation_, name_, codename_),
+        //        name_, codename_);
+        //}
+
+        //execution_tree::annotation ann{ir::range("tile",
+        //    ir::range("rows", lhs_localities.get_span(0).start_,
+        //        lhs_localities.get_span(0).stop_))};
+        //std::cout << ann << std::endl;
+        // Generate new tiling annotation for the result vector
+        // execution_tree::tiling_information_2d tile_info(ann, name_, codename_);
+
+        //auto locality_ann = lhs_localities.locality_.as_annotation();
+        //result1.set_annotation(
+        //    execution_tree::localities_annotation(locality_ann,
+        //        tile_info.as_annotation(name_, codename_),
+        //        lhs_localities.annotation_, name_, codename_),
+        //    name_, codename_);
+
+
+            // For swapping rows back into place
+            std::vector<std::tuple<std::size_t, std::size_t>> swappedRows;
+
+            // Do gaussian elimination to get upper triangular
+            // matrix with 1's across diagonal
+            for (std::int64_t current_row = 0; current_row < numRows;
+                 current_row++)
+            {
+                // Swaps current row with nearest subsequent row such that
+                // after swapping A[i][i] != 0.
+                if (myMatrix(current_row, current_row) ==
+                    0)    // if A[i][i] = 0,
+                {
+                    bool rowFound = false;
+                    std::size_t checkOffset = 1;
+                    while (current_row + checkOffset < numRows && !rowFound)
+                    {
+                        if (myMatrix(
+                                (current_row + checkOffset), current_row) != 0)
+                        {
+                            swap(column(myMatrix, current_row),
+                                column(myMatrix,
+                                    (current_row + checkOffset) % numRows));
+                            swappedRows.emplace_back(
+                                std::tuple<std::size_t, std::size_t>(
+                                    current_row,
+                                    (current_row + checkOffset) % numRows));
+                            rowFound = true;
+                        }
+                        else
+                            checkOffset++;
+                    }
+
+                    // swap row with nearest subsequent row such that after
+                    // swapping A[i][i] != 0
+                    // if fails, inverse does not exist
+                    if (!rowFound)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "gauss_inverse::eval",
+                            generate_error_message("inverse does not exist"));
+                    }
+                    current_row--;    // After swapping, make sure to retry this row
+                }
+                else    // the inversion has not already failed
+                {
+                    double scale = myMatrix(current_row, current_row);
+                    for (std::int64_t col = 0; col < numRows; col++)
+                    {
+                        myMatrix(current_row, col) =
+                            myMatrix(current_row, col) / scale;
+                        invMatrix(current_row, col) =
+                            invMatrix(current_row, col) / scale;
+                    }
+                    if (current_row < numRows - 1)
+                    {
+                        for (std::int64_t nextRow = current_row + 1;
+                             nextRow < numRows; nextRow++)
+                        {
+                            double factor = myMatrix(nextRow, current_row);
+                            for (std::int64_t nextCol = 0; nextCol < numRows;
+                                 nextCol++)
+                            {
+                                myMatrix(nextRow, nextCol) =
+                                    myMatrix(nextRow, nextCol) -
+                                    (factor * myMatrix(current_row, nextCol));
+                                invMatrix(nextRow, nextCol) =
+                                    invMatrix(nextRow, nextCol) -
+                                    (factor * invMatrix(current_row, nextCol));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Back substitution phase, going from bottom to top
+            // in matrix zeroing out columns except diagonal
+            for (std::int64_t zeroCol = numRows - 1; zeroCol > 0; zeroCol--)
+            {
+                for (std::int64_t row = zeroCol - 1; row >= 0; row--)
+                {
+                    double factor = myMatrix(row, zeroCol);
+                    for (std::int64_t col = 0; col < numRows; col++)
+                    {
+                        myMatrix(row, col) = myMatrix(row, col) -
+                            (factor * myMatrix(zeroCol, col));
+                        invMatrix(row, col) = invMatrix(row, col) -
+                            (factor * invMatrix(zeroCol, col));
+                    }
+                }
+            }
+
+            // Swap rows back into place
+            for (std::int64_t i = swappedRows.size() - 1; i >= 0; i--)
+            {
+                swap(row(invMatrix, std::get<0>(swappedRows[i])),
+                    row(invMatrix, std::get<1>(swappedRows[i])));
+            }
+
+            std::cout << invMatrix << std::endl;
+
+        execution_tree::primitive_argument_type result{invMatrix};
         return result;
     }
 
