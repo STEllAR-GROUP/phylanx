@@ -96,37 +96,57 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     namespace detail
     {
         std::tuple<bool, std::int64_t, std::int64_t> tile_extraction_1d_helper(
-            ir::range_iterator&& it)
+            ir::range_iterator it, std::string const& name,
+            std::string const& codename)
         {
-            ir::range tile_data = extract_list_value_strict(*++it);
+            ir::range tile_data =
+                extract_list_value_strict(*++it, name, codename);
             ir::range_iterator inner_it = tile_data.begin();
 
             // type_: columns = 0, rows = 1
-            bool type_ =
-                extract_string_value_strict(*inner_it) == "rows" ? 1 : 0;
-            std::int64_t start =
-                extract_scalar_nonneg_integer_value_strict(*++inner_it);
-            std::int64_t stop =
-                extract_scalar_nonneg_integer_value_strict(*++inner_it);
+            bool type_ = extract_string_value_strict(
+                *inner_it, name, codename) == "rows" ? 1 : 0;
+            std::int64_t start = extract_scalar_nonneg_integer_value_strict(
+                *++inner_it, name, codename);
+            std::int64_t stop = extract_scalar_nonneg_integer_value_strict(
+                *++inner_it, name, codename);
 
             return std::move(std::make_tuple(type_, start, stop));
         }
 
         std::tuple<bool, std::int64_t, std::int64_t> tile_extraction_1d(
-            ir::range&& new_tiling)
+            ir::range&& new_tiling, std::string const& name,
+            std::string const& codename)
         {
             ir::range_iterator it = new_tiling.begin();
-            std::string label = extract_string_value_strict(*it);
+            std::string label =
+                extract_string_value_strict(*it, name, codename);
             if (label == "args")
             {
                 // extracting the "tile" tag
-                ++it; // passing the "locality" tag
-                return tile_extraction_1d_helper(
-                    extract_list_value_strict(*++it).begin());
+                std::string tag = extract_string_value_strict(
+                    *(extract_list_value_strict(*++it, name, codename).begin()),
+                    name, codename);
+                if (tag == "locality")
+                {
+                    return tile_extraction_1d_helper(
+                        extract_list_value_strict(*++it, name, codename)
+                            .begin(),
+                        name, codename);
+                }
+                else if (tag == "tile")
+                {
+                    return tile_extraction_1d_helper(it, name, codename);
+                }
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "retile_annotations::tile_extraction_1d",
+                    util::generate_error_message(
+                        "the `args` list should only contain information about "
+                        "`locality` and `tile`"));
             }
             else if (label == "tile")
             {
-                return tile_extraction_1d_helper(std::move(it));
+                return tile_extraction_1d_helper(it, name, codename);
             }
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "retile_annotations::tile_extraction_1d",
@@ -137,20 +157,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         ///////////////////////////////////////////////////////////////////////
         std::tuple<std::int64_t, std::int64_t, std::int64_t, std::int64_t>
-        tile_extraction_2d_helper(ir::range_iterator&& it)
+        tile_extraction_2d_helper(ir::range_iterator it,
+            std::string const& name, std::string const& codename)
         {
-            ir::range tile_data1 = extract_list_value_strict(*++it);
-            ir::range tile_data2 = extract_list_value_strict(*++it);
+            ir::range tile_data1 =
+                extract_list_value_strict(*++it, name, codename);
+            ir::range tile_data2 =
+                extract_list_value_strict(*++it, name, codename);
             ir::range_iterator inner_it1 = tile_data1.begin();
             ir::range_iterator inner_it2 = tile_data2.begin();
 
-
-            if (extract_string_value_strict(*inner_it1) == "rows" &&
-                extract_string_value_strict(*inner_it2) == "columns")
+            auto tag_1 =
+                extract_string_value_strict(*inner_it1, name, codename);
+            auto tag_2 =
+                extract_string_value_strict(*inner_it2, name, codename);
+            if (tag_1 == "rows" && tag_2 == "columns")
             {
             }
-            else if (extract_string_value_strict(*inner_it2) == "rows" &&
-                extract_string_value_strict(*inner_it1) == "columns")
+            else if (tag_2 == "rows" && tag_1 == "columns")
             {
                 std::swap(inner_it1, inner_it2);
             }
@@ -164,34 +188,37 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "tags: `rows` and `columns`"));
             }
 
-            std::int64_t row_start =
-                extract_scalar_nonneg_integer_value_strict(*++inner_it1);
-            std::int64_t row_stop =
-                extract_scalar_nonneg_integer_value_strict(*++inner_it1);
-            std::int64_t col_start =
-                extract_scalar_nonneg_integer_value_strict(*++inner_it2);
-            std::int64_t col_stop =
-                extract_scalar_nonneg_integer_value_strict(*++inner_it2);
+            std::int64_t row_start = extract_scalar_nonneg_integer_value_strict(
+                *++inner_it1, name, codename);
+            std::int64_t row_stop = extract_scalar_nonneg_integer_value_strict(
+                *++inner_it1, name, codename);
+            std::int64_t col_start = extract_scalar_nonneg_integer_value_strict(
+                *++inner_it2, name, codename);
+            std::int64_t col_stop = extract_scalar_nonneg_integer_value_strict(
+                *++inner_it2, name, codename);
 
             return std::move(std::make_tuple(
                 row_start, col_start, row_stop, col_stop));
         }
 
         std::tuple<std::int64_t, std::int64_t, std::int64_t, std::int64_t>
-        tile_extraction_2d(ir::range&& new_tiling)
+        tile_extraction_2d(ir::range&& new_tiling, std::string const& name,
+            std::string const& codename)
         {
             ir::range_iterator it = new_tiling.begin();
-            std::string label = extract_string_value_strict(*it);
+            std::string label =
+                extract_string_value_strict(*it, name, codename);
             if (label == "args")
             {
                 // extracting the "tile" tag
                 ++it; // passing the "locality" tag
                 return tile_extraction_2d_helper(
-                    extract_list_value_strict(*++it).begin());
+                    extract_list_value_strict(*++it, name, codename).begin(),
+                    name, codename);
             }
 
             // label is "tile"
-            return tile_extraction_2d_helper(std::move(it));
+            return tile_extraction_2d_helper(it, name, codename);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -274,9 +301,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         if (tiling_type == "user")
         {
-
-            std::tie(type_, des_start, des_stop) =
-                detail::tile_extraction_1d(std::move(new_tiling));
+            std::tie(type_, des_start, des_stop) = detail::tile_extraction_1d(
+                std::move(new_tiling), name_, codename_);
             des_size = des_stop - des_start;
             if (des_size <= 0)
             {
@@ -468,7 +494,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         if (tiling_type == "user")
         {
             std::tie(des_row_start, des_col_start, des_row_stop, des_col_stop) =
-                detail::tile_extraction_2d(std::move(new_tiling));
+                detail::tile_extraction_2d(
+                    std::move(new_tiling), name_, codename_);
 
             des_row_size = des_row_stop - des_row_start;
             des_col_size = des_col_stop - des_col_start;
