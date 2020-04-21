@@ -515,44 +515,45 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::eval_context ctx) const
     {
         // verify arguments
-        if (operands.size() < 1 || operands.size() > 6)
+        if (operands.empty() || operands.size() > 7)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_diag::eval",
                 generate_error_message("the diag_d primitive requires "
-                                       "at least 1 and at most 6 operands"));
+                                       "at least 1 and at most 7 operands"));
         }
 
-        if (!valid(operands[0]))
+        if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_diag::eval",
                 generate_error_message(
-                    "the diag_d primitive requires the first argument"
-                    "given by the operands array is valid"));
+                    "the diag_d primitive requires the first two arguments"
+                    "given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_ = std::move(this_)](
-                    execution_tree::primitive_arguments_type&& args)
-                    -> execution_tree::primitive_argument_type {
+                        execution_tree::primitive_arguments_type&& args)
+                ->  execution_tree::primitive_argument_type
+                {
                     using namespace execution_tree;
 
-                    std::int64_t sz = extract_scalar_integer_value_strict(
-                        std::move(args[0]), this_->name_, this_->codename_);
+                    std::size_t numdims = extract_numeric_value_dimension(
+                        args[0], this_->name_, this_->codename_);
 
                     std::uint32_t tile_idx = hpx::get_locality_id();
-                    if (valid(args[1]))
+                    if (valid(args[2]))
                     {
                         tile_idx = extract_scalar_nonneg_integer_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
+                            std::move(args[2]), this_->name_, this_->codename_);
                     }
                     std::uint32_t numtiles =
                         hpx::get_num_localities(hpx::launch::sync);
-                    if (valid(args[2]))
+                    if (valid(args[3]))
                     {
                         numtiles = extract_scalar_positive_integer_value_strict(
-                            std::move(args[2]), this_->name_, this_->codename_);
+                            std::move(args[3]), this_->name_, this_->codename_);
                     }
                     if (tile_idx >= numtiles)
                     {
@@ -564,18 +565,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     }
 
                     std::string given_name = "";
-                    if (valid(args[3]))
+                    if (valid(args[4]))
                     {
                         given_name = extract_string_value(
-                            std::move(args[3]), this_->name_, this_->codename_);
+                            std::move(args[4]), this_->name_, this_->codename_);
                     }
 
                     // using balanced symmetric tiles
                     std::string tiling_type = "sym";
-                    if (valid(args[4]))
+                    if (valid(args[5]))
                     {
                         tiling_type = extract_string_value(
-                            std::move(args[4]), this_->name_, this_->codename_);
+                            std::move(args[5]), this_->name_, this_->codename_);
                         if ((tiling_type != "sym" && tiling_type != "row") &&
                             tiling_type != "column")
                         {
@@ -588,15 +589,37 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     }
 
                     node_data_type dtype = node_data_type_unknown;
-                    if (valid(args[5]))
+                    if (valid(args[6]))
                     {
                         dtype =
-                            map_dtype(extract_string_value(std::move(args[5]),
+                            map_dtype(extract_string_value(std::move(args[6]),
                                 this_->name_, this_->codename_));
                     }
 
-                    return this_->dist_identity_nd(std::move(sz), tile_idx,
-                        numtiles, std::move(given_name), tiling_type, dtype);
+                    switch (numdims)
+                    {
+                    case 1:
+                        return this_->dist_diag0d(std::move(args[0]),
+                            std::move(args[1]), tiling_type, numtiles,
+                            std::move(given_name), tiling_type, dtype);
+
+                    case 2:
+                        return this_->dist_diag1d(std::move(args[0]),
+                            std::move(args[1]), tiling_type, numtiles,
+                            std::move(given_name), tiling_type, dtype);
+
+                    case 3:
+                        return this_->dist_diag2d(std::move(args[0]),
+                            std::move(args[1]), tiling_type, numtiles,
+                            std::move(given_name), tiling_type, dtype);
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dist_diag::eval",
+                            this_->generate_error_message(
+                                "the given shape is of an unsupported "
+                                "dimensionality"));
+                    }
                 }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
