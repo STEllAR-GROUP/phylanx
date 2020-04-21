@@ -108,8 +108,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
         using namespace execution_tree;
 
-        std::size_t size = a.dimension(0);
-        std::int64_t incr = std::abs(k);
+        std::size_t size = arr.dimension(0);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -226,8 +225,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
         using namespace execution_tree;
 
-        std::size_t size = a.dimension(0);
-        std::int64_t incr = std::abs(k);
+        std::size_t size = arr.dimension(0);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -368,15 +366,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
         using namespace execution_tree;
 
-        std::size_t size = a.dimension(0);
-        std::int64_t incr = std::abs(k);
+        std::size_t row_dim = arr.dimension(0);
+        std::size_t column_dim = arr.dimension(1);
+
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
 
         std::tie(row_start, column_start, row_size, column_size) =
             tile_calculation::tile_calculation_2d(
-                tile_idx, size, size ,numtiles, tiling_type);
+                tile_idx, row_dim, column_dim ,numtiles, tiling_type);
 
         tiling_information_2d tile_info(
             tiling_span(row_start, row_start + row_size),
@@ -396,7 +395,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 tile_info.as_annotation(name_, codename_), ann_info, name_,
                 codename_));
 
-        blaze::DynamicMatrix<T> result(row_size, column_size, T(0));
+        //create an empty array
+        blaze::DynamicVector<T> result;
+        blaze::DynamicVector<T> arr_Vec = blaze::band(arr, k);
         std::int64_t num_band;
         std::int64_t upper_band = column_size - 1;
         std::int64_t lower_band = 1 - row_size;
@@ -404,18 +405,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         if (tiling_type == "row")
         {
             num_band = row_start + k;
-            if (num_band <= (std::max)(int64_t(0), upper_band) &&
-                    num_band >= (std::min)(int64_t(0), lower_band))
-            {
-                std::int64_t des_start = k < 0 ?
-                    (std::max)(int64_t(0), num_band) : row_start;
 
-                std::int64_t des_size = num_band < 0 ?
+            if (num_band <= (std::max)(int64_t(0), upper_band) &&
+                num_band >= (std::min)(int64_t(0), lower_band))
+            {
+                std::int64_t result_sz = num_band < 0 ?
                     (std::min)(column_size, row_size + num_band) :
                     (std::min)(row_size, column_size - num_band);
 
-                blaze::band(result, num_band) =
-                    blaze::subvector(arr, des_start, des_size);
+                result.resize(result_sz);
+
+                std::int64_t des_start = k < 0 ?
+                    (std::max)(int64_t(0), num_band) : row_start;
+
+                result = blaze::subvector(arr_Vec, des_start, result_sz);
             }
         }
         else if (tiling_type == "column")
@@ -424,15 +427,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             if (num_band <= (std::max)(int64_t(0), upper_band) &&
                     num_band >= (std::min)(int64_t(0), lower_band))
             {
-                std::int64_t des_start = k < 0 ?
-                    column_start : (std::max)(int64_t(0), column_start - k);
-
-                std::int64_t des_size = num_band < 0 ?
+                std::int64_t result_sz = num_band < 0 ?
                     (std::min)(column_size, row_size + num_band) :
                     (std::min)(row_size, column_size - num_band);
 
-                blaze::band(result, num_band) =
-                    blaze::subvector(arr, des_start, des_size);
+                result.resize(result_sz);
+
+                std::int64_t des_start = k < 0 ?
+                    column_start : (std::max)(int64_t(0), column_start - k);
+
+                result = blaze::subvector(arr_Vec, des_start, result_sz);
             }
         }
         else if (tiling_type == "sym")
@@ -441,22 +445,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             if (num_band <= (std::max)(int64_t(0), upper_band) &&
                     num_band >= (std::min)(int64_t(0), lower_band))
             {
+                std::int64_t result_sz = num_band < 0 ?
+                (std::min)(column_size, row_size + num_band) :
+                (std::min)(row_size, column_size - num_band);
+
+                result.resize(result_sz);
+
                 std::int64_t des_start = k < 0 ?
                     (std::max)(column_start, row_start + k) :
                     (std::max)(row_start, column_start - k);
 
-                std::int64_t des_size = num_band < 0 ?
-                    (std::min)(column_size, row_size + num_band) :
-                    (std::min)(row_size, column_size - num_band);
-
-                blaze::band(result, num_band) =
-                    blaze::subvector(arr, des_start, des_size);
+                result = blaze::subvector(arr_Vec, des_start, result_sz);
             }
         }
         else
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_diag::dist_diag1d_helper",
+                "dist_diag::dist_diag2d_helper",
                 generate_error_message(
                     "wrong numtiles input when tiling_type is sym"));
         }
