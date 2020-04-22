@@ -107,7 +107,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
         using namespace execution_tree;
 
-        std::size_t size = 1 + std::abs(k);
+        auto size = 1 + std::abs(k);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -178,7 +178,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "wrong numtiles input when tiling_type is sym"));
         }
 
-        return primitive_argument_type(std::move(result), attached_annotation);
+        return primitive_argument_type(ir::node_data<T>{std::move(result)},
+            attached_annotation);
     }
 
     execution_tree::primitive_argument_type dist_diag::dist_diag0d(
@@ -206,7 +207,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         case node_data_type_double:
             return dist_diag0d_helper<double>(
-                extract_numeric_value_strict(std::move(arr), name_, codename_),
+                extract_numeric_value(std::move(arr), name_, codename_),
                 k, tile_idx, numtiles, std::move(given_name), tiling_type);
 
         default:
@@ -320,7 +321,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "wrong numtiles input when tiling_type is sym"));
         }
 
-        return primitive_argument_type(std::move(result), attached_annotation);
+        return primitive_argument_type(ir::node_data<T>{std::move(result)},
+            attached_annotation);
     }
 
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
@@ -348,7 +350,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         case node_data_type_double:
             return dist_diag1d_helper<double>(
-                extract_numeric_value_strict(std::move(arr), name_, codename_),
+                extract_numeric_value(std::move(arr), name_, codename_),
                 k, tile_idx, numtiles, std::move(given_name), tiling_type);
 
         default:
@@ -470,7 +472,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "wrong numtiles input when tiling_type is sym"));
         }
 
-        return primitive_argument_type(std::move(result), attached_annotation);
+        return primitive_argument_type(ir::node_data<T>{std::move(result)},
+            attached_annotation);
     }
 
     execution_tree::primitive_argument_type dist_diag::dist_diag2d(
@@ -498,7 +501,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         case node_data_type_double:
             return dist_diag2d_helper<double>(
-                extract_numeric_value_strict(std::move(arr), name_, codename_),
+                extract_numeric_value(std::move(arr), name_, codename_),
                 k, tile_idx, numtiles, std::move(given_name), tiling_type);
         }
 
@@ -537,12 +540,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             hpx::util::unwrapping(
                 [this_ = std::move(this_)](
                         execution_tree::primitive_arguments_type&& args)
-                ->  execution_tree::primitive_argument_type
+                -> execution_tree::primitive_argument_type
                 {
                     using namespace execution_tree;
-
-                    std::size_t numdims = extract_numeric_value_dimension(
-                        args[0], this_->name_, this_->codename_);
 
                     std::int64_t k = extract_scalar_integer_value_strict(
                             std::move(args[1]), this_->name_, this_->codename_);
@@ -601,19 +601,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 this_->name_, this_->codename_));
                     }
 
-                    switch (numdims)
+                    switch (extract_numeric_value_dimension(
+                        args[0], this_->name_, this_->codename_))
                     {
-                    case 1:
+                    case 0:
                         return this_->dist_diag0d(std::move(args[0]),
                             k, tile_idx, numtiles, std::move(given_name),
                             tiling_type, dtype);
 
-                    case 2:
+                    case 1:
                         return this_->dist_diag1d(std::move(args[0]),
                             k, tile_idx, numtiles, std::move(given_name),
                             tiling_type, dtype);
 
-                    case 3:
+                    case 2:
                         return this_->dist_diag2d(std::move(args[0]),
                             k, tile_idx, numtiles, std::move(given_name),
                             tiling_type, dtype);
