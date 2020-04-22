@@ -55,7 +55,7 @@ char const* const kmeans_code = R"(
     define(move_centroids, points, closest, centroids, block(
         fmap(lambda(k, block(
                     define(x, closest == k),
-                    mean(points * expand_dims(x, -1), 1)
+                    mean(points * expand_dims(x, -1), 0)
             )),
             range(shape(centroids, 0))
         )
@@ -74,7 +74,7 @@ char const* const kmeans_code = R"(
     ))
 )";
 
-blaze::DynamicMatrix<double> generate_random(int centroids, int num_points)
+blaze::DynamicMatrix<double> generate_random(int num_points)
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen_2d{};
 
@@ -96,7 +96,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     std::int64_t num_points = vm["points"].as<int64_t>();
     bool show_result = vm["show_result"].as<bool>();
 
-    auto points = generate_random(centroids, num_points);
+    auto points = generate_random(num_points);
 
     // Measure execution time
     hpx::util::high_resolution_timer timer;
@@ -122,14 +122,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
 int main(int argc, char* argv[])
 {
     // command line handling
-    hpx::program_options::options_description desc("usage: als [options]");
+    hpx::program_options::options_description desc("usage: kmeans [options]");
     desc.add_options()
         ("centroids", hpx::program_options::value<std::int64_t>()->default_value(3),
             "number of centroids(default: 3)")
         ("iterations", hpx::program_options::value<std::int64_t>()->default_value(2),
             "number of iterations (default: 2)")
         ("points", hpx::program_options::value<std::int64_t>()->default_value(250),
-            "alpha (default: 250)")
+            "number of points (default: 250)")
         ("show_result", hpx::program_options::value<bool>()->default_value(false),
             "show calculated result (default: false)");
 
