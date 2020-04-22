@@ -11,7 +11,6 @@
 
 #include <hpx/errors/throw_exception.hpp>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -51,6 +50,39 @@ namespace tile_calculation
         else
         {
             start = size * tile_idx;
+        }
+        return std::make_tuple(start, size);
+    }
+
+    inline std::tuple<std::int64_t, std::size_t> tile_calculation_overlap_1d(
+        std::int64_t start, std::size_t size, std::size_t dim,
+        std::size_t intersection)
+    {
+        if (start + size == dim)
+        {
+            start -= intersection;
+        }
+        else if (start != 0)
+        {
+            start -= static_cast<std::size_t>(intersection / 2);
+        }
+        size += intersection;
+
+        if (start < 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_calculation::tile_calculation_overlap_1d",
+                phylanx::util::generate_error_message(
+                    "the given intersection produces negative start for the "
+                    "array"));
+        }
+        if (start + size > dim)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_calculation::tile_calculation_overlap_1d",
+                phylanx::util::generate_error_message(
+                    "the given intersection need an end point larger than the "
+                    "array size"));
         }
         return std::make_tuple(start, size);
     }
@@ -138,57 +170,6 @@ namespace tile_calculation
                     "`sym`, `row` or `column` for a matrix"));
         }
         return std::make_tuple(row_start, column_start, row_size, column_size);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    inline std::size_t extract_num_dimensions(phylanx::ir::range const& shape)
-    {
-        return shape.size();
-    }
-
-    inline std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
-        phylanx::ir::range const& shape)
-    {
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0};
-        if (!shape.empty())
-        {
-            if (shape.size() == 1)
-            {
-                result[0] = extract_scalar_positive_integer_value_strict(
-                    *shape.begin());
-            }
-            else if (shape.size() == 2)
-            {
-                auto elem_1 = shape.begin();
-                result[0] =
-                    extract_scalar_positive_integer_value_strict(*elem_1);
-                result[1] =
-                    extract_scalar_positive_integer_value_strict(*++elem_1);
-            }
-            else if (shape.size() == 3)
-            {
-                auto elem_1 = shape.begin();
-                result[0] =
-                    extract_scalar_positive_integer_value_strict(*elem_1);
-                result[1] =
-                    extract_scalar_positive_integer_value_strict(*++elem_1);
-                result[2] =
-                    extract_scalar_positive_integer_value_strict(*++elem_1);
-            }
-            else if (shape.size() == 4)
-            {
-                auto elem_1 = shape.begin();
-                result[0] =
-                    extract_scalar_positive_integer_value_strict(*elem_1);
-                result[1] =
-                    extract_scalar_positive_integer_value_strict(*++elem_1);
-                result[2] =
-                    extract_scalar_positive_integer_value_strict(*++elem_1);
-                result[3] =
-                    extract_scalar_positive_integer_value_strict(*++elem_1);
-            }
-        }
-        return result;
     }
 }
 #endif

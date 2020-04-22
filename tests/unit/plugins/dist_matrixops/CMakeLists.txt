@@ -18,6 +18,9 @@ set(tests
     dist_random_2_loc
     dist_random_4_loc
     dist_random_5_loc
+    retile_2_loc
+    retile_3_loc
+    retile_6_loc
    )
 
 
@@ -34,6 +37,9 @@ set(dist_identity_6_loc_PARAMETERS LOCALITIES 6)
 set(dist_random_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_random_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_random_5_loc_PARAMETERS LOCALITIES 5)
+set(retile_2_loc_PARAMETERS LOCALITIES 2)
+set(retile_3_loc_PARAMETERS LOCALITIES 3)
+set(retile_6_loc_PARAMETERS LOCALITIES 6)
 
 
 foreach(test ${tests})

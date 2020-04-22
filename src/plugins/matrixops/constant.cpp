@@ -7,6 +7,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/plugins/matrixops/constant.hpp>
+#include <phylanx/util/detail/range_dimension.hpp>
 
 #include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
@@ -133,56 +134,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::size_t extract_num_dimensions(ir::range const& shape)
-        {
-            return shape.size();
-        }
-
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
-            ir::range const& shape)
-        {
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0, 0};
-            if (!shape.empty())
-            {
-                if (shape.size() == 1)
-                {
-                    result[0] = extract_scalar_nonneg_integer_value_strict(
-                        *shape.begin());
-                }
-                else if (shape.size() == 2)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 3)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-                else if (shape.size() == 4)
-                {
-                    auto elem_1 = shape.begin();
-                    result[0] =
-                        extract_scalar_nonneg_integer_value_strict(*elem_1);
-                    result[1] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[2] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                    result[3] =
-                        extract_scalar_nonneg_integer_value_strict(*++elem_1);
-                }
-            }
-            return result;
-        }
-
         constant::operation extract_operation_helper(std::string const& name)
         {
             if (name.find("constant_like") == 0)
@@ -574,8 +525,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "4 entries"));
                     }
 
-                    dims = detail::extract_dimensions(r);
-                    numdims = detail::extract_num_dimensions(r);
+                    dims = util::detail::extract_nonneg_range_dimensions(
+                        r, this_->name_, this_->codename_);
+                    numdims = util::detail::extract_range_num_dimensions(r);
                 }
                 else if (is_numeric_operand(op1))
                 {
@@ -709,8 +661,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "to have more than 4 entries"));
                     }
 
-                    dims = detail::extract_dimensions(r);
-                    numdims = detail::extract_num_dimensions(r);
+                    dims = util::detail::extract_nonneg_range_dimensions(
+                        r, this_->name_, this_->codename_);
+                    numdims = util::detail::extract_range_num_dimensions(r);
                 }
                 else if (is_numeric_operand(shape))
                 {
