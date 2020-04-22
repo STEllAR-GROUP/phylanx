@@ -161,7 +161,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         }
         else if (tiling_type == "sym")
         {
-            num_band = k - (column_start - row_start);ir::node_data<T>
+            num_band = k - (column_start - row_start);
 
             if (num_band <= (std::max)(int64_t(0), upper_band) &&
                 num_band >= (std::min)(int64_t(0), lower_band))
