@@ -46,27 +46,54 @@ void test_diag_4loc_0()
     if (hpx::get_locality_id() == 0)
     {
         test_identity_d_operation("test_diag_4loc_0", R"(
-            diag_d(7, -4, 4, "mydiag0d_row", "row")
+            diag_d(7, -4, 0, 4, "mydiag0d_row", "row")
         )",
             R"(
-            annotate_d([[1.0], [0.0], [0.0], [0.0]],
+            annotate_d([[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]],
                 "mydiag0d_row",
                 list("args",
                     list("locality", 0, 4),
-                    list("tile", list("columns", 0, 1), list("rows", 0, 4))))
+                    list("tile", list("columns", 0, 5), list("rows", 0, 2))))
         )");
     }
     else if (hpx::get_locality_id() == 1)
     {
-        
+        test_identity_d_operation("test_diag_4loc_0", R"(
+            diag_d(7, -4, 1, 4, "mydiag0d_row", "row")
+        )",
+            R"(
+            annotate_d([[0, 0, 0, 0, 0]],
+                "mydiag0d_row",
+                list("args",
+                    list("locality", 1, 4),
+                    list("tile", list("columns", 0, 5), list("rows", 2, 3))))
+        )");
     }
     else if (hpx::get_locality_id() == 2)
     {
-       
+       test_identity_d_operation("test_diag_4loc_0", R"(
+            diag_d(7, -4, 2, 4, "mydiag0d_row", "row")
+        )",
+            R"(
+            annotate_d([[0, 0, 0, 0, 0]],
+                "mydiag0d_row",
+                list("args",
+                    list("locality", 2, 4),
+                    list("tile", list("columns", 0, 5), list("rows", 3, 4))))
+        )");
     }
     else if (hpx::get_locality_id() == 3)
     {
-        
+        test_identity_d_operation("test_diag_4loc_0", R"(
+            diag_d(7, -4, 3, 4, "mydiag0d_row", "row")
+        )",
+            R"(
+            annotate_d([[7, 0, 0, 0, 0]],
+                "mydiag0d_row",
+                list("args",
+                    list("locality", 3, 4),
+                    list("tile", list("columns", 0, 5), list("rows", 4, 5))))
+        )");
     }
 }
 
