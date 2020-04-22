@@ -759,7 +759,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             }
                             intersections =
                                 util::detail::extract_nonneg_range_dimensions(
-                                    intersection_list);
+                                    intersection_list, this_->name_,
+                                    this_->codename_);
                         }
                         else if (is_numeric_operand(args[2]))
                         {

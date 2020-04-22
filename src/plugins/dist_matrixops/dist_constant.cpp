@@ -314,7 +314,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         }
 
                         dims = util::detail::extract_positive_range_dimensions(
-                            overall_shape);
+                            overall_shape, this_->name_, this_->codename_);
                         numdims = util::detail::extract_range_num_dimensions(
                             overall_shape);
                     }

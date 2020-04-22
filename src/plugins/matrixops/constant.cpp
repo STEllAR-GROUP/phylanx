@@ -525,7 +525,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "4 entries"));
                     }
 
-                    dims = util::detail::extract_nonneg_range_dimensions(r);
+                    dims = util::detail::extract_nonneg_range_dimensions(
+                        r, this_->name_, this_->codename_);
                     numdims = util::detail::extract_range_num_dimensions(r);
                 }
                 else if (is_numeric_operand(op1))
@@ -660,7 +661,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "to have more than 4 entries"));
                     }
 
-                    dims = util::detail::extract_nonneg_range_dimensions(r);
+                    dims = util::detail::extract_nonneg_range_dimensions(
+                        r, this_->name_, this_->codename_);
                     numdims = util::detail::extract_range_num_dimensions(r);
                 }
                 else if (is_numeric_operand(shape))
