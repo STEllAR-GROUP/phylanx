@@ -10,6 +10,7 @@ set(tests
     dist_constant_3_loc
     dist_constant_4_loc
     dist_constant_6_loc
+    dist_diag_4_loc
     dist_dot_operation
     dist_identity_2_loc
     dist_identity_4_loc
