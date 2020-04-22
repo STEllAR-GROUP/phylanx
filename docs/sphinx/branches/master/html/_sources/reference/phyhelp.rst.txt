@@ -2244,6 +2244,40 @@ resize_images (a)
             width_factor using the specified interpolation .
 
 
+retile_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+retile_d (a, tiling_type, intersection, numtiles, new_tiling)
+            Args:
+
+                a (array): a distributed array. A vector or a matrix.
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all localities. Other options
+                    are `row`, `column` or `user` tiling types. If an
+                    intersection is given, retile produces tiles that have
+                    overlapped parts. In the `user` mode, using new_tiling,
+                    tiles are specified with their spans.
+                intersection (int or tuple of ints, optional): the size of
+                    overlapped part on each dimension. If an integer is given,
+                    that would be the intersection length on all dimensions
+                    that are tiled. If the given intersection is odd, the extra
+                    overlapped vector will be at the end of the part.
+                    In the `user` mode, `intersection` cannot be used.
+                numtiles (int, optional): number of tiles of the returned array
+                    If not given it sets to the number of localities in the
+                    application.
+                new_tiling (list, optional): a new tiling specification for the
+                    current locality that is specified only for the `user` mode
+                    E.g. for a matrix we can have:
+                    list("tile", list("columns", 0, 2), list("rows", 0, 2)) or
+                    list("args", list("locality", 0, 4),
+                       list("tile", list("columns", 0, 2), list("rows", 0, 2)))
+
+            Returns:
+
+            A retiled array according to the tiling type on numtiles localities
+            The returned array can contain overlapped parts
+
+
 separable_conv1d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 separable_conv1d (x, depthwise_kernel, pointwise_kernel, padding, strides,)

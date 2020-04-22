@@ -233,6 +233,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#repeat">repeat</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reshape">reshape</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#resize-images">resize_images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#retile-d">retile_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#separable-conv1d">separable_conv1d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#set-seed-action">set_seed_action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shape">shape</a></li>
@@ -2805,6 +2806,46 @@ width_factor using the specified interpolation .</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="retile-d">
+<h2>retile_d<a class="headerlink" href="#retile-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>retile_d (a, tiling_type, intersection, numtiles, new_tiling)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>a (array): a distributed array. A vector or a matrix.
+tiling_type (string, optional): defaults to <cite>sym</cite> which is a</p>
+<blockquote>
+<div><p>balanced way of tiling among all localities. Other options
+are <cite>row</cite>, <cite>column</cite> or <cite>user</cite> tiling types. If an
+intersection is given, retile produces tiles that have
+overlapped parts. In the <cite>user</cite> mode, using new_tiling,
+tiles are specified with their spans.</p>
+</div></blockquote>
+<dl>
+<dt>intersection (int or tuple of ints, optional): the size of</dt><dd><p>overlapped part on each dimension. If an integer is given,
+that would be the intersection length on all dimensions
+that are tiled. If the given intersection is odd, the extra
+overlapped vector will be at the end of the part.
+In the <cite>user</cite> mode, <cite>intersection</cite> cannot be used.</p>
+</dd>
+<dt>numtiles (int, optional): number of tiles of the returned array</dt><dd><p>If not given it sets to the number of localities in the
+application.</p>
+</dd>
+<dt>new_tiling (list, optional): a new tiling specification for the</dt><dd><p>current locality that is specified only for the <cite>user</cite> mode
+E.g. for a matrix we can have:
+list(“tile”, list(“columns”, 0, 2), list(“rows”, 0, 2)) or
+list(“args”, list(“locality”, 0, 4),</p>
+<blockquote>
+<div><p>list(“tile”, list(“columns”, 0, 2), list(“rows”, 0, 2)))</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>A retiled array according to the tiling type on numtiles localities
+The returned array can contain overlapped parts</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="separable-conv1d">
 <h2>separable_conv1d<a class="headerlink" href="#separable-conv1d" title="Permalink to this headline">¶</a></h2>
 <dl>
@@ -3396,7 +3437,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 20, 2020.
+        Last updated on Apr 22, 2020.
       </span>
 
     </p>
