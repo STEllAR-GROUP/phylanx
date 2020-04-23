@@ -109,6 +109,40 @@ void test_gauss_inverse_2()
     }
 }
 
+
+//   | 1.0 1.0 1.0 0.0 |        | -3.0 -0.5   1.5   1.0 |
+//   | 0.0 3.0 1.0 2.0 |   ->   |  1.0  0.25 -0.25 -0.5 |
+//   | 2.0 3.0 1.0 0.0 |        |  3.0  0.25 -1.25 -0.5 |
+//   | 1.0 0.0 2.0 1.0 |        | -3.0, 0.0   1.0   1.0 |
+void test_gauss_inverse_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_ginv_operation("test_4", R"(
+			inverse_d(
+				annotate_d( [[1.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
+					"test_4_1",
+					list("tile", list("columns", 0, 2), list("rows", 0,4)))
+
+			)
+		)",
+     "[[-3.0, -0.5, 1.5, 1.0], [1.0, 0.25, -0.25, -0.5], [3.0, 0.25, -1.25, -0.5], [-3.0, 0.0, 1.0, 1.0]]");
+    }
+    else
+    {
+        test_ginv_operation("test_2", R"(
+			inverse_d(
+				annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
+					"test_4_1",
+					list("tile", list("columns", 2, 4), list("rows", 0,4)))
+
+			)
+		)",
+     "[[-3.0, -0.5, 1.5, 1.0], [1.0, 0.25, -0.25, -0.5], [3.0, 0.25, -1.25, -0.5], [-3.0, 0.0, 1.0, 1.0]]");
+    }
+}
+
+
 // Convert matrix to string to support easier testing of
 // randomly generated matrices
 inline std::string matToString(blaze::DynamicMatrix<double> m, std::uint64_t n,
@@ -187,9 +221,10 @@ void test_gauss_inverse_3(std::uint64_t n)
 
 int hpx_main(int argc, char* argv[])
 {
-    test_gauss_inverse_0();
-   // test_gauss_inverse_2();
-    //test_gauss_inverse_3(5);
+     test_gauss_inverse_0();
+     // test_gauss_inverse_2();
+     // test_gauss_inverse_3(3);
+     // test_gauss_inverse_4();
 
     hpx::finalize();
     return hpx::util::report_errors();

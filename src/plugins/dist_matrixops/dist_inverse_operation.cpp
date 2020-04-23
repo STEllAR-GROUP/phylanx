@@ -4,6 +4,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// To do:
+// Handle cases of non-dense matrices
+// Reduce fetches and overhead used for distributed computation
+
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/localities_annotation.hpp>
@@ -81,6 +85,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
     }
 
+
     // This is where the computation of the inverse should be performed.
     template <typename T>
     execution_tree::primitive_argument_type dist_inverse::distGaussInv(
@@ -97,7 +102,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::size_t thisLocalityID = lhs_localities.locality_.locality_id_;
         std::cout << "This is locality " << thisLocalityID << std::endl;
 
-        std::cout << "Data belonging to this locality:"<< std::endl;
+        std::cout << "Data belonging to this locality:" << std::endl;
         std::cout << arg.matrix() << std::endl;
 
         std::size_t numLocalities = lhs_localities.locality_.num_localities_;
@@ -113,70 +118,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::size_t numTilesSeen = 1;
         for (auto const& lhsTile : lhs_localities.tiles_)
         {
-            std::cout << "    "<< "Tile " << numTilesSeen <<
-                " Dimension = "<< lhsTile.dimension() << std::endl;
             std::cout << "    "
                       << "Tile " << numTilesSeen
-                      << " Span Name 1 = " << lhsTile.get_span_name(1) << std::endl;
+                      << " Dimension = " << lhsTile.dimension() << std::endl;
+            std::cout << "    "
+                      << "Tile " << numTilesSeen
+                      << " Span Name 1 = " << lhsTile.get_span_name(1)
+                      << std::endl;
             numTilesSeen++;
         }
 
         util::distributed_matrix<T> lhs_data(lhs_localities.annotation_.name_,
-        arg.matrix(), lhs_localities.locality_.num_localities_,
-        lhs_localities.locality_.locality_id_);
-
-
+            arg.matrix(), lhs_localities.locality_.num_localities_,
+            lhs_localities.locality_.locality_id_);
 
         // Gets the span of the columns, i.e. startCol, endCol+1
         execution_tree::tiling_span const& lhs_span =
             lhs_localities.get_span(1);
 
-
-
-        ///////////////////////////////////////////////////////////////////
-
-//        util::distributed_matrix<T> inv_data(lhs_localities.annotation_.name_,
-//            arg.matrix(), lhs_localities.locality_.num_localities_,
-//            lhs_localities.locality_.locality_id_);
-
-        //execution_tree::tiling_span const& inv_span =
-        //    lhs_localities.get_span(1);
-
-        //std::size_t const rows = 2;
-        //std::size_t const columns = 2;
-        //std::int64_t row_start, column_start;
-        //std::size_t row_size, column_size;
-
-        //std::tie(row_start, column_start, row_size, column_size) =
-        //    tile_calculation::tile_calculation_2d(0, 2, 2, 2, "column");
-
-        //execution_tree::tiling_information_2d tile_info(
-        //    execution_tree::tiling_span(0, 2),
-        //    execution_tree::tiling_span(0, 1));
-
-        //execution_tree::locality_information locality_info(thisLocalityID, 2);
-        //execution_tree::annotation locality_ann = locality_info.as_annotation();
-
-        //std::string base_name = "invMatrixName";
-
-        //execution_tree::annotation_information ann_info(
-        //    std::move(base_name), 0);    //generation 0
-
-        //auto attached_annotation =
-        //    std::make_shared<execution_tree::annotation>(localities_annotation(
-        //        locality_ann, tile_info.as_annotation(name_, codename_),
-        //        ann_info, name_, codename_));
-        //std::cout << attached_annotation << std::endl;
-
-
-        ///////////////////////////////////////////////////////////////////
-
-
-
         // Create a matrix of the proper size initialized to zeros
         // of type T
         blaze::DynamicMatrix<T> result_matrix(
-            arg.dimension(0), 2*lhs_localities.columns(), T{0});
+            arg.dimension(0), lhs_localities.columns(), T{0});
+
+        // Turn result matrix from a matrix of zeros into an identity matrix
+        for (int j = 0; j<result_matrix.rows(); j++)
+            result_matrix(j, j) = 1.0;
 
         std::cout << result_matrix << std::endl;
 
@@ -189,119 +156,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             b.wait();
         }
 
-
-        //// Iterate over all of the tiles of the input matrix
-        //for (auto const& lhs_tile : lhs_localities.tiles_)
-        //{
-        //    // do something with each tile
-        //}
-
-        // Pull the information from the other locality
-        if (thisLocalityID == 0)
-        {
-            std::size_t locToFetchFrom = 1;
-            std::size_t startRow = 0;
-            std::size_t stopRow = lhs_localities.rows();
-            std::size_t startCol = 0;
-            std::size_t stopCol = 1;
-            auto pulledMatrixData =
-                lhs_data
-                    .fetch(locToFetchFrom, startRow, stopRow,
-                                startCol, stopCol)
-                    .get();
-            std::cout << pulledMatrixData << std::endl;
-
-            // Put the local and pulled matrix data into a local matrix
-            // params: mat, startRow, startCol, rows, cols
-            blaze::submatrix(result_matrix, 0, 0, arg.matrix().rows(),
-                arg.matrix().columns()) += blaze::submatrix(arg.matrix(),
-                    0, 0, arg.matrix().rows(), arg.matrix().columns());
-            blaze::submatrix(result_matrix, 0, 1,
-                pulledMatrixData.rows(), pulledMatrixData.columns()) +=
-                blaze::submatrix(pulledMatrixData, 0, 0,
-                    pulledMatrixData.rows(), pulledMatrixData.columns());
-            std::cout << result_matrix << std::endl;
-        }
-
-
-        blaze::DynamicMatrix<double> myMatrix = result_matrix;
+        auto myMatrix = arg.matrix();
         std::size_t numRows = arg.matrix().rows();
         std::size_t numCols = arg.matrix().columns();
 
         // Define some additional information on where
         // columns lie in the full input
-        execution_tree::primitive_argument_type result1 =
-            execution_tree::primitive_argument_type{std::move(result_matrix)};
         std::size_t startCol = thisLocalityID * (numRows / numLocalities) +
             std::min(thisLocalityID, numRows % numLocalities);
         std::size_t endCol = startCol + numCols - 1;
 
-        // Definition of a nxn double row-major identity matrix
+        // Definition of this loc's part of a nxn double row-major identity matrix
         blaze::DynamicMatrix<double> invMatrix =
-            blaze::IdentityMatrix<double>(numRows);
-
-
-        //if (lhs_localities.locality_.locality_id_ == 0)
-        //{
-        //    execution_tree::primitive_argument_type result2 =
-        //        execution_tree::primitive_argument_type{std::move(invMatrix)};
-        //    execution_tree::annotation ann{ir::range("tile",
-        //        ir::range("rows", lhs_localities.get_span(0).start_,
-        //            lhs_localities.get_span(0).stop_),
-        //        ir::range("columns", static_cast<std::int64_t>(0),
-        //            static_cast<std::int64_t>(1)))};
-        //    // Generate new tiling annotation for the result vector
-        //    execution_tree::tiling_information_2d tile_info(
-        //        ann, name_, codename_);
-
-        //    ++lhs_localities.annotation_.generation_;
-
-        //    auto locality_ann = lhs_localities.locality_.as_annotation();
-        //    std::cout << "at first locality: " << locality_ann << std::endl;
-        //    result2.set_annotation(
-        //        execution_tree::localities_annotation(locality_ann,
-        //            tile_info.as_annotation(name_, codename_),
-        //            lhs_localities.annotation_, name_, codename_),
-        //        name_, codename_);
-        //}
-        //else
-        //{
-        //    execution_tree::primitive_argument_type result2 =
-        //        execution_tree::primitive_argument_type{std::move(invMatrix)};
-        //    execution_tree::annotation ann{ir::range("tile",
-        //        ir::range("rows", lhs_localities.get_span(0).start_,
-        //            lhs_localities.get_span(0).stop_),
-        //        ir::range("columns", static_cast<std::int64_t>(1),
-        //            static_cast<std::int64_t>(2)))};
-        //    // Generate new tiling annotation for the result vector
-        //    execution_tree::tiling_information_2d tile_info(
-        //        ann, name_, codename_);
-
-        //    ++lhs_localities.annotation_.generation_;
-
-        //    auto locality_ann = lhs_localities.locality_.as_annotation();
-        //    std::cout << "at other locality: " << locality_ann << std::endl;
-        //    result2.set_annotation(
-        //        execution_tree::localities_annotation(locality_ann,
-        //            tile_info.as_annotation(name_, codename_),
-        //            lhs_localities.annotation_, name_, codename_),
-        //        name_, codename_);
-        //}
-
-        //execution_tree::annotation ann{ir::range("tile",
-        //    ir::range("rows", lhs_localities.get_span(0).start_,
-        //        lhs_localities.get_span(0).stop_))};
-        //std::cout << ann << std::endl;
-        // Generate new tiling annotation for the result vector
-        // execution_tree::tiling_information_2d tile_info(ann, name_, codename_);
-
-        //auto locality_ann = lhs_localities.locality_.as_annotation();
-        //result1.set_annotation(
-        //    execution_tree::localities_annotation(locality_ann,
-        //        tile_info.as_annotation(name_, codename_),
-        //        lhs_localities.annotation_, name_, codename_),
-        //    name_, codename_);
-
+            blaze::submatrix(blaze::IdentityMatrix<double>(numRows), 0,
+                startCol, arg.matrix().rows(), arg.matrix().columns());
 
             // For swapping rows back into place
             std::vector<std::tuple<std::size_t, std::size_t>> swappedRows;
@@ -311,72 +179,231 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             for (std::int64_t current_row = 0; current_row < numRows;
                  current_row++)
             {
-                // Swaps current row with nearest subsequent row such that
-                // after swapping A[i][i] != 0.
-                if (myMatrix(current_row, current_row) ==
-                    0)    // if A[i][i] = 0,
-                {
-                    bool rowFound = false;
-                    std::size_t checkOffset = 1;
-                    while (current_row + checkOffset < numRows && !rowFound)
-                    {
-                        if (myMatrix(
-                                (current_row + checkOffset), current_row) != 0)
-                        {
-                            swap(column(myMatrix, current_row),
-                                column(myMatrix,
-                                    (current_row + checkOffset) % numRows));
-                            swappedRows.emplace_back(
-                                std::tuple<std::size_t, std::size_t>(
-                                    current_row,
-                                    (current_row + checkOffset) % numRows));
-                            rowFound = true;
-                        }
-                        else
-                            checkOffset++;
-                    }
+                //// Swaps current row with nearest subsequent row such that
+                //// after swapping A[i][i] != 0.
+                //if ((*lhs_data)(current_row, current_row) ==
+                //    0)    // if A[i][i] = 0,
+                //{
+                //    bool rowFound = false;
+                //    std::size_t checkOffset = 1;
+                //    while (current_row + checkOffset < numRows && !rowFound)
+                //    {
+                //        if ((*lhs_data)(
+                //                (current_row + checkOffset), current_row) != 0)
+                //        {
+                //            swap(column(myMatrix, current_row),
+                //                column(myMatrix,
+                //                    (current_row + checkOffset) % numRows));
+                //            swappedRows.emplace_back(
+                //                std::tuple<std::size_t, std::size_t>(
+                //                    current_row,
+                //                    (current_row + checkOffset) % numRows));
+                //            rowFound = true;
+                //        }
+                //        else
+                //            checkOffset++;
+                //    }
 
-                    // swap row with nearest subsequent row such that after
-                    // swapping A[i][i] != 0
-                    // if fails, inverse does not exist
-                    if (!rowFound)
+                //    // swap row with nearest subsequent row such that after
+                //    // swapping A[i][i] != 0
+                //    // if fails, inverse does not exist
+                //    if (!rowFound)
+                //    {
+                //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                //            "gauss_inverse::eval",
+                //            generate_error_message("inverse does not exist"));
+                //    }
+                //    current_row--;    // After swapping, make sure to retry this row
+                //}
+                //else    // the inversion has not already failed
+                //{
+                    // Let every locality get a row from the matrix
+                     blaze::DynamicMatrix<double> foundArray(
+                        1, lhs_localities.columns(), T{0});
+                    for (int l = 0; l < numLocalities; l++)
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "gauss_inverse::eval",
-                            generate_error_message("inverse does not exist"));
+                        std::size_t thisLocRowStart = current_row;
+                        std::size_t thisLocRowEnd = current_row + 1;
+                        std::size_t thisRows =
+                            thisLocRowEnd - thisLocRowStart;
+                        std::size_t replaceId = l;
+                        std::size_t thisLocColStart =
+                            replaceId * (numRows / numLocalities) +
+                            std::min(replaceId, numRows % numLocalities);
+                        std::size_t thisLocColEnd;
+                        if (replaceId < numLocalities - 1)
+                            thisLocColEnd =
+                                (replaceId + 1) * (numRows / numLocalities) +
+                                std::min(
+                                    (replaceId + 1), numRows % numLocalities);
+                        else
+                            thisLocColEnd = lhs_localities.columns();
+
+                        std::size_t thisCols =
+                            thisLocColEnd - thisLocColStart;
+                        std::cout << " Hey Loc " << thisLocalityID
+                                  << "made it to this!" << std::endl;
+
+                        if (numLocalities > 1)
+                        {
+                            hpx::lcos::barrier b1(
+                                "barriera_" + lhs_localities.annotation_.name_,
+                                lhs_localities.locality_.num_localities_,
+                                lhs_localities.locality_.locality_id_);
+                            b1.wait();
+                        }
+                        std::cout << " Hey Loc " << thisLocalityID
+                                  << "made it here!" << std::endl;
+
+                        // fetch with format:
+                        // locToFetchFrom, startRow, stopRow, startCol, stopCol
+                        auto pulledRowData =
+                            lhs_data
+                                .fetch(replaceId, thisLocRowStart,
+                                    thisLocRowEnd, 0, thisCols)
+                                .get();
+                        std::cout << "Loc " << thisLocalityID
+                                << " pulled: " << pulledRowData
+                                << std::endl;
+
+                        // Put the local and pulled matrix data into a local matrix
+                        // params: mat, startRow, startCol, rows, cols
+                        blaze::submatrix(foundArray, 0,
+                            thisLocColStart, thisRows, thisCols) +=
+                            blaze::submatrix(pulledRowData,
+                                0, 0, thisRows,
+                                thisCols);
                     }
-                    current_row--;    // After swapping, make sure to retry this row
-                }
-                else    // the inversion has not already failed
-                {
-                    double scale = myMatrix(current_row, current_row);
-                    for (std::int64_t col = 0; col < numRows; col++)
+                    
+
+                     if (numLocalities > 1)
+                     {
+                         hpx::lcos::barrier b9(
+                             "barrierz_" + lhs_localities.annotation_.name_,
+                             lhs_localities.locality_.num_localities_,
+                             lhs_localities.locality_.locality_id_);
+                         b9.wait();
+                     }
+
+                    std::cout << "FoundArray = " << foundArray << std::endl;
+                    double scale = foundArray(0, current_row);
+
+                    for (std::int64_t col = 0; col < numCols; col++)
                     {
-                        myMatrix(current_row, col) =
-                            myMatrix(current_row, col) / scale;
+
+                        (*lhs_data)(current_row, col) =
+                            (*lhs_data)(current_row, col) / scale;
                         invMatrix(current_row, col) =
                             invMatrix(current_row, col) / scale;
+                        std::cout << "(*lhs data)(0,0) = " << (*lhs_data)(0, 0)
+                                  << std::endl;
+                        std::cout << "(*lhs data)(1,0) = " << (*lhs_data)(1, 0)
+                                  << std::endl;
+                        std::cout << "invMatrix = " << invMatrix << std::endl;
                     }
                     if (current_row < numRows - 1)
                     {
                         for (std::int64_t nextRow = current_row + 1;
                              nextRow < numRows; nextRow++)
                         {
-                            double factor = myMatrix(nextRow, current_row);
-                            for (std::int64_t nextCol = 0; nextCol < numRows;
+                            //Need to ensure that all localities can access this
+
+                            if (numLocalities > 1)
+                            {
+                                hpx::lcos::barrier b3("barrierc_" +
+                                        lhs_localities.annotation_.name_,
+                                    lhs_localities.locality_.num_localities_,
+                                    lhs_localities.locality_.locality_id_);
+                                b3.wait();
+                            }
+
+                             // Let every locality get a row from the matrix
+                            blaze::DynamicMatrix<double> foundArray2(
+                                1, lhs_localities.columns(), T{0});
+                            for (int l = 0; l < numLocalities; l++)
+                            {
+                                std::size_t thisLocRowStart = nextRow;
+                                std::size_t thisLocRowEnd = nextRow + 1;
+                                std::size_t thisRows =
+                                    thisLocRowEnd - thisLocRowStart;
+                                std::size_t replaceId = l;
+                                std::size_t thisLocColStart =
+                                    replaceId * (numRows / numLocalities) +
+                                    std::min(
+                                        replaceId, numRows % numLocalities);
+                                std::size_t thisLocColEnd;
+                                if (replaceId < numLocalities - 1)
+                                    thisLocColEnd = (replaceId + 1) *
+                                            (numRows / numLocalities) +
+                                        std::min((replaceId + 1),
+                                            numRows % numLocalities);
+                                else
+                                    thisLocColEnd = lhs_localities.columns();
+                                std::size_t thisCols =
+                                    thisLocColEnd - thisLocColStart;
+
+                                auto pulledRowData =
+                                    lhs_data
+                                        .fetch(replaceId, thisLocRowStart,
+                                            thisLocRowEnd, 0, thisCols)
+                                        .get();
+                                std::cout << "Loc " << thisLocalityID
+                                          << " pulled: " << pulledRowData
+                                          << std::endl;
+
+                                // Put the local and pulled matrix data into a local matrix
+                                // params: mat, startRow, startCol, rows, cols
+                                blaze::submatrix(foundArray2, 0,
+                                    thisLocColStart, thisRows, thisCols) +=
+                                    blaze::submatrix(pulledRowData, 0, 0,
+                                        thisRows, thisCols);
+                            }
+
+                            std::cout << "FoundArray2 = " << foundArray2
+                                      << std::endl;
+                            double factor = foundArray2(0, current_row);
+                            // !!!!!!!! Split this up across all localities _-_-_-_-_-_-
+                            for (std::int64_t nextCol = 0;
+                                 nextCol < numCols;
                                  nextCol++)
                             {
-                                myMatrix(nextRow, nextCol) =
-                                    myMatrix(nextRow, nextCol) -
-                                    (factor * myMatrix(current_row, nextCol));
+                                (*lhs_data)(nextRow, nextCol) =
+                                    (*lhs_data)(nextRow, nextCol) -
+                                    (factor *
+                                        (*lhs_data)(current_row, nextCol));
                                 invMatrix(nextRow, nextCol) =
                                     invMatrix(nextRow, nextCol) -
                                     (factor * invMatrix(current_row, nextCol));
+                                std::cout << "(*lhs data)(0,0) = "
+                                          << (*lhs_data)(0, 0) << std::endl;
+                                std::cout << "(*lhs data)(1,0) = "
+                                          << (*lhs_data)(1, 0) << std::endl;
+                                std::cout << "invMatrix = " << invMatrix
+                                          << std::endl;
                             }
+                            if (numLocalities > 1)
+                            {
+                                hpx::lcos::barrier b2("barrierb" +
+                                        std::to_string(nextRow) +
+                                        "_" +
+                                        lhs_localities.annotation_.name_,
+                                    lhs_localities.locality_.num_localities_,
+                                    lhs_localities.locality_.locality_id_);
+                                b2.wait();
+                            }
+
                         }
                     }
-                }
+               // }
+
+               hpx::lcos::barrier b5("barriere" + std::to_string(current_row) +
+                        "_" + lhs_localities.annotation_.name_,
+                    lhs_localities.locality_.num_localities_,
+                    lhs_localities.locality_.locality_id_);
+                b5.wait();
+
             }
+
 
             // Back substitution phase, going from bottom to top
             // in matrix zeroing out columns except diagonal
@@ -384,13 +411,66 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             {
                 for (std::int64_t row = zeroCol - 1; row >= 0; row--)
                 {
-                    double factor = myMatrix(row, zeroCol);
-                    for (std::int64_t col = 0; col < numRows; col++)
+                    if (numLocalities > 1)
+                    {
+                        hpx::lcos::barrier b6(
+                            "barrierf_" + lhs_localities.annotation_.name_,
+                            lhs_localities.locality_.num_localities_,
+                            lhs_localities.locality_.locality_id_);
+                        b6.wait();
+                    }
+                    // Let every locality get a row from the matrix
+                    blaze::DynamicMatrix<double> foundArray3(
+                        1, lhs_localities.columns(), T{0});
+                    for (int l = 0; l < numLocalities; l++)
+                    {
+                        std::size_t thisLocRowStart = row;
+                        std::size_t thisLocRowEnd = row + 1;
+                        std::size_t thisRows = thisLocRowEnd - thisLocRowStart;
+                        std::size_t replaceId = l;
+                        std::size_t thisLocColStart =
+                            replaceId * (numRows / numLocalities) +
+                            std::min(replaceId, numRows % numLocalities);
+                        std::size_t thisLocColEnd;
+                        if (replaceId < numLocalities - 1)
+                            thisLocColEnd =
+                                (replaceId + 1) * (numRows / numLocalities) +
+                                std::min(
+                                    (replaceId + 1), numRows % numLocalities);
+                        else
+                            thisLocColEnd = lhs_localities.columns();
+                        std::size_t thisCols = thisLocColEnd - thisLocColStart;
+
+                        auto pulledRowData =
+                            lhs_data
+                                .fetch(replaceId, thisLocRowStart,
+                                    thisLocRowEnd, 0, thisCols)
+                                .get();
+                        std::cout << "Loc " << thisLocalityID
+                                  << " pulled: " << pulledRowData << std::endl;
+
+                        // Put the local and pulled matrix data into a local matrix
+                        // params: mat, startRow, startCol, rows, cols
+                        blaze::submatrix(foundArray3, 0, thisLocColStart,
+                            thisRows, thisCols) +=
+                            blaze::submatrix(
+                                pulledRowData, 0, 0, thisRows, thisCols);
+                    }
+
+                    std::cout << "FoundArray3 = " << foundArray3 << std::endl;
+
+                    double factor = foundArray3(0, zeroCol);
+                    for (std::int64_t col = 0; col < numCols; col++)
                     {
                         myMatrix(row, col) = myMatrix(row, col) -
                             (factor * myMatrix(zeroCol, col));
                         invMatrix(row, col) = invMatrix(row, col) -
                             (factor * invMatrix(zeroCol, col));
+                        std::cout << "(*lhs data)(0,0) = " << (*lhs_data)(0, 0)
+                                  << std::endl;
+                        std::cout << "(*lhs data)(1,0) = " << (*lhs_data)(1, 0)
+                                  << std::endl;
+                        std::cout << "invMatrix = " << invMatrix << std::endl;
                     }
                 }
             }
@@ -404,9 +484,61 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
             std::cout << invMatrix << std::endl;
 
-        execution_tree::primitive_argument_type result{invMatrix};
+            // Write the result back into the distributed matrix myMatrix
+            for (int i = 0; i< numRows; i++)
+                for (int j = 0; j < myMatrix.columns(); j++)
+                    (*lhs_data)(i, j) = invMatrix(i, j);
+
+
+            // Fetch the full distributed result and return it
+            // Let every locality get a row from the matrix
+            if (numLocalities > 1)
+            {
+                hpx::lcos::barrier b7(
+                    "barrierg_" + lhs_localities.annotation_.name_,
+                    lhs_localities.locality_.num_localities_,
+                    lhs_localities.locality_.locality_id_);
+                b7.wait();
+            }
+            blaze::DynamicMatrix<double> finalMatrix(
+                lhs_localities.columns(), lhs_localities.columns(), T{0});
+            for (int l = 0; l < numLocalities; l++)
+            {
+                std::size_t thisLocRowStart = 0;
+                std::size_t thisLocRowEnd = numRows;
+                std::size_t thisRows = thisLocRowEnd - thisLocRowStart;
+                std::size_t replaceId = l;
+                std::size_t thisLocColStart =
+                    replaceId * (numRows / numLocalities) +
+                    std::min(replaceId, numRows % numLocalities);
+                std::size_t thisLocColEnd;
+                if (replaceId < numLocalities - 1)
+                    thisLocColEnd =
+                        (replaceId + 1) * (numRows / numLocalities) +
+                        std::min((replaceId + 1), numRows % numLocalities);
+                else
+                    thisLocColEnd = lhs_localities.columns();
+                std::size_t thisCols = thisLocColEnd - thisLocColStart;
+
+                auto pulledRowData = lhs_data
+                                         .fetch(replaceId, thisLocRowStart,
+                                             thisLocRowEnd, 0, thisCols)
+                                         .get();
+                std::cout << "Loc " << thisLocalityID
+                          << " pulled: " << pulledRowData << std::endl;
+
+                // Put the local and pulled matrix data into a local matrix
+                // params: mat, startRow, startCol, rows, cols
+                blaze::submatrix(
+                    finalMatrix, 0, thisLocColStart, thisRows, thisCols) +=
+                    blaze::submatrix(pulledRowData, 0, 0, thisRows, thisCols);
+            }
+            std::cout <<"Final Matrix"<< finalMatrix << std::endl;
+            execution_tree::primitive_argument_type result{finalMatrix};
         return result;
     }
+
+
 
     // This is where the computation of the inverse should be performed.
     execution_tree::primitive_argument_type dist_inverse::distGaussInv(
@@ -420,7 +552,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         switch (extract_numeric_value_dimension(lhs, name_, codename_))
         {
         case 2:
-            // DO INVERSE
+            // Do the inverse operation
             std::cout << "Input checks out, now sending for calculation.";
             std::cout << std::endl;
             return distGaussInv(
@@ -463,8 +595,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the gaussian_inverse_operation primitive requires that "
                     "the arguments given by the operands array is valid"));
         }
-
-        //-auto f = value_operand(operands[0], args, name_, codename_, ctx);
 
         // Get a future to the result of the actual computation
         auto this_ = this->shared_from_this();
