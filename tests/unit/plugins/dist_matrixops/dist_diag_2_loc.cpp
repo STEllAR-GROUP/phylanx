@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& name, std::string const& codestr)

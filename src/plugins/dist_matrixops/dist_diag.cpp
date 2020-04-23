@@ -44,9 +44,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     __arg(_3_tile_index, find_here()),
                     __arg(_4_numtiles, num_localities()),
                     __arg(_5_name, ""),
-                    __arg(_6_tiling_type, "sym"),
-                    __arg(_7_dtype, nil)
-
+                    __arg(_6_tiling_type, "sym")
                 )
             )"},
             &create_dist_diag,
@@ -68,13 +66,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all the numtiles localities.
                     Other options are `row` or `column` tiling.
-                dtype (string, optional): the data-type of the returned array,
-                    defaults to 'float'.
 
             Returns:
 
             A 1-D array of its k-th diagonal when a is a 2-D array; a 2-D array
-            with a on thek-th diagonal.)")};
+            with a on the k-th diagonal.)")};
 
     ///////////////////////////////////////////////////////////////////////////
     dist_diag::dist_diag(
@@ -207,12 +203,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         execution_tree::primitive_argument_type&& arr, std::int64_t k,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::string const& tiling_type,
-        execution_tree::node_data_type dtype) const
+        std::string&& given_name, std::string const& tiling_type) const
     {
         using namespace execution_tree;
 
-        switch (dtype)
+        switch (extract_common_type(arr))
         {
         case node_data_type_bool:
             return dist_diag1d_helper<std::uint8_t>(
@@ -358,12 +353,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     execution_tree::primitive_argument_type dist_diag::dist_diag2d(
         execution_tree::primitive_argument_type&& arr, std::int64_t k,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::string const& tiling_type,
-        execution_tree::node_data_type dtype) const
+        std::string&& given_name, std::string const& tiling_type) const
     {
         using namespace execution_tree;
 
-        switch (dtype)
+        switch (extract_common_type(arr))
         {
         case node_data_type_bool:
             return dist_diag2d_helper<std::uint8_t>(
@@ -472,29 +466,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         }
                     }
 
-                    node_data_type dtype =
-                        extract_common_type(std::move(args[0]),
-                        this_->name_, this_->codename_));
-
-                    if (valid(args[6]))
-                    {
-                        dtype =
-                            map_dtype(extract_string_value(std::move(args[6]),
-                                this_->name_, this_->codename_));
-                    }
-
                     switch (extract_numeric_value_dimension(
                         args[0], this_->name_, this_->codename_))
                     {
                     case 1:
                         return this_->dist_diag1d(std::move(args[0]),
                             k, tile_idx, numtiles, std::move(given_name),
-                            tiling_type, dtype);
+                            tiling_type);
 
                     case 2:
                         return this_->dist_diag2d(std::move(args[0]),
                             k, tile_idx, numtiles, std::move(given_name),
-                            tiling_type, dtype);
+                            tiling_type);
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
