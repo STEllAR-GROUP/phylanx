@@ -75,11 +75,136 @@ void test_diag_2loc_0()
 }
 
 
+void test_diag_2loc_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2loc_1", R"(
+            diag_d([7], -3, 0, 2, "", "row")
+        )",
+            R"(
+            annotate_d([[0, 0, 0, 0], [0, 0, 0, 0]],
+                "diag_array_2",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 4), list("rows", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2loc_1", R"(
+            diag_d([7], -3, 1, 2, "", "row")
+        )",
+            R"(
+            annotate_d([[0, 0, 0, 0], [7, 0, 0, 0]],
+                "diag_array_2",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 4), list("rows", 2, 4))))
+        )");
+    }
+}
+
+void test_diag_2loc_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2loc_2", R"(
+            diag_d([7], -4, 0, 2, "", "column")
+        )",
+            R"(
+            annotate_d([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [7, 0, 0]],
+                "diag_array_3",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 3), list("rows", 0, 5))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2loc_2", R"(
+            diag_d([7], -4, 1, 2, "", "column")
+        )",
+            R"(
+            annotate_d([[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+                "diag_array_3",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 3, 5), list("rows", 0, 5))))
+        )");
+    }
+}
+
+void test_diag_2loc_3()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2loc_3", R"(
+            diag_d([1, 3, 5], 2, 0, 2, "", "row")
+        )",
+            R"(
+            annotate_d([[0, 0, 1, 0, 0], [0, 0, 0, 3, 0], [0, 0, 0, 0, 5]],
+                "diag_array_4",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 5), list("rows", 0, 3))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2loc_3", R"(
+            diag_d([1, 3, 5], 2, 1, 2, "", "row")
+        )",
+            R"(
+            annotate_d([[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]],
+                "diag_array_4",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 5), list("rows", 3, 5))))
+        )");
+    }
+}
+
+void test_diag_2loc_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2loc_4", R"(
+            diag_d([1, 3, 5], -2, 0, 2, "", "column")
+        )",
+            R"(
+            annotate_d([[0, 0, 0], [0, 0, 0], [1, 0, 0], [0, 3, 0], [0, 0, 5]],
+                "diag_array_5",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 3), list("rows", 0, 5))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2loc_4", R"(
+            diag_d([1, 3, 5], -2, 1, 2, "", "column")
+        )",
+            R"(
+            annotate_d([[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+                "diag_array_5",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 3, 5), list("rows", 0, 5))))
+        )");
+    }
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_diag_2loc_0();
+    test_diag_2loc_1();
+    test_diag_2loc_2();
+    test_diag_2loc_3();
+    test_diag_2loc_4();
 
 
     hpx::finalize();

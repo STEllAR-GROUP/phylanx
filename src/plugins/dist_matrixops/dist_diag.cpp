@@ -277,7 +277,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         //create an empty array
         blaze::DynamicVector<T> result;
-        auto arr_Vec = blaze::band(arr.matrix(), k);
+        auto m = arr.matrix();
+        auto arr_Vec = blaze::band(m, k);
         std::int64_t num_band;
         std::int64_t upper_band = column_size - 1;
         std::int64_t lower_band = 1 - row_size;
