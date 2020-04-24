@@ -44,11 +44,11 @@ void test_diag_d_operation(std::string const& name, std::string const& code,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_diag_2loc_0()
+void test_diag_1d_0()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_diag_d_operation("test_diag_2loc_0", R"(
+        test_diag_d_operation("test_diag_1d_0", R"(
             diag_d([7], 3, 0, 2, "", "row")
         )",
             R"(
@@ -61,7 +61,7 @@ void test_diag_2loc_0()
     }
     else
     {
-        test_diag_d_operation("test_diag_2loc_0", R"(
+        test_diag_d_operation("test_diag_1d_0", R"(
             diag_d([7], 3, 1, 2, "", "row")
         )",
             R"(
@@ -75,11 +75,11 @@ void test_diag_2loc_0()
 }
 
 
-void test_diag_2loc_1()
+void test_diag_1d_1()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_diag_d_operation("test_diag_2loc_1", R"(
+        test_diag_d_operation("test_diag_1d_1", R"(
             diag_d([7], -3, 0, 2, "", "row")
         )",
             R"(
@@ -92,7 +92,7 @@ void test_diag_2loc_1()
     }
     else
     {
-        test_diag_d_operation("test_diag_2loc_1", R"(
+        test_diag_d_operation("test_diag_1d_1", R"(
             diag_d([7], -3, 1, 2, "", "row")
         )",
             R"(
@@ -105,11 +105,11 @@ void test_diag_2loc_1()
     }
 }
 
-void test_diag_2loc_2()
+void test_diag_1d_2()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_diag_d_operation("test_diag_2loc_2", R"(
+        test_diag_d_operation("test_diag_1d_2", R"(
             diag_d([7], -4, 0, 2, "", "column")
         )",
             R"(
@@ -122,7 +122,7 @@ void test_diag_2loc_2()
     }
     else
     {
-        test_diag_d_operation("test_diag_2loc_2", R"(
+        test_diag_d_operation("test_diag_1d_2", R"(
             diag_d([7], -4, 1, 2, "", "column")
         )",
             R"(
@@ -135,11 +135,11 @@ void test_diag_2loc_2()
     }
 }
 
-void test_diag_2loc_3()
+void test_diag_1d_3()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_diag_d_operation("test_diag_2loc_3", R"(
+        test_diag_d_operation("test_diag_1d_3", R"(
             diag_d([1, 3, 5], 2, 0, 2, "", "row")
         )",
             R"(
@@ -152,7 +152,7 @@ void test_diag_2loc_3()
     }
     else
     {
-        test_diag_d_operation("test_diag_2loc_3", R"(
+        test_diag_d_operation("test_diag_1d_3", R"(
             diag_d([1, 3, 5], 2, 1, 2, "", "row")
         )",
             R"(
@@ -165,11 +165,11 @@ void test_diag_2loc_3()
     }
 }
 
-void test_diag_2loc_4()
+void test_diag_1d_4()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_diag_d_operation("test_diag_2loc_4", R"(
+        test_diag_d_operation("test_diag_1d_4", R"(
             diag_d([1, 3, 5], -2, 0, 2, "", "column")
         )",
             R"(
@@ -182,7 +182,7 @@ void test_diag_2loc_4()
     }
     else
     {
-        test_diag_d_operation("test_diag_2loc_4", R"(
+        test_diag_d_operation("test_diag_1d_4", R"(
             diag_d([1, 3, 5], -2, 1, 2, "", "column")
         )",
             R"(
@@ -194,12 +194,13 @@ void test_diag_2loc_4()
         )");
     }
 }
+////////////////////////////////////////////////////////////////////////////////
 
-void test_diag_2loc_5()
+void test_diag_2d_0()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_diag_d_operation("test_diag_2loc_5", R"(
+        test_diag_d_operation("test_diag_2d_0", R"(
             diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 0, 2, "", "row")
         )",
             R"(
@@ -212,8 +213,8 @@ void test_diag_2loc_5()
     }
     else
     {
-        test_diag_d_operation("test_diag_2loc_5", R"(
-            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 0, 2, "", "row")
+        test_diag_d_operation("test_diag_2d_0", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 1, 2, "", "row")
         )",
             R"(
             annotate_d([9],
@@ -225,15 +226,77 @@ void test_diag_2loc_5()
     }
 }
 
+void test_diag_2d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2d_1", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 0, 2, "", "column")
+        )",
+            R"(
+            annotate_d([1, 5],
+                "diag_array_7",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2d_1", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 1, 2, "", "column")
+        )",
+            R"(
+            annotate_d([9],
+                "diag_array_7",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 2, 3))))
+        )");
+    }
+}
+
+void test_diag_2d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2d_2", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 1, 0, 2, "", "row")
+        )",
+            R"(
+            annotate_d([2, 6],
+                "diag_array_8",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2d_2", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 1, 1, 2, "", "row")
+        )",
+            R"(
+            annotate_d([],
+                "diag_array_8",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 0))))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    test_diag_2loc_0();
-    test_diag_2loc_1();
-    test_diag_2loc_2();
-    test_diag_2loc_3();
-    test_diag_2loc_4();
-    test_diag_2loc_5();
+    test_diag_1d_0();
+    test_diag_1d_1();
+    test_diag_1d_2();
+    test_diag_1d_3();
+    test_diag_1d_4();
+    test_diag_2d_0();
+    test_diag_2d_1();
+//    test_diag_2d_2();
 
 
     hpx::finalize();

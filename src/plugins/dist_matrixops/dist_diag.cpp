@@ -259,9 +259,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 //        tiling_information_2d tile_info(
 //            tiling_span(row_start, row_start + row_size),
 //            tiling_span(column_start, column_start + column_size));
+
+        std::int64_t start_ = 0;
+        std::int64_t stop_ = 0;
+
         tiling_information_1d tile_info(
             tiling_information_1d::tile1d_type::columns,
-            tiling_span(0, 0));
+            tiling_span(start_, stop_));
 
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
@@ -303,9 +307,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                 result = blaze::subvector(arr_Vec, des_start, result_sz);
 
-                tiling_information_1d tile_info(
+                tile_info = tiling_information_1d (
                     tiling_information_1d::tile1d_type::columns,
-                    tiling_span(des_start, des_start + result_sz));
+                    tiling_span(des_start, des_start + result_sz));;
+
             }
         }
         else if (tiling_type == "column")
@@ -324,9 +329,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     column_start : (std::max)(int64_t(0), column_start - k);
 
                 result = blaze::subvector(arr_Vec, des_start, result_sz);
-                tiling_information_1d tile_info(
+
+                tile_info = tiling_information_1d (
                     tiling_information_1d::tile1d_type::columns,
-                    tiling_span(des_start, des_start + result_sz));
+                    tiling_span(des_start, des_start + result_sz));;
+
             }
         }
         else if (tiling_type == "sym")
@@ -346,9 +353,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     (std::max)(row_start, column_start - k);
 
                 result = blaze::subvector(arr_Vec, des_start, result_sz);
-                tiling_information_1d tile_info(
+
+                tile_info = tiling_information_1d (
                     tiling_information_1d::tile1d_type::columns,
-                    tiling_span(des_start, des_start + result_sz));
+                    tiling_span(des_start, des_start + result_sz));;
             }
         }
         else
