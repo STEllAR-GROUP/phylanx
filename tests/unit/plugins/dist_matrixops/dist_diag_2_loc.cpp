@@ -195,7 +195,35 @@ void test_diag_2loc_4()
     }
 }
 
-
+void test_diag_2loc_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_diag_d_operation("test_diag_2loc_5", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 0, 2, "", "row")
+        )",
+            R"(
+            annotate_d([1, 5],
+                "diag_array_6",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_diag_d_operation("test_diag_2loc_5", R"(
+            diag_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 0, 0, 2, "", "row")
+        )",
+            R"(
+            annotate_d([9],
+                "diag_array_6",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 2, 3))))
+        )");
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
@@ -205,6 +233,7 @@ int hpx_main(int argc, char* argv[])
     test_diag_2loc_2();
     test_diag_2loc_3();
     test_diag_2loc_4();
+    test_diag_2loc_5();
 
 
     hpx::finalize();

@@ -249,7 +249,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::size_t row_dim = arr.dimension(0);
         std::size_t column_dim = arr.dimension(1);
 
-
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
 
@@ -257,9 +256,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             tile_calculation::tile_calculation_2d(
                 tile_idx, row_dim, column_dim ,numtiles, tiling_type);
 
-        tiling_information_2d tile_info(
-            tiling_span(row_start, row_start + row_size),
-            tiling_span(column_start, column_start + column_size));
+//        tiling_information_2d tile_info(
+//            tiling_span(row_start, row_start + row_size),
+//            tiling_span(column_start, column_start + column_size));
+        tiling_information_1d tile_info(
+            tiling_information_1d::tile1d_type::columns,
+            tiling_span(0, 0));
 
         locality_information locality_info(tile_idx, numtiles);
         annotation locality_ann = locality_info.as_annotation();
@@ -270,10 +272,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         annotation_information ann_info(
             std::move(base_name), 0);    //generation 0
 
-        auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(locality_ann,
-                tile_info.as_annotation(name_, codename_), ann_info, name_,
-                codename_));
+//        auto attached_annotation =
+//            std::make_shared<annotation>(localities_annotation(locality_ann,
+//                tile_info.as_annotation(name_, codename_), ann_info, name_,
+//                codename_));
 
         //create an empty array
         blaze::DynamicVector<T> result;
@@ -300,6 +302,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     (std::max)(int64_t(0), num_band) : row_start;
 
                 result = blaze::subvector(arr_Vec, des_start, result_sz);
+
+                tiling_information_1d tile_info(
+                    tiling_information_1d::tile1d_type::columns,
+                    tiling_span(des_start, des_start + result_sz));
             }
         }
         else if (tiling_type == "column")
@@ -318,6 +324,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     column_start : (std::max)(int64_t(0), column_start - k);
 
                 result = blaze::subvector(arr_Vec, des_start, result_sz);
+                tiling_information_1d tile_info(
+                    tiling_information_1d::tile1d_type::columns,
+                    tiling_span(des_start, des_start + result_sz));
             }
         }
         else if (tiling_type == "sym")
@@ -337,6 +346,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     (std::max)(row_start, column_start - k);
 
                 result = blaze::subvector(arr_Vec, des_start, result_sz);
+                tiling_information_1d tile_info(
+                    tiling_information_1d::tile1d_type::columns,
+                    tiling_span(des_start, des_start + result_sz));
             }
         }
         else
@@ -346,6 +358,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message(
                     "wrong numtiles input when tiling_type is sym"));
         }
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
 
         return primitive_argument_type(ir::node_data<T>{std::move(result)},
             attached_annotation);
