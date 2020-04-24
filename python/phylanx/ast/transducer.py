@@ -93,10 +93,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             assert len(tree.body) == 1
             return tree
 
-        def get_physl_source(self):
+        def get_physl_source(self, loc=None):
             """Return generated PhySL source string"""
 
-            return self.backend.get_physl_source()
+            return self.backend.get_physl_source(loc)
 
         def compile_function(self, func):
             fn_src = inspect.getsource(func).strip()
@@ -114,7 +114,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 fn_ast = ast.Module(body=[fn_body])
             return PhySL(func, fn_ast, self.kwargs)
 
-        def map_decorated(self, val):
+        def _map_decorated(self, val):
             """If a PhylanxDecorator is passed as an argument to an
                invocation of a Phylanx function we need to extract the
                compiled execution tree and pass along that instead.
@@ -136,7 +136,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             return val
 
-        def lazy(self, *args, **kwargs):
+        def lazy(self, *args, locality=None, **kwargs):
             """Compile this decorator, return wrapper binding the function to
                arguments"""
 
@@ -144,22 +144,38 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            mapped_args = tuple(map(self.map_decorated, args))
+            mapped_args = tuple(map(self._map_decorated, args))
             kwitems = kwargs.items()
-            mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}
-            return self.backend.lazy(*mapped_args, **mapped_kwargs)
+            mapped_kwargs = {k: self._map_decorated(v) for k, v in kwitems}
+            return self.backend.lazy(
+                *mapped_args, locality=locality, **mapped_kwargs)
 
-        def __call__(self, *args, **kwargs):
+        def launch(self, *args, locality=None, **kwargs):
+            """Compile this decorator, return wrapper binding the function to
+               arguments"""
+
+            if self.backend == 'OpenSCoP':
+                raise NotImplementedError(
+                    "OpenSCoP kernels are not yet callable.")
+
+            mapped_args = tuple(map(self._map_decorated, args))
+            kwitems = kwargs.items()
+            mapped_kwargs = {k: self._map_decorated(v) for k, v in kwitems}
+            return self.backend.launch(
+                *mapped_args, locality=locality, **mapped_kwargs)
+
+        def __call__(self, *args, locality=None, **kwargs):
             """Invoke this decorator using the given arguments"""
 
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
-            mapped_args = tuple(map(self.map_decorated, args))
+            mapped_args = tuple(map(self._map_decorated, args))
             kwitems = kwargs.items()
-            mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}
-            result = self.backend.call(*mapped_args, **mapped_kwargs)
+            mapped_kwargs = {k: self._map_decorated(v) for k, v in kwitems}
+            result = self.backend.call(
+                *mapped_args, locality=locality, **mapped_kwargs)
 
             self.__perfdata__ = self.backend.__perfdata__
 
@@ -168,9 +184,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         def generate_ast(self):
             return generate_phylanx_ast(self.__src__)
 
-        def tree(self):
-            return self.backend.tree()
+        def tree(self, locality=None):
+            return self.backend.tree(locality)
 
+    # expose lazy version of the decorator
     class _PhylanxLazyDecorator:
         def __init__(self, decorator):
             """
@@ -178,15 +195,14 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
             self.decorator = decorator
 
-        def __call__(self, *args, **kwargs):
+        def __call__(self, *args, locality=None, **kwargs):
             """Invoke this decorator"""
-            return self.decorator.lazy(*args, **kwargs)
+            return self.decorator.lazy(*args, locality=locality, **kwargs)
 
-        def tree(self):
+        def tree(self, locality=None):
             """Return the tree data for this decorator"""
-            return self.decorator.tree()
+            return self.decorator.tree(locality)
 
-    # expose lazy version of the decorator
     def lazy(decorator):
         if type(decorator).__name__ != "_PhylanxDecorator":
             raise InvalidDecoratorArgumentError
@@ -194,6 +210,30 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
     setattr(Phylanx, 'lazy', lazy)
 
+    # expose launch version of the decorator
+    class _PhylanxAsyncDecorator:
+        def __init__(self, decorator):
+            """
+            :function:decorator the decorated funtion.
+            """
+            self.decorator = decorator
+
+        def __call__(self, *args, locality=None, **kwargs):
+            """Invoke this decorator"""
+            return self.decorator.launch(*args, locality=locality, **kwargs)
+
+        def tree(self, locality=None):
+            """Return the tree data for this decorator"""
+            return self.decorator.tree(locality)
+
+    def launch(decorator):
+        if type(decorator).__name__ != "_PhylanxDecorator":
+            raise InvalidDecoratorArgumentError
+        return _PhylanxAsyncDecorator(decorator)
+
+    setattr(Phylanx, 'launch', launch)
+
+    # use this directly as a decorator
     if callable(__phylanx_arg):
         return _PhylanxDecorator(__phylanx_arg)
     elif __phylanx_arg is not None:

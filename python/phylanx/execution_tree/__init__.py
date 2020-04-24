@@ -29,13 +29,13 @@ if __name__ != '__main__':
 
 
 # global compiler state is initialized only once
-_compiler_state = None
+_compiler_state = {}
 
 
-def global_compiler_state(file_name=None):
+def global_compiler_state(file_name=None, loc=None):
 
     global _compiler_state
-    if _compiler_state is None:
+    if (loc not in _compiler_state) or _compiler_state[loc] is None:
         from phylanx import PhylanxSession
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
@@ -43,9 +43,9 @@ def global_compiler_state(file_name=None):
         if file_name is None:
             file_name = _name_of_importing_file
 
-        _compiler_state = compiler_state(file_name)
+        _compiler_state[loc] = compiler_state(file_name, loc)
 
-    return _compiler_state
+    return _compiler_state[loc]
 
 
 # wrap variable such that user does not need to supply compiler_state
