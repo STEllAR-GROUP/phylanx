@@ -27,6 +27,7 @@ endforeach()
 
 set(subdirs
     ast
+    distributed
     execution_tree
     plugins
     util

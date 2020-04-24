@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 expr : an arbitrary expression that will be evaluated
                        asynchronously
 
-            Returns:\n"
+            Returns:
 
             Returns a future representing the result of the evaluation of the
             given expression)")
