@@ -5,6 +5,7 @@
 
 set(example_programs
     kmeans
+    kmeans_fix_points
    )
 
 foreach(example_program ${example_programs})
