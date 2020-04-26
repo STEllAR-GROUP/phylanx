@@ -14,10 +14,13 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -45,6 +48,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     protected:
+        blaze::DynamicMatrix<double> initialize_centroids(
+            blaze::DynamicMatrix<double> const& points, std::size_t num_points,
+            std::size_t num_centroids) const;
+        blaze::DynamicVector<std::size_t> closest_centroids(
+            blaze::DynamicMatrix<double> const& points,
+            blaze::DynamicMatrix<double> const& centroids,
+            std::size_t num_points, std::size_t num_centroids) const;
+        blaze::DynamicMatrix<double> move_centroids(
+            blaze::DynamicMatrix<double> const& points,
+            blaze::DynamicVector<std::size_t>&& closest,
+            blaze::DynamicMatrix<double>&& centroids, std::size_t num_points,
+            std::size_t num_centroids) const;
+
         primitive_argument_type calculate_kmeans(
             primitive_arguments_type&& args) const;
     };

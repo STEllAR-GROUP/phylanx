@@ -12,8 +12,6 @@
 #include <hpx/testing.hpp>
 
 #include <cstdint>
-#include <iostream>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -37,25 +35,32 @@ void test_kmeans()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ast::nil{});
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(5));
     phylanx::execution_tree::primitive arg3 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ast::nil{});
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(0));
     phylanx::execution_tree::primitive arg4 =
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ast::nil{});
+
+    blaze::DynamicMatrix<double> initial_centroids{
+        {10.75, 5.75}, {3., 2.75}, {0.25, 9.}};
+
+    phylanx::execution_tree::primitive arg5 =
+        phylanx::execution_tree::primitives::create_variable(hpx::find_here(),
+            phylanx::ir::node_data<double>(initial_centroids));
 
     phylanx::execution_tree::primitive kmeans =
         phylanx::execution_tree::primitives::create_kmeans(hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{std::move(arg0),
                 std::move(arg1), std::move(arg2), std::move(arg3),
-                std::move(arg4)});
+                std::move(arg4), std::move(arg5)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         kmeans.eval();
 
     blaze::DynamicMatrix<double> expected{
-        {0.85, 10.85}, {2.3, 14.5}, {6.9125, 2.3375}};
+        {12.025, 3.35}, {1.8, 1.325}, {1.575, 12.675}};
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 

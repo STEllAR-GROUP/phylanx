@@ -19,7 +19,6 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
-#include <numeric>
 #include <random>
 #include <string>
 #include <utility>
@@ -40,11 +39,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     __arg(_2_num_centroid, 3),
                     __arg(_3_iterations, 10),
                     __arg(_4_show_result, false),
-                    __arg(_5_seed, nil)
+                    __arg(_5_seed, nil),
+                    __arg(_6_initial_centroids, nil)
                 )
             )"},
             &create_kmeans, &create_primitive<kmeans>, R"(
-            points, num_centroids, iterations, num_points, show_result
+            points, num_centroids, iterations, show_result, seed,
+            initial_centroids
+
             Args:
 
                 points (matrix): a matrix with any number of rows and two
@@ -55,11 +57,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 iterations (int, optional): the number of iterations. It sets
                     to 10 by default.
                 show_result (bool, optional): defaults to false.
+                seed (int) : the seed of a random number generator.
+                initial_centroids (matrix): if not given, the centroids are
+                    initialized by num_centroids randomly chosen points. If
+                    given there is no use for a seed. The initial_centroids
+                    matrix should have num_centroids rows and 2 columns.
 
             Returns:
 
-            Num ber of centroids points that shows the center of clusters given
-            the point matrix.)")
+            Number of centroids points that shows the center of clusters given
+            the points matrix.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -69,89 +76,87 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
+    // choose num_centroids random points as the initial centroids
+    blaze::DynamicMatrix<double> kmeans::initialize_centroids(
+        blaze::DynamicMatrix<double> const& points, std::size_t num_points,
+        std::size_t num_centroids) const
     {
-        // choose num_centroids random points as the initial centroids
-        blaze::DynamicMatrix<double> initialize_centroids(
-            blaze::DynamicMatrix<double> const& points, std::size_t num_points,
-            std::size_t num_centroids)
-        {
-            blaze::DynamicMatrix<double> centroids(num_centroids, 2);
-            std::uniform_int_distribution<std::int64_t> distribution(
-                0, num_points - 1);
-            std::vector<std::size_t> indices;
-            std::int64_t rand_index;
+        blaze::DynamicMatrix<double> centroids(num_centroids, 2);
+        std::uniform_int_distribution<std::int64_t> distribution(
+            0, num_points - 1);
+        std::vector<std::size_t> indices;
+        std::int64_t rand_index;
 
-            for (std::size_t i = 0; i != num_centroids; ++i)
+        for (std::size_t i = 0; i != num_centroids; ++i)
+        {
+            rand_index = distribution(util::rng_);
+
+            // rand indices should be unique
+            while (std::find(indices.begin(), indices.end(), rand_index) !=
+                indices.end())
             {
                 rand_index = distribution(util::rng_);
-
-                while (std::find(indices.begin(), indices.end(), rand_index) !=
-                    indices.end())
-                {
-                    rand_index = distribution(util::rng_);
-                }
-                indices.emplace_back(rand_index);
-
-                blaze::row(centroids, i) = blaze::row(points, rand_index);
             }
-            return std::move(centroids);
-        }
+            indices.emplace_back(rand_index);
 
-        // assign each point to its closest centroid
-        blaze::DynamicVector<std::size_t> closest_centroids(
-            blaze::DynamicMatrix<double> const& points,
-            blaze::DynamicMatrix<double> centroids,
-            std::size_t num_points, std::size_t num_centroids)
+            blaze::row(centroids, i) = blaze::row(points, rand_index);
+        }
+        return std::move(centroids);
+    }
+
+    // assign each point to its closest centroid
+    blaze::DynamicVector<std::size_t> kmeans::closest_centroids(
+        blaze::DynamicMatrix<double> const& points,
+        blaze::DynamicMatrix<double> const& centroids, std::size_t num_points,
+        std::size_t num_centroids) const
+    {
+        auto points_x = blaze::column(points, 0);
+        auto points_y = blaze::column(points, 1);
+        auto centroids_x = blaze::column(centroids, 0);
+        auto centroids_y = blaze::column(centroids, 1);
+
+        // calculating the index for each row of points
+        blaze::DynamicVector<std::size_t> result(num_points);
+        for (std::size_t i = 0; i != num_points; ++i)
         {
-            auto points_x = blaze::column(points, 0);
-            auto points_y = blaze::column(points, 1);
-            auto centroids_x = blaze::column(centroids, 0);
-            auto centroids_y = blaze::column(centroids, 1);
-
-            // calculating the index for each row of points
-            blaze::DynamicVector<std::size_t> result(num_points);
-            for (std::size_t i = 0; i != num_points; ++i)
+            auto temp = blaze::DynamicVector<double>(num_centroids);
+            for (std::size_t j = 0; j != num_centroids; ++j)
             {
-                auto temp = blaze::DynamicVector<double>(num_centroids);
-                for (std::size_t j = 0; j != num_centroids; ++j)
-                {
-                    temp[j] = blaze::sqrt(
-                        blaze::pow(points_x[i] - centroids_x[j], 2) +
-                        blaze::pow(points_y[i] - centroids_y[j], 2));
-                }
-                result[i] = blaze::argmin(temp);
+                temp[j] = blaze::sqrt(
+                    blaze::pow(points_x[i] - centroids_x[j], 2) +
+                    blaze::pow(points_y[i] - centroids_y[j], 2));
             }
-            return std::move(result);
+            result[i] = blaze::argmin(temp);
         }
+        return std::move(result);
+    }
 
-        // generates new centroids as the centers of clusters
-        blaze::DynamicMatrix<double> move_centroids(
-            blaze::DynamicMatrix<double> const& points,
-            blaze::DynamicVector<std::size_t> closest,
-            blaze::DynamicMatrix<double> centroids,
-            std::size_t num_points, std::size_t num_centroids)
+    // generates new centroids as the centers of clusters
+    blaze::DynamicMatrix<double> kmeans::move_centroids(
+        blaze::DynamicMatrix<double> const& points,
+        blaze::DynamicVector<std::size_t>&& closest,
+        blaze::DynamicMatrix<double>&& centroids,
+        std::size_t num_points, std::size_t num_centroids) const
+    {
+        blaze::DynamicMatrix<double> result(num_centroids, 2, 0.0);
+        std::size_t count;
+        for (size_t k = 0; k != num_centroids; ++k)
         {
-            blaze::DynamicMatrix<double> result(num_centroids, 2, 0.0);
-            std::size_t count;
-            for (size_t k = 0; k != num_centroids; ++k)
+            count = 0;
+            for (size_t i = 0; i != num_points; ++i)
             {
-                count = 0;
-                for (size_t i = 0; i != num_points; ++i)
+                if (closest[i] == k)
                 {
-                    if (closest[i] == k)
-                    {
-                        blaze::row(result, k) += blaze::row(points, i);
-                        count += 1;
-                    }
-                }
-                if (count != 0)
-                {
-                    blaze::row(result, k) /= count;
+                    blaze::row(result, k) += blaze::row(points, i);
+                    count += 1;
                 }
             }
-            return std::move(result);
+            if (count != 0)
+            {
+                blaze::row(result, k) /= count;
+            }
         }
+        return std::move(result);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -159,7 +164,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type&& args) const
     {
         // extract arguments
-        auto arg0 = extract_numeric_value(args[0], name_, codename_);
+        auto arg0 = extract_numeric_value(std::move(args[0]), name_, codename_);
         if (arg0.num_dimensions() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "kmeans::calculate_kmeans",
@@ -167,7 +172,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the kmeans algorithm primitive requires for the first "
                     "argument, points, to represent a matrix"));
         }
-        auto points = arg0.matrix();
+        auto const points = arg0.matrix();
         if (points.columns() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "kmeans::calculate_kmeans",
@@ -197,25 +202,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(args[3]), name_, codename_);
         }
 
-        std::size_t seed = 13;
+        std::uint32_t seed = 42;
         if (valid(args[4]))
         {
-            //seed = extract_scalar_positive_integer_value_strict(
-            //    std::move(args[4]), name_, codename_);
+            seed = extract_scalar_positive_integer_value_strict(
+                std::move(args[4]), name_, codename_);
         }
         util::set_seed(seed);
 
         std::size_t num_points = points.rows();
-        blaze::DynamicMatrix<double> centroids =
-            detail::initialize_centroids(points, num_points, num_centroids);
 
+        // initializing the centroids
+        blaze::DynamicMatrix<double> centroids;
+        if (valid(args[5]))
+        {
+            auto arg5 =
+                extract_numeric_value(std::move(args[5]), name_, codename_);
+            if (arg5.num_dimensions() != 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "kmeans::calculate_kmeans",
+                    generate_error_message(
+                        "the kmeans algorithm primitive requires for the "
+                        "initial_centroids to represent a matrix"));
+            }
+            centroids = arg5.matrix();
+            if (centroids.columns() != 2 || centroids.rows() != num_centroids)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "kmeans::calculate_kmeans",
+                    generate_error_message(
+                        "the kmeans algorithm primitive requires for the "
+                        "initial_centroids to have num_centroids rows and 2 "
+                        "columns"));
+            }
+        }
+        else
+        {
+            centroids = initialize_centroids(points, num_points, num_centroids);
+        }
+
+        // kmeans calculations
         blaze::DynamicVector<std::size_t> closest;
         for (std::size_t i = 0; i != iterations; ++i)
         {
-            closest = detail::closest_centroids(
-            points, centroids, num_points, num_centroids);
-            centroids = detail::move_centroids(
-                points, closest, centroids, num_points, num_centroids);
+            closest =
+                closest_centroids(points, centroids, num_points, num_centroids);
+            centroids = move_centroids(points, std::move(closest),
+                std::move(centroids), num_points, num_centroids);
+            if (show_result)
+            {
+                std::cout << "centroids after iteration " << i << ": "
+                          << centroids << std::endl;
+            }
         }
 
         return primitive_argument_type{std::move(centroids)};
@@ -226,12 +265,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > 5)
+        if (operands.empty() || operands.size() > 6)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "kmeans::eval",
                 generate_error_message(
                     "the kmeans algorithm primitive requires at least one and "
-                    "at most 5 operands"));
+                    "at most 6 operands"));
         }
 
         if (!valid(operands[0]))
