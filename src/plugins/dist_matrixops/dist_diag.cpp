@@ -21,6 +21,7 @@
 #include <phylanx/util/distributed_vector.hpp>
 
 #include <hpx/assertion.hpp>
+
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -55,6 +56,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             &create_dist_diag,
             &execution_tree::create_primitive<dist_diag>, R"(
             arr, k, tiling_type, tile_index, numtiles
+
             Args:
                 arr (array): a distributed array. A vector or a matrix.
                 k (int, optional): The default is 0. Denote the diagonal above
@@ -73,6 +75,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             A 1-D array of its k-th diagonal when a is a 2-D array; a 2-D array
             with a on the k-th diagonal.)")
     };
+
 
     ///////////////////////////////////////////////////////////////////////////
     dist_diag::dist_diag(
@@ -117,6 +120,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         }
 
         indices_pack diag_retile_calculation_1d(
+
             execution_tree::tiling_span const& loc_span,
             std::int64_t des_start, std::int64_t des_stop)
         {
@@ -170,13 +174,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         {
             HPX_ASSERT(arr_localities.has_span(1));
             span_index = 1;
-        }
 
         std::size_t size = arr.dimension(0) + std::abs(k);
 
         std::int64_t row_start, column_start;
-        std::size_t row_size, column_size;
-
         std::tie(row_start, column_start, row_size, column_size) =
             tile_calculation::tile_calculation_2d(
                 tile_idx, size, size, numtiles, tiling_type);
@@ -219,6 +220,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
                         auto indices = detail::diag_index_calculation_1d(
+
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -545,6 +547,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "invalid tile index. Tile indices start from 0 "
                                 "and should be smaller than number of tiles"));
                     }
+
 
                     switch (extract_numeric_value_dimension(
                         args[0], this_->name_, this_->codename_))
