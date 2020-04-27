@@ -63,14 +63,13 @@ char const* const kmeans_code = R"(
             define(centroids, initial_centroids),
             for(define(i, 0), i < iterations, store(i, i + 1),
                 block(
-                    define(closest, closest_centroids(points, centroids)),
                     if(enable_output, block(
                         cout("centroids in iteration ", i,": ", centroids)
                     )),
                     store(centroids,
                           apply(vstack,
                                 list(move_centroids(points,
-                                        closest,
+                                        closest_centroids(points, centroids),
                                         centroids))))
                 )
             ), centroids
