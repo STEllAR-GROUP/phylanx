@@ -16,6 +16,7 @@
 #
 # \param iterations Number of iterations
 # \returns the cluster centroids
+# flake8: noqa
 
 from phylanx import Phylanx
 import argparse
@@ -46,7 +47,8 @@ def closest_centroid(points, centroids):
 @Phylanx
 def move_centroids(points, closest, centroids):
     return np.fmap(
-        lambda k: np.sum(points*np.expand_dims(closest==k, -1), 0)/np.sum(closest==k, 0),
+        lambda k: np.sum(points * np.expand_dims(closest == k, -1), 0)
+        / np.sum(closest == k, 0),
         range(np.shape(centroids, 0))
     )
 
