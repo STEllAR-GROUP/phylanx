@@ -7,6 +7,7 @@
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/phylanx.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/iostreams.hpp>
@@ -14,6 +15,7 @@
 #include <hpx/testing.hpp>
 
 #include <cstdint>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -49,6 +51,8 @@ phylanx::execution_tree::compiler::function compile_and_run(
 
 void test_remote_add(hpx::id_type const& here, hpx::id_type const& there)
 {
+    std::uint32_t seed = phylanx::util::get_seed();
+
     // generate two random matrices
     auto load_data = compile_and_run(load_data_str, here);
     auto m1 = load_data(std::int64_t(4), std::int64_t(4));
@@ -81,6 +85,7 @@ void test_remote_add(hpx::id_type const& here, hpx::id_type const& there)
     auto result = columnwise_merge(primitive_argument_type{
         primitive_arguments_type{result1.get(), result2.get()}});
 
+    std::cout << "using seed: " << seed << "\n";
     HPX_TEST_EQ(expected, result);
 }
 
