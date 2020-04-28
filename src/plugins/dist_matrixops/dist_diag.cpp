@@ -10,12 +10,17 @@
 #include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/locality_annotation.hpp>
 #include <phylanx/execution_tree/meta_annotation.hpp>
+#include <phylanx/execution_tree/primitives/annotate_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_diag.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
+#include <phylanx/util/detail/range_dimension.hpp>
+#include <phylanx/util/distributed_matrix.hpp>
+#include <phylanx/util/distributed_vector.hpp>
 
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -36,8 +41,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
-    execution_tree::match_pattern_type const dist_diag::match_data = {
-
+    execution_tree::match_pattern_type const dist_diag::match_data = 
+    {
         hpx::util::make_tuple("diag_d", std::vector<std::string>{R"(
                 diag_d(
                     _1_arr,
@@ -45,12 +50,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     __arg(_3_tiling_type, "sym"),
                     __arg(_4_tile_index, find_here()),
                     __arg(_5_numtiles, num_localities()),
-                    __arg(_6_name, ""),
                 )
             )"},
             &create_dist_diag,
             &execution_tree::create_primitive<dist_diag>, R"(
-            arr, k, tile_index, numtiles, name, tiling_type, dtype
+            arr, k, tiling_type, tile_index, numtiles
             Args:
                 arr (array): a distributed array. A vector or a matrix.
                 k (int, optional): The default is 0. Denote the diagonal above
@@ -64,11 +68,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 numtiles (int, optional): number of tiles of the returned array.
                     If not given it sets to the number of localities in the
                     application.
-                name (string, optional): the array given name. If not given, a
-                    globally unique name will be generated.
             Returns:
+
             A 1-D array of its k-th diagonal when a is a 2-D array; a 2-D array
-            with a on the k-th diagonal.)")};
+            with a on the k-th diagonal.)")
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     dist_diag::dist_diag(
@@ -99,7 +103,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::int64_t local_start_;
         };
 
-        indices_pack index_calculation_1d(std::int64_t des_start,
+        indices_pack diag_index_calculation_1d(std::int64_t des_start,
             std::int64_t des_stop, std::int64_t cur_start,
             std::int64_t cur_stop)
         {
@@ -112,7 +116,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 rel_start < 0 ? -rel_start : 0, rel_start > 0 ? rel_start : 0};
         }
 
-        indices_pack retile_calculation_1d(
+        indices_pack diag_retile_calculation_1d(
             execution_tree::tiling_span const& loc_span,
             std::int64_t des_start, std::int64_t des_stop)
         {
@@ -137,7 +141,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         ir::node_data<T>&& arr, std::int64_t k, std::string const& tiling_type,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name,
         execution_tree::localities_information&& arr_localities) const
     {
         using namespace execution_tree;
@@ -156,6 +159,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::int64_t cur_start = tile_info_input.span_.start_;
         std::int64_t cur_stop = tile_info_input.span_.stop_;
         std::int64_t cur_size = cur_start + cur_stop;
+
+        // updating the annotation_ part of localities annotation
+        arr_localities.annotation_.name_ += "_diag";
+        ++arr_localities.annotation_.generation_;
 
         // is it a row vector or a column vector?
         std::size_t span_index = 0;
@@ -211,7 +218,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices = detail::index_calculation_1d(
+                        auto indices = detail::diag_index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -231,7 +238,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc].spans_[span_index];
 
-                        auto indices = detail::retile_calculation_1d(
+                        auto indices = detail::diag_retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -280,7 +287,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices = detail::index_calculation_1d(
+                        auto indices = detail::diag_index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -300,7 +307,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc].spans_[span_index];
 
-                        auto indices = detail::retile_calculation_1d(
+                        auto indices = detail::diag_retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -350,7 +357,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices = detail::index_calculation_1d(
+                        auto indices = detail::diag_index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -370,7 +377,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc].spans_[span_index];
 
-                        auto indices = detail::retile_calculation_1d(
+                        auto indices = detail::diag_retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -419,7 +426,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         execution_tree::primitive_argument_type&& arr, std::int64_t k,
         std::string const& tiling_type, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name) const
+        std::uint32_t const& numtiles) const
     {
         using namespace execution_tree;
         execution_tree::localities_information arr_localities =
@@ -430,25 +437,25 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         case node_data_type_bool:
             return dist_diag1d(
                 extract_boolean_value_strict(std::move(arr), name_, codename_),
-                k, tile_idx, numtiles, std::move(given_name), tiling_type,
+                k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
         case node_data_type_int64:
             return dist_diag1d(
                 extract_integer_value_strict(std::move(arr), name_, codename_),
-                k, tile_idx, numtiles, std::move(given_name), tiling_type,
+                k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
         case node_data_type_unknown:
             return dist_diag1d(
                 extract_numeric_value(std::move(arr), name_, codename_),
-                k, tile_idx, numtiles, std::move(given_name), tiling_type,
+                k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
         case node_data_type_double:
             return dist_diag1d<double>(
                 extract_numeric_value_strict(std::move(arr), name_, codename_),
-                k, tile_idx, numtiles, std::move(given_name), tiling_type,
+                k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
         default:
@@ -469,11 +476,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::eval_context ctx) const
     {
         // verify arguments
-        if (operands.empty() || operands.size() > 6)
+        if (operands.empty() || operands.size() > 5)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_diag::eval",
                 generate_error_message("the diag_d primitive requires "
-                                       "at least 1 and at most 6 operands"));
+                                       "at least 1 and at most 5 operands"));
         }
 
         if (!valid(operands[0]))
@@ -539,20 +546,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "and should be smaller than number of tiles"));
                     }
 
-                    std::string given_name = "";
-                    if (valid(args[5]))
-                    {
-                        given_name = extract_string_value(
-                            std::move(args[5]), this_->name_, this_->codename_);
-                    }
-
                     switch (extract_numeric_value_dimension(
                         args[0], this_->name_, this_->codename_))
                     {
                     case 1:
                         return this_->dist_diag1d(std::move(args[0]),
-                            k, tile_idx, numtiles, std::move(given_name),
-                            tiling_type);
+                            k, tiling_type, tile_idx, numtiles);
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,

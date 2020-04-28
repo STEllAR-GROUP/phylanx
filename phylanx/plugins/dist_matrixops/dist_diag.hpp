@@ -47,13 +47,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type dist_diag1d(
             ir::node_data<T>&& arr, std::int64_t k,
             std::string const& tiling_type, std::uint32_t const& tile_idx,
-            std::uint32_t const& numtiles, std::string&& given_name,
+            std::uint32_t const& numtiles,
             execution_tree::localities_information&& arr_localities) const;
 
         execution_tree::primitive_argument_type dist_diag1d(
             execution_tree::primitive_argument_type&& arr, std::int64_t k,
             std::string const& tiling_type, std::uint32_t const& tile_idx,
-            std::uint32_t const& numtiles, std::string&& given_name) const;
+            std::uint32_t const& numtiles) const;
 
     };
 
