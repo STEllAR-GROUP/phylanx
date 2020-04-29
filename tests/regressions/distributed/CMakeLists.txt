@@ -5,9 +5,12 @@
 
 set(tests
     1155_wrong_annotation_name
+    1155_wrong_broadcast
    )
 
 foreach(test ${tests})
+  set(${test}_PARAMETERS LOCALITIES 2)
+
   set(sources ${test}.cpp)
 
   source_group("Source Files" FILES ${sources})

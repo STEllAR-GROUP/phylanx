@@ -420,9 +420,9 @@ namespace phylanx { namespace execution_tree {
     annotation_wrapper::annotation_wrapper(primitive_argument_type const& op1,
         primitive_argument_type const& op2)
     {
-        if (!!op1)
+        if (op1.has_annotation())
         {
-            if (!!op2)
+            if (op2.has_annotation())
             {
                 // FIXME: merge annotations?
                 ann_ = op1.annotation();
@@ -432,7 +432,7 @@ namespace phylanx { namespace execution_tree {
                 ann_ = op1.annotation();
             }
         }
-        else if (!!op2)
+        else if (op2.has_annotation())
         {
             ann_ = op2.annotation();
         }
