@@ -360,6 +360,27 @@ namespace phylanx { namespace execution_tree {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    void annotation::increment_generation(
+        std::string const& name, std::string const& codename)
+    {
+        // extract the globally unique name identifying this object
+        annotation name_ann;
+        if (!find("name", name_ann, name, codename))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "annotation::increment_generation",
+                util::generate_error_message(
+                    "annotation does not hold a globally unique name",
+                    name, codename));
+        }
+
+        auto info = extract_annotation_information(name_ann, name, codename);
+        info.increment_generation();
+
+        replace_annotation("name", info.as_annotation(), name, codename);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     void annotation::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
         ar << data_;
@@ -418,10 +439,12 @@ namespace phylanx { namespace execution_tree {
     }
 
     primitive_argument_type annotation_wrapper::propagate(
-        primitive_argument_type&& val)
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
     {
         if (!val.has_annotation() && !!ann_)
         {
+            ann_->increment_generation(name, codename);
             val.set_annotation(std::move(ann_));
         }
         return std::move(val);
@@ -474,6 +497,11 @@ namespace phylanx { namespace execution_tree {
     annotation annotation_information::as_annotation() const
     {
         return annotation("name", generate_name());
+    }
+
+    std::int64_t annotation_information::increment_generation()
+    {
+        return ++generation_;
     }
 
     ////////////////////////////////////////////////////////////////////////////

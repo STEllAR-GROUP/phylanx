@@ -529,7 +529,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     annotation_wrapper wrap(op1, op2);
 
                     return wrap.propagate(this_->handle_numeric_operands(
-                        std::move(op1), std::move(op2)));
+                                              std::move(op1), std::move(op2)),
+                        this_->name_, this_->codename_);
                 },
                 value_operand(operands[0], args, name_, codename_, ctx),
                 value_operand(operands[1], args, name_, codename_, ctx));
