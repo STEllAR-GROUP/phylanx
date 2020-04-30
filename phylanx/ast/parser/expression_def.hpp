@@ -122,6 +122,10 @@ namespace phylanx { namespace ast { namespace parser
             |   bool_
             |   long_long
             |   string
+            |   bool_quatern
+            |   bool_tensor
+            |   bool_matrix
+            |   bool_vector
             |   int64_quatern
             |   int64_tensor
             |   int64_matrix
@@ -133,18 +137,19 @@ namespace phylanx { namespace ast { namespace parser
             |   '(' > expr > ')'
             ;
 
+        bool_quatern %= '[' >> (bool_tensor % ',') >> ']';
+        bool_tensor  %= '[' >> (bool_matrix % ',') >> ']';
+        bool_matrix %= '[' >> (bool_vector % ',') >> ']';
+        bool_vector %= '[' >> -(bool_ % ',') >> ']';
+
         int64_quatern %= '[' >> (int64_tensor % ',') >> ']';
         int64_tensor  %= '[' >> (int64_matrix % ',') >> ']';
-
         int64_matrix %= '[' >> (int64_vector % ',') >> ']';
-
         int64_vector %= '[' >> -(long_long % ',') >> ']';
 
         double_quatern %= '[' >> (double_tensor % ',') > ']';
         double_tensor  %= '[' >> (double_matrix % ',') > ']';
-
         double_matrix %= '[' >> (double_vector % ',') > ']';
-
         double_vector %= '[' > -(double_ % ',') > ']';
 
         function_call %=
@@ -192,8 +197,12 @@ namespace phylanx { namespace ast { namespace parser
             (unary_expr)
             (primary_expr)
             (list)
+            (int64_quatern)
+            (int64_tensor)
             (int64_matrix)
             (int64_vector)
+            (double_quatern)
+            (double_tensor)
             (double_matrix)
             (double_vector)
             (function_call)

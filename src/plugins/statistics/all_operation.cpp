@@ -35,32 +35,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::string const& codename)
             {}
 
-            static constexpr bool initial()
+            static constexpr std::uint8_t initial()
             {
-                return true;
+                return 1;
             }
 
             template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, bool>::type
-            operator()(Scalar s, bool initial) const
+            typename std::enable_if<traits::is_scalar<Scalar>::value,
+                std::uint8_t>::type
+            operator()(Scalar s, std::uint8_t initial) const
             {
-                return s && initial;
+                return (s && initial) ? 1 : 0;
             }
 
             template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, bool initial) const
+            typename std::enable_if<!traits::is_scalar<Vector>::value,
+                std::uint8_t>::type
+            operator()(Vector& v, std::uint8_t initial) const
             {
                 return initial && std::all_of(v.begin(), v.end(),
-                    [](T val) -> bool
+                    [](T val) -> std::uint8_t
                     {
-                        return val != 0;
+                        return (val != 0) ? 1 : 0;
                     });
             }
 
-            static constexpr bool finalize(bool value, std::size_t size)
+            static constexpr std::uint8_t finalize(
+                std::uint8_t value, std::size_t size)
             {
-                return value;
+                return value ? 1 : 0;
             }
         };
     }

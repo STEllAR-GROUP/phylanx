@@ -2918,19 +2918,18 @@ namespace phylanx { namespace ir
         {
             switch (nd.index())
             {
-            case node_data<std::uint8_t>::storage0d:
+            case node_data<std::uint8_t>::storage0d:          HPX_FALLTHROUGH;
             case node_data<std::uint8_t>::custom_storage0d:
-                out << std::boolalpha
-                    << std::to_string(bool{nd.scalar() != 0});
+                out << std::boolalpha << bool{nd.scalar() != 0};
                 break;
 
-            case node_data<std::uint8_t>::storage1d:
+            case node_data<std::uint8_t>::storage1d:          HPX_FALLTHROUGH;
             case node_data<std::uint8_t>::custom_storage1d:
                 out << std::boolalpha;
                 detail::print_vector<bool>(out, nd.vector(), nd.size());
                 break;
 
-            case node_data<std::uint8_t>::storage2d:
+            case node_data<std::uint8_t>::storage2d:          HPX_FALLTHROUGH;
             case node_data<std::uint8_t>::custom_storage2d:
                 {
                     auto m = nd.matrix();

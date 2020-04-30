@@ -16,9 +16,6 @@
 #include <hpx/include/util.hpp>
 #include <hpx/lcos/future.hpp>
 
-#include <hpx/parallel/algorithms/for_each.hpp>
-#include <hpx/parallel/execution_policy.hpp>
-
 #include <algorithm>
 #include <cmath>
 #include <cstddef>

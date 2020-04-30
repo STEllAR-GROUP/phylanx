@@ -54,6 +54,10 @@ namespace phylanx { namespace ast { namespace parser
             std::vector<std::vector<std::vector<std::vector<std::int64_t>>>>(),
             skipper<Iterator>>
             int64_quatern;
+        qi::rule<Iterator,
+            std::vector<std::vector<std::vector<std::vector<std::uint8_t>>>>(),
+            skipper<Iterator>>
+            bool_quatern;
 
         qi::rule<Iterator, std::vector<std::vector<std::vector<double>>>(),
             skipper<Iterator>>
@@ -61,6 +65,9 @@ namespace phylanx { namespace ast { namespace parser
         qi::rule<Iterator, std::vector<std::vector<std::vector<std::int64_t>>>(),
             skipper<Iterator>>
             int64_tensor;
+        qi::rule<Iterator, std::vector<std::vector<std::vector<std::uint8_t>>>(),
+            skipper<Iterator>>
+            bool_tensor;
 
         qi::rule<Iterator, std::vector<std::vector<double>>(),
             skipper<Iterator>>
@@ -68,11 +75,16 @@ namespace phylanx { namespace ast { namespace parser
         qi::rule<Iterator, std::vector<std::vector<std::int64_t>>(),
             skipper<Iterator>>
             int64_matrix;
+        qi::rule<Iterator, std::vector<std::vector<std::uint8_t>>(),
+            skipper<Iterator>>
+            bool_matrix;
 
         qi::rule<Iterator, std::vector<double>(), skipper<Iterator>>
             double_vector;
         qi::rule<Iterator, std::vector<std::int64_t>(), skipper<Iterator>>
             int64_vector;
+        qi::rule<Iterator, std::vector<std::uint8_t>(), skipper<Iterator>>
+            bool_vector;
 
         qi::rule<Iterator, ast::function_call(), skipper<Iterator>>
             function_call;
