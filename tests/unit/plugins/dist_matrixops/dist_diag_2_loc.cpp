@@ -37,7 +37,7 @@ void test_diag_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    std::cout << result << "\n";
+    hpx::cout << result << "\n";
 
     HPX_TEST_EQ(result, comparison);
 }
@@ -55,7 +55,8 @@ void test_diag_1d_0()
                 1, "row", 0, 2
             )
         )", R"(
-            annotate_d([[0, 1, 0, 0], [0, 0, 2, 0]], my_diag1d_0_diag/1",
+            annotate_d([[0, 1, 0, 0], [0, 0, 2, 0]],
+                "my_diag1d_0_diag/1",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 4),
@@ -72,7 +73,8 @@ void test_diag_1d_0()
                 1, "row", 1, 2
             )
         )", R"(
-            annotate_d([[0, 0, 0, 3], [0, 0, 0, 0]], "my_diag1d_0_diag/1",
+            annotate_d([[0, 0, 0, 3], [0, 0, 0, 0]],
+                "my_diag1d_0_diag/1",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 0, 4),

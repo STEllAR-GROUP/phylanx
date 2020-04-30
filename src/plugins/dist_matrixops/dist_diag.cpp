@@ -54,7 +54,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     __arg(_2_k, 0),
                     __arg(_3_tiling_type, "sym"),
                     __arg(_4_tile_index, find_here()),
-                    __arg(_5_numtiles, num_localities()),
+                    __arg(_5_numtiles, num_localities())
                 )
             )"},
             &create_dist_diag,
@@ -175,7 +175,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         std::int64_t cur_start = tile_info_input.span_.start_;
         std::int64_t cur_stop = tile_info_input.span_.stop_;
-        std::int64_t cur_size = cur_start + cur_stop;
+
 
         // updating the annotation_ part of localities annotation
         arr_localities.annotation_.name_ += "_diag";
