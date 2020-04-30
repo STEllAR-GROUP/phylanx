@@ -16,6 +16,7 @@
 #
 # \param iterations Number of iterations
 # \returns the cluster centroids
+# flake8: noqa
 
 from phylanx import Phylanx
 import argparse
@@ -34,19 +35,20 @@ def initialize_centroids(points, k):
 
 @Phylanx
 def closest_centroid(points, centroids):
-    points_x = np.expand_dims(np.slice_column(points, 0))
-    points_y = np.expand_dims(np.slice_column(points, 1))
+    points_x = np.expand_dims(np.slice_column(points, 0), -1)
+    points_y = np.expand_dims(np.slice_column(points, 1), -1)
     centroids_x = np.slice_column(centroids, 0)
     centroids_y = np.slice_column(centroids, 1)
     return np.argmin(np.sqrt(
         np.power(points_x - centroids_x, 2) + np.power(points_y - centroids_y, 2)
-    ), 0)
+    ), 1)
 
 
 @Phylanx
 def move_centroids(points, closest, centroids):
     return np.fmap(
-        lambda k: np.mean(points * np.add_dim(closest == k), 1),
+        lambda k: np.sum(points * np.expand_dims(closest == k, -1), 0)
+        / np.sum(closest == k, 0),
         range(np.shape(centroids, 0))
     )
 
@@ -57,10 +59,10 @@ def kmeans(points, k, iterations):
     for i in range(iterations):
         centroids = np.apply(
             np.vstack,
-            move_centroids(
+            [move_centroids(
                 points,
                 closest_centroid(points, centroids),
-                centroids)
+                centroids)]
         )
     return centroids
 
