@@ -162,21 +162,21 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         // in matrix zeroing out columns except diagonal
         for (std::size_t zeroCol = n - 1; zeroCol > 0; zeroCol--)
         {
-            for (std::size_t row = zeroCol - 1; row >= 0; row--)
+            for (std::size_t row = zeroCol; row != 0; --row)
             {
-                double factor = myMatrix(row, zeroCol);
-                for (std::size_t col = 0; col < n; col++)
+                double factor = myMatrix(row - 1, zeroCol);
+                for (std::size_t col = 0; col != n; col++)
                 {
-                    myMatrix(row, col) =
-                        myMatrix(row, col) - (factor * myMatrix(zeroCol, col));
-                    invMatrix(row, col) = invMatrix(row, col) -
+                    myMatrix(row - 1, col) = myMatrix(row - 1, col) -
+                        (factor * myMatrix(zeroCol, col));
+                    invMatrix(row - 1, col) = invMatrix(row - 1, col) -
                         (factor * invMatrix(zeroCol, col));
                 }
             }
         }
 
         // Swap rows back into place
-        for (std::size_t i = swappedRows.size() - 1; i >= 0; i--)
+        for (std::size_t i = 0; i != swappedRows.size(); ++i)
         {
             swap(row(invMatrix, std::get<0>(swappedRows[i])),
                 row(invMatrix, std::get<1>(swappedRows[i])));
