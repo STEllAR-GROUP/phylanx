@@ -98,17 +98,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     namespace detail
     {
-        static std::atomic<std::size_t> diag_count(0);
-        std::string generate_diag_name(std::string&& given_name)
-        {
-            if (given_name.empty())
-            {
-                return "diag_array_" + std::to_string(++diag_count);
-            }
-
-            return std::move(given_name);
-        }
-
+        //static std::atomic<std::size_t> diag_count(0);
+        //std::string generate_diag_name(std::string&& given_name)
+        //{
+        //    if (given_name.empty())
+        //    {
+        //        return "diag_array_" + std::to_string(++diag_count);
+        //    }
+//
+        //    return std::move(given_name);
+        //}
+//
         struct indices_pack
         {
             std::int64_t intersection_size_;
@@ -181,12 +181,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         arr_localities.annotation_.name_ += "_diag";
         ++arr_localities.annotation_.generation_;
 
+
         // is it a row vector or a column vector?
         std::size_t span_index = 0;
         if (!arr_localities.has_span(0))
         {
             HPX_ASSERT(arr_localities.has_span(1));
             span_index = 1;
+        }
 
         std::size_t size = arr.dimension(0) + std::abs(k);
 
@@ -233,10 +235,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
                         auto indices = detail::diag_index_calculation_1d(
-<<<<<<< HEAD
-
-=======
->>>>>>> test 2loc row
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -298,6 +296,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                 des_stop = des_size + des_start;
 
+                std::int64_t rel_start = des_start - cur_start;
+
                 if (des_start < cur_start || des_stop > cur_stop)
                 {
                     // there is a need to fetch some part
@@ -346,7 +346,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 else // the new array is a subset of the original array
                 {
                     blaze::band(result, num_band) =
-                        blaze::subvector(v, des_start, des_size);
+                        blaze::subvector(v, rel_start, des_size);
                 }
             }
         }
@@ -368,6 +368,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                 des_stop = des_size + des_start;
 
+                std::int64_t rel_start = des_start - cur_start;
+
                 if (des_start < cur_start || des_stop > cur_stop)
                 {
                     // there is a need to fetch some part
@@ -416,7 +418,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 else // the new array is a subset of the original array
                 {
                     blaze::band(result, num_band) =
-                        blaze::subvector(v, des_start, des_size);
+                        blaze::subvector(v, rel_start, des_size);
                 }
             }
         }
