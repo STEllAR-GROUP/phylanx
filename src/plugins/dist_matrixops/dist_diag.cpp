@@ -19,11 +19,9 @@
 #include <phylanx/util/detail/range_dimension.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 #include <phylanx/util/distributed_vector.hpp>
-<<<<<<< HEAD
 
 #include <hpx/assertion.hpp>
-=======
->>>>>>> test 2loc row
+
 
 #include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
@@ -60,10 +58,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             &create_dist_diag,
             &execution_tree::create_primitive<dist_diag>, R"(
             arr, k, tiling_type, tile_index, numtiles
-<<<<<<< HEAD
-
-=======
->>>>>>> test 2loc row
             Args:
                 arr (array): a distributed array. A vector or a matrix.
                 k (int, optional): The default is 0. Denote the diagonal above
@@ -82,10 +76,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             A 1-D array of its k-th diagonal when a is a 2-D array; a 2-D array
             with a on the k-th diagonal.)")
     };
-<<<<<<< HEAD
-
-=======
->>>>>>> test 2loc row
 
     ///////////////////////////////////////////////////////////////////////////
     dist_diag::dist_diag(
@@ -130,10 +120,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         }
 
         indices_pack diag_retile_calculation_1d(
-<<<<<<< HEAD
-
-=======
->>>>>>> test 2loc row
             execution_tree::tiling_span const& loc_span,
             std::int64_t des_start, std::int64_t des_stop)
         {
