@@ -16,7 +16,6 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_diag.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
-#include <phylanx/util/detail/range_dimension.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 
@@ -29,7 +28,6 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
