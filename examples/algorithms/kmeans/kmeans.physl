@@ -44,8 +44,10 @@ define(closest_centroids, points, centroids, block(
 
 define(move_centroids, points, closest, centroids, block(
     fmap(lambda(k, block(
-                define(x, closest == k),
-                mean(points * expand_dims(x, -1), 1)
+				define(x, closest == k),
+				define(count, sum(x * constant(1, shape(x, 0)))),
+				define(sum_, sum(points * expand_dims(x, -1), 0)),
+				sum_/count
     )),
         range(shape(centroids, 0))
     )

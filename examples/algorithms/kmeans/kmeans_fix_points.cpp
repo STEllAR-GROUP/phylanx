@@ -1,11 +1,14 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2010 Hartmut Kaiser
+// Copyright (c) 2020 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0.0. (See accompanying
 // file LICENSE_1_0.0.txt or copy at http://www.boost.org/LICENSE_1_0.0.txt)
 
 #include <phylanx/phylanx.hpp>
 #include <hpx/hpx_init.hpp>
+
+#include <iostream>
 
 #include <blaze/Math.h>
 #include <hpx/program_options.hpp>
@@ -24,12 +27,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const kmeans_code = R"(
-    define(initialize_centroids, points, k, block(
-        define(centroids, points),
-        shuffle(centroids),
-        slice(centroids, make_list(0, k))
-    ))
-
     define(closest_centroids, points, centroids, block(
         define(points_x,
             expand_dims(slice_column(points, 0), -1)
@@ -61,28 +58,38 @@ char const* const kmeans_code = R"(
         )
     ))
 
-    define(kmeans, points, k, iterations, block(
-        define(centroids, initialize_centroids(points, k)),
-        for(define(i, 0), i < iterations, store(i, i + 1), block(
-            store(centroids,
-                  apply(vstack,
-                        list(move_centroids(points,
-                                       closest_centroids(points, centroids),
-                                       centroids))))
-        )),
-        centroids
-    ))
+    define(kmeans, points, iterations, initial_centroids, enable_output,
+        block(
+            define(centroids, initial_centroids),
+            for(define(i, 0), i < iterations, store(i, i + 1),
+                block(
+                    if(enable_output, block(
+                        cout("centroids in iteration ", i,": ", centroids)
+                    )),
+                    store(centroids,
+                          apply(vstack,
+                                list(move_centroids(points,
+                                        closest_centroids(points, centroids),
+                                        centroids))))
+                )
+            ), centroids
+        )
+    )
 )";
-
-blaze::DynamicMatrix<double> generate_random(int num_points)
-{
-    blaze::Rand<blaze::DynamicMatrix<double>> gen_2d{};
-
-    return gen_2d.generate(num_points, 2ul);
-}
 
 int hpx_main(hpx::program_options::variables_map& vm)
 {
+    blaze::DynamicMatrix<double> points{{0.75, 0.25}, {1.25, 3.}, {2.75, 3.},
+        {1., 0.25}, {3., 0.25}, {1.5, 2.75}, {3., 0.}, {3., 3.}, {2.75, 2.25},
+        {2.5, 1.75}, {11., 4.5}, {10.5, 3.}, {9.5, 5.}, {10., 3.5},
+        {11.25, 6.25}, {9.25, 3.}, {11.75, 0.75}, {10., 2.75}, {12., 5.75},
+        {15.25, 2.25}, {-3., 14.75}, {4.75, 10.25}, {-1.25, 13.25},
+        {-0.25, 13.}, {0.75, 9.25}, {-0.25, 9.25}, {2.5, 8.75}, {-2.25, 10.25},
+        {-2.25, 10.75}, {2.5, 11.75}};
+
+    blaze::DynamicMatrix<double> initial_centroids{
+        {-3., 14.75}, {1.5, 2.75}, {3., 0.}};
+
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
     auto const& prog = phylanx::execution_tree::compile(kmeans_code, snippets);
@@ -91,18 +98,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto kmeans = prog.run(ctx);
 
     // evaluate generated execution tree
-    std::int64_t centroids = vm["centroids"].as<std::int64_t>();
     std::int64_t iterations = vm["iterations"].as<int64_t>();
-    std::int64_t num_points = vm["points"].as<int64_t>();
-    bool show_result = vm["show_result"].as<bool>();
+    bool enable_output = vm["enable_output"].as<bool>();
 
-    auto points = generate_random(num_points);
 
     // Measure execution time
     hpx::util::high_resolution_timer timer;
 
     auto result = phylanx::execution_tree::extract_numeric_value(
-        kmeans(ctx, points, centroids, iterations));
+        kmeans(ctx, points, iterations, initial_centroids, enable_output));
 
     auto elapsed = timer.elapsed();
 
@@ -110,11 +114,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // counter values
     hpx::reinit_active_counters(false);
 
-    if (show_result)
-        std::cout << result << "\n";
-
-    std::cout << "Time: " << elapsed << " seconds"
-              << std::endl;
+    std::cout << "Centroids are: " << result << std::endl;
+    std::cout << "Calculated in: " << elapsed << " seconds" << std::endl;
 
     return hpx::finalize();
 }
@@ -124,14 +125,10 @@ int main(int argc, char* argv[])
     // command line handling
     hpx::program_options::options_description desc("usage: kmeans [options]");
     desc.add_options()
-        ("centroids", hpx::program_options::value<std::int64_t>()->default_value(3),
-            "number of centroids(default: 3)")
-        ("iterations", hpx::program_options::value<std::int64_t>()->default_value(2),
-            "number of iterations (default: 2)")
-        ("points", hpx::program_options::value<std::int64_t>()->default_value(250),
-            "number of points (default: 250)")
-        ("show_result", hpx::program_options::value<bool>()->default_value(false),
-            "show calculated result (default: false)");
+        ("iterations, i", hpx::program_options::value<std::int64_t>()->default_value(5),
+            "number of iterations (default: 5)")
+        ("enable_output, e", hpx::program_options::value<bool>()->default_value(false),
+            "enable progress output (default: false)");
 
     return hpx::init(desc, argc, argv);
 }
