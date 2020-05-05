@@ -388,11 +388,16 @@ class PhySL:
                 check_return(self.ir)
 
                 self.__src__ = self._generate_physl(self.ir)
+                if self.doc_src is not None:
+                    self.__src__ = self.doc_src
                 self.__ast__ = phylanx.ast.generate_ast(self.__src__)
 
                 # now store the PhySL string and AST for this function
                 physl_db.insert(
                     self.wrapped_function.__name__, self.__src__, self.__ast__)
+
+            if self.doc_src is not None:
+                self.__src__ = self.doc_src
 
             physl_db.close()
 
@@ -403,6 +408,9 @@ class PhySL:
             check_return(self.ir)
             self.__src__ = self._generate_physl(self.ir)
             self.__ast__ = phylanx.ast.generate_ast(self.__src__)
+
+            if self.doc_src is not None:
+                self.__src__ = self.doc_src
 
             # close database, if needed
             if physl_db is not None:
@@ -461,6 +469,10 @@ class PhySL:
         self.ir = None
         self.python_tree = tree
         self.locality = phylanx.execution_tree.find_here()
+        if 'doc_src' in kwargs and kwargs['doc_src'] == True:
+            self.doc_src = func.__doc__
+        else:
+            self.doc_src = None
 
         if self.kwargs.get('fglobals'):
             self.fglobals = self.kwargs['fglobals']
