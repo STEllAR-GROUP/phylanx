@@ -104,13 +104,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using lda_trainer_t = phylanx::execution_tree::primitives::impl::lda_trainer;
 
         lda_trainer_t trainer(alpha, beta);
-        trainer(word_doc_mat, topics, iterations);
+        auto result = trainer(word_doc_mat, topics, iterations);
 
         return primitive_argument_type
         {
             primitive_arguments_type{
-                ir::node_data<double>{std::move(trainer.wp)},
-                ir::node_data<double>{std::move(trainer.dp)}}
+                ir::node_data<double>{std::move(std::get<0>(result))},
+                ir::node_data<double>{std::move(std::get<1>(result))}
+            }
         };
     }
 

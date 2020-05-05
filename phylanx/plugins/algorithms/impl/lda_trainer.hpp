@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cmath>
 #include <cstdlib>
+#include <tuple>
 #include <numeric>
 #include <algorithm>
 #include <iostream>
@@ -123,7 +124,7 @@ class lda_trainer {
         }
     }
 
-    void operator()(const blaze::DynamicMatrix<double> & word_doc_mat,
+    std::tuple<blaze::DynamicMatrix<double>, blaze::DynamicMatrix<double>> operator()(const blaze::DynamicMatrix<double> & word_doc_mat,
         const std::int64_t T,
         const std::int64_t iter=500) {
 
@@ -186,6 +187,8 @@ class lda_trainer {
             gibbs(word_doc_mat, alpha, beta, z, wp, dp, ztot0);
             wp = wp0 + (wp - wp0);
         } 
+
+        return std::make_tuple(wp, dp);
     }
 };
 
