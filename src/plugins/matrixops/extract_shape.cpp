@@ -39,8 +39,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Without the optional argument, it returns a list of integers
             corresponding to the size of each dimension of the array `a`. If the
-            optional `dim` argument is supplied, then the
-            size for that dimension is returned as an integer.)"},
+            optional `dim` argument is supplied, then the size for that
+            dimension is returned as an integer. If the supplied array is
+            distributed, the shape is calculated on the current locality.)"},
 
         match_pattern_type{"__len",
             std::vector<std::string>{"__len(_1)"},
@@ -53,15 +54,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
             Returns:
 
             This returns the number of elements of the given array along its
-            outermost (leftmost) dimension.)"}
+            outermost (leftmost) dimension.)"},
+
+        match_pattern_type{"shape_d",
+            std::vector<std::string>{"shape_d(_1, _2)", "shape_d(_1)"},
+            &create_extract_shape, &create_primitive<extract_shape>, R"(
+            a, dim
+            Args:
+
+                a (object): a distributed array of arbitrary dimensions
+                dim (optional, int): the dimension to get the size of
+
+            Returns:
+
+            Without the optional argument, it returns a list of integers
+            corresponding to the size of each dimension of the array `a` on all
+            localities. If the optional `dim` argument is supplied, then the
+            size for that dimension of the whole array is returned as an
+            integer.)"}
     };
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        bool extract_shape_mode(std::string const& name)
+        extract_shape::shape_mode extract_shape_mode(std::string const& name)
         {
-            return name.find("__len") != std::string::npos;
+            extract_shape::shape_mode result = extract_shape::local_mode;
+            if (name.find("__len") != std::string::npos)
+            {
+                result = extract_shape::len_mode;
+            }
+            else if (name.find("shape_d") != std::string::npos)
+            {
+                result = extract_shape::dist_mode;
+            }
+            return result;
         }
     }
 
@@ -69,7 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , len_mode_(detail::extract_shape_mode(name_))
+      , mode_(detail::extract_shape_mode(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -92,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type&& arg) const
     {
         std::int64_t size = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -117,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         std::int64_t size = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -137,7 +164,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // return a list of numbers representing the dimensions of the argument
         std::int64_t rows = 0;
         std::int64_t columns = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -170,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             index += 2;
 
         std::int64_t size = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -192,7 +219,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t pages = 0;
         std::int64_t rows = 0;
         std::int64_t columns = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -227,7 +254,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             index += 3;
 
         std::int64_t size = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -250,7 +277,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t pages = 0;
         std::int64_t rows = 0;
         std::int64_t columns = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -288,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             index += 4;
 
         std::int64_t size = 0;
-        if (arg.has_annotation())
+        if (mode_ == dist_mode)
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -307,7 +334,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > 2)
+        if (operands.empty() || ((operands.size() > 1 && mode_ == len_mode)) ||
+            (operands.size() > 2 && mode_ != len_mode))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::eval",
@@ -336,33 +364,53 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     auto&& arg = farg.get();
 
-                    switch (extract_numeric_value_dimension(
-                        arg, this_->name_, this_->codename_))
+                    std::size_t numdims = extract_numeric_value_dimension(
+                        arg, this_->name_, this_->codename_);
+                    if (this_->mode_ == len_mode)
+                    {
+                        switch (numdims)
+                        {
+                        case 0:
+                            return this_->shape0d(std::move(arg), 0);
+
+                        case 1:
+                            return this_->shape1d(std::move(arg), 0);
+
+                        case 2:
+                            return this_->shape2d(std::move(arg), 0);
+
+                        case 3:
+                            return this_->shape3d(std::move(arg), 0);
+
+                        case 4:
+                            return this_->shape4d(std::move(arg), 0);
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "extract_shape::eval",
+                                this_->generate_error_message(
+                                    "first operand has unsupported "
+                                    "number of dimensions"));
+                        }
+                    }
+
+                    // local or distributed shape is asked, no dim
+                    switch (numdims)
                     {
                     case 0:
-                        return this_->len_mode_ ?
-                            this_->shape0d(std::move(arg), 0) :
-                            this_->shape0d(std::move(arg));
+                        return this_->shape0d(std::move(arg));
 
                     case 1:
-                        return this_->len_mode_ ?
-                            this_->shape1d(std::move(arg), 0) :
-                            this_->shape1d(std::move(arg));
+                        return this_->shape1d(std::move(arg));
 
                     case 2:
-                        return this_->len_mode_ ?
-                            this_->shape2d(std::move(arg), 0) :
-                            this_->shape2d(std::move(arg));
+                        return this_->shape2d(std::move(arg));
 
                     case 3:
-                        return this_->len_mode_ ?
-                            this_->shape3d(std::move(arg), 0) :
-                            this_->shape3d(std::move(arg));
+                        return this_->shape3d(std::move(arg));
 
                     case 4:
-                        return this_->len_mode_ ?
-                            this_->shape4d(std::move(arg), 0) :
-                            this_->shape4d(std::move(arg));
+                        return this_->shape4d(std::move(arg));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -376,6 +424,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_, std::move(ctx)));
         }
 
+        // cannot be on len_mode
+        // local or distributed shape is asked on a dimension
         return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_)](
                     hpx::future<primitive_argument_type>&& farg,
