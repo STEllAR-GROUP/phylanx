@@ -5,6 +5,7 @@
 
 set(tests
     simple_als
+    simple_kmeans
     simple_lra
    )
 

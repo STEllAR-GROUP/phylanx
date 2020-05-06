@@ -722,7 +722,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         hpx::get_num_localities(hpx::launch::sync);
                     if (valid(args[3]))
                     {
-                        extract_scalar_positive_integer_value_strict(
+                        numtiles = extract_scalar_positive_integer_value_strict(
                             std::move(args[3]), this_->name_, this_->codename_);
                     }
 

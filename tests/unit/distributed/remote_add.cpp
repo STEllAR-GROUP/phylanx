@@ -6,6 +6,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
+#include <phylanx/plugins/plugin_factory.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/iostreams.hpp>
@@ -15,6 +17,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,6 +37,18 @@ char const* const cannon_product_code = R"(block(
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
+    std::uint32_t seed = phylanx::util::get_seed();
+
+    // generate two random matrices
+    auto load_data = compile_and_run(load_data_str, here);
+    auto m1 = load_data(std::int64_t(4), std::int64_t(4));
+    auto m2 = load_data(std::int64_t(4), std::int64_t(4));
+
+    // add them locally only
+    auto add_here = compile_and_run(add_str, here);
+    auto expected = add_here(m1, m2);
+
+    // tile both matrices
     using namespace phylanx::execution_tree;
 
     // compile the given code
@@ -49,9 +64,21 @@ int hpx_main(int argc, char* argv[])
 
     auto elapsed = t.elapsed();
 
-    std::cout << "Result: \n"
-              << extract_numeric_value(result) << std::endl
-              << "Calculated in: " << elapsed << " seconds" << std::endl;
+    // merge tiles
+    auto columnwise_merge = compile_and_run(columnwise_merge_str, here);
+    auto result = columnwise_merge(primitive_argument_type{
+        primitive_arguments_type{result1.get(), result2.get()}});
+
+    std::cout << "using seed: " << seed << "\n";
+    HPX_TEST_EQ(expected, result);
+}
+
+int hpx_main(int argc, char* argv[])
+{
+    std::vector<hpx::id_type> localities = hpx::find_all_localities();
+    HPX_TEST(localities.size() >= 2);
+
+    test_remote_add(localities[0], localities[1]);
 
     return hpx::finalize();
 }
