@@ -91,7 +91,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type extract_shape::shape1d(
         primitive_argument_type&& arg) const
     {
-        std::int64_t size = extract_numeric_value_size(arg, name_, codename_);
+        std::int64_t size = 0;
+        if (arg.has_annotation())
+        {
+            localities_information localities =
+                extract_localities_information(arg, name_, codename_);
+            size = localities.size();
+        }
+        else
+        {
+            size = extract_numeric_value_size(arg, name_, codename_);
+        }
         primitive_arguments_type result{primitive_argument_type{size}};
         return primitive_argument_type{std::move(result)};
     }
@@ -115,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
-            size = extract_numeric_value_size(arg,name_,codename_);
+            size = extract_numeric_value_size(arg, name_, codename_);
         }
         return primitive_argument_type{size};
     }
