@@ -119,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type&& arg) const
     {
         std::int64_t size = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -144,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         std::int64_t size = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -164,7 +164,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // return a list of numbers representing the dimensions of the argument
         std::int64_t rows = 0;
         std::int64_t columns = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -197,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             index += 2;
 
         std::int64_t size = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -219,7 +219,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t pages = 0;
         std::int64_t rows = 0;
         std::int64_t columns = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -254,7 +254,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             index += 3;
 
         std::int64_t size = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -277,7 +277,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t pages = 0;
         std::int64_t rows = 0;
         std::int64_t columns = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
@@ -315,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             index += 4;
 
         std::int64_t size = 0;
-        if (mode_ == dist_mode)
+        if (mode_ == dist_mode && arg.has_annotation())
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
