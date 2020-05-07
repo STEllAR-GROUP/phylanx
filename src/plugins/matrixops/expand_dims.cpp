@@ -80,6 +80,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "either 0 or -1 for scalars."));
         }
 
+        if (args[0].has_annotation())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::expand_dims::expand_dims_"
+                "0d",
+                generate_error_message("distributed 0d arrays are not "
+                                       "supported by expand_dims primitive"));
+        }
 
         switch (extract_common_type(args[0]))
         {
@@ -466,6 +474,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t a_dims = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
 
+                if (args[0].has_annotation() && a_dims > 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::expand_dims::"
+                        "eval",
+                        this_->generate_error_message(
+                            "distributed arrays with more than two dimensions "
+                            "are not currently supported"));
+                }
                 switch (a_dims)
                 {
                 case 0:

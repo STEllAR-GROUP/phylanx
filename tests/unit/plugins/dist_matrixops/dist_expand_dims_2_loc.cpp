@@ -164,6 +164,26 @@ void test_expand_dims_1d_3()
     }
 }
 
+void test_expand_dims_1d_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_expand_dims_operation("test_expand_dims_2loc1d_4", R"(
+            expand_dims([1., 2., 3., 4.], 1)
+        )", R"(
+            [[1.], [2.], [3.], [4.]]
+        )");
+    }
+    else
+    {
+        test_expand_dims_operation("test_expand_dims_2loc1d_4", R"(
+            expand_dims([5., 6.], 1)
+        )", R"(
+            [[5.], [6.]]
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -171,6 +191,7 @@ int hpx_main(int argc, char* argv[])
     test_expand_dims_1d_1();
     test_expand_dims_1d_2();
     test_expand_dims_1d_3();
+    test_expand_dims_1d_4();
 
     hpx::finalize();
     return hpx::util::report_errors();
