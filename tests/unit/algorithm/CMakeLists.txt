@@ -6,7 +6,7 @@
 set(tests
     simple_als
     simple_kmeans
-    simple_lra
+#    simple_lra
    )
 
 set(simple_lra_FLAGS DEPENDENCIES HPX::iostreams_component)
