@@ -5,6 +5,19 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+
+namespace blaze {
+
+    // for some reason newer versions of Blaze require this function to be
+    // defined...
+    // define this before any Blaze headers are included
+    inline bool conj(bool v)
+    {
+        return v;
+    }
+}
+
+
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/keras_support/switch_operation.hpp>
@@ -260,7 +273,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         blaze::UniformTensor<bool> ones(pages, rows, columns, true);
-
 
         if (!then_expr.is_ref())
         {
