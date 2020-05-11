@@ -9,7 +9,14 @@
 #define PHYLANX_DIST_MATRIXOPS_IDX_TILE_CALCULATION_HELPER
 
 #include <hpx/assertion.hpp>
+
+#include <cstddef>
 #include <cstdint>
+#include <string>
+#include <tuple>
+
+#include <blaze/Math.h>
+
 
 namespace phylanx { namespace dist_matrixops { namespace calculation_detail
 {
