@@ -9,7 +9,7 @@ set(tests
     filter_operation
     fold_left_operation
     fold_right_operation
-    for_operation
+#    for_operation
     if_conditional
     fmap_operation
     parallel_block_operation
