@@ -423,6 +423,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 arr_localities.annotation_, name_, codename_));
 
         return primitive_argument_type(result, attached_annotation);
+
     }
     ///////////////////////////////////////////////////////////////////////////
 //    template <typename T>
@@ -851,16 +852,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "and should be smaller than number of tiles"));
                     }
 
-<<<<<<< HEAD
 
-                    switch (extract_numeric_value_dimension(
-                        args[0], this_->name_, this_->codename_))
-                    {
-                    case 1:
-                        return this_->dist_diag1d(std::move(args[0]),
-=======
                     return this_->dist_diag1d(std::move(args[0]),
->>>>>>> Separate long functions in dist_diag_1d that return reults based on tiling type; linking errors
                             k, tiling_type, tile_idx, numtiles);
                 }),
             execution_tree::primitives::detail::map_operands(operands,
