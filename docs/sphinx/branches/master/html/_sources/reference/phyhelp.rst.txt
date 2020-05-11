@@ -1666,6 +1666,33 @@ inverse (m)
             The multiplicative inverse of m.
 
 
+kmeans
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kmeans (points, num_centroids, iterations, show_result, seed,)
+            initial_centroids
+
+            Args:
+
+                points (matrix): a matrix with any number of rows and two
+                    columns. Any data that can be represented by two features
+                    can create the point matrix.
+                num_centroids (int, optional): the number of clusters in which
+                    we need to break down the data. It sets to 3 by default
+                iterations (int, optional): the number of iterations. It sets
+                    to 10 by default.
+                show_result (bool, optional): defaults to false.
+                seed (int) : the seed of a random number generator.
+                initial_centroids (matrix): if not given, the centroids are
+                    initialized by num_centroids randomly chosen points. If
+                    given there is no use for a seed. The initial_centroids
+                    matrix should have num_centroids rows and 2 columns.
+
+            Returns:
+
+            Number of centroids points that shows the center of clusters given
+            the points matrix.
+
+
 l2_normalize
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 l2_normalize (a, axis)

@@ -196,6 +196,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#insert">insert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#invgje">invGJE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#inverse">inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kmeans">kmeans</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#l2-normalize">l2_normalize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#lambda">lambda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id35">len</a></li>
@@ -2195,6 +2196,36 @@ axis (int, optional) : Axis along which to insert values. If</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="kmeans">
+<h2>kmeans<a class="headerlink" href="#kmeans" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>kmeans (points, num_centroids, iterations, show_result, seed,)</dt><dd><p>initial_centroids</p>
+<p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>points (matrix): a matrix with any number of rows and two</dt><dd><p>columns. Any data that can be represented by two features
+can create the point matrix.</p>
+</dd>
+<dt>num_centroids (int, optional): the number of clusters in which</dt><dd><p>we need to break down the data. It sets to 3 by default</p>
+</dd>
+<dt>iterations (int, optional): the number of iterations. It sets</dt><dd><p>to 10 by default.</p>
+</dd>
+</dl>
+<p>show_result (bool, optional): defaults to false.
+seed (int) : the seed of a random number generator.
+initial_centroids (matrix): if not given, the centroids are</p>
+<blockquote>
+<div><p>initialized by num_centroids randomly chosen points. If
+given there is no use for a seed. The initial_centroids
+matrix should have num_centroids rows and 2 columns.</p>
+</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<p>Number of centroids points that shows the center of clusters given
+the points matrix.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="l2-normalize">
 <h2>l2_normalize<a class="headerlink" href="#l2-normalize" title="Permalink to this headline">¶</a></h2>
 <dl>
@@ -3437,7 +3468,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Apr 22, 2020.
+        Last updated on May 11, 2020.
       </span>
 
     </p>
