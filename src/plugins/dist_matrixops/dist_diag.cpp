@@ -32,7 +32,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -56,7 +55,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             &execution_tree::create_primitive<dist_diag>, R"(
             arr, k, tiling_type, tile_index, numtiles
             Args:
-                arr (array): a distributed array. A vector or a matrix.
+                arr (array): a distributed array. A vector.
                 k (int, optional): The default is 0. Denote the diagonal above
                     the main diagonal when k > 0 and the diagonal below the main
                     diagonal when k < 0.
@@ -70,8 +69,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     application.
             Returns:
 
-            A 1-D array of its k-th diagonal when a is a 2-D array; a 2-D array
-            with a on the k-th diagonal.)")
+            A 2-D array with arr on the k-th diagonal.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -501,9 +499,20 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 "and should be smaller than number of tiles"));
                     }
 
-
-                    return this_->dist_diag1d(std::move(args[0]),
+                    switch (extract_numeric_value_dimension(
+                        std::move(args[0]), this_->name_, this_->codename_))
+                    {
+                        case 1:
+                            return this_->dist_diag1d(std::move(args[0]),
                             k, tiling_type, tile_idx, numtiles);
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "dist_diag::eval",
+                                this_->generate_error_message(
+                                    "left hand side operand has unsupported "
+                                    "number of dimensions"));
+                    }
                 }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
