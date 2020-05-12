@@ -382,8 +382,9 @@ class PhySL:
                 self.ir = self._apply_rule(self.python_tree.body[0])
                 check_return(self.ir)
 
-                self.__src__ = self._generate_physl(self.ir)
-                if self.doc_src is not None:
+                if self.doc_src is None:
+                    self.__src__ = self._generate_physl(self.ir)
+                else:
                     self.__src__ = self.doc_src
                 self.__ast__ = phylanx.ast.generate_ast(self.__src__)
 
