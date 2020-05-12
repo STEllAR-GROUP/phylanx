@@ -36,7 +36,6 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_diag::match_data = 
@@ -77,69 +76,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-<<<<<<< HEAD
     {}
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    namespace detail
-    {
-        //static std::atomic<std::size_t> diag_count(0);
-        //std::string generate_diag_name(std::string&& given_name)
-        //{
-        //    if (given_name.empty())
-        //    {
-        //        return "diag_array_" + std::to_string(++diag_count);
-        //    }
-//
-        //    return std::move(given_name);
-        //}
-//
-        struct indices_pack
-        {
-            std::int64_t intersection_size_;
-            std::int64_t projected_start_;
-            std::int64_t local_start_;
-        };
-
-        indices_pack diag_index_calculation_1d(std::int64_t des_start,
-            std::int64_t des_stop, std::int64_t cur_start,
-            std::int64_t cur_stop)
-        {
-            std::int64_t local_intersection_size =
-                (std::min)(des_stop, cur_stop) -
-                (std::max)(des_start, cur_start);
-            std::int64_t rel_start = des_start - cur_start;
-
-            return indices_pack{local_intersection_size,
-                rel_start < 0 ? -rel_start : 0, rel_start > 0 ? rel_start : 0};
-        }
-
-        indices_pack diag_retile_calculation_1d(
-            execution_tree::tiling_span const& loc_span,
-            std::int64_t des_start, std::int64_t des_stop)
-        {
-            execution_tree::tiling_span span(des_start, des_stop);
-            execution_tree::tiling_span intersection;
-            if (intersect(span, loc_span, intersection))
-            {
-                std::int64_t rel_loc_start =
-                    intersection.start_ - loc_span.start_;
-                HPX_ASSERT(rel_loc_start >= 0);
-                return indices_pack{intersection.size(),
-                    intersection.start_ - des_start, rel_loc_start};
-            }
-            return indices_pack{0, 0, 0};
-        }
-    }    // namespace detail
-
-
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         ir::node_data<T>&& arr, std::int64_t k, std::string const& tiling_type,
-        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::uint32_t tile_idx, std::uint32_t numtiles,
         execution_tree::localities_information&& arr_localities) const
     {
         using namespace execution_tree;
@@ -172,9 +115,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             span_index = 1;
         }
 
-        std::size_t size = arr.dimension(0) + std::abs(k);
+        std::size_t size = dim + std::abs(k);
 
         std::int64_t row_start, column_start;
+        std::size_t row_size, column_size;
+
         std::tie(row_start, column_start, row_size, column_size) =
             tile_calculation::tile_calculation_2d(
                 tile_idx, size, size, numtiles, tiling_type);
@@ -209,6 +154,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                 des_stop = des_size + des_start;
 
+                // relative start
+                std::int64_t rel_start = des_start - cur_start;
+
                 if (des_start < cur_start || des_stop > cur_stop)
                 {
                     // there is a need to fetch some part
@@ -216,7 +164,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices = detail::diag_index_calculation_1d(
+                        auto indices = calculation_detail::index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -236,7 +184,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc].spans_[span_index];
 
-                        auto indices = detail::diag_retile_calculation_1d(
+                        auto indices =
+                            calculation_detail::retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -257,7 +206,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 else // the new array is a subset of the original array
                 {
                     blaze::band(result, num_band) =
-                        blaze::subvector(v, des_start, des_size);
+                        blaze::subvector(v, rel_start, des_size);
                 }
             }
         }
@@ -287,7 +236,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices = detail::diag_index_calculation_1d(
+                        auto indices = calculation_detail::index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -307,7 +256,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc].spans_[span_index];
 
-                        auto indices = detail::diag_retile_calculation_1d(
+                        auto indices =
+                            calculation_detail::retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -359,7 +309,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices = detail::diag_index_calculation_1d(
+                        auto indices = calculation_detail::index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr, indices.projected_start_,
                             indices.intersection_size_) = blaze::subvector(v,
@@ -379,7 +329,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc].spans_[span_index];
 
-                        auto indices = detail::diag_retile_calculation_1d(
+                        auto indices =
+                            calculation_detail::retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -734,8 +685,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         execution_tree::primitive_argument_type&& arr, std::int64_t k,
-        std::string const& tiling_type, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles) const
+        std::string const& tiling_type, std::uint32_t tile_idx,
+        std::uint32_t numtiles) const
     {
         using namespace execution_tree;
         execution_tree::localities_information arr_localities =
@@ -745,22 +696,25 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         {
         case node_data_type_bool:
             return dist_diag1d(
-                extract_boolean_value(std::move(arr), name_, codename_),
+                extract_boolean_value_strict(std::move(arr), name_, codename_),
                 k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
         case node_data_type_int64:
             return dist_diag1d(
-                extract_integer_value(std::move(arr), name_, codename_),
+                extract_integer_value_strict(std::move(arr), name_, codename_),
                 k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            return dist_diag1d(
+                extract_numeric_value(std::move(arr), name_, codename_),
+                k, tiling_type, tile_idx, numtiles,
+                std::move(arr_localities));
 
         case node_data_type_double:
             return dist_diag1d(
-                extract_numeric_value(std::move(arr), name_, codename_),
+                extract_numeric_value_strict(std::move(arr), name_, codename_),
                 k, tiling_type, tile_idx, numtiles,
                 std::move(arr_localities));
 
