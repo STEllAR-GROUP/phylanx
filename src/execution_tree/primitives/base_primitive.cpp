@@ -4025,6 +4025,9 @@ namespace phylanx { namespace execution_tree
         case 6:
             return primitive_argument_type{util::get<6>(std::move(val))};
 
+        case 7:
+            return primitive_argument_type{util::get<7>(std::move(val))};
+
         default:
             break;
         }
@@ -4051,6 +4054,9 @@ namespace phylanx { namespace execution_tree
 
         case 6:
             return ir::node_data<double>{util::get<6>(std::move(val))};
+
+        case 7:
+            return ir::node_data<double>{util::get<7>(std::move(val))};
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;
@@ -4079,6 +4085,7 @@ namespace phylanx { namespace execution_tree
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
         case 5: HPX_FALLTHROUGH;
         case 6: HPX_FALLTHROUGH;
+        case 7: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -4104,6 +4111,9 @@ namespace phylanx { namespace execution_tree
 
         case 6:
             return util::get<6>(std::move(val));
+
+        case 7:
+            return ir::node_data<std::int64_t>{util::get<7>(std::move(val))};
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;
@@ -4138,6 +4148,9 @@ namespace phylanx { namespace execution_tree
 
         case 6:
             return ir::node_data<std::uint8_t>{util::get<6>(std::move(val))};
+
+        case 7:
+            return util::get<7>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;
