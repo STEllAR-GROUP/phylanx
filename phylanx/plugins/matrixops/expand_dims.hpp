@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
-// Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018-2020 Hartmut Kaiser
+// Copyright (c) 2018-2020 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,7 @@
 #define PHYLANX_PRIMITIVES_ADD_DIM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
@@ -48,26 +49,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         template <typename T>
-        primitive_argument_type add_dim_0d(ir::node_data<T>&& arg) const;
+        primitive_argument_type expand_dims_0d(ir::node_data<T>&& arg) const;
+        primitive_argument_type expand_dims_0d(
+            primitive_arguments_type&& arg) const;
 
         template <typename T>
-        primitive_argument_type add_dim_1d(
+        primitive_argument_type expand_dims_1d(
             ir::node_data<T>&& arg, std::int64_t axis) const;
-
-        primitive_argument_type add_dim_0d(primitive_arguments_type&& arg) const;
-        primitive_argument_type add_dim_1d(primitive_arguments_type&& arg) const;
+        template <typename T>
+        primitive_argument_type expand_dims_1d(ir::node_data<T>&& arg,
+            std::int64_t axis, localities_information&& arr_localities) const;
+        primitive_argument_type expand_dims_1d(
+            primitive_arguments_type&& arg) const;
 
         template <typename T>
-        primitive_argument_type add_dim_2d(
+        primitive_argument_type expand_dims_2d(
             ir::node_data<T>&& arg, std::int64_t axis) const;
-
-        primitive_argument_type add_dim_2d(primitive_arguments_type&& arg) const;
+        primitive_argument_type expand_dims_2d(
+            primitive_arguments_type&& arg) const;
 
         template <typename T>
-        primitive_argument_type add_dim_3d(
+        primitive_argument_type expand_dims_3d(
             ir::node_data<T>&& arg, std::int64_t axis) const;
-
-        primitive_argument_type add_dim_3d(primitive_arguments_type&& arg) const;
+        primitive_argument_type expand_dims_3d(
+            primitive_arguments_type&& arg) const;
     };
 
     inline primitive create_expand_dims(hpx::id_type const& locality,
