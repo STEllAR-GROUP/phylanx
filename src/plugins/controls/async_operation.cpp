@@ -69,6 +69,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         annotation_wrapper wrap(operands[0]);
         return hpx::make_ready_future(wrap.propagate(primitive_argument_type{
             value_operand(operands[0], args, name_, codename_, std::move(ctx))
-                .share()}));
+                .share()}, name_, codename_));
     }
 }}}    // namespace phylanx::execution_tree::primitives

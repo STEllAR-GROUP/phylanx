@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         // Do gaussian elimination to get upper triangular
         // matrix with 1's across diagonal
-        for (std::int64_t current_row = 0; current_row < n; current_row++)
+        for (std::size_t current_row = 0; current_row < n; current_row++)
         {
             // Swaps current row with nearest subsequent row such that
             // after swapping A[i][i] != 0.
@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             else    // the inversion has not already failed
             {
                 double scale = myMatrix(current_row, current_row);
-                for (std::int64_t col = 0; col < n; col++)
+                for (std::size_t col = 0; col < n; col++)
                 {
                     myMatrix(current_row, col) =
                         myMatrix(current_row, col) / scale;
@@ -140,11 +140,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 }
                 if (current_row < n - 1)
                 {
-                    for (std::int64_t nextRow = current_row + 1; nextRow < n;
+                    for (std::size_t nextRow = current_row + 1; nextRow < n;
                          nextRow++)
                     {
                         double factor = myMatrix(nextRow, current_row);
-                        for (std::int64_t nextCol = 0; nextCol < n; nextCol++)
+                        for (std::size_t nextCol = 0; nextCol < n; nextCol++)
                         {
                             myMatrix(nextRow, nextCol) =
                                 myMatrix(nextRow, nextCol) -
@@ -160,23 +160,23 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         // Back substitution phase, going from bottom to top
         // in matrix zeroing out columns except diagonal
-        for (std::int64_t zeroCol = n - 1; zeroCol > 0; zeroCol--)
+        for (std::size_t zeroCol = n - 1; zeroCol > 0; zeroCol--)
         {
-            for (std::int64_t row = zeroCol - 1; row >= 0; row--)
+            for (std::size_t row = zeroCol; row != 0; --row)
             {
-                double factor = myMatrix(row, zeroCol);
-                for (std::int64_t col = 0; col < n; col++)
+                double factor = myMatrix(row - 1, zeroCol);
+                for (std::size_t col = 0; col != n; col++)
                 {
-                    myMatrix(row, col) =
-                        myMatrix(row, col) - (factor * myMatrix(zeroCol, col));
-                    invMatrix(row, col) = invMatrix(row, col) -
+                    myMatrix(row - 1, col) = myMatrix(row - 1, col) -
+                        (factor * myMatrix(zeroCol, col));
+                    invMatrix(row - 1, col) = invMatrix(row - 1, col) -
                         (factor * invMatrix(zeroCol, col));
                 }
             }
         }
 
         // Swap rows back into place
-        for (std::int64_t i = swappedRows.size()-1; i >= 0; i--)
+        for (std::size_t i = 0; i != swappedRows.size(); ++i)
         {
             swap(row(invMatrix, std::get<0>(swappedRows[i])),
                 row(invMatrix, std::get<1>(swappedRows[i])));

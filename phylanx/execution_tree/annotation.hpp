@@ -118,6 +118,9 @@ namespace phylanx { namespace execution_tree {
             return !(lhs == rhs);
         }
 
+        PHYLANX_EXPORT void increment_generation(
+            std::string const& name, std::string const& codename);
+
     private:
         ir::range data_;
 
@@ -140,7 +143,8 @@ namespace phylanx { namespace execution_tree {
         annotation_wrapper(primitive_argument_type const& op1,
             primitive_argument_type const& op2);
 
-        primitive_argument_type propagate(primitive_argument_type&& val);
+        primitive_argument_type propagate(primitive_argument_type&& val,
+            std::string const& name, std::string const& codename);
 
         std::shared_ptr<execution_tree::annotation> ann_;
     };
@@ -158,6 +162,8 @@ namespace phylanx { namespace execution_tree {
 
         PHYLANX_EXPORT std::string generate_name() const;
         PHYLANX_EXPORT annotation as_annotation() const;
+
+        PHYLANX_EXPORT std::int64_t increment_generation();
 
     private:
         void extract_from_name();

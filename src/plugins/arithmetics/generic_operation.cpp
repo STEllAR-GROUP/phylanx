@@ -306,19 +306,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                     case 0:
                         return wrap.propagate(
-                            this_->generic0d(std::move(op), dtype));
+                            this_->generic0d(std::move(op), dtype),
+                            this_->name_, this_->codename_);
 
                     case 1:
                         return wrap.propagate(
-                            this_->generic1d(std::move(op), dtype));
+                            this_->generic1d(std::move(op), dtype),
+                            this_->name_, this_->codename_);
 
                     case 2:
                         return wrap.propagate(
-                            this_->generic2d(std::move(op), dtype));
+                            this_->generic2d(std::move(op), dtype),
+                            this_->name_, this_->codename_);
 
                     case 3:
                         return wrap.propagate(
-                            this_->generic3d(std::move(op), dtype));
+                            this_->generic3d(std::move(op), dtype),
+                            this_->name_, this_->codename_);
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -347,20 +351,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (dims)
                 {
                 case 0:
-                    return wrap.propagate(this_->generic0d(
-                        std::move(op), node_data_type_unknown));
+                    return wrap.propagate(
+                        this_->generic0d(std::move(op), node_data_type_unknown),
+                        this_->name_, this_->codename_);
 
                 case 1:
-                    return wrap.propagate(this_->generic1d(
-                        std::move(op), node_data_type_unknown));
+                    return wrap.propagate(
+                        this_->generic1d(std::move(op), node_data_type_unknown),
+                        this_->name_, this_->codename_);
 
                 case 2:
-                    return wrap.propagate(this_->generic2d(
-                        std::move(op), node_data_type_unknown));
+                    return wrap.propagate(
+                        this_->generic2d(std::move(op), node_data_type_unknown),
+                        this_->name_, this_->codename_);
 
                 case 3:
-                    return wrap.propagate(this_->generic3d(
-                        std::move(op), node_data_type_unknown));
+                    return wrap.propagate(
+                        this_->generic3d(std::move(op), node_data_type_unknown),
+                        this_->name_, this_->codename_);
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
