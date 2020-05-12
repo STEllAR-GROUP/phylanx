@@ -460,7 +460,7 @@ class PhySL:
         self.__ast__ = None
         self.ir = None
         self.python_tree = tree
-        if 'doc_src' in kwargs and kwargs['doc_src'] == True:
+        if 'doc_src' in kwargs and kwargs['doc_src']:
             self.doc_src = func.__doc__
         else:
             self.doc_src = None
