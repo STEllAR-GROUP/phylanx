@@ -40,7 +40,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
-    execution_tree::match_pattern_type const dist_diag::match_data = 
+    execution_tree::match_pattern_type const dist_diag::match_data =
     {
         hpx::util::make_tuple("diag_d", std::vector<std::string>{R"(
                 diag_d(
@@ -221,7 +221,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
-                            // loc_span has the part of result 
+                            // loc_span has the part of result
                             blaze::subvector(res_arr,
                                 indices.projected_start_,
                                 indices.intersection_size_) =
@@ -454,7 +454,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     using namespace execution_tree;
 
                     std::int64_t k = 0;
-                    
+
                     if (valid(args[1]))
                     {
                         k = extract_scalar_integer_value_strict(
@@ -519,3 +519,4 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 codename_, std::move(ctx)));
     }
 }}}    // namespace phylanx::dist_matrixops::primitives
+
