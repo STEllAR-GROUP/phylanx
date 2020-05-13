@@ -39,10 +39,10 @@ def test_make_list2():
 
 
 @Phylanx
-def test_make_list_arg(l):
+def test_make_list_arg(lst):
     a = 1
     c = 3
-    return make_list(a, l, c)  # noqa: F821
+    return make_list(a, lst, c)  # noqa: F821
 
 
 assert test_make_list_empty() == []
