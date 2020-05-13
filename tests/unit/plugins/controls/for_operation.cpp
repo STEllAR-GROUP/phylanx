@@ -40,7 +40,7 @@ void test_for_operation_false()
     pe::primitive for_ =
         pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 std::move(init), std::move(cond), std::move(reinit),
                 std::move(body)
             });
@@ -70,14 +70,14 @@ void test_for_operation_true()
     pe::primitive body =
         pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 cond, phylanx::ir::node_data<std::uint8_t>(false)
             });
 
     pe::primitive for_ =
         pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 std::move(init), std::move(cond), std::move(reinit),
                 std::move(body)
             });
@@ -114,7 +114,7 @@ void test_for_operation_42()
     pe::primitive cond =
         pe::primitives::create_less(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 init, forty_two
             });
 
@@ -128,7 +128,7 @@ void test_for_operation_42()
     pe::primitive body =
       pe::primitives::create_store_operation(
           hpx::find_here(),
-          std::vector<pe::primitive_argument_type>{
+          pe::primitive_arguments_type{
               temp, init
           });
 
@@ -136,12 +136,12 @@ void test_for_operation_42()
     pe::primitive reinit =
         pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 init,
                 pe::primitive_argument_type{
                     pe::primitives::create_add_operation(
                         hpx::find_here(),
-                        std::vector<pe::primitive_argument_type>{
+                        pe::primitive_arguments_type{
                             init, one
                         }
                     )
@@ -152,7 +152,7 @@ void test_for_operation_42()
     pe::primitive for_ =
         pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 std::move(init), std::move(cond), std::move(reinit) ,
                 std::move(body)
             });
@@ -189,7 +189,7 @@ void test_for_operation_42_with_store()
     pe::primitive store =
         pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 init, std::move(rhs)
             });
 
@@ -205,7 +205,7 @@ void test_for_operation_42_with_store()
     pe::primitive cond =
         pe::primitives::create_less(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 pe::primitive_argument_type{init},
                 pe::primitive_argument_type{forty_two}
             });
@@ -214,12 +214,12 @@ void test_for_operation_42_with_store()
     pe::primitive reinit =
         pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 init,
                 pe::primitive_argument_type{
                     pe::primitives::create_add_operation(
                         hpx::find_here(),
-                          std::vector<pe::primitive_argument_type>{
+                          pe::primitive_arguments_type{
                               init, five
                           }
                     )
@@ -236,7 +236,7 @@ void test_for_operation_42_with_store()
     pe::primitive body =
       pe::primitives::create_store_operation(
           hpx::find_here(),
-          std::vector<pe::primitive_argument_type>{
+          pe::primitive_arguments_type{
               temp, init
           });
 
@@ -244,7 +244,7 @@ void test_for_operation_42_with_store()
     pe::primitive for_ =
         pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<pe::primitive_argument_type>{
+            pe::primitive_arguments_type{
                 std::move(store), std::move(cond), std::move(reinit),
                 std::move(body)
             });

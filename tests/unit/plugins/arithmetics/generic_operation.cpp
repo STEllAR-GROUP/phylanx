@@ -295,7 +295,8 @@ void test_0d_operations()
     test_generic_operation_0d("ceil", std::ceil);
     test_generic_operation_0d("trunc", std::trunc);
     test_generic_operation_0d("rint", std::round);
-    test_generic_operation_0d("conj", blaze::conj);
+    test_generic_operation_0d(
+        "conj", [](double val) -> double { return blaze::conj(val); });
     test_generic_operation_0d("real", std::real);
     test_generic_operation_0d("imag", std::imag);
     test_generic_operation_0d("sqrt", std::sqrt);

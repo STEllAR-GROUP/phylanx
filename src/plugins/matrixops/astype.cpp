@@ -104,6 +104,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "arguments given by the operands array are valid"));
         }
 
+        auto op1 = value_operand(operands[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
@@ -113,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     return this_->astype_nd(std::move(op0), map_dtype(dtype_op));
                 }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)),
+            std::move(op1),
             string_operand(
                 operands[1], args, name_, codename_, std::move(ctx)));
     }

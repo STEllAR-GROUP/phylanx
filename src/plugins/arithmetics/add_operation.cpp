@@ -176,12 +176,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     if (is_list_operand_strict(lhs_val))
                     {
-                        return wrap.propagate(this_->handle_list_operands(
-                            std::move(lhs_val), std::move(rhs_val)));
+                        return wrap.propagate(
+                            this_->handle_list_operands(
+                                std::move(lhs_val), std::move(rhs_val)),
+                            this_->name_, this_->codename_);
                     }
 
-                    return wrap.propagate(this_->handle_numeric_operands(
-                        std::move(lhs_val), std::move(rhs_val)));
+                    return wrap.propagate(
+                        this_->handle_numeric_operands(
+                            std::move(lhs_val), std::move(rhs_val)),
+                        this_->name_, this_->codename_);
                 },
                 value_operand(operands[0], args, name_, codename_, ctx),
                 value_operand(operands[1], args, name_, codename_, ctx));

@@ -25,6 +25,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<extract_shape>
     {
+    public:
+        enum shape_mode
+        {
+            local_mode,
+            len_mode,
+            dist_mode    // shape_d
+        };
+
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
@@ -60,7 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type shape4d(
             primitive_argument_type&& arg, std::int64_t index) const;
 
-        bool len_mode_;
+    private:
+        shape_mode mode_;
     };
 
     inline primitive create_extract_shape(hpx::id_type const& locality,
@@ -69,6 +78,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         return create_primitive_component(
             locality, "shape", std::move(operands), name, codename);
+    }
+
+    inline primitive create_extract_dist_shape(hpx::id_type const& locality,
+        primitive_arguments_type&& operands,
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "shape_d", std::move(operands), name, codename);
     }
 }}}
 

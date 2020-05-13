@@ -204,16 +204,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (a_dims)
                     {
                     case 0:
-                        return wrap.propagate(this_->sigmoid0d(std::move(a)));
+                        return wrap.propagate(this_->sigmoid0d(std::move(a)),
+                            this_->name_, this_->codename_);
 
                     case 1:
-                        return wrap.propagate(this_->sigmoid1d(std::move(a)));
+                        return wrap.propagate(this_->sigmoid1d(std::move(a)),
+                            this_->name_, this_->codename_);
 
                     case 2:
-                        return wrap.propagate(this_->sigmoid2d(std::move(a)));
+                        return wrap.propagate(this_->sigmoid2d(std::move(a)),
+                            this_->name_, this_->codename_);
 
                     case 3:
-                        return wrap.propagate(this_->sigmoid3d(std::move(a)));
+                        return wrap.propagate(this_->sigmoid3d(std::move(a)),
+                            this_->name_, this_->codename_);
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
