@@ -238,6 +238,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#separable-conv1d">separable_conv1d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#set-seed-action">set_seed_action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shape">shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shape-d">shape_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shuffle">shuffle</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sigmoid">sigmoid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#size">size</a></li>
@@ -2934,8 +2935,26 @@ dim (optional, int): the dimension to get the size of</p>
 <p>Returns:</p>
 <p>Without the optional argument, it returns a list of integers
 corresponding to the size of each dimension of the array <cite>a</cite>. If the
-optional <cite>dim</cite> argument is supplied, then the
-size for that dimension is returned as an integer.</p>
+optional <cite>dim</cite> argument is supplied, then the size for that
+dimension is returned as an integer. If the supplied array is
+distributed, the shape is calculated on the current locality.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="shape-d">
+<h2>shape_d<a class="headerlink" href="#shape-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>shape_d (a, dim)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>a (object): a distributed array of arbitrary dimensions
+dim (optional, int): the dimension to get the size of</p>
+</div></blockquote>
+<p>Returns:</p>
+<p>Without the optional argument, it returns a list of integers
+corresponding to the size of each dimension of the array <cite>a</cite> on all
+localities. If the optional <cite>dim</cite> argument is supplied, then the
+size for that dimension of the whole array is returned as an
+integer.</p>
 </dd>
 </dl>
 </div>

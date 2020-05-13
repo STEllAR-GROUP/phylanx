@@ -2354,8 +2354,26 @@ shape (a, dim)
 
             Without the optional argument, it returns a list of integers
             corresponding to the size of each dimension of the array `a`. If the
-            optional `dim` argument is supplied, then the
-            size for that dimension is returned as an integer.
+            optional `dim` argument is supplied, then the size for that
+            dimension is returned as an integer. If the supplied array is
+            distributed, the shape is calculated on the current locality.
+
+
+shape_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+shape_d (a, dim)
+            Args:
+
+                a (object): a distributed array of arbitrary dimensions
+                dim (optional, int): the dimension to get the size of
+
+            Returns:
+
+            Without the optional argument, it returns a list of integers
+            corresponding to the size of each dimension of the array `a` on all
+            localities. If the optional `dim` argument is supplied, then the
+            size for that dimension of the whole array is returned as an
+            integer.
 
 
 shuffle
