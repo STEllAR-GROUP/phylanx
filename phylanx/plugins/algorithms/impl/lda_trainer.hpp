@@ -7,6 +7,23 @@
 #ifndef __PHYLANX_LDA_TRAINER_IMPL_HPP__
 #define __PHYLANX_LDA_TRAINER_IMPL_HPP__
 
+#include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
+#include <phylanx/execution_tree/locality_annotation.hpp>
+#include <phylanx/execution_tree/meta_annotation.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
+#include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/common/dot_operation_nd.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_cannon_product.hpp>
+#include <phylanx/util/distributed_matrix.hpp>
+
+#include <hpx/assertion.hpp>
+#include <hpx/errors/throw_exception.hpp>
+#include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+
 #include <cstdint>
 #include <cmath>
 #include <cstdlib>
@@ -17,8 +34,13 @@
 
 #include <blaze/Blaze.h>
 
-namespace phylanx { namespace execution_tree { namespace primitives { namespace impl
-{
+/////////////////////////////////////////////////////////////////////
+REGISTER_DISTRIBUTED_MATRIX_DECLARATION(double);
+
+/////////////////////////////////////////////////////////////////////
+namespace phylanx { namespace execution_tree { namespace primitives {
+namespace impl {
+/////////////////////////////////////////////////////////////////////
 
 // https://bitbucket.org/blaze-lib/blaze/issues/158/random-number-distributions
 //
@@ -59,26 +81,32 @@ class lda_trainer {
         blaze::DynamicMatrix<double> wp(W, T);
         wp = wp0;
 
+        blaze::DynamicVector<double> lhs(T), rhs(T), zprob(T), probs(T);
+
+        using row_iterator =
+            blaze::DynamicMatrix<double, blaze::rowMajor>::Iterator;
+
+        using vec_iterator =
+            blaze::DynamicVector<double>::Iterator;
+
         // N (total instance count of words) == sum(word_doc_mat)
         std::int64_t n = 0;
-        blaze::DynamicVector<double> lhs(T), rhs(T), zprob(T), probs(T);
 
         for(std::int64_t d = 0; d < D; ++d) {
             for(std::int64_t w = 0; w < W; ++w) {
 
-                const auto wdf = word_doc_mat(d, w);
+                const auto wdf =
+                    static_cast<std::int64_t>(word_doc_mat(d, w));
 
-                if(wdf < 1.0) { continue; }
-
+                if(wdf < 1) { continue; }
+         
                 for(std::int64_t f = 0; f < wdf; ++f) {
-                    std::int64_t t = z[n]; //static_cast<std::int64_t>(z[n]);
+
+                    std::int64_t t = z[n];
                     --ztot[t];
                     --wp(w, t);
                     --dp(d, t);
  
-                    using row_iterator =
-                        blaze::DynamicMatrix<double, blaze::rowMajor>::Iterator;
-
                     row_iterator wp_beg = wp.begin(w);
                     row_iterator wp_end = wp.end(w);
 
@@ -95,7 +123,6 @@ class lda_trainer {
                             return val + alpha;
                     });
 
-                    using vec_iterator = blaze::DynamicVector<double>::Iterator;
                     vec_iterator ztot_beg = ztot.begin();
                     vec_iterator ztot_end = ztot.end();
 
@@ -106,8 +133,10 @@ class lda_trainer {
 
                     probs = (lhs * ( rhs / zprob ));
 
-                    double max_prob = std::abs(drand48()) * (*std::max_element(probs.begin(), probs.end())) * 2.0;
-                    t = static_cast<std::int64_t>(std::abs(drand48()) * static_cast<double>(T));
+                    double max_prob = std::abs(drand48()) *
+                        (*std::max_element(probs.begin(), probs.end())) * 2.0;
+
+                    t = static_cast<std::int64_t>(std::abs(drand48()) * T;
 
                     while(max_prob > 1e-10) {
                         max_prob -= probs[t];
@@ -124,17 +153,25 @@ class lda_trainer {
         }
     }
 
-    std::tuple<blaze::DynamicMatrix<double>, blaze::DynamicMatrix<double>> operator()(const blaze::DynamicMatrix<double> & word_doc_mat,
+    using dmatrix_t = blaze::DynamicMatrix<double>;
+    using dvector_t = blaze::DynamicVector<double>;
+    using i64vector_t = blaze::DynamicMatrix<std::int64_t>;
+
+    std::tuple<dmatrix_t, dmatrix_t> operator()(
+        const dmatrix_t & word_doc_mat,
         const std::int64_t T,
         const std::int64_t iter=500) {
 
         const std::int64_t D = word_doc_mat.rows();
         const std::int64_t W = word_doc_mat.columns();
-        const std::int64_t N = static_cast<std::int64_t>(blaze::sum(word_doc_mat));
+        const std::int64_t N =
+            static_cast<std::int64_t>(blaze::sum(word_doc_mat));
 
-        blaze::DynamicMatrix<double> wp(W, T);
-        blaze::DynamicMatrix<double> dp(D, T);
-        blaze::DynamicVector<std::int64_t> z(N);
+        dmatrix_t wp(W, T); // this component stores information that
+                            // contains a distributed reduce and scatter
+                            //
+        dmatrix_t dp(D, T); // this component is distributed, but unchanging
+        i64vector_t z(N);
 
         {
             // values near the mean are the most likely

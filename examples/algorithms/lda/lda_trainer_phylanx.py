@@ -14,7 +14,8 @@
 
 from random import randint, random as rnd
 from numpy import zeros, ones, sum
-from phylanx import Phylanx
+import phylanx
+from phylanx.ast import *
 
 
 @Phylanx
@@ -48,10 +49,10 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
                 wp[w, t] -= 1.0
                 dp[d, t] -= 1.0
 
-                lhs[:] = wp[w, :] + b
-                rhs[:] = dp[d, :] + a
-                zprob[:] = ztot[:] + wbeta
-                probs[:] = lhs * (rhs / zprob)
+                lhs = wp[w, :] + b
+                rhs = dp[d, :] + a
+                zprob = ztot[:] + wbeta
+                probs = lhs * (rhs / zprob)
 
                 # inspired by: https://www.youtube.com/watch?v=aHLslaWO-AQ
                 #
@@ -104,14 +105,14 @@ def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
     wp0 = zeros(wp.shape)
 
     for i in range(iters):
-        wp0[:, :] = wp[:, :]
+        wp0 = wp
         ztot0[:] = sum(wp, 0)
         res = gibbs(wdc, alpha, beta, z, wp, dp, ztot0)
-        z[:] = res[0]
-        ztot0[:] = res[1]
-        wp[:] = res[2]
-        dp[:] = res[3]
-        wp[:, :] = wp0 + (wp - wp0)
+        z = res[0]
+        ztot0 = res[1]
+        wp = res[2]
+        dp = res[3]
+        wp = wp0 + (wp - wp0)
 
     return (wp, dp, z)
 
