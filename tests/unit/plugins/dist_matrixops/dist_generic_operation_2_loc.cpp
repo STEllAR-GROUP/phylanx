@@ -48,7 +48,7 @@ void test_sqrt_1d_0()
             sqrt(annotate_d([0, 1764, 1, 169], "array_1",
                 list("tile", list("columns", 2, 6))))
         )", R"(
-            annotate_d([0., 42., 1., 13.], "array_1/0",
+            annotate_d([0., 42., 1., 13.], "array_1/1",
                 list("tile", list("columns", 2, 6)))
         )");
     }
@@ -58,7 +58,7 @@ void test_sqrt_1d_0()
             sqrt(annotate_d([16, 4], "array_1",
                 list("tile", list("columns", 0, 2))))
         )", R"(
-            annotate_d([4., 2.], "array_1/0",
+            annotate_d([4., 2.], "array_1/1",
                 list("tile", list("columns", 0, 2)))
         )");
     }
@@ -72,7 +72,7 @@ void test_square_1d_0()
             square(annotate_d([4., 2.], "array_2",
                 list("tile", list("rows", 0, 2))))
         )", R"(
-            annotate_d([16., 4.], "array_2/0",
+            annotate_d([16., 4.], "array_2/1",
                 list("tile", list("rows", 0, 2)))
         )");
     }
@@ -82,7 +82,7 @@ void test_square_1d_0()
             square(annotate_d([0., 42., 1., 13.], "array_2",
                 list("tile", list("rows", 2, 6))))
         )", R"(
-            annotate_d([0., 1764., 1., 169.], "array_2/0",
+            annotate_d([0., 1764., 1., 169.], "array_2/1",
                 list("tile", list("rows", 2, 6)))
         )");
     }
@@ -97,7 +97,7 @@ void test_sqrt_2d_0()
             sqrt(annotate_d([[0, 1764], [1, 169]], "array_3",
                 list("tile", list("columns", 0, 2), list("rows", 0, 2))))
         )", R"(
-            annotate_d([[0., 42.], [1., 13.]], "array_3/0",
+            annotate_d([[0., 42.], [1., 13.]], "array_3/1",
                 list("tile", list("columns", 0, 2), list("rows", 0, 2)))
         )");
     }
@@ -107,7 +107,7 @@ void test_sqrt_2d_0()
             sqrt(annotate_d([[16], [4]], "array_3",
                 list("tile", list("columns", 2, 3), list("rows", 0, 2))))
         )", R"(
-            annotate_d([[4.], [2.]], "array_3/0",
+            annotate_d([[4.], [2.]], "array_3/1",
                 list("tile", list("columns", 2, 3), list("rows", 0, 2)))
         )");
     }
@@ -121,7 +121,7 @@ void test_square_2d_0()
             square(annotate_d([[1, 2], [4, 5]], "array_4",
                 list("tile", list("columns", 1, 3), list("rows", 0, 2))))
         )", R"(
-            annotate_d([[1, 4], [16, 25]], "array_4/0",
+            annotate_d([[1, 4], [16, 25]], "array_4/1",
                 list("tile", list("columns", 1, 3), list("rows", 0, 2)))
         )");
     }
@@ -131,7 +131,7 @@ void test_square_2d_0()
             square(annotate_d([[0], [3]], "array_4",
                 list("tile", list("columns", 0, 1), list("rows", 0, 2))))
         )", R"(
-            annotate_d([[0], [9]], "array_4/0",
+            annotate_d([[0], [9]], "array_4/1",
                 list("tile", list("columns", 0, 1), list("rows", 0, 2)))
         )");
     }

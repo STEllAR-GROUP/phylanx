@@ -55,13 +55,13 @@ char const* const kmeans_code = R"(
             store(count, 0),
             for(define(i, 0), i < num_points, store(i, i + 1),block(
                 if(slice(closest, i) == k, block(
-                    store(slice(result, k, list(0, 2)),
+                    store(slice_row(result, k),
                         slice_row(result, k) + slice_row(points, i)),
                     store(count, count + 1)
                 ))
             )),
             if(count,
-                store(slice(result, k, list(0, 2)), slice_row(result, k)/count)
+                store(slice_row(result, k), slice_row(result, k)/count)
             ))
         ), result
     ))

@@ -227,11 +227,11 @@ void test_integer_slicing_2d_0d()
     test_integer_slicing("slice([[42], [43]], 0)", "[42]");
     test_integer_slicing("slice([[42, 43]], 0)", "[42, 43]");
 
-    test_integer_slicing("slice([[42], [43]], 0, nil)", "[[42]]");
-    test_integer_slicing("slice([[42, 43]], 0, nil)", "[[42, 43]]");
+    test_integer_slicing("slice([[42], [43]], 0, nil)", "[42]");
+    test_integer_slicing("slice([[42, 43]], 0, nil)", "[42, 43]");
 
-    test_integer_slicing("slice([[42], [43]], nil, 0)", "[[42]]");
-    test_integer_slicing("slice([[42, 43]], nil, 0)", "[[42, 43]]");
+    test_integer_slicing("slice([[42], [43]], nil, 0)", "[42]");
+    test_integer_slicing("slice([[42, 43]], nil, 0)", "[42, 43]");
 
     test_integer_slicing("slice([[42], [43]], 0, 0)", "42");
     test_integer_slicing("slice([[42, 43]], 0, 1)", "43");
