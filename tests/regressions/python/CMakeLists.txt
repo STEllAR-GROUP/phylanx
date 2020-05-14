@@ -51,6 +51,7 @@ set(tests
     1054_variable_shape
     1056_client_base
     1104_no_arg_lambda
+    1170_no_error
     array_len_494
     array_shape_486
     array_subscript_403

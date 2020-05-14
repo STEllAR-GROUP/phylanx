@@ -382,7 +382,10 @@ class PhySL:
                 self.ir = self._apply_rule(self.python_tree.body[0])
                 check_return(self.ir)
 
-                self.__src__ = self._generate_physl(self.ir)
+                if self.doc_src is None:
+                    self.__src__ = self._generate_physl(self.ir)
+                else:
+                    self.__src__ = self.doc_src
                 self.__ast__ = phylanx.ast.generate_ast(self.__src__)
 
                 # now store the PhySL string and AST for this function
@@ -391,17 +394,27 @@ class PhySL:
 
             physl_db.close()
 
-        except Exception:
+        except Exception as e:
+            # close database, if needed
+            if physl_db is not None:
+                physl_db.close()
+
             # assume something went wrong while handling the database, simply
             # compile things withoput db support
             self.ir = self._apply_rule(self.python_tree.body[0])
             check_return(self.ir)
-            self.__src__ = self._generate_physl(self.ir)
-            self.__ast__ = phylanx.ast.generate_ast(self.__src__)
 
-            # close database, if needed
-            if physl_db is not None:
-                physl_db.close()
+            if self.doc_src is not None:
+                if type(e) == RuntimeError and "Incomplete parse" in str(e):
+                    # simply re-raise the exception assuming the PhySL provided
+                    # by the doc string was invalid
+                    raise e
+
+                self.__src__ = self.doc_src
+            else:
+                self.__src__ = self._generate_physl(self.ir)
+
+            self.__ast__ = phylanx.ast.generate_ast(self.__src__)
 
         # now, print generated PhySL if required
         if self.kwargs.get("debug"):
@@ -451,6 +464,10 @@ class PhySL:
         self.__ast__ = None
         self.ir = None
         self.python_tree = tree
+        if 'doc_src' in kwargs and kwargs['doc_src']:
+            self.doc_src = func.__doc__
+        else:
+            self.doc_src = None
 
         if self.kwargs.get('fglobals'):
             self.fglobals = self.kwargs['fglobals']

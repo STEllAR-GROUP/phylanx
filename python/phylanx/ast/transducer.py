@@ -39,6 +39,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 'debug',
                 'target',
                 'compiler_state',
+                'doc_src',
                 'performance',
                 'localities'
             ]
