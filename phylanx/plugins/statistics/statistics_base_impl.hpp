@@ -128,7 +128,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (arg.is_ref())
         {
-            blaze::DynamicVector<T> result(size);
+            using result_type = typename Op<T>::result_type;
+
+            blaze::DynamicVector<result_type> result(size);
             for (std::size_t i = 0; i != size; ++i)
             {
                 result[i] = op(v[i], initial_value);
@@ -278,7 +280,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (arg.is_ref())
         {
-            blaze::DynamicMatrix<T> result(rows, columns);
+            using result_type = typename Op<T>::result_type;
+
+            blaze::DynamicMatrix<result_type> result(rows, columns);
             for (std::size_t i = 0; i != rows; ++i)
             {
                 for (std::size_t j = 0; j != columns; ++j)
@@ -536,7 +540,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (arg.is_ref())
         {
-            blaze::DynamicTensor<T> result(pages, rows, columns);
+            using result_type = typename Op<T>::result_type;
+
+            blaze::DynamicTensor<result_type> result(pages, rows, columns);
             for (std::size_t k = 0; k != pages; ++k)
             {
                 for (std::size_t i = 0; i != rows; ++i)
@@ -1764,7 +1770,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (arg.is_ref())
         {
-            blaze::DynamicArray<4UL, T> result(quats, pages, rows, columns);
+            using result_type = typename Op<T>::result_type;
+
+            blaze::DynamicArray<4UL, result_type> result(
+                quats, pages, rows, columns);
             for (std::size_t l = 0; l != quats; ++l)
             {
                 for (std::size_t k = 0; k != pages; ++k)
