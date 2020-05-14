@@ -103,6 +103,32 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
+    execution_tree::primitive_argument_type slice_extract(
+        ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        switch (data.num_dimensions())
+        {
+        case 2:
+            return slice2d_extract2d(
+                data, rows, columns, std::move(arr_localities), name, codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_extract",
+            util::generate_error_message(
+                "distributed target ir::node_data object has an unsupported "
+                "number of dimensions",
+                name, codename));
+    }
+
+    template <typename T>
     ir::node_data<T> slice_extract(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
@@ -162,6 +188,27 @@ namespace phylanx { namespace execution_tree
     slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<double>(ir::node_data<double> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
         std::string const& name, std::string const& codename);
 
     template PHYLANX_EXPORT ir::node_data<std::uint8_t>

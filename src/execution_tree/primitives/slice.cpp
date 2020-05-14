@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/slice.hpp>
 #include <phylanx/execution_tree/primitives/slice_node_data.hpp>
@@ -70,6 +71,37 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& columns, std::string const& name,
         std::string const& codename)
     {
+        if (data.has_annotation())
+        {
+            localities_information arr_localities =
+                extract_localities_information(data, name, codename);
+            if (is_integer_operand_strict(data))
+            {
+                return slice_extract(
+                    extract_integer_value_strict(data, name, codename), rows,
+                    columns, std::move(arr_localities), name, codename);
+            }
+            if (is_numeric_operand_strict(data))
+            {
+                return slice_extract(
+                    extract_numeric_value_strict(data, name, codename), rows,
+                    columns, std::move(arr_localities), name, codename);
+            }
+            if (is_boolean_operand_strict(data))
+            {
+                return slice_extract(
+                    extract_boolean_value_strict(data, name, codename), rows,
+                    columns, std::move(arr_localities), name, codename);
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::execution_tree::slice",
+                util::generate_error_message(
+                    "target object does not hold a numeric data type and "
+                    "as such does not support slicing",
+                    name, codename));
+        }
+
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
