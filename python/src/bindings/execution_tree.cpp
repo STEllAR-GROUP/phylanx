@@ -18,6 +18,7 @@
 #include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 
 #include <cstdint>
+#include <exception>
 #include <string>
 #include <vector>
 #include <utility>
@@ -307,4 +308,28 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                     });
             },
             "wait for future to become ready");
+
+    // translate HPX exceptions and provide more error information, if desired
+    static pybind11::exception<hpx::exception> exc(
+        m, "HPXError", PyExc_RuntimeError);
+
+    pybind11::register_exception_translator([](std::exception_ptr p) {
+        try
+        {
+            if (p)
+                std::rethrow_exception(p);
+        }
+        catch (hpx::exception& e)
+        {
+            if (hpx::get_config_entry("phylanx.full_error_diagnostics", "0") ==
+                "1")
+            {
+                exc(hpx::diagnostic_information(e).c_str());
+            }
+            else
+            {
+                exc(e.what());
+            }
+        }
+    });
 }

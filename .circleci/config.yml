@@ -153,7 +153,8 @@ jobs:
                         -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON         \
                         -DPHYLANX_WITH_DOCUMENTATION=ON             \
                         -DPHYLANX_WITH_HIGHFIVE=OFF                 \
-                        -DPHYLANX_WITH_CXX17=ON
+                        -DPHYLANX_WITH_CXX17=ON                     \
+                        -DPHYLANX_WITH_PYTHON_TESTS_EMIT_FULL_DIAGNOSTICS=On
             - persist_to_workspace:
                 root: /
                 paths:

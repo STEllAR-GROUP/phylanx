@@ -6,6 +6,9 @@
 from phylanx.core import init_hpx_runtime
 from phylanx.exceptions import RuntimeAlreadyInitializedError
 
+import os
+import platform
+
 
 class PhylanxSession:
     cfg = [
@@ -30,6 +33,17 @@ class PhylanxSession:
         if not PhylanxSession.is_initialized:
             hpx_thread = "hpx.os_threads!=%s" % num_threads
             PhylanxSession.cfg[3] = hpx_thread
+
+            # append additional config settings taken from the environment
+            if 'PHYLANX_PYTHON_CONFIG' in os.environ:
+                if platform.system() == "Windows":
+                    sep = ';'
+                else:
+                    sep = ':'
+
+                for e in os.environ['PHYLANX_PYTHON_CONFIG'].split(sep):
+                    PhylanxSession.cfg.append(e)
+
             init_hpx_runtime(PhylanxSession.cfg)
             PhylanxSession.is_initialized = True
         else:
