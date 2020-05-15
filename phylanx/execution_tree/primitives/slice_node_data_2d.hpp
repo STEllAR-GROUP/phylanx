@@ -1169,6 +1169,72 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
+    execution_tree::primitive_argument_type slice1d_extract2d(
+        ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        if (!is_integer_operand_strict(indices))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "only integer indexing for slice_row is suppoted for "
+                    "distributed arrays extracting a 1d slice from a matrix",
+                    name, codename));
+        }
+
+        std::int64_t row_index =
+            extract_scalar_nonneg_integer_value_strict(indices, name, codename);
+
+        std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
+        tiling_information_2d tile_info(
+            arr_localities.tiles_[loc_id], name, codename);
+
+        std::int64_t row_start = tile_info.spans_[0].start_;
+        std::int64_t row_stop = tile_info.spans_[0].stop_;
+        std::int64_t col_start = tile_info.spans_[1].start_;
+        std::int64_t col_stop = tile_info.spans_[1].stop_;
+
+        // updating the annotation_ part of localities annotation
+        arr_localities.annotation_.name_ += "_sliced";
+        ++arr_localities.annotation_.generation_;
+
+        auto locality_ann = arr_localities.locality_.as_annotation();
+
+        if (row_index < row_start || row_index > row_stop)
+        {
+            tiling_information_1d des_tile_info = tiling_information_1d(
+                tiling_information_1d::tile1d_type::rows, tiling_span(0, 0));
+            auto attached_annotation =
+                std::make_shared<annotation>(localities_annotation(locality_ann,
+                    des_tile_info.as_annotation(name, codename),
+                    arr_localities.annotation_, name, codename));
+
+            // return an empty array
+            return primitive_argument_type(ast::nil{true}, attached_annotation);
+        }
+
+        auto m = data.matrix();
+        auto row = blaze::trans(blaze::row(m, row_index - row_start));
+
+        tiling_information_1d des_tile_info =
+            tiling_information_1d(tiling_information_1d::tile1d_type::rows,
+                tiling_span(col_start, col_stop));
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                des_tile_info.as_annotation(name, codename),
+                arr_localities.annotation_, name, codename));
+
+        // return the row slice
+        return primitive_argument_type(
+            ir::node_data<T>(row), attached_annotation);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
     ir::node_data<T> slice2d_extract2d(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
@@ -1193,12 +1259,12 @@ namespace phylanx { namespace execution_tree
                 "phylanx::execution_tree::slice2d_extract2d",
                 util::generate_error_message(
                     "only integer indexing for slice_column is suppoted for "
-                    "distributed arrays extracting a 2d slice from a matrix",
+                    "distributed arrays extracting a 1d slice from a matrix",
                     name, codename));
         }
 
         std::int64_t column_index =
-            extract_integer_value_strict(columns, name, codename).scalar();
+            extract_scalar_nonneg_integer_value_strict(columns, name, codename);
 
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         tiling_information_2d tile_info(
@@ -1225,13 +1291,11 @@ namespace phylanx { namespace execution_tree
                     arr_localities.annotation_, name, codename));
 
             // return an empty array
-            return primitive_argument_type(
-                blaze::DynamicVector<T>(), attached_annotation);
+            return primitive_argument_type(ast::nil{true}, attached_annotation);
         }
 
         auto m = data.matrix();
-        auto column = blaze::column(m,
-                detail::check_index(column_index, m.columns(), name, codename));
+        auto column = blaze::column(m, column_index - col_start);
 
         tiling_information_1d des_tile_info =
             tiling_information_1d(tiling_information_1d::tile1d_type::columns,
