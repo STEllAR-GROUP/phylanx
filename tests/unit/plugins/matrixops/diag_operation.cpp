@@ -13,28 +13,6 @@
 #include <vector>
 #include <utility>
 
-void test_diag_operation_0d()
-{
-    phylanx::execution_tree::primitive data =
-        phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(5.0));
-
-    phylanx::execution_tree::primitive k =
-        phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(0.0));
-
-    phylanx::execution_tree::primitive diag =
-        phylanx::execution_tree::primitives::create_diag_operation(
-            hpx::find_here(),
-            phylanx::execution_tree::primitive_arguments_type{
-                std::move(data), std::move(k)});
-
-    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        diag.eval();
-
-    HPX_TEST_EQ(5.0,
-                phylanx::execution_tree::extract_numeric_value(f.get())[0]);
-}
 
 void test_diag_operation_1d()
 {
@@ -238,7 +216,6 @@ void test_diag_operation_2d_minus_one()
 
 int main(int argc, char* argv[])
 {
-    test_diag_operation_0d();
 
     test_diag_operation_1d();
     test_diag_operation_1d_minus_one();

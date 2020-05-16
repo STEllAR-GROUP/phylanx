@@ -52,12 +52,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    primitive_argument_type diag_operation::diag0d(
-        ir::node_data<T>&& arg, std::int64_t k) const
-    {
-        return primitive_argument_type(std::move(arg));
-    }
 
     template <typename T>
     primitive_argument_type diag_operation::diag1d(
@@ -81,41 +75,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type diag_operation::diag0d(
-        primitive_argument_type&& arg, std::int64_t k) const
-    {
-        switch (extract_common_type(arg))
-        {
-        case node_data_type_bool:
-            return diag0d(
-                extract_boolean_value_strict(std::move(arg), name_, codename_),
-                k);
-
-        case node_data_type_int64:
-            return diag0d(
-                extract_integer_value_strict(std::move(arg), name_, codename_),
-                k);
-
-        case node_data_type_double:
-            return diag0d(
-                extract_numeric_value_strict(std::move(arg), name_, codename_),
-                k);
-
-        case node_data_type_unknown:
-            return diag0d(
-                extract_numeric_value(std::move(arg), name_, codename_), k);
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "diag_operation::diag0d",
-            generate_error_message(
-                "the diag primitive requires for all arguments to "
-                    "be numeric data types"));
-    }
-
     primitive_argument_type diag_operation::diag1d(
         primitive_argument_type&& arg, std::int64_t k) const
     {
@@ -229,8 +188,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (extract_numeric_value_dimension(
                         arg, this_->name_, this_->codename_))
                     {
-                    case 0:
-                        return this_->diag0d(std::move(arg), 0);
 
                     case 1:
                         return this_->diag1d(std::move(arg), 0);
@@ -267,8 +224,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (extract_numeric_value_dimension(
                     arg1, this_->name_, this_->codename_))
                 {
-                case 0:
-                    return this_->diag0d(std::move(arg1), arg2[0]);
 
                 case 1:
                     return this_->diag1d(std::move(arg1), arg2[0]);

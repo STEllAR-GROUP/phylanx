@@ -10,6 +10,9 @@ set(tests
     dist_constant_3_loc
     dist_constant_4_loc
     dist_constant_6_loc
+    dist_diag_2_loc
+    dist_diag_4_loc
+    dist_diag_6_loc
     dist_dot_operation_2_loc
     dist_expand_dims_2_loc
     dist_expand_dims_3_loc
@@ -33,6 +36,9 @@ set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_constant_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_constant_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_constant_6_loc_PARAMETERS LOCALITIES 6)
+set(dist_diag_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_diag_4_loc_PARAMETERS LOCALITIES 4)
+set(dist_diag_6_loc_PARAMETERS LOCALITIES 6)
 set(dist_dot_operation_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_expand_dims_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_expand_dims_3_loc_PARAMETERS LOCALITIES 3)
