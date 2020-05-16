@@ -1067,6 +1067,27 @@ diag (m)
             A vector created from the diagonal elements of `m`.
 
 
+diag_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+diag_d (arr, k, tiling_type, tile_index, numtiles)
+            Args:
+                arr (array): a distributed array. A vector.
+                k (int, optional): The default is 0. Denote the diagonal above
+                    the main diagonal when k > 0 and the diagonal below the main
+                    diagonal when k < 0.
+                tiling_type (string, optional): defaults to `sym`. Other
+                    options are `row` or `column` tiling.
+                tile_index (int, optional): the tile index we need to generate
+                    the diag array for. A non-negative integer. If not
+                    given, it sets to current locality.
+                numtiles (int, optional): number of tiles of the returned array.
+                    If not given it sets to the number of localities in the
+                    application.
+            Returns:
+
+            A 2-D array with arr on the k-th diagonal.
+
+
 dict
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 dict (lili)

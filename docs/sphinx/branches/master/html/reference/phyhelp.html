@@ -159,6 +159,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#define">define</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#determinant">determinant</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#diag">diag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#diag-d">diag_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dict">dict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dot">dot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dot-d">dot_d</a></li>
@@ -1539,6 +1540,33 @@ args (optional, list of symbols) : if present,</p>
 </div></blockquote>
 <p>Returns:</p>
 <p>A vector created from the diagonal elements of <cite>m</cite>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="diag-d">
+<h2>diag_d<a class="headerlink" href="#diag-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>diag_d (arr, k, tiling_type, tile_index, numtiles)</dt><dd><dl>
+<dt>Args:</dt><dd><p>arr (array): a distributed array. A vector.
+k (int, optional): The default is 0. Denote the diagonal above</p>
+<blockquote>
+<div><p>the main diagonal when k &gt; 0 and the diagonal below the main
+diagonal when k &lt; 0.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>tiling_type (string, optional): defaults to <cite>sym</cite>. Other</dt><dd><p>options are <cite>row</cite> or <cite>column</cite> tiling.</p>
+</dd>
+<dt>tile_index (int, optional): the tile index we need to generate</dt><dd><p>the diag array for. A non-negative integer. If not
+given, it sets to current locality.</p>
+</dd>
+<dt>numtiles (int, optional): number of tiles of the returned array.</dt><dd><p>If not given it sets to the number of localities in the
+application.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns:</p>
+<p>A 2-D array with arr on the k-th diagonal.</p>
 </dd>
 </dl>
 </div>
