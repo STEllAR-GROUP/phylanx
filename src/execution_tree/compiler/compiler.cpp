@@ -1403,7 +1403,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     }
 
                     // Handle slice(_1, __2)
-                    if (function_name == "slice")
+                    if (function_name == "slice" ||
+                        function_name == "slice_row")
                     {
                         placeholder_map_type placeholders;
                         if (ast::match_ast(expr, cit->second.pattern_ast_,

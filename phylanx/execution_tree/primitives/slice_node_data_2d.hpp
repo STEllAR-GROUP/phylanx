@@ -696,14 +696,9 @@ namespace phylanx { namespace execution_tree
 
         auto row = blaze::row(
             m, detail::check_index(rows[0], m.rows(), name, codename));
-        if (!explicit_nil)
-        {
-            return f.vector(m, std::move(row));
-        }
 
-        typename ir::node_data<T>::storage2d_type result(1, m.columns());
-        blaze::row(result, 0) = row;
-        return f.matrix(m, std::move(result));
+        return f.vector(m, std::move(row));
+
     }
 
     template <typename T, typename Data, typename F>
