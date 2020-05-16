@@ -63,15 +63,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T, typename Init>
         primitive_argument_type statistics0d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
-            bool keepdims, hpx::util::optional<Init> const& initial) const;
+            hpx::util::optional<Init> const& initial) const;
+
         template <typename T, typename Init>
         primitive_argument_type statistics1d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, hpx::util::optional<Init> const& initial) const;
         template <typename T, typename Init>
+        primitive_argument_type statistics1d(
+            arg_type<T>&& arg, hpx::util::optional<Init> const& initial) const;
+
+        template <typename T, typename Init>
         primitive_argument_type statistics2d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics2d(
+            arg_type<T>&& arg, hpx::util::optional<Init> const& initial) const;
 
         template <typename T, typename Init>
         primitive_argument_type statistics2d_flat(arg_type<T>&& arg,
@@ -87,6 +95,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type statistics3d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics3d(
+            arg_type<T>&& arg, hpx::util::optional<Init> const& initial) const;
 
         template <typename T, typename Init>
         primitive_argument_type statistics3d_flat(arg_type<T>&& arg,
@@ -127,6 +138,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type statistics4d(arg_type<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, hpx::util::optional<Init> const& initial) const;
+        template <typename T, typename Init>
+        primitive_argument_type statistics4d(
+            arg_type<T>&& arg, hpx::util::optional<Init> const& initial) const;
 
         template <typename T, typename Init>
         primitive_argument_type statistics4d_flat(arg_type<T>&& arg,
@@ -204,6 +218,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, primitive_argument_type&& initial) const;
 
+        template <typename T>
+        primitive_argument_type statisticsnd(
+            arg_type<T>&& arg, primitive_argument_type&& initial) const;
+
         primitive_argument_type statisticsnd_flat(
             primitive_argument_type&& arg, bool keepdims,
             primitive_argument_type&& initial) const;
@@ -211,8 +229,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type statisticsnd(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> const& axis,
             bool keepdims, primitive_argument_type&& initial) const;
+
         primitive_argument_type statisticsnd(primitive_argument_type&& arg,
             ir::range&& axes, bool keepdims,
+            primitive_argument_type&& initial) const;
+
+        primitive_argument_type statisticsnd(primitive_argument_type&& arg,
             primitive_argument_type&& initial) const;
 
     private:

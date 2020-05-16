@@ -570,12 +570,35 @@ void test_operation(std::string const& code, std::string const& expected_str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_all_operation_2d_2()
+{
+    test_operation(R"(all([[1, 0, -1],[1, 2, 0]]))", R"(astype(0 ,"bool"))");
+    test_operation(
+        R"(all([[1, 0, -1],[1, 2, 0]], 0))", R"(astype([1, 0, 0] ,"bool"))");
+}
+
 void test_all_operation_4d()
 {
     test_operation(
         R"(all([[[[1.,2.], [4.,1.], [3.,4.]],[[3.,6.], [2.,-2.], [1.,1.]]],
             [[[1.,2.], [4.,1.], [3.,2.]],[[0. ,6.], [-2.,6.], [1.,1.]]]]))",
         R"(astype(0 ,"bool"))");
+}
+
+void test_all_operation_empty_axis()
+{
+    test_operation(
+        R"(all([1, 0, -1], list()))", R"(astype([1, 0, 1] ,"bool"))");
+    test_operation(
+        R"(all([[1, 0, -1], [2, -2, 0]], list()))",
+        R"(astype([[1, 0, 1], [1, 1, 0]] ,"bool"))");
+    test_operation(
+        R"(all([[[1], [0]], [[-1], [2]]], list()))",
+        R"(astype([[[1], [0]], [[1], [1]]] ,"bool"))");
+    test_operation(
+        R"(all([[[[1], [0]], [[-1], [2]]], [[[0], [1]], [[-3], [2]]]], list()))",
+        R"(astype([[[[1], [0]], [[1], [1]]], [[[0], [1]], [[1], [1]]]],
+            "bool"))");
 }
 
 int main(int argc, char* argv[])
@@ -612,7 +635,9 @@ int main(int argc, char* argv[])
     test_all_operation_3d_numpy_true();
     test_all_operation_3d_numpy_false();
 
+    test_all_operation_2d_2();
     test_all_operation_4d();
+    test_all_operation_empty_axis();
 
     return hpx::util::report_errors();
 }
