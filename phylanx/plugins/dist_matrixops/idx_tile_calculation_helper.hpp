@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <tuple>
 
 #include <blaze/Math.h>
 

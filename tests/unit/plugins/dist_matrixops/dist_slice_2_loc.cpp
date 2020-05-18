@@ -157,6 +157,37 @@ void test_slice_row_1()
     }
 }
 
+void test_slice_row_assign_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        R"(define(a, annotate_d([[1, 2], [4, 5], [7, 8]], "array_4",
+            list("tile", list("columns", 0, 2), list("rows", 0, 3)))))";
+        test_slice_d_operation("test_slice_row_2loc_2", R"(
+            store(slice_row(a, 1),
+                annotate_d([-4, -5], "value_0", list("tile", ("columns", 0, 2)))
+            )
+        )", R"(
+            annotate_d([[1, 2], [-4, -5], [7, 8]], "array_4/1",
+                list("tile", list("rows", 0, 3), list("columns", 0, 2)))
+        )");
+    }
+    else
+    {
+        R"(define(a, annotate_d([[3], [6], [9]], "array_4",
+            list("tile", list("columns", 2, 3), list("rows", 0, 3)))))";
+        test_slice_d_operation("test_slice_row_2loc_2", R"(
+            store(slice_row(a, 1),
+                annotate_d([-6], "value_0", list("tile", ("columns", 2, 3)))
+            )
+        )", R"(
+            annotate_d([[3], [-6], [9]], "array_4/1",
+                list("tile", list("rows", 0, 3), list("columns", 2, 3)))
+        )");
+    }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -165,6 +196,7 @@ int hpx_main(int argc, char* argv[])
 
     test_slice_row_0();
     test_slice_row_1();
+    //test_slice_row_assign_2();
 
 
     hpx::finalize();

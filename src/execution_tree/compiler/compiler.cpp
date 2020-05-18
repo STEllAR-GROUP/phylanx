@@ -1402,7 +1402,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         }
                     }
 
-                    // Handle slice(_1, __2)
+                    // Handle slice(_1, __2) and slice_row(_1, _2)
                     if (function_name == "slice" ||
                         function_name == "slice_row")
                     {
