@@ -11,7 +11,6 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/common/constant_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_constant.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/execution_tree/localities_annotation.hpp>
@@ -45,8 +44,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 constant_d(
                     _1_value,
                     _2_shape,
-                    __arg(_3_tile_index, nil),
-                    __arg(_4_numtiles, nil),
+                    __arg(_3_tile_index, find_here()),
+                    __arg(_4_numtiles, num_localities()),
                     __arg(_5_name, ""),
                     __arg(_6_tiling_type, "sym"),
                     __arg(_7_dtype, "float64")
@@ -60,9 +59,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 value (float): fill value
                 shape (int or list of ints): overall shape of the array. It
                     only contains positive integers.
-                tile_index (int): the tile index we need to generate the
-                    constant array for. A non-negative integer.
-                numtiles (int): number of tiles of the returned array
+                tile_index (int, optional): the tile index we need to generate
+                    the constant array for. A non-negative integer. If not given,
+                    it sets to current locality.
+                numtiles (int, optional): number of tiles of the returned array.
+                    if not given it sets to the number of localities in the
+                    application.
                 name (string, optional): the array given name. If not given, a
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
@@ -100,17 +102,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value,
         std::size_t const& dim, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& name, std::string const& codename) const
+        std::uint32_t const& numtiles, std::string&& given_name) const
     {
         using namespace execution_tree;
 
         T const_value =
-            extract_scalar_data<T>(std::move(value), name, codename);
+            extract_scalar_data<T>(std::move(value), name_, codename_);
 
         std::int64_t start;
         std::uint32_t size;
@@ -126,25 +128,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string base_name =
             detail::generate_const_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name, codename), ann_info,
-                name, codename));
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
 
-        primitive_argument_type res(
+        return primitive_argument_type(
             blaze::DynamicVector<T>(size, const_value), attached_annotation);
-
-        return std::move(res);
     }
 
     execution_tree::primitive_argument_type dist_constant::constant1d(
         execution_tree::primitive_argument_type&& value,
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, execution_tree::node_data_type dtype,
-        std::string const& name_, std::string const& codename_) const
+        std::string&& given_name, execution_tree::node_data_type dtype) const
     {
         using namespace execution_tree;
 
@@ -152,16 +152,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return constant1d_helper<std::uint8_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), name_, codename_);
+                tile_idx, numtiles, std::move(given_name));
 
         case node_data_type_int64:
             return constant1d_helper<std::int64_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), name_, codename_);
+                tile_idx, numtiles, std::move(given_name));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant1d_helper<double>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), name_, codename_);
+                tile_idx, numtiles, std::move(given_name));
 
         default:
             break;
@@ -180,13 +180,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type&& value,
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::string const& tiling_type,
-        std::string const& name, std::string const& codename) const
+        std::string&& given_name, std::string const& tiling_type) const
     {
         using namespace execution_tree;
 
         T const_value =
-            extract_scalar_data<T>(std::move(value), name, codename);
+            extract_scalar_data<T>(std::move(value), name_, codename_);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -207,18 +206,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::string base_name =
             detail::generate_const_name(std::move(given_name));
 
-        annotation_information ann_info(base_name, 0);    //generation 0
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
 
         auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(
-                locality_ann, tile_info.as_annotation(name, codename), ann_info,
-                name, codename));
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
 
-        primitive_argument_type res(
+        return primitive_argument_type(
             blaze::DynamicMatrix<T>(row_size, column_size, const_value),
             attached_annotation);
-
-        return std::move(res);
     }
 
     execution_tree::primitive_argument_type dist_constant::constant2d(
@@ -226,8 +224,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        execution_tree::node_data_type dtype, std::string const& name_,
-        std::string const& codename_) const
+        execution_tree::node_data_type dtype) const
     {
         using namespace execution_tree;
 
@@ -235,18 +232,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return constant2d_helper<std::uint8_t>(std::move(value), dims,
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_int64:
             return constant2d_helper<std::int64_t>(std::move(value), dims,
-                tile_idx, numtiles, std::move(given_name), tiling_type, name_,
-                codename_);
+                tile_idx, numtiles, std::move(given_name), tiling_type);
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant2d_helper<double>(std::move(value), dims, tile_idx,
-                numtiles, std::move(given_name), tiling_type, name_, codename_);
+                numtiles, std::move(given_name), tiling_type);
 
         default:
             break;
@@ -318,8 +313,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         }
 
                         dims =
-                            common::extract_dimensions(overall_shape);
-                        numdims = common::extract_num_dimensions(
+                            tile_calculation::extract_dimensions(overall_shape);
+                        numdims = tile_calculation::extract_num_dimensions(
                             overall_shape);
                     }
                     else if (is_numeric_operand(args[1]))
@@ -329,6 +324,28 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         numdims = 1;
                         dims[0] = extract_scalar_positive_integer_value_strict(
                             std::move(args[1]), this_->name_, this_->codename_);
+                    }
+
+                    std::uint32_t tile_idx = hpx::get_locality_id();
+                    if (valid(args[2]))
+                    {
+                        extract_scalar_nonneg_integer_value_strict(
+                            std::move(args[2]), this_->name_, this_->codename_);
+                    }
+                    std::uint32_t numtiles =
+                        hpx::get_num_localities(hpx::launch::sync);
+                    if (valid(args[3]))
+                    {
+                        extract_scalar_positive_integer_value_strict(
+                            std::move(args[3]), this_->name_, this_->codename_);
+                    }
+                    if (tile_idx >= numtiles)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dist_constant::eval",
+                            this_->generate_error_message(
+                                "invalid tile index. Tile indices start from 0 "
+                                "and should be smaller than number of tiles"));
                     }
 
                     std::string given_name = "";
@@ -349,7 +366,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_constant::eval",
                                 this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type cane "
+                                    "invalid tling_type. the tiling_type can be "
                                     "one of these: `sym`, `row` or `column`"));
                         }
                     }
@@ -362,85 +379,23 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 this_->name_, this_->codename_));
                     }
 
-                    if (valid(args[2]) && valid(args[3]))
+                    switch (numdims)
                     {
-                        std::uint32_t tile_idx =
-                            extract_scalar_nonneg_integer_value_strict(
-                                std::move(args[2]), this_->name_, this_->codename_);
-                        std::uint32_t numtiles =
-                            extract_scalar_positive_integer_value_strict(
-                                std::move(args[3]), this_->name_, this_->codename_);
-                        if (tile_idx >= numtiles)
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_constant::eval",
-                                this_->generate_error_message(
-                                    "invalid tile index. Tile indices start from 0 "
-                                    "and should be smaller than number of tiles"));
-                        }
+                    case 1:
+                        return this_->constant1d(std::move(args[0]), dims,
+                            tile_idx, numtiles, std::move(given_name), dtype);
 
-                        switch (numdims)
-                        {
-                        case 1:
-                            return this_->constant1d(std::move(args[0]), dims,
-                                tile_idx, numtiles, std::move(given_name),
-                                dtype, this_->name_, this_->codename_);
+                    case 2:
+                        return this_->constant2d(std::move(args[0]), dims,
+                            tile_idx, numtiles, std::move(given_name),
+                            tiling_type, dtype);
 
-                        case 2:
-                            return this_->constant2d(std::move(args[0]), dims,
-                                tile_idx, numtiles, std::move(given_name),
-                                tiling_type, dtype, this_->name_, this_->codename_);
-
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_constant::eval",
-                                util::generate_error_message(
-                                    "the given shape is of an unsupported "
-                                    "dimensionality",
-                                    this_->name_, this_->codename_));
-                        }
-                    }
-                    else if (!valid(args[2]) && !valid(args[3]))
-                    {
-                        switch (numdims)
-                        {
-                        case 0:
-                            return common::constant0d(std::move(args[0]), dtype,
-                                false, this_->name_, this_->codename_);
-
-                        case 1:
-                            return common::constant1d(std::move(args[0]),
-                                dims[0], dtype, false, this_->name_,
-                                this_->codename_);
-
-                        case 2:
-                            return common::constant2d(std::move(args[0]), dims,
-                                dtype, false, this_->name_, this_->codename_);
-
-                        case 3:
-                            return common::constant3d(std::move(args[0]), dims,
-                                dtype, false, this_->name_, this_->codename_);
-
-                        case 4:
-                            return common::constant4d(std::move(args[0]), dims,
-                                dtype, false, this_->name_, this_->codename_);
-
-                        default:
-                            break;
-                        }
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_constant::eval",
-                            util ::generate_error_message(
-                                "left hand side operand has unsupported "
-                                "number of dimensions"));
-                    }
-                    else
-                    {
+                    default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_constant::eval",
                             util::generate_error_message(
-                                "both tile_idx and numtiles should be given to "
-                                "generate a distributed constant",
+                                "the given shape is of an unsupported "
+                                "dimensionality",
                                 this_->name_, this_->codename_));
                     }
 

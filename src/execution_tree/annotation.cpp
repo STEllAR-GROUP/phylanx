@@ -321,7 +321,7 @@ namespace phylanx { namespace execution_tree {
         if (!has_key(key, name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "annotation::add_annotation",
+                "annotation::replace_annotation",
                 util::generate_error_message(
                     hpx::util::format(
                         "attempt to replace non-existing annotation type: {}",

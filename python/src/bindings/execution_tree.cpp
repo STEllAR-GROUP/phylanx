@@ -266,4 +266,23 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
             &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
         .def("__repr__",
             &phylanx::bindings::repr<phylanx::execution_tree::primitive>);
+
+    // phylanx.execution_tree.primitive_argument_future
+    pybind11::class_<
+        hpx::shared_future<phylanx::execution_tree::primitive_argument_type>>(
+        execution_tree, "primitive_argument_future",
+        "future type representing a value")
+        .def(
+            "get",
+            [](hpx::shared_future<
+                phylanx::execution_tree::primitive_argument_type> const& f)
+            {
+                pybind11::gil_scoped_release release;    // release GIL
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() -> phylanx::execution_tree::primitive_argument_type
+                    {
+                        return f.get();
+                    });
+            },
+            "wait for future to become ready");
 }

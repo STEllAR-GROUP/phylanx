@@ -344,7 +344,7 @@ namespace phylanx { namespace execution_tree
           , std::string
           , ir::node_data<double>
           , primitive
-          , std::vector<ast::expression>
+          , util::recursive_wrapper<hpx::shared_future<primitive_argument_type>>
           , ir::range
           , phylanx::ir::dictionary
         >;
@@ -354,6 +354,7 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type : argument_value_type
     {
         enum variant_index
@@ -364,7 +365,7 @@ namespace phylanx { namespace execution_tree
             string_index = 3,
             float64_index = 4,
             primitive_index = 5,
-            expression_index = 6,
+            future_index = 6,
             list_index = 7,
             dictionary_index = 8
         };
@@ -692,20 +693,24 @@ namespace phylanx { namespace execution_tree
           , annotation_(ann)
         {}
 
-        // std::vector<ast::expression>
-        explicit primitive_argument_type(std::vector<ast::expression> const& val)
+        // hpx::shared_future<primitive_argument_type>
+        explicit primitive_argument_type(
+            hpx::shared_future<primitive_argument_type> const& val)
           : argument_value_type{val}
         {}
-        explicit primitive_argument_type(std::vector<ast::expression>&& val)
+        explicit primitive_argument_type(
+            hpx::shared_future<primitive_argument_type>&& val)
           : argument_value_type{std::move(val)}
         {}
-        primitive_argument_type(std::vector<ast::expression> const& val,
-                annotation_ptr const& ann)
+        primitive_argument_type(
+            hpx::shared_future<primitive_argument_type> const& val,
+            annotation_ptr const& ann)
           : argument_value_type{val}
           , annotation_(ann)
         {}
-        primitive_argument_type(std::vector<ast::expression>&& val,
-                annotation_ptr const& ann)
+        primitive_argument_type(
+            hpx::shared_future<primitive_argument_type>&& val,
+            annotation_ptr const& ann)
           : argument_value_type{std::move(val)}
           , annotation_(ann)
         {}
@@ -930,23 +935,6 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT bool operator==(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs);
-    /*
-    {
-        if (lhs.variant() == rhs.variant())
-        {
-            if (!!lhs.annotation() && !!rhs.annotation())
-            {
-                return *lhs.annotation() == *rhs.annotation();
-            }
-            else if (!!lhs.annotation() || !!rhs.annotation())
-            {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
-    */
 
     inline bool operator!=(primitive_argument_type const& lhs,
         primitive_argument_type const& rhs)
@@ -961,6 +949,23 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
         primitive const&);
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline bool operator==(
+        util::recursive_wrapper<
+            hpx::shared_future<primitive_argument_type>> const& lhs,
+        util::recursive_wrapper<
+            hpx::shared_future<primitive_argument_type>> const& rhs)
+    {
+        return lhs.get().get() == rhs.get().get();
+    }
+
+    inline std::ostream& operator<<(std::ostream& os,
+        util::recursive_wrapper<
+            hpx::shared_future<primitive_argument_type>> const& val)
+    {
+        return os << val.get().get();
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type& eval_context::set_var(

@@ -389,29 +389,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     struct comparison<Op>::visit_comparison
     {
         template <typename T1, typename T2>
-        primitive_argument_type operator()(T1, T2) const
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::eval",
-                util::generate_error_message(
-                    "left hand side and right hand side are incompatible "
-                        "and can't be compared",
-                    comparison_.name_, comparison_.codename_));
-        }
-
-        primitive_argument_type operator()(std::vector<ast::expression>&&,
-            std::vector<ast::expression>&&) const
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::eval",
-                util::generate_error_message(
-                    "left hand side and right hand side are incompatible "
-                        "and can't be compared",
-                    comparison_.name_, comparison_.codename_));
-        }
-
-        primitive_argument_type operator()(
-            ast::expression&&, ast::expression&&) const
+        primitive_argument_type operator()(T1&&, T2&&) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "comparison<Op>::eval",
@@ -432,10 +410,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         template <typename T>
-        primitive_argument_type operator()(T && lhs, T && rhs) const
+        primitive_argument_type operator()(T&& lhs, T&& rhs) const
         {
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{Op{}(lhs, rhs)});
+        }
+
+        primitive_argument_type operator()(
+            util::recursive_wrapper<
+                hpx::shared_future<primitive_argument_type>>&&,
+            util::recursive_wrapper<
+                hpx::shared_future<primitive_argument_type>>&&) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "comparison<Op>::eval",
+                util::generate_error_message(
+                    "left hand side and right hand side are incompatible "
+                        "and can't be compared",
+                    comparison_.name_, comparison_.codename_));
         }
 
         primitive_argument_type operator()(ir::range&&, ir::range&&) const

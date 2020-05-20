@@ -90,7 +90,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // Keep data alive with a shared pointer
-        auto f = boolean_operand(operands_[0], args, name_, codename_, ctx);
+        auto f =
+            scalar_boolean_operand(operands_[0], args, name_, codename_, ctx);
         auto this_ = this->shared_from_this();
         return f.then(hpx::launch::sync,
             [this_ = std::move(this_), args = args, ctx = std::move(ctx)](

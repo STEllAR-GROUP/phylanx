@@ -62,14 +62,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
                 -> primitive_argument_type
             {
-                std::vector<primitive_argument_type> values;
+                primitive_arguments_type values;
                 for (auto const& loc : hpx::find_all_localities())
                 {
                     std::int64_t v = hpx::naming::get_locality_id_from_id(loc);
                     values.push_back(primitive_argument_type{v});
                 }
 
-                phylanx::execution_tree::primitive_argument_type p{values};
+                phylanx::execution_tree::primitive_argument_type p(values);
                 return p;
             }),
             detail::map_operands(

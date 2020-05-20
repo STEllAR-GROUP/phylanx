@@ -7,6 +7,7 @@
 #define PHYLANX_PLUGINS_CONTROLS_APR_07_2108_1223PM
 
 #include <phylanx/plugins/controls/apply.hpp>
+#include <phylanx/plugins/controls/async_operation.hpp>
 #include <phylanx/plugins/controls/block_operation.hpp>
 #include <phylanx/plugins/controls/filter_operation.hpp>
 #include <phylanx/plugins/controls/fold_left_operation.hpp>

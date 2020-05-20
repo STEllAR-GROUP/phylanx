@@ -55,10 +55,10 @@ namespace phylanx { namespace util
         {
         }
 
-        recursive_wrapper(recursive_wrapper && operand)
-          : p_(new T)
+        recursive_wrapper(recursive_wrapper && operand) noexcept
+          : p_(operand.p_)
         {
-            swap(operand);
+            operand.p_ = nullptr;
         }
 
         recursive_wrapper(T && operand)

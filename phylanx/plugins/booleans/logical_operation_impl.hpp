@@ -48,18 +48,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     logical_.name_, logical_.codename_));
         }
 
-        primitive_argument_type operator()(std::vector<ast::expression>&&,
-            std::vector<ast::expression>&&) const
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "logical::eval",
-                util::generate_error_message(
-                    "left hand side logical right hand side can't be compared",
-                    logical_.name_, logical_.codename_));
-        }
-
         primitive_argument_type operator()(
-            ast::expression&&, ast::expression&&) const
+            util::recursive_wrapper<
+                hpx::shared_future<primitive_argument_type>>&&,
+            util::recursive_wrapper<
+                hpx::shared_future<primitive_argument_type>>&&) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::eval",
