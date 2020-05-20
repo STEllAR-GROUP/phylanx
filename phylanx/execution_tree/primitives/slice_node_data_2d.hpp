@@ -20,7 +20,6 @@
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/assertion.hpp>
-#include <hpx/collectives/all_reduce.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
