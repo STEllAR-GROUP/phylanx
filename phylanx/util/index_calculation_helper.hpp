@@ -5,20 +5,19 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_DIST_MATRIXOPS_IDX_TILE_CALCULATION_HELPER)
-#define PHYLANX_DIST_MATRIXOPS_IDX_TILE_CALCULATION_HELPER
+#if !defined(PHYLANX_UTIL_INDEX_CALCULATION_HELPER)
+#define PHYLANX_UTIL_INDEX_CALCULATION_HELPER
 
 #include <hpx/assertion.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <tuple>
 
 #include <blaze/Math.h>
 
 
-namespace phylanx { namespace dist_matrixops { namespace calculation_detail
+namespace phylanx { namespace util
 {
     struct indices_pack
     {
@@ -55,7 +54,7 @@ namespace phylanx { namespace dist_matrixops { namespace calculation_detail
         }
         return indices_pack{0, 0, 0};
     }
-}}}
+}}
 
 #endif
 

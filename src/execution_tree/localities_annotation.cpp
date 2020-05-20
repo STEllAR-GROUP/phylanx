@@ -100,17 +100,29 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        std::size_t dim = tiles_[0].dimension();
+        std::size_t dim = 0;
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
             // make sure that all tiles have the same dimensionality
-            if (tiles_[i].dimension() != dim)
+            if (dim)
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "localities_information::localities_information",
-                    util::generate_error_message(
-                        "inconsistent dimensionalities in tiles",
-                        name, codename));
+                if (tiles_[i].spans_[0].is_valid())
+                {
+                    if (tiles_[i].dimension() != dim)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "localities_information::localities_information",
+                            util::generate_error_message(
+                                "inconsistent dimensionalities in tiles", name,
+                                codename));
+                    }
+                }
+            }
+
+            if (tiles_[i].spans_[0].is_valid() ||
+                tiles_[i].spans_[1].is_valid())
+            {
+                dim = tiles_[i].dimension();
             }
         }
 

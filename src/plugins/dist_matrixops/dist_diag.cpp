@@ -15,11 +15,11 @@
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_diag.hpp>
-#include <phylanx/plugins/dist_matrixops/idx_tile_calculation_helper.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 #include <phylanx/util/generate_error_message.hpp>
+#include <phylanx/util/index_calculation_helper.hpp>
 
 #include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
@@ -126,10 +126,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices =
-                            calculation_detail::index_calculation_1d(
-                                des_start, des_stop,
-                                cur_start, cur_stop);
+                        auto indices = util::index_calculation_1d(
+                            des_start, des_stop, cur_start, cur_stop);
                         blaze::subvector(res_arr,
                             indices.projected_start_,
                             indices.intersection_size_)
@@ -149,8 +147,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc]
                                 .spans_[span_index];
-                        auto indices =
-                            calculation_detail::retile_calculation_1d(
+                        auto indices = util::retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -194,15 +191,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices =
-                            calculation_detail::index_calculation_1d(
+                        auto indices = util::index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
-                        blaze::subvector(res_arr,
-                            indices.projected_start_,
-                            indices.intersection_size_)
-                                = blaze::subvector(v,
-                                    indices.local_start_,
-                                    indices.intersection_size_);
+                        blaze::subvector(res_arr, indices.projected_start_,
+                            indices.intersection_size_) = blaze::subvector(v,
+                            indices.local_start_, indices.intersection_size_);
                     }
                     // collecting other parts from remote localities
                     for (std::uint32_t loc = 0; loc != num_localities;
@@ -216,8 +209,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc]
                             .spans_[span_index];
-                        auto indices =
-                            calculation_detail::retile_calculation_1d(
+                        auto indices = util::retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {
@@ -262,15 +254,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // copying the local part
                     if (des_start < cur_stop && des_stop > cur_start)
                     {
-                        auto indices =
-                            calculation_detail::index_calculation_1d(
+                        auto indices = util::index_calculation_1d(
                             des_start, des_stop, cur_start, cur_stop);
-                        blaze::subvector(res_arr,
-                            indices.projected_start_,
-                            indices.intersection_size_)
-                                = blaze::subvector(v,
-                                indices.local_start_,
-                                indices.intersection_size_);
+                        blaze::subvector(res_arr, indices.projected_start_,
+                            indices.intersection_size_) = blaze::subvector(v,
+                            indices.local_start_, indices.intersection_size_);
                     }
                     // collecting other parts from remote localities
                     for (std::uint32_t loc = 0; loc != num_localities;
@@ -284,8 +272,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         tiling_span loc_span =
                             arr_localities.tiles_[loc]
                             .spans_[span_index];
-                        auto indices =
-                            calculation_detail::retile_calculation_1d(
+                        auto indices = util::retile_calculation_1d(
                             loc_span, des_start, des_stop);
                         if (indices.intersection_size_ > 0)
                         {

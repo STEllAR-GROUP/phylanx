@@ -60,6 +60,31 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
+    execution_tree::primitive_argument_type slice_extract(
+        ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        switch (data.num_dimensions())
+        {
+        case 2:
+            return slice1d_extract2d(
+                data, indices, std::move(arr_localities), name, codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_extract",
+            util::generate_error_message(
+                "distributed target ir::node_data object has an unsupported "
+                "number of dimensions",
+                name, codename));
+    }
+
+    template <typename T>
     ir::node_data<T> slice_extract(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
@@ -99,6 +124,32 @@ namespace phylanx { namespace execution_tree
             util::generate_error_message(
                 "target ir::node_data object holds data type that does not "
                 "support 2d slicing",
+                name, codename));
+    }
+
+    template <typename T>
+    execution_tree::primitive_argument_type slice_extract(
+        ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        switch (data.num_dimensions())
+        {
+        case 2:
+            return slice2d_extract2d(
+                data, rows, columns, std::move(arr_localities), name, codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_extract",
+            util::generate_error_message(
+                "distributed target ir::node_data object has an unsupported "
+                "number of dimensions",
                 name, codename));
     }
 
@@ -146,6 +197,24 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename);
 
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<double>(ir::node_data<double> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
     template PHYLANX_EXPORT ir::node_data<std::uint8_t>
     slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
         execution_tree::primitive_argument_type const& rows,
@@ -162,6 +231,27 @@ namespace phylanx { namespace execution_tree
     slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<double>(ir::node_data<double> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::localities_information&& arr_localities,
         std::string const& name, std::string const& codename);
 
     template PHYLANX_EXPORT ir::node_data<std::uint8_t>
@@ -220,6 +310,34 @@ namespace phylanx { namespace execution_tree
             util::generate_error_message(
                 "target ir::node_data object holds unsupported data type", name,
                 codename));
+    }
+
+    template <typename T>
+    execution_tree::primitive_argument_type slice_assign(
+        ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<T>&& value,
+        execution_tree::localities_information&& arr_localities,
+        execution_tree::localities_information&& val_localities,
+        std::string const& name, std::string const& codename)
+    {
+        switch (data.num_dimensions())
+        {
+        case 2:
+            return slice1d_assign2d(std::move(data), indices, std::move(value),
+                std::move(arr_localities), std::move(val_localities), name,
+                codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_assign",
+            util::generate_error_message(
+                "distributed target ir::node_data object has an "
+                "unsupported number of dimensions",
+                name, codename));
     }
 
     template <typename T>
@@ -291,6 +409,30 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<std::int64_t>&& value, std::string const& name,
         std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_assign<std::uint8_t>(ir::node_data<std::uint8_t>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<std::uint8_t>&& value,
+        execution_tree::localities_information&& arr_localities,
+        execution_tree::localities_information&& val_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_assign<double>(ir::node_data<double>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<double>&& value,
+        execution_tree::localities_information&& arr_localities,
+        execution_tree::localities_information&& val_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_assign<std::int64_t>(ir::node_data<std::int64_t>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<std::int64_t>&& value,
+        execution_tree::localities_information&& arr_localities,
+        execution_tree::localities_information&& val_localities,
+        std::string const& name, std::string const& codename);
 
     template PHYLANX_EXPORT ir::node_data<std::uint8_t>
     slice_assign<std::uint8_t>(ir::node_data<std::uint8_t>&& data,
