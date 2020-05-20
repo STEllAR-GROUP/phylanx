@@ -13,14 +13,18 @@
 #include <phylanx/execution_tree/primitives/detail/slice_assign.hpp>
 #include <phylanx/execution_tree/primitives/detail/slice_identity.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
-#include <phylanx/plugins/dist_matrixops/idx_tile_calculation_helper.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/distributed_vector.hpp>
+#include <phylanx/util/index_calculation_helper.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/assertion.hpp>
+#include <hpx/collectives/all_reduce.hpp>
 #include <hpx/errors/throw_exception.hpp>
+#include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -33,6 +37,15 @@
 #include <blaze/Math.h>
 #include <blaze/math/Elements.h>
 
+using std_int64_t = std::int64_t;
+using std_uint8_t = std::uint8_t;
+
+///////////////////////////////////////////////////////////////////////////////
+REGISTER_DISTRIBUTED_VECTOR_DECLARATION(double);
+REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_int64_t);
+REGISTER_DISTRIBUTED_VECTOR_DECLARATION(std_uint8_t);
+
+///////////////////////////////////////////////////////////////////////////////
 // Slicing functionality for 2d data
 namespace phylanx { namespace execution_tree
 {
@@ -1472,89 +1485,91 @@ namespace phylanx { namespace execution_tree
                 tile_info.as_annotation(name, codename),
                 arr_localities.annotation_, name, codename));
 
-        if (row_index < row_start || row_index > row_stop)
-        {
-            // no modification on this locality
-            return primitive_argument_type(data, attached_annotation);
-        }
-
+        auto v = value.vector();
         std::uint32_t const val_loc_id = val_localities.locality_.locality_id_;
-
-        std::size_t val_span_index = 0;
-        if (!val_localities.has_span(0))
-        {
-            HPX_ASSERT(val_localities.has_span(1));
-            val_span_index = 1;
-        }
-
-        tiling_information_1d val_tile_info(
-            arr_localities.tiles_[val_loc_id], name, codename);
-        std::int64_t val_start = val_tile_info.span_.start_;
-        std::int64_t val_stop = val_tile_info.span_.stop_;
-        std::size_t col_size = col_stop - col_start;
         std::size_t val_num_localities =
             val_localities.locality_.num_localities_;
-
-        // data is always ref, since we don't have store to rvalue
-        auto m = data.matrix();
-        blaze::DynamicMatrix<T> result = std::move(m);
-        auto v = value.vector();
-
-        if (val_start <= col_start && val_stop >= col_stop)
-        {
-            // assignment can be done locally
-            blaze::row(result, row_index - row_start) = blaze::trans(
-                blaze::subvector(v, col_start - val_start, col_size));
-            return primitive_argument_type(
-                std::move(result), attached_annotation);
-        }
-
-        // there is a need to fetch some part
 
         // constructing a vector for the value data
         util::distributed_vector<T> value_data(val_localities.annotation_.name_,
             v, val_num_localities, val_loc_id);
 
-        using namespace phylanx::dist_matrixops::calculation_detail;
+        // data is always ref, since we don't have store to rvalues
+        auto m = data.matrix();
+        blaze::DynamicMatrix<T> result = std::move(m);
 
-        // copying the local part if there is an intersection
-        if (col_start < val_stop && col_stop > val_start)
+        if (row_index > row_start && row_index < row_stop)
         {
-            auto indices = index_calculation_1d(
-                col_start, col_stop, val_start, val_stop);
-            blaze::row(
-                blaze::submatrix(result, row_index - row_start,
-                    indices.projected_start_, 1, indices.intersection_size_),
-                0) = blaze::trans(blaze::subvector(v, indices.local_start_,
-                indices.intersection_size_));
+            std::size_t val_span_index = 0;
+            if (!val_localities.has_span(0))
+            {
+                HPX_ASSERT(val_localities.has_span(1));
+                val_span_index = 1;
+            }
+
+            tiling_information_1d val_tile_info(
+                val_localities.tiles_[val_loc_id], name, codename);
+            std::int64_t val_start = val_tile_info.span_.start_;
+            std::int64_t val_stop = val_tile_info.span_.stop_;
+            std::size_t col_size = col_stop - col_start;
+            std::size_t rel_row = row_index - row_start;
+
+            if (val_start <= col_start && val_stop >= col_stop)
+            {
+                // assignment can be done locally
+                blaze::row(result, rel_row) = blaze::trans(
+                    blaze::subvector(v, col_start - val_start, col_size));
+            }
+            else
+            {
+                // there is a need to fetch some part
+
+                // copying the local part if there is an intersection
+                if (col_start < val_stop && col_stop > val_start)
+                {
+                    auto indices = util::index_calculation_1d(
+                        col_start, col_stop, val_start, val_stop);
+                    blaze::subvector(blaze::row(result, rel_row),
+                        indices.projected_start_, indices.intersection_size_) =
+                        blaze::trans(blaze::subvector(v, indices.local_start_,
+                            indices.intersection_size_));
+                }
+
+                for (std::uint32_t loc = 0; loc != val_num_localities; ++loc)
+                {
+                    if (loc == val_loc_id)
+                    {
+                        continue;
+                    }
+                    tiling_span const& val_span =
+                        val_localities.tiles_[loc].spans_[val_span_index];
+
+                    auto indices = util::retile_calculation_1d(
+                        val_span, col_start, col_stop);
+                    if (indices.intersection_size_ > 0)
+                    {
+                        // val_span has the part of result that we need
+                        blaze::subvector(blaze::row(result, rel_row),
+                            indices.projected_start_,
+                            indices.intersection_size_) =
+                            blaze::trans(value_data
+                                             .fetch(loc, indices.local_start_,
+                                                 indices.local_start_ +
+                                                     indices.intersection_size_)
+                                             .get());
+                    }
+                }
+            }
         }
 
-
-        for (std::uint32_t loc = 0; loc != val_num_localities; ++loc)
+        if (val_num_localities > 1)
         {
-            if (loc == loc_id)
-            {
-                continue;
-            }
-            tiling_span const& val_span =
-                val_localities.tiles_[loc].spans_[val_span_index];
-
-            auto indices = retile_calculation_1d(
-                val_span, col_start, col_stop);
-            if (indices.intersection_size_ > 0)
-            {
-                // val_span has the part of result that we need
-                blaze::row(blaze::submatrix(result, row_index - row_start,
-                               indices.projected_start_, 1,
-                               indices.intersection_size_),
-                    0) = blaze::trans(value_data
-                                          .fetch(loc, indices.local_start_,
-                                              indices.local_start_ +
-                                                  indices.intersection_size_)
-                                          .get());
-            }
+            hpx::lcos::barrier b("barrier_" + val_localities.annotation_.name_,
+                val_num_localities, val_loc_id);
+            b.wait();
         }
-        return primitive_argument_type(std::move(result), attached_annotation);
+
+        return primitive_argument_type(result, attached_annotation);
     }
 }}
 

@@ -13,12 +13,12 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/dist_matrixops/idx_tile_calculation_helper.hpp>
 #include <phylanx/plugins/dist_matrixops/retile_annotations.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/util/detail/range_dimension.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 #include <phylanx/util/distributed_vector.hpp>
+#include <phylanx/util/index_calculation_helper.hpp>
 
 #include <hpx/assertion.hpp>
 #include <hpx/include/lcos.hpp>
@@ -313,7 +313,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // copying the local part
             if (des_start < cur_stop && des_stop > cur_start)
             {
-                auto indices = calculation_detail::index_calculation_1d(
+                auto indices = util::index_calculation_1d(
                     des_start, des_stop, cur_start, cur_stop);
                 blaze::subvector(result, indices.projected_start_,
                     indices.intersection_size_) = blaze::subvector(v,
@@ -332,8 +332,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tiling_span loc_span =
                     arr_localities.tiles_[loc].spans_[span_index];
 
-                auto indices = calculation_detail::retile_calculation_1d(
-                    loc_span, des_start, des_stop);
+                auto indices =
+                    util::retile_calculation_1d(loc_span, des_start, des_stop);
                 if (indices.intersection_size_ > 0)
                 {
                     // loc_span has the part of result that we need
@@ -514,9 +514,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     des_row_stop > cur_row_start) &&
                 (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
             {
-                auto row_indices = calculation_detail::index_calculation_1d(
+                auto row_indices = util::index_calculation_1d(
                     des_row_start, des_row_stop, cur_row_start, cur_row_stop);
-                auto col_indices = calculation_detail::index_calculation_1d(
+                auto col_indices = util::index_calculation_1d(
                     des_col_start, des_col_stop, cur_col_start, cur_col_stop);
 
                 blaze::submatrix(result, row_indices.projected_start_,
@@ -539,9 +539,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tiling_span loc_row_span = arr_localities.tiles_[loc].spans_[0];
                 tiling_span loc_col_span = arr_localities.tiles_[loc].spans_[1];
 
-                auto row_indices = calculation_detail::retile_calculation_1d(
+                auto row_indices = util::retile_calculation_1d(
                     loc_row_span, des_row_start, des_row_stop);
-                auto col_indices = calculation_detail::retile_calculation_1d(
+                auto col_indices = util::retile_calculation_1d(
                     loc_col_span, des_col_start, des_col_stop);
                 if (row_indices.intersection_size_ > 0 &&
                     col_indices.intersection_size_ > 0)
