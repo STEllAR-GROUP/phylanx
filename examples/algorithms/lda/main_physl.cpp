@@ -13,7 +13,7 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-char const* const lra_code = R"(block(
+char const* const lda_code = R"(block(
     //
     // Logistic regression analysis algorithm
     //
@@ -22,7 +22,7 @@ char const* const lra_code = R"(block(
     //   alpha : 0.01
     //   beta : 0.1
     //
-    define(lra, x, y, alpha, iterations, enable_output,
+    define(lda, x, y, alpha, iterations, enable_output,
         block(
             define(weights, constant(0.0, shape(x, 1))),         // weights: [2]
             define(transx, transpose(x)),                        // transx:  [2, 30]

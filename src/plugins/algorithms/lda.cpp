@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lda_trainer::eval",
                 generate_error_message(
                     "the lda_trainer algorithm primitive requires for the first "
-                    "argument ('ratings') to represent a matrix"));
+                    "argument ('n_topics') to represent a matrix"));
         }
         auto topics = arg1.scalar();
 
@@ -75,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lda_trainer::eval",
                 generate_error_message(
                     "the lda_trainer algorithm primitive requires for the second "
-                    "argument ('regularization') to represent a scalar"));
+                    "argument ('alpha') to represent a scalar"));
         }
         auto alpha = arg2.scalar();
 
@@ -85,36 +85,65 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lda_trainer::eval",
                 generate_error_message(
                     "the lda_trainer algorithm primitive requires for the second "
-                    "argument ('regularization') to represent a scalar"));
+                    "argument ('beta') to represent a scalar"));
         }
         auto beta = arg3.scalar();
 
-        auto iterations = extract_scalar_integer_value(args[3], name_, codename_);
+        auto arg4 = extract_scalar_integer_value(args[3], name_, codename_);
+        if (arg2.num_dimensions() != 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "lda_trainer::eval",
+                generate_error_message(
+                    "the lda_trainer algorithm primitive requires for the second "
+                    "argument ('iters') to represent a scalar"));
+        }
+        auto iterations = arg3.scalar();
+
 
         // this is the word-count matrix
         //
 
         using namespace execution_tree;
-        // what about a local matrix
-        if (!lhs.has_annotation() || !rhs.has_annotation())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_cannon_product::eval",
-                generate_error_message(
-                    "the dist_cannon_product primitive requires both "
-                    "operands to be distributed"));
-        }
-
-        execution_tree::localities_information wcm_localities =
-            extract_localities_information(args[4], name_, codename_);
 
         auto arg5 = extract_numeric_value(args[4], name_, codename_);
-        if (arg5.num_dimensions() != 0)
+
+/*
+        // what about a local matrix
+        if (arg5.has_annotation())
+        {
+            // is distributed, run distributed algo logic
+            //execution_tree::localities_information wcm_localities =
+            //    extract_localities_information(args[4], name_, codename_);
+            // distributed lda!
+            //
+            if(wcm_localities.locality_.num_localities_ > 1) {
+
+                util::distributed_matrix<double> dist_word_doc_mat(
+                    wcm_localities.annotation_.name_,
+                    word_doc_mat,
+                    wcm_localities,
+                    wcm_localities.locality_.locality_id_
+                );
+
+                auto result = trainer(dist_word_doc_mat, topics, iterations, wcm_localities);
+ 
+                return primitive_argument_type
+                {
+                    primitive_arguments_type{
+                        ir::node_data<double>{std::move(std::get<0>(result))},
+                        ir::node_data<double>{std::move(std::get<1>(result))}
+                    }
+                };
+            }
+        }
+*/
+
+        if (arg5.num_dimensions() > 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lda_trainer::eval",
                 generate_error_message(
                     "the lda_trainer algorithm primitive requires for the second "
-                    "argument ('alpha') to represent a scalar"));
+                    "argument ('word_doc_mat') to represent a matrix"));
         }
         auto word_doc_mat = arg5.matrix();
 
@@ -122,29 +151,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             phylanx::execution_tree::primitives::impl::lda_trainer;
 
         lda_trainer_t trainer(alpha, beta);
-
-        // distributed lda!
-        //
-        if(wcm_localities.locality_.num_localities_ > 1) {
-
-            util::distributed_matrix<double> dist_word_doc_mat(
-                wcm_localities.annotation_.name_,
-                word_doc_mat,
-                wcm_localities,
-                wcm_localities.locality_.locality_id_
-            );
-
-            auto result = trainer(dist_word_doc_mat, topics, iterations, wcm_localities);
- 
-            return primitive_argument_type
-            {
-                primitive_arguments_type{
-                    ir::node_data<double>{std::move(std::get<0>(result))},
-                    ir::node_data<double>{std::move(std::get<1>(result))}
-                }
-            };
-
-        }
 
         auto result = trainer(word_doc_mat, topics, iterations);
 

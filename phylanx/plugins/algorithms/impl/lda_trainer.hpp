@@ -136,7 +136,7 @@ class lda_trainer {
                     double max_prob = std::abs(drand48()) *
                         (*std::max_element(probs.begin(), probs.end())) * 2.0;
 
-                    t = static_cast<std::int64_t>(std::abs(drand48()) * T;
+                    t = static_cast<std::int64_t>(std::abs(drand48()) * T);
 
                     while(max_prob > 1e-10) {
                         max_prob -= probs[t];
@@ -155,7 +155,7 @@ class lda_trainer {
 
     using dmatrix_t = blaze::DynamicMatrix<double>;
     using dvector_t = blaze::DynamicVector<double>;
-    using i64vector_t = blaze::DynamicMatrix<std::int64_t>;
+    using i64vector_t = blaze::DynamicVector<std::int64_t>;
 
     std::tuple<dmatrix_t, dmatrix_t> operator()(
         const dmatrix_t & word_doc_mat,
