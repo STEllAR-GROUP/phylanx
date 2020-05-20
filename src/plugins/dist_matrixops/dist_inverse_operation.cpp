@@ -32,7 +32,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -129,66 +128,21 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message("the input must be a 2d matrix"));
         }
 
-        //std::cout << makeplus1(0) << std::endl;
-        //std::cout << makeplus1(1) << std::endl;
-        //std::cout << makeplus1(2) << std::endl;
-
         std::size_t thisLocalityID = lhs_localities.locality_.locality_id_;
-        //std::cout << "This is locality " << thisLocalityID << std::endl;
-
-        //std::cout << "Data belonging to this locality:" << std::endl;
-        //std::cout << arg.matrix() << std::endl;
-
         std::size_t numLocalities = lhs_localities.locality_.num_localities_;
-        //std::cout << "Total number of localities = " << numLocalities
-        //          << std::endl;
-
-        //std::cout << "The localities information is as follows: " << std::endl;
-        //std::cout << "   Columns = " << lhs_localities.columns() << std::endl;
-        //std::cout << "   Rows = " << lhs_localities.rows() << std::endl;
-        //std::cout << "   Size = " << lhs_localities.size() << std::endl;
-
-        //std::cout << "Tile information: " << std::endl;
-        //std::size_t numTilesSeen = 1;
-        //for (auto const& lhsTile : lhs_localities.tiles_)
-        //{
-            //std::cout << "    "
-            //          << "Tile " << numTilesSeen
-            //          << " Dimension = " << lhsTile.dimension() << std::endl;
-            //std::cout << "    "
-            //          << "Tile " << numTilesSeen
-            //          << " Span Name 1 = " << lhsTile.get_span_name(1)
-            //          << std::endl;
-            //numTilesSeen++;
-        //}
 
         util::distributed_matrix<T> lhs_data(lhs_localities.annotation_.name_,
             arg.matrix(), lhs_localities.locality_.num_localities_,
             lhs_localities.locality_.locality_id_);
 
-        // Gets the span of the columns, i.e. startCol, endCol+1
-        execution_tree::tiling_span const& lhs_span =
-            lhs_localities.get_span(1);
-
-        // Create a matrix of the proper size initialized to zeros
-        // of type T
-        blaze::DynamicMatrix<T> result_matrix(
-            arg.dimension(0), lhs_localities.columns(), T{0});
-
-        // Turn result matrix from a matrix of zeros into an identity matrix
-        for (int j = 0; j<result_matrix.rows(); j++)
-            result_matrix(j, j) = 1.0;
-
-        // std::cout << result_matrix << std::endl;
-
         // Generic barrier. Give each barrier a unique identifier
-        if (numLocalities > 1)
-        {
-            hpx::lcos::barrier b("barrier1_" + lhs_localities.annotation_.name_,
-                lhs_localities.locality_.num_localities_,
-                lhs_localities.locality_.locality_id_);
-            b.wait();
-        }
+        //if (numLocalities > 1)
+        //{
+        //    hpx::lcos::barrier b("barrier1_" + lhs_localities.annotation_.name_,
+        //        lhs_localities.locality_.num_localities_,
+        //        lhs_localities.locality_.locality_id_);
+        //    b.wait();
+        //}
 
         auto myMatrix = arg.matrix();
         std::size_t numRows = myMatrix.rows();
@@ -205,98 +159,139 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             blaze::submatrix(blaze::IdentityMatrix<double>(numRows), 0,
                 startCol, arg.matrix().rows(), arg.matrix().columns());
 
-            // For swapping rows back into place
-            std::vector<std::tuple<std::size_t, std::size_t>> swappedRows;
+            //if (numLocalities > 1)
+            //{
+            //    hpx::lcos::barrier b1(
+            //        "barriera_" + lhs_localities.annotation_.name_,
+            //        lhs_localities.locality_.num_localities_,
+            //        lhs_localities.locality_.locality_id_);
+            //    b1.wait();
+            //}
 
             // Do gaussian elimination to get upper triangular
             // matrix with 1's across diagonal
-            for (std::int64_t current_row = 0; current_row < numRows;
+            for (std::size_t current_row = 0; current_row != numRows;
                  current_row++)
             {
-                //// Swaps current row with nearest subsequent row such that
-                //// after swapping A[i][i] != 0.
-                //if ((*lhs_data)(current_row, current_row) ==
-                //    0)    // if A[i][i] = 0,
-                //{
-                //    bool rowFound = false;
-                //    std::size_t checkOffset = 1;
-                //    while (current_row + checkOffset < numRows && !rowFound)
-                //    {
-                //        if ((*lhs_data)(
-                //                (current_row + checkOffset), current_row) != 0)
-                //        {
-                //            swap(column(myMatrix, current_row),
-                //                column(myMatrix,
-                //                    (current_row + checkOffset) % numRows));
-                //            swappedRows.emplace_back(
-                //                std::tuple<std::size_t, std::size_t>(
-                //                    current_row,
-                //                    (current_row + checkOffset) % numRows));
-                //            rowFound = true;
-                //        }
-                //        else
-                //            checkOffset++;
-                //    }
+                // Find the locality that owns the pivot element then get the pivot
+                std::size_t ownid1 =
+                    findOwningLoc(numRows, numLocalities, current_row);
 
-                //    // swap row with nearest subsequent row such that after
-                //    // swapping A[i][i] != 0
-                //    // if fails, inverse does not exist
-                //    if (!rowFound)
-                //    {
-                //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                //            "gauss_inverse::eval",
-                //            generate_error_message("inverse does not exist"));
-                //    }
-                //    current_row--;    // After swapping, make sure to retry this row
-                //}
-                //else    // the inversion has not already failed
-                //{
+                std::size_t localIndexOffset =
+                    current_row - getStartCol(ownid1, numRows, numLocalities);
+                auto pulledColumn =
+                    lhs_data
+                        .fetch(ownid1, current_row, numRows,
+                            localIndexOffset, localIndexOffset + 1)
+                        .get();
+                double pivot = pulledColumn(0, 0);
 
 
+                if (numLocalities > 1)
+                {
+                    hpx::lcos::barrier b2(
+                        "barrierb_" + lhs_localities.annotation_.name_,
+                        lhs_localities.locality_.num_localities_,
+                        lhs_localities.locality_.locality_id_);
+                    b2.wait();
+                }
 
+                // Swaps current row with nearest subsequent row such that
+                // after swapping A[current_row][current_row] != 0.
+                if (pivot == 0)   
+                {
+                    bool rowFound = false;
+                    std::size_t checkOffset = 1;
+                    while (current_row + checkOffset != numRows && !rowFound)
+                    {
+                        pivot = pulledColumn(checkOffset, 0);
+                        if (pivot != 0)
+                        {
+                            std::size_t checkRow =
+                                (current_row + checkOffset) % numRows;
 
+                            for (std::size_t swapCol = 0; swapCol!=numCols; swapCol++)
+                            {
+
+                                //if (numLocalities > 1)
+                                //{
+                                //    hpx::lcos::barrier b9("barrierz_" +
+                                //            lhs_localities.annotation_.name_,
+                                //        lhs_localities.locality_
+                                //            .num_localities_,
+                                //        lhs_localities.locality_.locality_id_);
+                                //    b9.wait();
+                                //}
+
+                                auto temp = (*lhs_data)(current_row, swapCol);
+                                (*lhs_data)(current_row, swapCol) =
+                                    (*lhs_data)(checkRow, swapCol);
+                                (*lhs_data)(checkRow, swapCol) = temp;
+
+                                auto invtemp = invMatrix(current_row, swapCol);
+                                invMatrix(current_row, swapCol) =
+                                    invMatrix(checkRow, swapCol);
+                                invMatrix(checkRow, swapCol) = invtemp;
+
+                                //if (numLocalities > 1)
+                                //{
+                                //    hpx::lcos::barrier b9("barrierz_" +
+                                //            lhs_localities.annotation_.name_,
+                                //        lhs_localities.locality_
+                                //            .num_localities_,
+                                //        lhs_localities.locality_.locality_id_);
+                                //    b9.wait();
+                                //}
+                            }
+                            rowFound = true;
+                        }
+                        else
+                            checkOffset++;
+
+                        //if (numLocalities > 1)
+                        //{
+                        //    hpx::lcos::barrier b3(
+                        //        "barrierc_" + lhs_localities.annotation_.name_,
+                        //        lhs_localities.locality_.num_localities_,
+                        //        lhs_localities.locality_.locality_id_);
+                        //    b3.wait();
+                        //}
+                    }
+                    // swap row with nearest subsequent row such that after
+                    // swapping A[i][i] != 0
+                    // if fails, inverse does not exist
+                    if (!rowFound)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dist_inverse::distGaussInv",
+                            generate_error_message("inverse does not exist"));
+                    }
+                    current_row--;    // After swapping, make sure to retry this row
+                }
+                else    // the inversion has not already failed
+                {
+                     // Removing this barrier causes errors
                      //if (numLocalities > 1)
                      //{
-                     //    hpx::lcos::barrier b9(
-                     //        "barrierz_" + lhs_localities.annotation_.name_,
+                     //    hpx::lcos::barrier b4(
+                     //        "barrierd_" + lhs_localities.annotation_.name_,
                      //        lhs_localities.locality_.num_localities_,
                      //        lhs_localities.locality_.locality_id_);
-                     //    b9.wait();
+                     //    b4.wait();
                      //}
 
-                     // Find the locality that owns the pivot element then get the pivot
-                     std::size_t ownid1 = findOwningLoc(numRows, numLocalities, current_row);
-                     std::size_t localIndexOffset = current_row -
-                         getStartCol(ownid1, numRows, numLocalities);
-                     auto pulledElement =
-                         lhs_data
-                                .fetch(ownid1, current_row, current_row + 1,
-                                 localIndexOffset, localIndexOffset + 1)
-                         .get();
-                     double scale = pulledElement(0, 0);
-
-                     // Removing this barrier causes errors
-                     if (numLocalities > 1)
-                     {
-                         hpx::lcos::barrier b9(
-                             "barrierz_" + lhs_localities.annotation_.name_,
-                             lhs_localities.locality_.num_localities_,
-                             lhs_localities.locality_.locality_id_);
-                         b9.wait();
-                     }
-
-                    for (std::int64_t col = 0; col < numCols; col++)
+                    for (std::size_t col = 0; col != numCols; col++)
                     {
 
                         (*lhs_data)(current_row, col) =
-                            (*lhs_data)(current_row, col) / scale;
+                            (*lhs_data)(current_row, col) / pivot;
                         invMatrix(current_row, col) =
-                            invMatrix(current_row, col) / scale;
+                            invMatrix(current_row, col) / pivot;
                     }
                     if (current_row < numRows - 1)
                     {
-                        for (std::int64_t nextRow = current_row + 1;
-                             nextRow < numRows; nextRow++)
+                        for (std::size_t nextRow = current_row + 1;
+                             nextRow != numRows; nextRow++)
                         {
                             //if (numLocalities > 1)
                             //{
@@ -322,16 +317,16 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                             // Removing this barrier causes errors
                             if (numLocalities > 1)
                             {
-                                hpx::lcos::barrier b9("barrierz_" +
+                                hpx::lcos::barrier b5("barriere_" +
                                         lhs_localities.annotation_.name_,
                                     lhs_localities.locality_.num_localities_,
                                     lhs_localities.locality_.locality_id_);
-                                b9.wait();
+                                b5.wait();
                             }
 
 
-                            for (std::int64_t nextCol = 0;
-                                 nextCol < numCols; nextCol++)
+                            for (std::size_t nextCol = 0;
+                                 nextCol != numCols; nextCol++)
                             {
                                 (*lhs_data)(nextRow, nextCol) =
                                     (*lhs_data)(nextRow, nextCol) -
@@ -341,35 +336,35 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                     invMatrix(nextRow, nextCol) -
                                     (factor * invMatrix(current_row, nextCol));
                             }
-                            if (numLocalities > 1)
-                            {
-                                hpx::lcos::barrier b2("barrierb" +
-                                        std::to_string(nextRow) +
-                                        "_" +
-                                        lhs_localities.annotation_.name_,
-                                    lhs_localities.locality_.num_localities_,
-                                    lhs_localities.locality_.locality_id_);
-                                b2.wait();
-                            }
+                            //if (numLocalities > 1)
+                            //{
+                            //    hpx::lcos::barrier b6("barrierf" +
+                            //            std::to_string(nextRow) +
+                            //            "_" +
+                            //            lhs_localities.annotation_.name_,
+                            //        lhs_localities.locality_.num_localities_,
+                            //        lhs_localities.locality_.locality_id_);
+                            //    b6.wait();
+                            //}
 
                         }
                     }
-               // }
+                }
 
-               hpx::lcos::barrier b5("barriere" + std::to_string(current_row) +
-                        "_" + lhs_localities.annotation_.name_,
-                    lhs_localities.locality_.num_localities_,
-                    lhs_localities.locality_.locality_id_);
-                b5.wait();
+               //hpx::lcos::barrier b7("barrierg" + std::to_string(current_row) +
+               //         "_" + lhs_localities.annotation_.name_,
+               //     lhs_localities.locality_.num_localities_,
+               //     lhs_localities.locality_.locality_id_);
+               // b7.wait();
 
             }
 
 
             // Back substitution phase, going from bottom to top
             // in matrix zeroing out columns except diagonal
-            for (std::int64_t zeroCol = numRows - 1; zeroCol > 0; zeroCol--)
+            for (std::size_t zeroCol = numRows - 1; zeroCol != 0; zeroCol--)
             {
-                for (std::int64_t row = zeroCol - 1; row >= 0; row--)
+                for (std::int64_t row = zeroCol - 1; row != -1; row--)
                 {
                     // Find the locality that owns the pivot element then get the pivot
                     std::size_t ownid3 =
@@ -387,15 +382,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     // Removing this barrier causes errors
                     if (numLocalities > 1)
                     {
-                        hpx::lcos::barrier b9(
-                            "barrierz_" + lhs_localities.annotation_.name_,
+                        hpx::lcos::barrier b8(
+                            "barrierg_" + lhs_localities.annotation_.name_,
                             lhs_localities.locality_.num_localities_,
                             lhs_localities.locality_.locality_id_);
-                        b9.wait();
+                        b8.wait();
                     }
 
 
-                    for (std::int64_t col = 0; col < numCols; col++)
+                    for (std::size_t col = 0; col != numCols; col++)
                     {
                         myMatrix(row, col) = myMatrix(row, col) -
                             (factor * myMatrix(zeroCol, col));
@@ -404,15 +399,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     }
                 }
             }
-
-            // Swap rows back into place
-            for (std::int64_t i = swappedRows.size() - 1; i >= 0; i--)
-            {
-                swap(row(invMatrix, std::get<0>(swappedRows[i])),
-                    row(invMatrix, std::get<1>(swappedRows[i])));
-            }
-
-            // std::cout << invMatrix << std::endl;
 
             // Prepare the output 
             execution_tree::primitive_argument_type result =

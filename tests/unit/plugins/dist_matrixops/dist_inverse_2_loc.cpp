@@ -14,13 +14,11 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <chrono>
-#include <algorithm>
 
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& name, std::string const& codestr)
@@ -155,7 +153,7 @@ void test_gauss_inverse_4()
     }
     else
     {
-        test_ginv_operation("test_2", R"(
+        test_ginv_operation("test_4", R"(
 			inverse_d(
 				annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
 					"test_4_1",
@@ -214,7 +212,6 @@ inline std::string wrapInputString(std::string inString, std::uint64_t n,
         "), list(\"rows\", 0," + std::to_string(n) +
         ")))\n"
         ")";
-
     return wrappedInput;
 }
 
@@ -239,8 +236,9 @@ void test_gauss_inverse_3(std::uint64_t n)
     // Check to ensure matrix is at least 2x2
     if (n < 2)
     {
-        std::cout << "Error, This test requires an nxn matrix where n>1.\n";
-        return;
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_inverse::test_gauss_inverse_3",
+            phylanx::util::generate_error_message(
+                "This test requires an nxn matrix where n>1."));
     }
 
     // Generate a random nxn matrix
@@ -266,19 +264,52 @@ void test_gauss_inverse_3(std::uint64_t n)
     test_ginv_operation("test_3", wrappedInput, wrappedOutput);
 }
 
+
+//   | 0.0 1.0 1.0 0.0 |        | -0.75  -0.125   0.375   0.25 |
+//   | 0.0 3.0 1.0 2.0 |   ->   |  0.25   0.125   0.125  -0.25 |
+//   | 2.0 3.0 1.0 0.0 |        |  0.75  -0.125  -0.125   0.25 |
+//   | 1.0 0.0 2.0 1.0 |        | -0.75   0.375  -0.125   0.25 |
+void test_gauss_inverse_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_ginv_operation("test_5", R"(
+			inverse_d(
+				annotate_d( [[0.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
+					"test_5_1",
+					list("tile", list("columns", 0, 2), list("rows", 0,4)))
+			)
+		)",
+            R"(
+            annotate_d([[-0.75, -0.125], [0.25, 0.125],
+                [0.75, -0.125], [-0.75, 0.375]], "test_5_1/1",
+                list("tile", list("columns", 0, 2), list("rows", 0, 4)))
+        )");
+    }
+    else
+    {
+        test_ginv_operation("test_5", R"(
+			inverse_d(
+				annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
+					"test_5_1",
+					list("tile", list("columns", 2, 4), list("rows", 0,4)))
+			)
+		)",
+            R"(
+            annotate_d([[0.375, 0.25], [0.125, -0.25],
+               [-0.125, 0.25], [-0.125, 0.25]], "test_5_1/1",
+                list("tile", list("columns", 2, 4), list("rows", 0, 4)))
+        )");
+    }
+}
+
 int hpx_main(int argc, char* argv[])
 {
-    // auto start = std::chrono::high_resolution_clock::now();
-
       test_gauss_inverse_0();
       test_gauss_inverse_2();
-      test_gauss_inverse_3(5);
+      //test_gauss_inverse_3(5);
       test_gauss_inverse_4();
-
-     //auto stop = std::chrono::high_resolution_clock::now();
-     //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-     //std::cout << "Time taken to find inverse: " << duration.count()
-     //     << " milliseconds" << std::endl;
+      test_gauss_inverse_5();
 
     hpx::finalize();
     return hpx::util::report_errors();
