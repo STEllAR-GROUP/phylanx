@@ -186,7 +186,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         .get();
                 double pivot = pulledColumn(0, 0);
 
-
                 if (numLocalities > 1)
                 {
                     hpx::lcos::barrier b2(
