@@ -58,10 +58,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     // (5) describes the usage of the primitive
     execution_tree::match_pattern_type const dist_inverse::match_data = {
         hpx::util::make_tuple("inverse_d", std::vector<std::string>{R"(
-			inverse_d(
-				_1_matrix
-				)
-			)"},
+              inverse_d(
+                 _1_matrix
+               )
+               )"},
             &create_dist_inverse,
             &execution_tree::create_primitive<dist_inverse>, help_string)};
 
@@ -80,7 +80,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     // find the first column belonging to a locality
     std::size_t getStartCol(std::size_t id, std::size_t n, std::size_t numLocs)
     {
-        std::size_t startCol = id * (n / numLocs) + std::min(id, n % numLocs);
+        std::size_t startCol =
+            id * (n / numLocs) + ((id < n % numLocs) ? id : (n % numLocs));
         return startCol;
     }
 
@@ -144,7 +145,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // Define some additional information on where
         // columns lie in the full input
         std::size_t startCol = thisLocalityID * (numRows / numLocalities) +
-            std::min(thisLocalityID, numRows % numLocalities);
+            ((thisLocalityID < (numRows % numLocalities)) ?
+                    thisLocalityID :
+                    (numRows % numLocalities));
         std::size_t endCol = startCol + numCols - 1;
 
         // Definition of this loc's part of a nxn double row-major identity matrix
@@ -191,7 +194,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                 // Swaps current row with nearest subsequent row such that
                 // after swapping A[current_row][current_row] != 0.
-                if (pivot == 0)   
+                if (pivot == 0)
                 {
                     bool rowFound = false;
                     std::size_t checkOffset = 1;
@@ -295,7 +298,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                             //    b3.wait();
                             //}
 
-                            // Find the locality that owns the pivot element then get the pivot
+                            // Find the locality that owns the pivot element
+                            // then get the pivot
                             std::size_t ownid2 = findOwningLoc(
                                 numRows, numLocalities, current_row);
                             std::size_t localIndexOffset2 = current_row -
@@ -394,7 +398,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 }
             }
 
-            // Prepare the output 
+            // Prepare the output
             execution_tree::primitive_argument_type result =
                 execution_tree::primitive_argument_type{invMatrix};
             execution_tree::annotation ann{ir::range("tile",
@@ -484,4 +488,4 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 execution_tree::functional::value_operand{}, args, name_,
                 codename_, std::move(ctx)));
     }
-}}} 
+}}}

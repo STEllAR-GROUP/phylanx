@@ -15,6 +15,7 @@
 #include <hpx/testing.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -44,21 +45,21 @@ void test_ginv_operation(std::string const& name, std::string const& code,
 //    | 2  6 |        | -0.2   0.4 |
 // using the format:
 // annotate_d( <matrix contents belonging to this locality>,
-//			   <some keyword>,
-//			   list("tile", list(<range of cols for this loc +end>),
-//							lsit(<range of rows for this loc +end>))
+//             <some keyword>,
+//             list("tile", list(<range of cols for this loc +end>),
+//             list(<range of rows for this loc +end>))
 // and then do other annotate_d similarly for info in other locality
 void test_gauss_inverse_0()
 {
     if (hpx::get_locality_id() == 0)
     {
         test_ginv_operation("test_0", R"(
-			inverse_d(
-				annotate_d( [[4.0], [2.0]],
-					"test_0_1",
-					list("tile", list("columns", 0, 1), list("rows", 0,2)))
-			)
-		)",
+                inverse_d(
+                annotate_d( [[4.0], [2.0]],
+                    "test_0_1",
+                    list("tile", list("columns", 0, 1), list("rows", 0,2)))
+                )
+        )",
             R"(
             annotate_d([[0.6], [-0.2]], "test_0_1/1",
                 list("tile", list("columns", 0, 1), list("rows", 0, 2)))
@@ -68,12 +69,12 @@ void test_gauss_inverse_0()
     else
     {
         test_ginv_operation("test_0", R"(
-			inverse_d(
-				annotate_d( [[7.0], [6.0]],
-					"test_0_1",
-					list("tile", list("columns", 1, 2), list("rows", 0,2)))
-			)
-		)",
+           inverse_d(
+               annotate_d( [[7.0], [6.0]],
+                    "test_0_1",
+                    list("tile", list("columns", 1, 2), list("rows", 0,2)))
+           )
+        )",
             R"(
             annotate_d([[-0.7], [0.4]], "test_0_1/1",
                 list("tile", list("columns", 1, 2), list("rows", 0, 2)))
@@ -93,12 +94,12 @@ void test_gauss_inverse_2()
     if (hpx::get_locality_id() == 0)
     {
         test_ginv_operation("test_2", R"(
-			inverse_d(
-				annotate_d( [[3.0, -3.0], [2.0, -3.0], [0.0, -1.0]],
-					"test_2_1",
-					list("tile", list("columns", 0, 2), list("rows", 0,3)))
-			)
-		)",
+             inverse_d(
+                 annotate_d( [[3.0, -3.0], [2.0, -3.0], [0.0, -1.0]],
+                    "test_2_1",
+                     list("tile", list("columns", 0, 2), list("rows", 0,3)))
+              )
+       )",
             R"(
             annotate_d([[1.0, -1.0], [-2.0, 3.0], [-2.0, 3.0]], "test_2_1/1",
                 list("tile", list("columns", 0, 2), list("rows", 0, 3)))
@@ -108,12 +109,12 @@ void test_gauss_inverse_2()
     else
     {
         test_ginv_operation("test_2", R"(
-			inverse_d(
-				annotate_d( [[4.0], [4.0], [1.0]],
-					"test_2_1",
-					list("tile", list("columns", 2, 3), list("rows", 0,3)))
-			)
-		)",
+             inverse_d(
+                annotate_d( [[4.0], [4.0], [1.0]],
+                    "test_2_1",
+                    list("tile", list("columns", 2, 3), list("rows", 0,3)))
+             )
+        )",
             R"(
             annotate_d([[0.0], [-4.0], [-3.0]], "test_2_1/1",
                 list("tile", list("columns", 2, 3), list("rows", 0, 3)))
@@ -132,12 +133,12 @@ void test_gauss_inverse_4()
     if (hpx::get_locality_id() == 0)
     {
         test_ginv_operation("test_4", R"(
-			inverse_d(
-				annotate_d( [[1.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
-					"test_4_1",
-					list("tile", list("columns", 0, 2), list("rows", 0,4)))
-			)
-		)",
+             inverse_d(
+                 annotate_d( [[1.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
+                    "test_4_1",
+                    list("tile", list("columns", 0, 2), list("rows", 0,4)))
+             )
+        )",
             R"(
             annotate_d([[-3.0, -0.5], [1.0, 0.25],
                 [3.0, 0.25], [-3.0, 0.0]], "test_4_1/1",
@@ -149,12 +150,12 @@ void test_gauss_inverse_4()
     else
     {
         test_ginv_operation("test_4", R"(
-			inverse_d(
-				annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
-					"test_4_1",
-					list("tile", list("columns", 2, 4), list("rows", 0,4)))
-			)
-		)",
+            inverse_d(
+               annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
+                    "test_4_1",
+                     list("tile", list("columns", 2, 4), list("rows", 0,4)))
+             )
+        )",
             R"(
             annotate_d([[1.5, 1.0], [-0.25, -0.5],
                [-1.25, -0.5], [1.0, 1.0]], "test_4_1/1",
@@ -243,10 +244,12 @@ void test_gauss_inverse_3(std::uint64_t n)
     m /= 10000;
     std::uint64_t id = hpx::get_locality_id();
     std::size_t numLocs = 2;
-    std::size_t startCol = id * (n / numLocs) + std::min(id, n % numLocs);
+    std::size_t startCol =
+        id * (n / numLocs) + ((id < (n % numLocs)) ? id : (n % numLocs));
     std::size_t endCol;
     if (id < numLocs - 1)
-        endCol = (id + 1) * (n / numLocs) + std::min(id + 1, n % numLocs);
+        endCol = (id + 1) * (n / numLocs) +
+            (((id+1) < (n % numLocs)) ? (id+1) : (n % numLocs));
     else
         endCol = n;
     std::string inputString = matToString(m, n, startCol, endCol);
@@ -268,12 +271,12 @@ void test_gauss_inverse_5()
     if (hpx::get_locality_id() == 0)
     {
         test_ginv_operation("test_5", R"(
-			inverse_d(
-				annotate_d( [[0.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
-					"test_5_1",
-					list("tile", list("columns", 0, 2), list("rows", 0,4)))
-			)
-		)",
+            inverse_d(
+                annotate_d( [[0.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
+                    "test_5_1",
+                    list("tile", list("columns", 0, 2), list("rows", 0,4)))
+            )
+        )",
             R"(
             annotate_d([[-0.75, -0.125], [0.25, 0.125],
                 [0.75, -0.125], [-0.75, 0.375]], "test_5_1/1",
@@ -283,13 +286,13 @@ void test_gauss_inverse_5()
     else
     {
         test_ginv_operation("test_5", R"(
-			inverse_d(
-				annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
-					"test_5_1",
-					list("tile", list("columns", 2, 4), list("rows", 0,4)))
-			)
-		)",
-            R"(
+             inverse_d(
+                 annotate_d( [[1.0, 0.0], [1.0, 2.0], [1.0, 0.0], [2.0, 1.0]],
+                    "test_5_1",
+                    list("tile", list("columns", 2, 4), list("rows", 0,4)))
+            )
+       )",
+           R"(
             annotate_d([[0.375, 0.25], [0.125, -0.25],
                [-0.125, 0.25], [-0.125, 0.25]], "test_5_1/1",
                 list("tile", list("columns", 2, 4), list("rows", 0, 4)))
