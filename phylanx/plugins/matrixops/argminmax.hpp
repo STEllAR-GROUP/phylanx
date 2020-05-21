@@ -26,16 +26,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<Derived>
     {
-    private:
-        Derived& derived()
-        {
-            return static_cast<Derived&>(*this);
-        }
-        Derived const& derived() const
-        {
-            return static_cast<Derived const&>(*this);
-        }
-
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
