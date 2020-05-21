@@ -20,6 +20,8 @@ set(tests
     dist_identity_2_loc
     dist_identity_4_loc
     dist_identity_6_loc
+    dist_inverse_2_loc
+    dist_inverse_3_loc
     dist_random_2_loc
     dist_random_4_loc
     dist_random_5_loc
@@ -49,6 +51,8 @@ set(dist_generic_operation_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_identity_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_identity_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_identity_6_loc_PARAMETERS LOCALITIES 6)
+set(dist_inverse_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_inverse_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_random_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_random_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_random_5_loc_PARAMETERS LOCALITIES 5)
