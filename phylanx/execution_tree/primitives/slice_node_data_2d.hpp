@@ -1227,7 +1227,8 @@ namespace phylanx { namespace execution_tree
                     arr_localities.annotation_, name, codename));
 
             // return an empty array
-            return primitive_argument_type(ast::nil{true}, attached_annotation);
+            return primitive_argument_type(
+                blaze::DynamicVector<std::uint8_t>(0), attached_annotation);
         }
 
         auto m = data.matrix();
@@ -1305,7 +1306,8 @@ namespace phylanx { namespace execution_tree
                     arr_localities.annotation_, name, codename));
 
             // return an empty array
-            return primitive_argument_type(ast::nil{true}, attached_annotation);
+            return primitive_argument_type(
+                blaze::DynamicVector<std::uint8_t>(0), attached_annotation);
         }
 
         auto m = data.matrix();
