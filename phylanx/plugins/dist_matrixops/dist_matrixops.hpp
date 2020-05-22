@@ -11,6 +11,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_diag.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_identity.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_inverse_operation.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_random.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_transpose_operation.hpp>
 #include <phylanx/plugins/dist_matrixops/retile_annotations.hpp>
