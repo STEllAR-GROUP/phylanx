@@ -36,10 +36,8 @@
 
 #include <phylanx/util/distributed_matrix.hpp>
 
-// This is just boilerplate
 namespace phylanx { namespace dist_matrixops { namespace primitives {
-    // Declare the help_string details, just for explaining what
-    // a primitive is doing, if needed.
+
     constexpr char const* const help_string = R"(
         inverse_d(matrix)
         Args:
@@ -48,14 +46,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             the inverse of the matrix
         )";
 
-    // For the plugin file, you need to tell Phylanx these things about
-    // your primtiive in a tuple
-    // (1) name of the primitive, e.g. inverse_d
-    // (2) a description of how the primitive can be invoked in the compiler
-    //        _k means the primitive should be invoked with k arguments
-    // (3) a creation function (defined in header)
-    // (4) a connection between the name and the type (always the same)
-    // (5) describes the usage of the primitive
     execution_tree::match_pattern_type const dist_inverse::match_data = {
         hpx::util::make_tuple("inverse_d", std::vector<std::string>{R"(
               inverse_d(
@@ -65,11 +55,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             &create_dist_inverse,
             &execution_tree::create_primitive<dist_inverse>, help_string)};
 
-    // Pretty much boilerplate, just change the name, or may need to use
-    // std::vector<primitive_arguments_type>&& for multiple args.
-    // Passes the arguments along to the constructor of the base class.
-    // Stores the three arguments as members.
-    // Name = name of primitive instance, Codename = file used to generate it
     dist_inverse::dist_inverse(
         execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
@@ -109,7 +94,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         return id;
     }
 
-    // This is where the computation of the inverse should be performed.
+    // This is where the computation of the inverse is performed.
     template <typename T>
     execution_tree::primitive_argument_type dist_inverse::distGaussInv(
         ir::node_data<T>&& arg,
@@ -129,15 +114,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             arg.matrix(), lhs_localities.locality_.num_localities_,
             lhs_localities.locality_.locality_id_);
 
-        // Generic barrier. Give each barrier a unique identifier
-        //if (numLocalities > 1)
-        //{
-        //    hpx::lcos::barrier b("barrier1_" + lhs_localities.annotation_.name_,
-        //        lhs_localities.locality_.num_localities_,
-        //        lhs_localities.locality_.locality_id_);
-        //    b.wait();
-        //}
-
         auto myMatrix = arg.matrix();
         std::size_t numRows = myMatrix.rows();
         std::size_t numCols = myMatrix.columns();
@@ -154,15 +130,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         blaze::DynamicMatrix<double> invMatrix =
             blaze::submatrix(blaze::IdentityMatrix<double>(numRows), 0,
                 startCol, arg.matrix().rows(), arg.matrix().columns());
-
-            //if (numLocalities > 1)
-            //{
-            //    hpx::lcos::barrier b1(
-            //        "barriera_" + lhs_localities.annotation_.name_,
-            //        lhs_localities.locality_.num_localities_,
-            //        lhs_localities.locality_.locality_id_);
-            //    b1.wait();
-            //}
 
             // Do gaussian elimination to get upper triangular
             // matrix with 1's across diagonal
@@ -208,17 +175,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
                             for (std::size_t swapCol = 0; swapCol!=numCols; swapCol++)
                             {
-
-                                //if (numLocalities > 1)
-                                //{
-                                //    hpx::lcos::barrier b9("barrierz_" +
-                                //            lhs_localities.annotation_.name_,
-                                //        lhs_localities.locality_
-                                //            .num_localities_,
-                                //        lhs_localities.locality_.locality_id_);
-                                //    b9.wait();
-                                //}
-
                                 auto temp = (*lhs_data)(current_row, swapCol);
                                 (*lhs_data)(current_row, swapCol) =
                                     (*lhs_data)(checkRow, swapCol);
@@ -228,30 +184,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 invMatrix(current_row, swapCol) =
                                     invMatrix(checkRow, swapCol);
                                 invMatrix(checkRow, swapCol) = invtemp;
-
-                                //if (numLocalities > 1)
-                                //{
-                                //    hpx::lcos::barrier b9("barrierz_" +
-                                //            lhs_localities.annotation_.name_,
-                                //        lhs_localities.locality_
-                                //            .num_localities_,
-                                //        lhs_localities.locality_.locality_id_);
-                                //    b9.wait();
-                                //}
                             }
                             rowFound = true;
                         }
                         else
                             checkOffset++;
-
-                        //if (numLocalities > 1)
-                        //{
-                        //    hpx::lcos::barrier b3(
-                        //        "barrierc_" + lhs_localities.annotation_.name_,
-                        //        lhs_localities.locality_.num_localities_,
-                        //        lhs_localities.locality_.locality_id_);
-                        //    b3.wait();
-                        //}
                     }
                     // swap row with nearest subsequent row such that after
                     // swapping A[i][i] != 0
@@ -266,16 +203,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 }
                 else    // the inversion has not already failed
                 {
-                     // Removing this barrier causes errors
-                     //if (numLocalities > 1)
-                     //{
-                     //    hpx::lcos::barrier b4(
-                     //        "barrierd_" + lhs_localities.annotation_.name_,
-                     //        lhs_localities.locality_.num_localities_,
-                     //        lhs_localities.locality_.locality_id_);
-                     //    b4.wait();
-                     //}
-
                     for (std::size_t col = 0; col != numCols; col++)
                     {
 
@@ -289,15 +216,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         for (std::size_t nextRow = current_row + 1;
                              nextRow != numRows; nextRow++)
                         {
-                            //if (numLocalities > 1)
-                            //{
-                            //    hpx::lcos::barrier b3("barrierc_" +
-                            //            lhs_localities.annotation_.name_,
-                            //        lhs_localities.locality_.num_localities_,
-                            //        lhs_localities.locality_.locality_id_);
-                            //    b3.wait();
-                            //}
-
                             // Find the locality that owns the pivot element
                             // then get the pivot
                             std::size_t ownid2 = findOwningLoc(
@@ -334,27 +252,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                     invMatrix(nextRow, nextCol) -
                                     (factor * invMatrix(current_row, nextCol));
                             }
-                            //if (numLocalities > 1)
-                            //{
-                            //    hpx::lcos::barrier b6("barrierf" +
-                            //            std::to_string(nextRow) +
-                            //            "_" +
-                            //            lhs_localities.annotation_.name_,
-                            //        lhs_localities.locality_.num_localities_,
-                            //        lhs_localities.locality_.locality_id_);
-                            //    b6.wait();
-                            //}
-
                         }
                     }
                 }
-
-               //hpx::lcos::barrier b7("barrierg" + std::to_string(current_row) +
-               //         "_" + lhs_localities.annotation_.name_,
-               //     lhs_localities.locality_.num_localities_,
-               //     lhs_localities.locality_.locality_id_);
-               // b7.wait();
-
             }
 
 
@@ -447,9 +347,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     }
 
     // Call the evaluation function
-    // Petty much boilerplate, just gotta change names and stuff
-    // if the constructor was called without an operand, just pass back
-    // the args to the function, otherwise, pass the operands
     hpx::future<execution_tree::primitive_argument_type> dist_inverse::eval(
         execution_tree::primitive_arguments_type const& operands,
         execution_tree::primitive_arguments_type const& args,
