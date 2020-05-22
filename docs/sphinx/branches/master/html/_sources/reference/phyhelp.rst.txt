@@ -1687,6 +1687,16 @@ inverse (m)
             The multiplicative inverse of m.
 
 
+inverse_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+inverse_d (inverse_d(matrix))
+        Args:
+            blaze dynamic matrix
+        Returns:
+            the inverse of the matrix
+        
+
+
 kmeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 kmeans (points, num_centroids, iterations, show_result, seed,)
