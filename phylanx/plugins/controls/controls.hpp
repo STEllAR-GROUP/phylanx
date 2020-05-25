@@ -6,6 +6,7 @@
 #if !defined(PHYLANX_PLUGINS_CONTROLS_APR_07_2108_1223PM)
 #define PHYLANX_PLUGINS_CONTROLS_APR_07_2108_1223PM
 
+#include <phylanx/plugins/controls/all_gather.hpp>
 #include <phylanx/plugins/controls/apply.hpp>
 #include <phylanx/plugins/controls/async_operation.hpp>
 #include <phylanx/plugins/controls/block_operation.hpp>
