@@ -39,9 +39,10 @@ namespace phylanx { namespace execution_tree
 
         auto it = data.begin();
         locality_id_ = static_cast<std::uint32_t>(
-            extract_scalar_integer_value(*it, name, codename));
+            extract_scalar_nonneg_integer_value_strict(*it, name, codename));
         num_localities_ = static_cast<std::uint32_t>(
-            extract_scalar_integer_value(*++it, name, codename));
+            extract_scalar_positive_integer_value_strict(
+                *++it, name, codename));
     }
 
     execution_tree::annotation locality_information::as_annotation() const

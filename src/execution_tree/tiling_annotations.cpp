@@ -78,7 +78,7 @@ namespace phylanx { namespace execution_tree
         if (!ann.find(get_span_name(0), temp_tile_ann, name, codename))
         {
             // having a row vector, the first span should be empty
-            // so, a row vectoe has a spans size of 2
+            // so, a row vector has a spans size of 2
             spans_.emplace_back();
         }
 
@@ -139,11 +139,11 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        if (tile.spans_[0].is_valid())
+        if (tile.spans_.size() == 1)
         {
             span_ = tile.spans_[0];    // column vector
         }
-        else if (tile.spans_.size() == 2 && tile.spans_[1].is_valid())
+        else if (tile.spans_.size() == 2 && !tile.spans_[0].is_valid())
         {
             type_ = rows;
             span_ = tile.spans_[1];    //row vector

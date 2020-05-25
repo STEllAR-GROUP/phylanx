@@ -1436,7 +1436,7 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename)
     {
         std::size_t val_ndim = val_localities.num_dimensions();
-        if (val_ndim != 1)
+        if (val_ndim > 1)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "phylanx::execution_tree::slice1d_assign2d",
@@ -1445,35 +1445,9 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        if (!is_integer_operand_strict(indices))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
-                util::generate_error_message(
-                    "only integer indexing for slice_row is suppoted for "
-                    "distributed arrays assigning a 1d slice to a matrix",
-                    name, codename));
-        }
-
-        std::size_t columns = arr_localities.columns();
-        if (columns != val_localities.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
-                util::generate_error_message(
-                    "cannot assign a vector to a 1d slice of a matrix when the "
-                    "slice and the vector have different sizes",
-                    name, codename));
-        }
-
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         tiling_information_2d tile_info(
             arr_localities.tiles_[loc_id], name, codename);
-
-        std::int64_t row_start = tile_info.spans_[0].start_;
-        std::int64_t row_stop = tile_info.spans_[0].stop_;
-        std::int64_t col_start = tile_info.spans_[1].start_;
-        std::int64_t col_stop = tile_info.spans_[1].stop_;
 
         ++arr_localities.annotation_.generation_;
 
@@ -1499,21 +1473,41 @@ namespace phylanx { namespace execution_tree
         auto m = data.matrix();
         blaze::DynamicMatrix<T> result = std::move(m);
 
+        if (!is_integer_operand_strict(indices))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "only integer indexing for slice_row is suppoted for "
+                    "distributed arrays assigning a 1d slice to a matrix",
+                    name, codename));
+        }
+
+        std::size_t columns = arr_localities.columns();
+        if (val_ndim == 1 && columns != val_localities.size())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "cannot assign a vector to a 1d slice of a matrix when "
+                    "the slice and the vector have different sizes",
+                    name, codename));
+        }
+
+        std::int64_t row_start = tile_info.spans_[0].start_;
+        std::int64_t row_stop = tile_info.spans_[0].stop_;
+        std::int64_t col_start = tile_info.spans_[1].start_;
+        std::int64_t col_stop = tile_info.spans_[1].stop_;
+
         if (row_index > row_start && row_index < row_stop)
         {
-            std::size_t val_span_index = 0;
-            if (!val_localities.has_span(0))
-            {
-                HPX_ASSERT(val_localities.has_span(1));
-                val_span_index = 1;
-            }
-
             tiling_information_1d val_tile_info(
                 val_localities.tiles_[val_loc_id], name, codename);
             std::int64_t val_start = val_tile_info.span_.start_;
             std::int64_t val_stop = val_tile_info.span_.stop_;
             std::size_t col_size = col_stop - col_start;
             std::size_t rel_row = row_index - row_start;
+            std::size_t val_span_index;
 
             if (val_start <= col_start && val_stop >= col_stop)
             {
@@ -1538,10 +1532,19 @@ namespace phylanx { namespace execution_tree
 
                 for (std::uint32_t loc = 0; loc != val_num_localities; ++loc)
                 {
-                    if (loc == val_loc_id)
+                    if (loc == val_loc_id ||
+                        val_localities.tiles_[loc].dimension() == 0)
                     {
                         continue;
                     }
+
+                    val_span_index = 0;
+                    if (!val_localities.has_span(0))
+                    {
+                        HPX_ASSERT(val_localities.has_span(1));
+                        val_span_index = 1;
+                    }
+
                     tiling_span const& val_span =
                         val_localities.tiles_[loc].spans_[val_span_index];
 
