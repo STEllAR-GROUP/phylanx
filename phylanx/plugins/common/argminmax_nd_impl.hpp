@@ -113,8 +113,9 @@ namespace phylanx { namespace common {
 
         template <typename Operation, typename T>
         execution_tree::primitive_argument_type argminmax1d(std::size_t numargs,
-            ir::node_data<T>&& arg, std::int64_t axis, std::string const& name,
-            std::string const& codename)
+            ir::node_data<T>&& arg, std::int64_t axis,
+            execution_tree::primitive_argument_type* value,
+            std::string const& name, std::string const& codename)
         {
             // `axis` is optional
             if (numargs == 2)
@@ -143,18 +144,25 @@ namespace phylanx { namespace common {
             }
 
             // Find the maximum value among the elements
-            auto max_it = Operation{}(a.begin(), a.end());
+            auto it = Operation{}(a.begin(), a.end());
+
+            // Return min/max's value (if requested)
+            if (value != nullptr)
+            {
+                *value = execution_tree::primitive_argument_type{*it};
+            }
 
             // Return min/max's index
             return execution_tree::primitive_argument_type(
-                (std::int64_t)(std::distance(a.begin(), max_it)));
+                (std::int64_t)(std::distance(a.begin(), it)));
         }
     }    // namespace detail
 
     template <typename Operation>
     execution_tree::primitive_argument_type argminmax1d(
         execution_tree::primitive_arguments_type&& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        execution_tree::primitive_argument_type* value)
     {
         std::int64_t axis = -1;
         std::size_t numargs = args.size();
@@ -170,25 +178,25 @@ namespace phylanx { namespace common {
             return detail::argminmax1d<Operation>(numargs,
                 execution_tree::extract_boolean_value_strict(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         case execution_tree::node_data_type_int64:
             return detail::argminmax1d<Operation>(numargs,
                 execution_tree::extract_integer_value_strict(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         case execution_tree::node_data_type_double:
             return detail::argminmax1d<Operation>(numargs,
                 execution_tree::extract_numeric_value_strict(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         case execution_tree::node_data_type_unknown:
             return detail::argminmax1d<Operation>(numargs,
                 execution_tree::extract_numeric_value(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         default:
             break;

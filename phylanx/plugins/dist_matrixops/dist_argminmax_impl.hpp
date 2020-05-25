@@ -8,12 +8,15 @@
 #define PHYLANX_PRIMITIVES_DIST_dist_argminmax_IMPL_2020_MAY_21_0503PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/localities_annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/common/argminmax_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_argminmax.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 #include <phylanx/util/tensor_iterators.hpp>
 
+#include <hpx/assertion.hpp>
+#include <hpx/collectives.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -29,6 +32,15 @@
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
+
+///////////////////////////////////////////////////////////////////////////////
+using std_pair_double_size_t = std::pair<double, std::size_t>;
+using std_pair_int64_t_size_t = std::pair<std::int64_t, std::size_t>;
+using std_pair_uint8_t_size_t = std::pair<std::uint8_t, std::size_t>;
+
+HPX_REGISTER_ALLREDUCE_DECLARATION(std_pair_double_size_t);
+HPX_REGISTER_ALLREDUCE_DECLARATION(std_pair_int64_t_size_t);
+HPX_REGISTER_ALLREDUCE_DECLARATION(std_pair_uint8_t_size_t);
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
@@ -48,16 +60,122 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     dist_argminmax<Op, Derived>::argminmax0d(
         execution_tree::primitive_arguments_type&& args) const
     {
+        // 0d is always local
         return common::argminmax0d<Op>(std::move(args), name_, codename_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail {
+
+        template <typename Operation>
+        struct all_reduce_op_1d
+        {
+            // the first element in the pairs is the (scalar) value, the second
+            // element is the (global) index of that value
+            template <typename T>
+            std::pair<T, std::size_t> operator()(
+                std::pair<T, std::size_t> const& result,
+                std::pair<T, std::size_t> const& current) const
+            {
+                if (Operation::compare(result.first, current.first))
+                {
+                    return result;
+                }
+                return current;
+            }
+        };
+
+        template <typename Op, typename T>
+        execution_tree::primitive_argument_type argminmax1d_reduce(T value,
+            std::size_t index,
+            execution_tree::localities_information const& locs)
+        {
+            auto p = hpx::all_reduce(
+                ("all_reduce_" + locs.annotation_.name_).c_str(),
+                std::make_pair(value, index), all_reduce_op_1d<Op>{},
+                locs.locality_.num_localities_, std::size_t(-1),
+                locs.locality_.locality_id_)
+                         .get();
+
+            return execution_tree::primitive_argument_type{
+                static_cast<std::int64_t>(p.second)};
+        }
+    }    // namespace detail
+
     template <typename Op, typename Derived>
     execution_tree::primitive_argument_type
     dist_argminmax<Op, Derived>::argminmax1d(
         execution_tree::primitive_arguments_type&& args) const
     {
-        return common::argminmax1d<Op>(std::move(args), name_, codename_);
+        using namespace execution_tree;
+        if (!args[0].has_annotation())
+        {
+            return common::argminmax1d<Op>(std::move(args), name_, codename_);
+        }
+
+        localities_information locs =
+            extract_localities_information(args[0], name_, codename_);
+
+        if (locs.num_dimensions() < 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_argminmax<Op, Derived>::argminmax1d",
+                generate_error_message(
+                    "the operand has incompatible dimensionalities"));
+        }
+
+        primitive_argument_type local_value;
+        primitive_argument_type local_result = common::argminmax1d<Op>(
+            std::move(args), name_, codename_, &local_value);
+
+        // correct index to be global
+        std::int64_t index = extract_scalar_integer_value_strict(
+            std::move(local_result), name_, codename_);
+
+        std::size_t span_index = 0;
+        if (!locs.has_span(0))
+        {
+            HPX_ASSERT(locs.has_span(1));
+            span_index = 1;
+        }
+
+        index += locs.get_span(span_index).start_;
+
+        switch (extract_common_type(local_result))
+        {
+        case node_data_type_bool:
+            return detail::argminmax1d_reduce<Op>(
+                extract_scalar_boolean_value_strict(
+                    std::move(local_result), name_, codename_),
+                index, locs);
+
+        case node_data_type_int64:
+            return detail::argminmax1d_reduce<Op>(
+                extract_scalar_integer_value_strict(
+                    std::move(local_result), name_, codename_),
+                index, locs);
+
+        case node_data_type_double:
+            return detail::argminmax1d_reduce<Op>(
+                extract_scalar_numeric_value_strict(
+                    std::move(local_result), name_, codename_),
+                index, locs);
+
+        case node_data_type_unknown:
+            return detail::argminmax1d_reduce<Op>(
+                extract_scalar_numeric_value(
+                    std::move(local_result), name_, codename_),
+                index, locs);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_argminmax<Op, Derived>::argminmax1d",
+            generate_error_message(
+                "the distt_minmax primitive requires for all arguments to "
+                "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -113,7 +231,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 [this_ = std::move(this_)](
                     execution_tree::primitive_arguments_type&& args)
                     -> execution_tree::primitive_argument_type {
-
                     std::size_t a_dims =
                         execution_tree::extract_numeric_value_dimension(
                             args[0], this_->name_, this_->codename_);
