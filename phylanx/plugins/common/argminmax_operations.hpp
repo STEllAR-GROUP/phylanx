@@ -13,6 +13,7 @@
 #include <phylanx/util/detail/numeric_limits_min.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <string>
 
@@ -20,8 +21,49 @@
 // explicitly instantiate the required functions
 namespace phylanx { namespace common {
 
-    struct PHYLANX_COMMON_EXPORT argmax_op;
-    struct PHYLANX_COMMON_EXPORT argmin_op;
+    ///////////////////////////////////////////////////////////////////////////
+    struct argmax_op
+    {
+        template <typename T>
+        static T initial()
+        {
+            return util::detail::numeric_limits_min<T>();
+        }
+
+        template <typename T, typename Comp = std::less<>>
+        static bool compare(T lhs, T rhs, Comp comp = Comp{})
+        {
+            return comp(rhs, lhs);
+        }
+
+        template <typename Iter, typename Comp = std::less<>>
+        Iter operator()(Iter begin, Iter end, Comp comp = Comp{}) const
+        {
+            return std::max_element(begin, end, comp);
+        }
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    struct argmin_op
+    {
+        template <typename T>
+        static T initial()
+        {
+            return (std::numeric_limits<T>::max)();
+        }
+
+        template <typename T, typename Comp = std::greater<>>
+        static bool compare(T lhs, T rhs, Comp comp = Comp{})
+        {
+            return comp(rhs, lhs);
+        }
+
+        template <typename Iter, typename Comp = std::less<>>
+        Iter operator()(Iter begin, Iter end, Comp comp = Comp{}) const
+        {
+            return std::min_element(begin, end, comp);
+        }
+    };
 }}    // namespace phylanx::common
 
 #endif

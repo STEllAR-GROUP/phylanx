@@ -19,41 +19,20 @@
 namespace phylanx { namespace common {
 
     ///////////////////////////////////////////////////////////////////////////
-    struct argmin_op
-    {
-        template <typename T>
-        static T initial()
-        {
-            return util::detail::numeric_limits_min<T>();
-        }
-
-        template <typename T>
-        static bool compare(T lhs, T rhs)
-        {
-            return lhs < rhs;
-        }
-
-        template <typename Iter>
-        Iter operator()(Iter begin, Iter end) const
-        {
-            return std::min_element(begin, end);
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////////
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     argminmax0d<argmin_op>(execution_tree::primitive_arguments_type&& args,
         std::string const& name, std::string const& codename);
 
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     argminmax1d<argmin_op>(execution_tree::primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename,
+        execution_tree::primitive_argument_type* value);
+
+    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    argminmax2d<argmin_op>(execution_tree::primitive_arguments_type&& args,
         std::string const& name, std::string const& codename);
 
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     argminmax3d<argmin_op>(execution_tree::primitive_arguments_type&& args,
-        std::string const& name, std::string const& codename);
-
-    template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
-    argminmax2d<argmin_op>(execution_tree::primitive_arguments_type&& args,
         std::string const& name, std::string const& codename);
 }}    // namespace phylanx::common

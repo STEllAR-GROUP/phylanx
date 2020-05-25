@@ -9,7 +9,9 @@
 
 #include <hpx/collectives/all_reduce.hpp>
 
+#include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
@@ -45,3 +47,12 @@ using blaze_matrix_std_uint8_t = blaze::DynamicMatrix<std::uint8_t>;
 HPX_REGISTER_ALLREDUCE(blaze_matrix_double);
 HPX_REGISTER_ALLREDUCE(blaze_matrix_std_int64_t);
 HPX_REGISTER_ALLREDUCE(blaze_matrix_std_uint8_t);
+
+///////////////////////////////////////////////////////////////////////////////
+using std_pair_double_size_t = std::pair<double, std::size_t>;
+using std_pair_int64_t_size_t = std::pair<std::int64_t, std::size_t>;
+using std_pair_uint8_t_size_t = std::pair<std::uint8_t, std::size_t>;
+
+HPX_REGISTER_ALLREDUCE(std_pair_double_size_t);
+HPX_REGISTER_ALLREDUCE(std_pair_int64_t_size_t);
+HPX_REGISTER_ALLREDUCE(std_pair_uint8_t_size_t);

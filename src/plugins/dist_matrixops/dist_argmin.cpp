@@ -8,8 +8,6 @@
 #include <phylanx/plugins/dist_matrixops/dist_argmin.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_argminmax_impl.hpp>
 
-#include <algorithm>
-#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
