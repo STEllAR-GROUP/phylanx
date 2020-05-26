@@ -11,7 +11,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/arithmetics/numeric.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <string>
 #include <utility>
