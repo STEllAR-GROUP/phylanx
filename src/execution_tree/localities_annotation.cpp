@@ -273,7 +273,8 @@ namespace phylanx { namespace execution_tree
                     return false;
                 });
 
-            return it_max->spans_[N].stop_ - it_min->spans_[N].start_;
+            HPX_ASSERT(it_min->spans_[N].start_ == 0);
+            return it_max->spans_[N].stop_;
         }
     }
 
