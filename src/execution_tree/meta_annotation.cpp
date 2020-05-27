@@ -15,12 +15,14 @@
 #include <hpx/include/util.hpp>
 #include <hpx/collectives.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 HPX_REGISTER_ALLTOALL(
     phylanx::execution_tree::annotation, meta_annotation_all_to_all);
@@ -28,6 +30,62 @@ HPX_REGISTER_ALLTOALL(
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {
+    ////////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        template <std::size_t N>
+        bool validate_dimension(std::vector<tiling_information> const& tiles)
+        {
+
+            auto it_min = std::min_element(tiles.begin(), tiles.end(),
+                [&](tiling_information const& v,
+                    tiling_information const& smallest) {
+                    if ((N < v.spans_.size() && v.spans_[N].is_valid()))
+                        return v.spans_[N].start_ < smallest.spans_[N].start_;
+
+                    return false;
+                });
+
+            // make sure the whole span starts from 0
+            if (it_min->spans_[N].start_ != 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::localities_annotation",
+                "the span does not start from zero");
+            }
+
+            auto it_max = std::max_element(tiles.begin(), tiles.end(),
+                [&](tiling_information const& largest,
+                    tiling_information const& v)
+                {
+                    if (N < v.spans_.size() && v.spans_[N].is_valid())
+                        return largest.spans_[N].stop_ < v.spans_[N].stop_;
+
+                    return false;
+                });
+
+            // make sure there are no gaps between spans. overlaps are allowed
+            std::int64_t end = it_max->spans_[N].stop_;
+            for (auto const& tile : tiles)
+            {
+                std::int64_t stop_point = tile.spans_[N].stop_;
+                if (stop_point != end &&
+                    !std::any_of(tiles.begin(), tiles.end(),
+                        [stop_point](tiling_information v)
+                        {
+                            return stop_point < v.spans_[N].stop_ &&
+                                stop_point >= v.spans_[N].start_;
+                        }))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::localities_annotation",
+                        "the span is not consecutive");
+                }
+            }
+            return true;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     hpx::future<annotation> meta_annotation(annotation const& locality_ann,
         annotation&& ann, std::string const& ann_name,
@@ -190,22 +248,23 @@ namespace phylanx { namespace execution_tree
         {
         case 1:
         {
-            char const* key = "columns";
-            annotation vector_span;
-            if (!ann.find("columns", vector_span, name, codename))
+            std::size_t span_size;
+            if (ann.has_key("columns"))
             {
-                key = "rows";
-                if (!ann.find("rows", vector_span, name, codename))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::localities_annotation",
-                        "a vector can be either a row-vector or a "
-                        "column-vector");
-                }
+                span_size = extract_span(ann, "columns", name, codename).size();
+            }
+            else if (ann.has_key("rows"))
+            {
+                span_size = extract_span(ann, "rows", name, codename).size();
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the vector annotation should have one of the row or "
+                    "column spans");
             }
 
-            std::size_t span_size =
-                extract_span(ann, key, name, codename).size();
             if (span_size != target_dims[0])
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -266,6 +325,120 @@ namespace phylanx { namespace execution_tree
         auto localities_ann = meta_annotation(hpx::launch::sync, locality_ann,
             std::move(meta_locality_ann), ann_info.generate_name(), name,
             codename);
+
+        std::size_t num_localities = loc.num_localities_;
+        std::vector<tiling_information> tiles;
+        tiles.reserve(num_localities);
+        for (std::size_t i = 0; i != num_localities; ++i)
+        {
+            annotation meta;
+            localities_ann.find(
+                hpx::util::format("meta_{}", i), meta, name, codename);
+
+            annotation tile;
+            meta.find("tile", tile, name, codename);
+            tiles.emplace_back(std::move(tile), name, codename);
+        }
+
+        if (tiles.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::localities_annotation",
+                "there is no tile available");
+        }
+
+        switch (ann_ndim)
+        {
+        case 1:
+        {
+            bool type = false; // false:columns, true:rows
+            annotation vector_span;
+            bool flag = false;
+            // making sure we don't have a vector with both row and column ann
+            for (auto const& tile : tiles)
+            {
+                if (flag)
+                {
+                    if (!type)    // columns
+                    {
+                        if (tile.spans_.size() > 1 && tile.spans_[1].is_valid())
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "phylanx::execution_tree::localities_"
+                                "annotation",
+                                "the vector can be either a row-vector or a "
+                                "column-vector, not a mix of both");
+                    }
+                    else    // rows
+                    {
+                        if (tile.spans_[0].is_valid())
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "phylanx::execution_tree::localities_"
+                                "annotation",
+                                "the vector can be either a row-vector or a "
+                                "column-vector, not a mix of both");
+                    }
+                }
+                else
+                {
+                    if (tile.spans_[0].is_valid())
+                    {
+                        type = false;
+                        flag = true;
+                    }
+                    else if (tile.spans_.size() > 1 && tile.spans_[1].is_valid())
+                    {
+                        type = true;
+                        flag = true;
+                    }
+                }
+            }
+
+            if (type == false && !detail::validate_dimension<0>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the column vector does not contain a span of consecutive "
+                    "integers starting from zero");
+            }
+
+            if (type == true && !detail::validate_dimension<1>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the row vector does not contain a span of consecutive "
+                    "integers starting from zero");
+            }
+            break;
+        }
+
+        case 2:
+        {
+            if (!detail::validate_dimension<0>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the row dimension of matrix  does not contain a span of "
+                    "consecutive integers starting from zero");
+            }
+
+            if (!detail::validate_dimension<1>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the column dimension of matrix does not contain a span of "
+                    "consecutive integers starting from zero");
+            }
+            break;
+        }
+        case 0: HPX_FALLTHROUGH;
+        case 3: HPX_FALLTHROUGH;
+        case 4: HPX_FALLTHROUGH;
+        default:
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::localities_annotation",
+                "array's number of dimension is not supported");
+        }
 
         // now generate the overall annotation
         localities_ann.add_annotation(std::move(locality_ann), name, codename);

@@ -137,6 +137,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 generate_error_message(
                     "no args annotation and tiles annotation not first"));
         }
+
         target.set_annotation(std::move(localities), name_, codename_);
         return std::move(target);
     }
