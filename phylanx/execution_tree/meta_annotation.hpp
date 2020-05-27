@@ -28,6 +28,11 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT annotation localities_annotation(annotation& locality_ann,
         annotation&& ann, annotation_information const& ann_info,
         std::string const& name, std::string const& codename);
+
+    PHYLANX_EXPORT annotation localities_annotation(
+        primitive_argument_type const& arg, annotation& locality_ann,
+        annotation&& ann, annotation_information const& ann_info,
+        std::string const& name, std::string const& codename);
 }}
 
 #endif

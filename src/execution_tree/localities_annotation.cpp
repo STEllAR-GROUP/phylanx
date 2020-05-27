@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree
             }
 
             if (tiles_[i].spans_[0].is_valid() ||
-                tiles_[i].spans_[1].is_valid())
+                (tiles_[i].spans_.size() > 1 && tiles_[i].spans_[1].is_valid()))
             {
                 dim = tiles_[i].dimension();
             }
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree
         switch (local_tile.dimension())
         {
         case 0:
-            result[0] = 1;
+            result[0] = 0;
             break;
 
         case 1:
@@ -254,32 +254,49 @@ namespace phylanx { namespace execution_tree
         {
             HPX_ASSERT(!tiles.empty());
             auto it_min = std::min_element(tiles.begin(), tiles.end(),
-                [&](tiling_information const& v, tiling_information const& smallest)
+                [&](tiling_information const& v,
+                    tiling_information const& smallest)
                 {
-                    HPX_ASSERT(N < v.spans_.size());
-                    HPX_ASSERT(v.spans_[N].is_valid());
-                    return v.spans_[N].start_ < smallest.spans_[N].start_;
+                    if ((N < v.spans_.size() && v.spans_[N].is_valid()))
+                        return v.spans_[N].start_ < smallest.spans_[N].start_;
+
+                    return false;
                 });
 
             auto it_max = std::max_element(tiles.begin(), tiles.end(),
-                [&](tiling_information const& largest, tiling_information const& v)
+                [&](tiling_information const& largest,
+                    tiling_information const& v)
                 {
-                    HPX_ASSERT(N < v.spans_.size());
-                    HPX_ASSERT(v.spans_[N].is_valid());
-                    return largest.spans_[N].stop_ < v.spans_[N].stop_;
+                    if (N < v.spans_.size() && v.spans_[N].is_valid())
+                        return largest.spans_[N].stop_ < v.spans_[N].stop_;
+
+                    return false;
                 });
 
-            return it_max->spans_[N].stop_ - it_min->spans_[N].start_;
+            HPX_ASSERT(it_min->spans_[N].start_ == 0);
+            return it_max->spans_[N].stop_;
         }
     }
 
     // Is this helpful? It may only introduce confusion
     std::size_t localities_information::size() const
     {
-        if (tiles_[0].spans_[0].is_valid())
-            return detail::dimension<0>(tiles_);
-
-        return detail::dimension<1>(tiles_);
+        for (std::size_t i = 0; i != tiles_.size(); ++i)
+        {
+            if (tiles_[i].spans_[0].is_valid())
+            {
+                return detail::dimension<0>(tiles_);
+            }
+            else if (tiles_[i].spans_.size() > 1 &&
+                tiles_[i].spans_[1].is_valid())
+            {
+                // a row-wise vector
+                return detail::dimension<1>(tiles_);
+            }
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::size",
+            util::generate_error_message("the given array does not have a "
+                                         "valid span on any of localities"));
     }
 
     // we assume that all tiles have the same number of dimension
@@ -362,17 +379,26 @@ namespace phylanx { namespace execution_tree
     bool localities_information::has_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(
-            dim < num_dimensions() || (dim == 1 && dim == num_dimensions()));
+        if (num_dimensions() != 0)
+        {
+            HPX_ASSERT(dim < num_dimensions() ||
+                (dim == 1 && dim == num_dimensions()));
+        }
 
-        return tiles_[locality_.locality_id_].spans_[dim].is_valid();
+        return std::any_of(
+            tiles_.begin(), tiles_.end(), [dim](tiling_information tile) {
+                return tile.spans_[dim].is_valid();
+            });
     }
 
     tiling_span localities_information::get_span(std::size_t dim) const
     {
         HPX_ASSERT(locality_.locality_id_ < tiles_.size());
-        HPX_ASSERT(
-            dim < num_dimensions() || (dim == 1 && dim == num_dimensions()));
+        if (num_dimensions() != 0)
+        {
+            HPX_ASSERT(dim < num_dimensions() ||
+                (dim == 1 && dim == num_dimensions()));
+        }
 
         return tiles_[locality_.locality_id_].spans_[dim];
     }
@@ -382,8 +408,11 @@ namespace phylanx { namespace execution_tree
         std::uint32_t loc, std::size_t dim, tiling_span const& span) const
     {
         HPX_ASSERT(loc < tiles_.size());
-        HPX_ASSERT(
-            dim < num_dimensions() || (dim == 1 && dim == num_dimensions()));
+        if (num_dimensions() != 0)
+        {
+            HPX_ASSERT(dim < num_dimensions() ||
+                (dim == 1 && dim == num_dimensions()));
+        }
 
         auto const& gspan = tiles_[loc].spans_[dim];
         tiling_span result{

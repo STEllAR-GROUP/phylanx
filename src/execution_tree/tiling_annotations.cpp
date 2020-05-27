@@ -39,24 +39,20 @@ namespace phylanx { namespace execution_tree
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    namespace detail
+    inline tiling_span extract_span(annotation const& ann, char const* key,
+        std::string const& name, std::string const& codename)
     {
-        tiling_span extract_span(annotation const& ann, char const* key,
-            std::string const& name, std::string const& codename)
+        annotation key_ann;
+        if (!ann.get_if(key, key_ann, name, codename) &&
+            !ann.find(key, key_ann, name, codename))
         {
-            annotation key_ann;
-            if (!ann.get_if(key, key_ann, name, codename) &&
-                !ann.find(key, key_ann, name, codename))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "tiling_annotations_1d::tiling_annotations_1d",
-                    util::generate_error_message(
-                        hpx::util::format(
-                            "annotation type not given '{}'", key),
-                        name, codename));
-            }
-            return tiling_span(key_ann.get_data(), name, codename);
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tiling_annotations::extract_span",
+                util::generate_error_message(
+                    hpx::util::format("annotation type not given '{}'", key),
+                    name, codename));
         }
+        return tiling_span(key_ann.get_data(), name, codename);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -78,7 +74,7 @@ namespace phylanx { namespace execution_tree
         if (!ann.find(get_span_name(0), temp_tile_ann, name, codename))
         {
             // having a row vector, the first span should be empty
-            // so, a row vectoe has a spans size of 2
+            // so, a row vector has a spans size of 2
             spans_.emplace_back();
         }
 
@@ -87,7 +83,7 @@ namespace phylanx { namespace execution_tree
             annotation tile_ann;
             if (ann.find(get_span_name(i - 1), tile_ann, name, codename))
             {
-                spans_.push_back(detail::extract_span(
+                spans_.push_back(extract_span(
                     tile_ann, get_span_name(i - 1), name, codename));
             }
         }
@@ -122,7 +118,7 @@ namespace phylanx { namespace execution_tree
                     hpx::util::format("unexpected annotation type ({})", key),
                     name, codename));
         }
-        span_ = detail::extract_span(ann, tile1d_typename(type_), name, codename);
+        span_ = extract_span(ann, tile1d_typename(type_), name, codename);
     }
 
     tiling_information_1d::tiling_information_1d(
@@ -139,11 +135,11 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        if (tile.spans_[0].is_valid())
+        if (tile.spans_.size() == 1)
         {
             span_ = tile.spans_[0];    // column vector
         }
-        else if (tile.spans_.size() == 2 && tile.spans_[1].is_valid())
+        else if (tile.spans_.size() == 2 && !tile.spans_[0].is_valid())
         {
             type_ = rows;
             span_ = tile.spans_[1];    //row vector
@@ -184,8 +180,8 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        spans_[0] = detail::extract_span(ann, "rows", name, codename);
-        spans_[1] = detail::extract_span(ann, "columns", name, codename);
+        spans_[0] = extract_span(ann, "rows", name, codename);
+        spans_[1] = extract_span(ann, "columns", name, codename);
     }
 
     tiling_information_2d::tiling_information_2d(tiling_information const& tile,
@@ -231,9 +227,9 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        spans_[0] = detail::extract_span(ann, "pages", name, codename);
-        spans_[1] = detail::extract_span(ann, "rows", name, codename);
-        spans_[2] = detail::extract_span(ann, "columns", name, codename);
+        spans_[0] = extract_span(ann, "pages", name, codename);
+        spans_[1] = extract_span(ann, "rows", name, codename);
+        spans_[2] = extract_span(ann, "columns", name, codename);
     }
 
     tiling_information_3d::tiling_information_3d(tiling_information const& tile,

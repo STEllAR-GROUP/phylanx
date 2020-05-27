@@ -95,7 +95,7 @@ void test_slice_column_1()
                     list("tile", list("columns", 2, 3), list("rows", 0, 3)))),
             1)
         )", R"(
-            annotate_d(nil, "array_1_sliced/1",
+            annotate_d([], "array_1_sliced/1",
                 list("tile", list("columns", 0, 0)))
         )");
     }
@@ -138,7 +138,7 @@ void test_slice_row_1()
                     list("tile", list("columns", 0, 3), list("rows", 0, 1)))),
             2)
         )", R"(
-            annotate_d(nil, "array_3_sliced/1",
+            annotate_d([], "array_3_sliced/1",
                 list("tile", list("rows", 0, 0)))
         )");
     }
@@ -253,6 +253,38 @@ void test_slice_row_assign_4()
     }
 }
 
+void test_slice_row_assign_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_slice_d_operation("test_slice_row_2loc_5", R"(
+            define(a, annotate_d([[1, 2, 3]], "array_7",
+                list("tile", list("columns", 0, 3), list("rows", 0, 1))))
+            define(v, annotate_d([], "value_3",
+                list("tile", list("columns", 0, 0))))
+            store(slice_row(a, 2), v)
+            a
+        )", R"(
+            annotate_d([[1, 2, 3]], "array_7/1",
+                list("tile", list("rows", 0, 1), list("columns", 0, 3)))
+        )");
+    }
+    else
+    {
+        test_slice_d_operation("test_slice_row_2loc_5", R"(
+            define(a, annotate_d([[4, 5, 6], [7, 8, 9]], "array_7",
+                list("tile", list("columns", 0, 3), list("rows", 1, 3))))
+            define(v, annotate_d([-7, -8, -9], "value_3",
+                list("tile", list("columns", 0, 3))))
+            store(slice_row(a, 2), v)
+            a
+        )", R"(
+            annotate_d([[4, 5, 6], [-7, -8, -9]], "array_7/1",
+                list("tile", list("rows", 1, 3), list("columns", 0, 3)))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -264,6 +296,7 @@ int hpx_main(int argc, char* argv[])
     test_slice_row_assign_2();
     test_slice_row_assign_3();
     test_slice_row_assign_4();
+    test_slice_row_assign_5();
 
 
     hpx::finalize();
