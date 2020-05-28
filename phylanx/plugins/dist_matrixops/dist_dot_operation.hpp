@@ -12,7 +12,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/localities_annotation.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <cstddef>
 #include <cstdint>

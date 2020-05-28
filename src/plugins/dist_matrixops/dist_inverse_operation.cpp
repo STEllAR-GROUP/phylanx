@@ -20,7 +20,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <algorithm>
 #include <cmath>

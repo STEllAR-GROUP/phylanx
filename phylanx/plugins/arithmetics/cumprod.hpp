@@ -10,7 +10,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/arithmetics/cumulative.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <string>
 #include <utility>

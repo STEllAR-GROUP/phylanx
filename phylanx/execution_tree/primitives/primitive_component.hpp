@@ -14,7 +14,7 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/future.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/async_base/launch_policy.hpp>
 
 #include <cstddef>
 #include <cstdint>

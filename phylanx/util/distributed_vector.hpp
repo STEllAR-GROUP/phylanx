@@ -22,7 +22,7 @@
 #include <hpx/runtime/get_locality_id.hpp>
 #include <hpx/runtime/get_num_localities.hpp>
 #include <hpx/runtime/get_ptr.hpp>
-#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/async_base/launch_policy.hpp>
 #include <hpx/synchronization/spinlock.hpp>
 #include <hpx/thread_support/unlock_guard.hpp>
 
