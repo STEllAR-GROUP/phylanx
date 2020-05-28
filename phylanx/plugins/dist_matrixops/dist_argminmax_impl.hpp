@@ -116,7 +116,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         localities_information locs =
             extract_localities_information(args[0], name_, codename_);
 
-        if (locs.num_dimensions() < 2)
+        std::size_t ndim = locs.num_dimensions();
+        if (ndim > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_argminmax<Op, Derived>::argminmax1d",
@@ -124,47 +125,58 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operand has incompatible dimensionalities"));
         }
 
+        std::int64_t index;
         primitive_argument_type local_value;
-        primitive_argument_type local_result = common::argminmax1d<Op>(
-            std::move(args), name_, codename_, &local_value);
 
-        // correct index to be global
-        std::int64_t index = extract_scalar_integer_value_strict(
-            std::move(local_result), name_, codename_);
-
-        std::size_t span_index = 0;
-        if (!locs.has_span(0))
+        if (ndim == 0)
         {
-            HPX_ASSERT(locs.has_span(1));
-            span_index = 1;
+            index = 0;
+            local_value = primitive_argument_type(
+                (std::numeric_limits<std::int64_t>::max)()); /////
+        }
+        else    // ndim==1
+        {
+            primitive_argument_type local_result = common::argminmax1d<Op>(
+                std::move(args), name_, codename_, &local_value);
+
+            // correct index to be global
+            index = extract_scalar_integer_value_strict(
+                std::move(local_result), name_, codename_);
+
+            std::size_t span_index = 0;
+            if (!locs.has_span(0))
+            {
+                HPX_ASSERT(locs.has_span(1));
+                span_index = 1;
+            }
+
+            index += locs.get_span(span_index).start_;
         }
 
-        index += locs.get_span(span_index).start_;
-
-        switch (extract_common_type(local_result))
+        switch (extract_common_type(local_value))
         {
         case node_data_type_bool:
             return detail::argminmax1d_reduce<Op>(
                 extract_scalar_boolean_value_strict(
-                    std::move(local_result), name_, codename_),
+                    std::move(local_value), name_, codename_),
                 index, locs);
 
         case node_data_type_int64:
             return detail::argminmax1d_reduce<Op>(
                 extract_scalar_integer_value_strict(
-                    std::move(local_result), name_, codename_),
+                    std::move(local_value), name_, codename_),
                 index, locs);
 
         case node_data_type_double:
             return detail::argminmax1d_reduce<Op>(
                 extract_scalar_numeric_value_strict(
-                    std::move(local_result), name_, codename_),
+                    std::move(local_value), name_, codename_),
                 index, locs);
 
         case node_data_type_unknown:
             return detail::argminmax1d_reduce<Op>(
                 extract_scalar_numeric_value(
-                    std::move(local_result), name_, codename_),
+                    std::move(local_value), name_, codename_),
                 index, locs);
 
         default:

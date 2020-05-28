@@ -38,7 +38,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::string const& name = "", std::string const& codename = "")
     {
         return execution_tree::create_primitive_component(
-            locality, "dist_argmin", std::move(operands), name, codename);
+            locality, "argmin_d", std::move(operands), name, codename);
     }
 }}}    // namespace phylanx::dist_matrixops::primitives
 
