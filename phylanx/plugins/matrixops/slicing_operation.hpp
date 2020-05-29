@@ -12,7 +12,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/small_vector.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <array>
 #include <cstddef>
