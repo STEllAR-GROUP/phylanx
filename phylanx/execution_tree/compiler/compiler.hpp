@@ -457,7 +457,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
     class environment
     {
     public:
-        using definition_data = compiled_function;
+        struct definition_data
+        {
+            compiled_function f_;
+            std::int64_t line_;
+            std::int64_t column_;
+            std::string codename_;
+        };
 
     private:
         using map_type = std::map<util::hashed_string, definition_data>;
@@ -474,7 +480,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         template <typename F>
-        compiled_function* define_variable(std::string name, F&& f)
+        compiled_function* define_variable(std::string name, F&& f,
+            std::string const& codename, std::int64_t line = std::int64_t(-1),
+            std::int64_t column = std::int64_t(-1))
         {
             auto existing = definitions_.find(name);
             if (existing != definitions_.end())
@@ -482,8 +490,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 definitions_.erase(existing);
             }
 
-            auto result = definitions_.emplace(value_type(
-                std::move(name), compiled_function(std::forward<F>(f))));
+            auto result = definitions_.emplace(value_type(std::move(name),
+                definition_data{compiled_function(std::forward<F>(f)), line,
+                    column, codename}));
 
             if (!result.second)
             {
@@ -492,32 +501,44 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     "couldn't insert name into symbol table");
             }
 
-            return &result.first->second;
+            return &result.first->second.f_;
         }
 
-        template <typename F>
-        compiled_function* define(std::string name, F&& f)
+        bool was_defined_in_scope(std::string const& name) const
         {
-            auto existing = definitions_.find(name);
-            if (existing != definitions_.end())
+            return definitions_.find(name) != definitions_.end();
+        }
+
+        bool was_defined(std::string const& name) const
+        {
+            if (definitions_.find(name) != definitions_.end())
             {
-                definitions_.erase(existing);
+                return true;
             }
 
-            auto result = definitions_.emplace(value_type(
-                std::move(name), compiled_function(std::forward<F>(f))));
-
-            if (!result.second)
+            if (outer_ != nullptr)
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::environment::define",
-                    "couldn't insert name into symbol table");
+                return outer_->was_defined(name);
             }
 
-            return &result.first->second;
+            return false;
         }
 
         compiled_function* find(std::string const& name)
+        {
+            iterator it = definitions_.find(name);
+            if (it != definitions_.end())
+            {
+                return &it->second.f_;
+            }
+            if (outer_ != nullptr)
+            {
+                return outer_->find(name);
+            }
+            return nullptr;
+        }
+
+        definition_data* find_data(std::string const& name)
         {
             iterator it = definitions_.find(name);
             if (it != definitions_.end())
@@ -526,7 +547,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
             if (outer_ != nullptr)
             {
-                return outer_->find(name);
+                return outer_->find_data(name);
             }
             return nullptr;
         }
