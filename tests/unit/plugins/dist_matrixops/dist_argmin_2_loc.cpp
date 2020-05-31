@@ -133,13 +133,31 @@ void test_argmin_d_1d_4()
             argmin_d(annotate_d([], "array_4",
                 list("tile", list("rows", 0, 0))))
         )", "2");
-
     }
     else
     {
         test_argmin_d_operation("test_argmin_d_2loc1d_4", R"(
             argmin_d(annotate_d([42, 13, -13], "array_4",
                 list("tile", list("rows", 0, 3))))
+        )", "2");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void test_argmin_d_1d_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc1d_5", R"(
+            argmin_d(annotate_d([42, 13, -13], "array_5",
+                list("tile", list("rows", 0, 3))))
+        )", "2");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc1d_5", R"(
+            argmin_d(annotate_d([], "array_5",
+                list("tile", list("rows", 0, 0))))
         )", "2");
     }
 }
@@ -152,10 +170,12 @@ int hpx_main(int argc, char* argv[])
     test_argmin_d_1d_2();
     test_argmin_d_1d_3();
     test_argmin_d_1d_4();
+    test_argmin_d_1d_5();
 
     hpx::finalize();
     return hpx::util::report_errors();
 }
+
 int main(int argc, char* argv[])
 {
     std::vector<std::string> cfg = {

@@ -77,7 +77,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 std::pair<T, std::size_t> const& result,
                 std::pair<T, std::size_t> const& current) const
             {
-                if (Operation::compare(result.first, current.first))
+                if (Operation::index_compare(result, current))
                 {
                     return result;
                 }
@@ -130,9 +130,34 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         if (ndim == 0)
         {
-            index = 0;
-            local_value = primitive_argument_type(
-                (std::numeric_limits<std::int64_t>::max)()); /////
+            index = Op::index_initial();
+
+            switch (extract_common_type(args[0]))
+            {
+            case node_data_type_bool:
+                local_value = primitive_argument_type(
+                    Op::template initial<std::uint8_t>());
+                break;
+
+            case node_data_type_int64:
+                local_value = primitive_argument_type(
+                    Op::template initial<std::int64_t>());
+                break;
+
+            case node_data_type_double:
+                HPX_FALLTHROUGH;
+            case node_data_type_unknown:
+                local_value = primitive_argument_type(
+                    Op::template initial<double>());
+                break;
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_argminmax<Op, Derived>::argminmax1d",
+                    generate_error_message(
+                        "the dist_argminmax primitive requires for all "
+                        "arguments to be numeric data types"));
+            }
         }
         else    // ndim==1
         {
@@ -186,7 +211,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_argminmax<Op, Derived>::argminmax1d",
             generate_error_message(
-                "the distt_minmax primitive requires for all arguments to "
+                "the dist_argminmax primitive requires for all arguments to "
                 "be numeric data types"));
     }
 
