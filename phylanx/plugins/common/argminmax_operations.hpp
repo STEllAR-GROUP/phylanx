@@ -13,9 +13,12 @@
 #include <phylanx/util/detail/numeric_limits_min.hpp>
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <string>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 // explicitly instantiate the required functions
@@ -25,15 +28,35 @@ namespace phylanx { namespace common {
     struct argmax_op
     {
         template <typename T>
-        static T initial()
+        static constexpr T initial()
         {
             return util::detail::numeric_limits_min<T>();
+        }
+
+        static constexpr std::int64_t index_initial()
+        {
+            return 0;
         }
 
         template <typename T, typename Comp = std::less<>>
         static bool compare(T lhs, T rhs, Comp comp = Comp{})
         {
             return comp(rhs, lhs);
+        }
+
+        template <typename T, typename Comp = std::less<>>
+        static bool index_compare(std::pair<T, std::size_t> const& lhs,
+            std::pair<T, std::size_t> const& rhs, Comp comp = Comp{})
+        {
+            if (comp(rhs.first, lhs.first))
+            {
+                return true;
+            }
+            if (rhs.first == lhs.first)
+            {
+                return comp(rhs.second, lhs.second);
+            }
+            return false;
         }
 
         template <typename Iter, typename Comp = std::less<>>
@@ -47,15 +70,35 @@ namespace phylanx { namespace common {
     struct argmin_op
     {
         template <typename T>
-        static T initial()
+        static constexpr T initial()
         {
             return (std::numeric_limits<T>::max)();
         }
 
-        template <typename T, typename Comp = std::greater<>>
+        static constexpr std::int64_t index_initial()
+        {
+            return (std::numeric_limits<std::int64_t>::max)();
+        }
+
+        template <typename T, typename Comp = std::less<>>
         static bool compare(T lhs, T rhs, Comp comp = Comp{})
         {
-            return comp(rhs, lhs);
+            return comp(lhs, rhs);
+        }
+
+        template <typename T, typename Comp = std::less<>>
+        static bool index_compare(std::pair<T, std::size_t> const& lhs,
+            std::pair<T, std::size_t> const& rhs, Comp comp = Comp{})
+        {
+            if (comp(lhs.first, rhs.first))
+            {
+                return true;
+            }
+            if (lhs.first == rhs.first)
+            {
+                return comp(lhs.second, rhs.second);
+            }
+            return false;
         }
 
         template <typename Iter, typename Comp = std::less<>>

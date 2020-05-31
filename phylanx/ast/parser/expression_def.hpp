@@ -122,35 +122,35 @@ namespace phylanx { namespace ast { namespace parser
             |   bool_
             |   long_long
             |   string
-            |   bool_quatern
-            |   bool_tensor
-            |   bool_matrix
-            |   bool_vector
-            |   int64_quatern
-            |   int64_tensor
-            |   int64_matrix
-            |   int64_vector
             |   double_quatern
             |   double_tensor
             |   double_matrix
             |   double_vector
+            |   int64_quatern
+            |   int64_tensor
+            |   int64_matrix
+            |   int64_vector
+            |   bool_quatern
+            |   bool_tensor
+            |   bool_matrix
+            |   bool_vector
             |   '(' > expr > ')'
             ;
 
-        bool_quatern %= '[' >> (bool_tensor % ',') >> ']';
-        bool_tensor  %= '[' >> (bool_matrix % ',') >> ']';
-        bool_matrix %= '[' >> (bool_vector % ',') >> ']';
-        bool_vector %= '[' >> -(bool_ % ',') >> ']';
+        bool_quatern %= '[' >> (bool_tensor % ',') > ']';
+        bool_tensor  %= '[' >> (bool_matrix % ',') > ']';
+        bool_matrix %= '[' >> (bool_vector % ',') > ']';
+        bool_vector %= '[' > -(bool_ % ',') > ']';
 
         int64_quatern %= '[' >> (int64_tensor % ',') >> ']';
         int64_tensor  %= '[' >> (int64_matrix % ',') >> ']';
         int64_matrix %= '[' >> (int64_vector % ',') >> ']';
         int64_vector %= '[' >> -(long_long % ',') >> ']';
 
-        double_quatern %= '[' >> (double_tensor % ',') > ']';
-        double_tensor  %= '[' >> (double_matrix % ',') > ']';
-        double_matrix %= '[' >> (double_vector % ',') > ']';
-        double_vector %= '[' > -(double_ % ',') > ']';
+        double_quatern %= '[' >> (double_tensor % ',') >> ']';
+        double_tensor  %= '[' >> (double_matrix % ',') >> ']';
+        double_matrix %= '[' >> (double_vector % ',') >> ']';
+        double_vector %= '[' >> -(double_ % ',') >> ']';
 
         function_call %=
                 identifier
@@ -189,10 +189,6 @@ namespace phylanx { namespace ast { namespace parser
         ///////////////////////////////////////////////////////////////////////
         // Debugging and error handling and reporting support.
         BOOST_SPIRIT_DEBUG_NODES(
-            (int64_quatern)
-            (int64_tensor)
-            (double_quatern)
-            (double_tensor)
             (expr)
             (unary_expr)
             (primary_expr)
@@ -205,6 +201,10 @@ namespace phylanx { namespace ast { namespace parser
             (double_tensor)
             (double_matrix)
             (double_vector)
+            (bool_quatern)
+            (bool_tensor)
+            (bool_matrix)
+            (bool_vector)
             (function_call)
             (argument_list)
             (identifier)
