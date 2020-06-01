@@ -70,7 +70,8 @@ namespace phylanx { namespace execution_tree
                 result.resize(
                     std::array<std::size_t, 4>{columns, rows, pages, quats});
 
-                auto row = blaze::trans(rhs.vector());
+                auto v = rhs.vector();
+                auto row = blaze::trans(v);
                 for (std::size_t l = 0; l != quats; ++l)
                 {
                     auto quat = blaze::quatslice(result, l);
