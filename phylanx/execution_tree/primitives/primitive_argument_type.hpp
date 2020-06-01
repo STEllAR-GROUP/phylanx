@@ -21,6 +21,8 @@
 #include <hpx/include/runtime.hpp>
 #include <hpx/serialization/serialization_fwd.hpp>
 
+#include <boost/utility/string_ref.hpp>
+
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -904,7 +906,10 @@ namespace phylanx { namespace execution_tree
         annotation_ptr annotation_;
     };
 
-    // a argument is valid of its not nil{}
+    // specialize formatting of primitive_argument_types
+    void format_value(std::ostream& os, boost::string_ref spec,
+        primitive_argument_type const& value);
+
     inline bool valid(primitive_argument_type const& val) noexcept
     {
         return bool(val);

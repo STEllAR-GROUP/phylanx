@@ -33,7 +33,7 @@ void test_builtin_environment()
     auto varx = create_var(phylanx::ir::node_data<double>{41.0}, "x");
     env.define_variable("x",
         phylanx::execution_tree::compiler::access_variable{
-            varx});
+            varx}, "<unknown>");
 
     // invoking the define_operation actually creates and binds the variable
     varx.run(ctx);
@@ -776,8 +776,8 @@ void test_define_variable_function_call()
 {
     auto expr = phylanx::ast::generate_ast(R"(
         define(f, pts, block(
-            define(var, expand_dims(slice_column(pts, 0), 1)),
-            argmin(sqrt(power(var - var, 2) + power(var - var, 2)), 1)
+            define(__var, expand_dims(slice_column(pts, 0), 1)),
+            argmin(sqrt(power(__var - __var, 2) + power(__var - __var, 2)), 1)
         ))
         apply(f, sys_argv)
     )");

@@ -481,7 +481,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         template <typename F>
         compiled_function* define_variable(std::string name, F&& f,
-            std::string const& codename, std::int64_t line = std::int64_t(-1),
+            std::string const& codename = "<unknown>",
+            std::int64_t line = std::int64_t(-1),
             std::int64_t column = std::int64_t(-1))
         {
             auto existing = definitions_.find(name);

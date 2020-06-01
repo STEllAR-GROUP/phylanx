@@ -14,13 +14,13 @@
 #include <string>
 
 std::string const code = R"(block(
-    define(sum,
+    define(__sum,
         block(
             for(define(n, 0), n < 10, store(n, n+1), cout(n)),
             n
         )
     ),
-    sum
+    __sum
 ))";
 
 int main(int argc, char* argv[])

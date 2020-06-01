@@ -831,22 +831,22 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                         name_, id));
             }
 
-            if (env_.was_defined_in_scope(name))
-            {
-                auto* data = env_.find_data(name);
+            // if (env_.was_defined_in_scope(name))
+            // {
+            //     auto* data = env_.find_data(name);
 
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::compiler::handle_define",
-                    generate_error_message(
-                        hpx::util::format(
-                            "the variable '{}' was already used as a name for "
-                            "a different variable in the same scope (previous "
-                            "definition at: {}",
-                            name,
-                            generate_position_information(
-                                data->codename_, data->line_, data->column_)),
-                        name_, id));
-            }
+            //     HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            //         "phylanx::execution_tree::compiler::handle_define",
+            //         generate_error_message(
+            //             hpx::util::format(
+            //                 "the variable '{}' was already used as a name for "
+            //                 "a different variable in the same scope (previous "
+            //                 "definition at: {}",
+            //                 name,
+            //                 generate_position_information(
+            //                     data->codename_, data->line_, data->column_)),
+            //             name_, id));
+            // }
 
             auto args = extract_define_arguments(p, define_id);
             auto body = extract_define_body(p, define_id);
@@ -1515,15 +1515,15 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                     }
 
                     // handle list(__1)/make_list(__1)
-                    //                     if (function_name == "list" || function_name == "make_list")
-                    //                     {
-                    //                         placeholder_map_type placeholders;
-                    //                         if (ast::match_ast(expr, cit->second.pattern_ast_,
-                    //                                 ast::detail::on_placeholder_match{placeholders}))
-                    //                         {
-                    //                             return handle_list(placeholders, id);
-                    //                         }
-                    //                     }
+                    // if (function_name == "list" || function_name == "make_list")
+                    // {
+                    //     placeholder_map_type placeholders;
+                    //     if (ast::match_ast(expr, cit->second.pattern_ast_,
+                    //             ast::detail::on_placeholder_match{placeholders}))
+                    //     {
+                    //         return handle_list(placeholders, id);
+                    //     }
+                    // }
 
                     // handle all non-special functions
                     while (
