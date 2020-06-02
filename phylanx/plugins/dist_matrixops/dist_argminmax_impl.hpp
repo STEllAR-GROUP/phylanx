@@ -67,6 +67,35 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     namespace detail {
 
+        template <typename Op>
+        execution_tree::primitive_argument_type get_initial_scalar_value(
+            execution_tree::primitive_argument_type const& arg)
+        {
+            using namespace execution_tree;
+            switch (extract_common_type(arg))
+            {
+            case node_data_type_bool:
+                return primitive_argument_type(
+                    Op::template initial<std::uint8_t>());
+
+            case node_data_type_int64:
+                return primitive_argument_type(
+                    Op::template initial<std::int64_t>());
+
+            case node_data_type_double: HPX_FALLTHROUGH;
+            case node_data_type_unknown:
+                return primitive_argument_type(Op::template initial<double>());
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "dist_argminmax<Op, "
+                    "Derived>::detail::get_initial_scalar_value",
+                    util::generate_error_message(
+                        "the dist_argminmax primitive requires for all "
+                        "arguments to be numeric data types"));
+            }
+        }
+
         template <typename Operation>
         struct all_reduce_op_1d
         {
@@ -100,6 +129,51 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return execution_tree::primitive_argument_type{
                 static_cast<std::int64_t>(p.second)};
         }
+
+        template <typename Op>
+        execution_tree::primitive_argument_type reduction_to_scalar(
+            execution_tree::primitive_argument_type&& local_value,
+            std::size_t index,
+            execution_tree::localities_information const& locs,
+            std::string const& name, std::string const& codename)
+        {
+            using namespace execution_tree;
+            switch (extract_common_type(local_value))
+            {
+            case node_data_type_bool:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_scalar_boolean_value_strict(
+                        std::move(local_value), name, codename),
+                    index, locs);
+
+            case node_data_type_int64:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_scalar_integer_value_strict(
+                        std::move(local_value), name, codename),
+                    index, locs);
+
+            case node_data_type_double:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_scalar_numeric_value_strict(
+                        std::move(local_value), name, codename),
+                    index, locs);
+
+            case node_data_type_unknown:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_scalar_numeric_value(
+                        std::move(local_value), name, codename),
+                    index, locs);
+
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_argminmax<Op, Derived>::detail::reduction_to_scalar",
+                util::generate_error_message(
+                    "the dist_argminmax primitive requires for all arguments "
+                    "to be numeric data types"));
+        }
     }    // namespace detail
 
     template <typename Op, typename Derived>
@@ -131,35 +205,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         if (ndim == 0)
         {
             index = Op::index_initial();
-
-            switch (extract_common_type(args[0]))
-            {
-            case node_data_type_bool:
-                local_value = primitive_argument_type(
-                    Op::template initial<std::uint8_t>());
-                break;
-
-            case node_data_type_int64:
-                local_value = primitive_argument_type(
-                    Op::template initial<std::int64_t>());
-                break;
-
-            case node_data_type_double:
-                HPX_FALLTHROUGH;
-            case node_data_type_unknown:
-                local_value = primitive_argument_type(
-                    Op::template initial<double>());
-                break;
-
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_argminmax<Op, Derived>::argminmax1d",
-                    generate_error_message(
-                        "the dist_argminmax primitive requires for all "
-                        "arguments to be numeric data types"));
-            }
+            local_value = detail::get_initial_scalar_value<Op>(args[0]);
         }
-        else    // ndim==1
+        else    // ndim == 1
         {
             primitive_argument_type local_result = common::argminmax1d<Op>(
                 std::move(args), name_, codename_, &local_value);
@@ -178,41 +226,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             index += locs.get_span(span_index).start_;
         }
 
-        switch (extract_common_type(local_value))
-        {
-        case node_data_type_bool:
-            return detail::argminmax1d_reduce<Op>(
-                extract_scalar_boolean_value_strict(
-                    std::move(local_value), name_, codename_),
-                index, locs);
-
-        case node_data_type_int64:
-            return detail::argminmax1d_reduce<Op>(
-                extract_scalar_integer_value_strict(
-                    std::move(local_value), name_, codename_),
-                index, locs);
-
-        case node_data_type_double:
-            return detail::argminmax1d_reduce<Op>(
-                extract_scalar_numeric_value_strict(
-                    std::move(local_value), name_, codename_),
-                index, locs);
-
-        case node_data_type_unknown:
-            return detail::argminmax1d_reduce<Op>(
-                extract_scalar_numeric_value(
-                    std::move(local_value), name_, codename_),
-                index, locs);
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_argminmax<Op, Derived>::argminmax1d",
-            generate_error_message(
-                "the dist_argminmax primitive requires for all arguments to "
-                "be numeric data types"));
+        return detail::reduction_to_scalar<Op>(
+            std::move(local_value), index, locs, name_, codename_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -221,7 +236,75 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     dist_argminmax<Op, Derived>::argminmax2d(
         execution_tree::primitive_arguments_type&& args) const
     {
-        return common::argminmax2d<Op>(std::move(args), name_, codename_);
+        using namespace execution_tree;
+        if (!args[0].has_annotation())
+        {
+            return common::argminmax2d<Op>(std::move(args), name_, codename_);
+        }
+
+        localities_information locs =
+            extract_localities_information(args[0], name_, codename_);
+
+        std::size_t ndim = locs.num_dimensions();
+        if (ndim != 2 && ndim != 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_argminmax<Op, Derived>::argminmax2d",
+                generate_error_message(
+                    "the operand has incompatible dimensionalities"));
+        }
+
+        std::int64_t axis = -1;
+        std::size_t numargs = args.size();
+        if (numargs == 2)
+        {
+            axis = execution_tree::extract_scalar_integer_value(
+                std::move(args[1]), name_, codename_);
+        }
+
+        if (axis < -2 || axis > 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_argminmax<Op, Derived>::argminmax2d",
+                util::generate_error_message(
+                    "operand axis can be between -2 and 1 for a matrix", name_,
+                    codename_));
+        }
+
+        primitive_argument_type local_value;
+
+        if (numargs == 1)
+        {
+            std::size_t index;
+            // flatten, we need all_reduce to get the final result
+            if (ndim == 0)
+            {
+                index = Op::index_initial();
+                local_value = detail::get_initial_scalar_value<Op>(args[0]);
+            }
+            else    // ndim == 2
+            {
+                //primitive_argument_type local_result =
+                //    common::argminmax2d_flatten<Op>(
+                //        std::move(args), name_, codename_, &local_value);
+
+                //// correct index to be global
+                //index = extract_scalar_integer_value_strict(
+                //    std::move(local_result), name_, codename_);
+            }
+        }
+        else // numargs == 2
+        {
+            bool row_tiled = locs.is_row_tiled();
+
+        }
+
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_argminmax<Op, Derived>::argminmax2d",
+            generate_error_message(
+                "the dist_argminmax primitive requires for all arguments to "
+                "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////

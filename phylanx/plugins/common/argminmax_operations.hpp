@@ -54,7 +54,8 @@ namespace phylanx { namespace common {
             }
             if (rhs.first == lhs.first)
             {
-                return comp(rhs.second, lhs.second);
+                // we seek for the smallest index that has the maximum value
+                return comp(lhs.second, rhs.second);
             }
             return false;
         }
@@ -96,6 +97,7 @@ namespace phylanx { namespace common {
             }
             if (lhs.first == rhs.first)
             {
+                // we seek for the smallest index that has the minimum value
                 return comp(lhs.second, rhs.second);
             }
             return false;

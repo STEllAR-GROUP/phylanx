@@ -318,7 +318,7 @@ namespace phylanx { namespace common {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::common::argminmax2d<Operation>",
                     util::generate_error_message(
-                        "operand axis can only between -2 and 1 for an an "
+                        "operand axis can be between -2 and 1 for an "
                         "operand that is 2d",
                         name, codename));
             }

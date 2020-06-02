@@ -143,7 +143,6 @@ void test_argmin_d_1d_4()
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
 void test_argmin_d_1d_5()
 {
     if (hpx::get_locality_id() == 0)
@@ -163,6 +162,123 @@ void test_argmin_d_1d_5()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_argmin_d_2d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_0", R"(
+            argmin_d(annotate_d([[4, 1, 2, 4], [1, 2, 3, 4]], "array2d_0",
+                list("tile", list("columns", 0, 4), list("rows", 0, 2))))
+        )", "0");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_0", R"(
+            argmin_d(annotate_d([[0, 3, 2, 0]], "array2d_0",
+                list("tile", list("columns", 0, 4), list("rows", 2, 3))))
+        )", "0");
+    }
+}
+
+void test_argmin_d_2d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_1", R"(
+            argmin_d(annotate_d([[4, 1, 2, 4], [1, 2, 3, 4]], "array2d_1",
+                list("tile", list("columns", 0, 4), list("rows", 0, 2))), -2)
+        )", "[0, 2, 1, 0]");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_1", R"(
+            argmin_d(annotate_d([[0, 3, 2, 0]], "array2d_1",
+                list("tile", list("columns", 0, 4), list("rows", 2, 3))), -2)
+        )", "[0, 2, 1, 0]");
+    }
+}
+
+void test_argmin_d_2d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_2", R"(
+            argmin_d(annotate_d([[4, 1, 2, 4], [1, 2, 3, 4]], "array2d_2",
+                list("tile", list("columns", 0, 4), list("rows", 0, 2))), 1)
+        )", R"(
+            annotate_d([0, 3], "array2d_2/1", list("columns", 0, 2))
+        )");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_2", R"(
+            argmin_d(annotate_d([[0, 3, 2, 0]], "array2d_2",
+                list("tile", list("columns", 0, 4), list("rows", 2, 3))), 1)
+        )", R"(
+            annotate_d([1], "array2d_2/1", list("columns", 2, 3))
+        )");
+    }
+}
+
+void test_argmin_d_2d_3()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_3", R"(
+            argmin_d(annotate_d([[2, 3, 4], [0, 0, 5], [5, 2, 3]], "array2d_3",
+                list("tile", list("columns", 1, 4), list("rows", 0, 3))))
+        )", "7");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_3", R"(
+            argmin_d(annotate_d([[1], [1], [0]], "array2d_3",
+                list("tile", list("columns", 0, 1), list("rows", 0, 3))))
+        )", "7");
+    }
+}
+
+void test_argmin_d_2d_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_4", R"(
+            argmin_d(annotate_d([[2, 3, 4], [0, 0, 5], [5, 2, 3]], "array2d_4",
+                list("tile", list("columns", 1, 4), list("rows", 0, 3))), 0)
+        )", R"(
+            annotate_d([2, 0, 1], "array2d_4/1", list("columns", 1, 4))
+        )");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_4", R"(
+            argmin_d(annotate_d([[1], [1], [0]], "array2d_4",
+                list("tile", list("columns", 0, 1), list("rows", 0, 3))), 0)
+        )", R"(
+            annotate_d([0], "array2d_4/1", list("columns", 0, 1))
+        )");
+    }
+}
+
+void test_argmin_d_2d_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_5", R"(
+            argmin_d(annotate_d([[2, 3, 4], [0, 0, 5], [5, 2, 3]], "array2d_5",
+                list("tile", list("columns", 1, 4), list("rows", 0, 3))), -1)
+        )", "[3, 3, 1]");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_5", R"(
+            argmin_d(annotate_d([[1], [1], [0]], "array2d_5",
+                list("tile", list("columns", 0, 1), list("rows", 0, 3))), -1)
+        )", "[3, 3, 1]");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_argmin_d_1d_0();
@@ -171,6 +287,13 @@ int hpx_main(int argc, char* argv[])
     test_argmin_d_1d_3();
     test_argmin_d_1d_4();
     test_argmin_d_1d_5();
+
+    //test_argmin_d_2d_0();
+    //test_argmin_d_2d_1();
+    //test_argmin_d_2d_2();
+    //test_argmin_d_2d_3();
+    //test_argmin_d_2d_4();
+    //test_argmin_d_2d_5();
 
     hpx::finalize();
     return hpx::util::report_errors();
