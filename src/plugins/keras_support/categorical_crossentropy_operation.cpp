@@ -248,31 +248,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         assign_tensor<arg_type> output_(output);
         assign_tensor<arg_type> target_(target);
-        auto output_tensor = output.tensor();
+        auto output_tensor_ = output.tensor();
+        auto target_tensor_ = target.tensor();
         if(from_logits)
         {
-            output_ = softmax3d_axis2(output_tensor);
+            output_ = softmax3d_axis2(output_tensor_);
         }
         else
         {
-            auto norm = sum3d(output_tensor,axis);
             if(axis == 0) {
-                for(std::size_t j = 0; j < output.tensor().pages(); ++j) {
-                    auto slice = blaze::pageslice(output.tensor(),j);
+                auto norm = sum3d(output_tensor_,axis);
+                for(std::size_t j = 0; j < output_tensor_.pages(); ++j) {
+                    auto slice = blaze::pageslice(output_tensor_,j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
                         return s_/n_;
                     });
                 }
             } else if(axis == 1) {
-                for(std::size_t j = 0; j < output.tensor().rows(); ++j) {
-                    auto slice = blaze::rowslice(output.tensor(),j);
+                auto norm = sum3d(output_tensor_,axis);
+                for(std::size_t j = 0; j < output_tensor_.rows(); ++j) {
+                    auto slice = blaze::rowslice(output_tensor_,j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
                         return s_/n_;
                     });
                 }
             } else {
-                for(std::size_t j = 0; j < output.tensor().columns(); ++j) {
-                    auto slice = blaze::columnslice(output.tensor(),j);
+                auto norm = sum3d(output_tensor_,axis);
+                for(std::size_t j = 0; j < output_tensor_.columns(); ++j) {
+                    auto slice = blaze::columnslice(output_tensor_,j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
                         return s_/n_;
                     });
@@ -280,14 +283,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        auto target_tensor = target.tensor();
         target_ = blaze::map(
-            target_tensor, output_tensor, [](double t_, double o_) {
+            target_tensor_, output_tensor_, [](double t_, double o_) {
                 return -t_ *
                     std::log((std::min)(clip_high, (std::max)(clip_low, o_)));
             });
 
-        matrix_type ans = sum3d(target_tensor, axis);
+        matrix_type ans = sum3d(target_tensor_, axis);
         if(axis == 1)
             ans = blaze::trans(ans);
         primitive_argument_type part1(std::move(ans)), part2(std::move(output));
