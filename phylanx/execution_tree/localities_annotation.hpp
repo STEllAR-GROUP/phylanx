@@ -59,6 +59,9 @@ namespace phylanx { namespace execution_tree
 //         annotation as_annotation(
 //             std::string const& name, std::string const& codename) const;
 
+        bool is_row_tiled() const;
+        bool is_column_tiled() const;
+
         locality_information locality_;
         annotation_information annotation_;
         std::vector<tiling_information> tiles_;
