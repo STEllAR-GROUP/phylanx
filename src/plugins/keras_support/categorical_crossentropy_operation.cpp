@@ -248,14 +248,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         assign_tensor<arg_type> output_(output);
         assign_tensor<arg_type> target_(target);
+        auto output_tensor = output.tensor();
         if(from_logits)
         {
-            output_ = softmax3d_axis2(output.tensor());
+            output_ = softmax3d_axis2(output_tensor);
         }
         else
         {
+            auto norm = sum3d(output_tensor,axis);
             if(axis == 0) {
-                auto norm = sum3d(output.tensor(),axis);
                 for(std::size_t j = 0; j < output.tensor().pages(); ++j) {
                     auto slice = blaze::pageslice(output.tensor(),j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
@@ -263,7 +264,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
                 }
             } else if(axis == 1) {
-                auto norm = sum3d(output.tensor(),axis);
                 for(std::size_t j = 0; j < output.tensor().rows(); ++j) {
                     auto slice = blaze::rowslice(output.tensor(),j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
@@ -271,7 +271,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
                 }
             } else {
-                auto norm = sum3d(output.tensor(),axis);
                 for(std::size_t j = 0; j < output.tensor().columns(); ++j) {
                     auto slice = blaze::columnslice(output.tensor(),j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
@@ -281,13 +280,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+        auto target_tensor = target.tensor();
         target_ = blaze::map(
-            target.tensor(), output.tensor(), [](double t_, double o_) {
+            target_tensor, output_tensor, [](double t_, double o_) {
                 return -t_ *
                     std::log((std::min)(clip_high, (std::max)(clip_low, o_)));
             });
 
-        matrix_type ans = sum3d(target.tensor(), axis);
+        matrix_type ans = sum3d(target_tensor, axis);
         if(axis == 1)
             ans = blaze::trans(ans);
         primitive_argument_type part1(std::move(ans)), part2(std::move(output));
