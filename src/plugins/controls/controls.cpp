@@ -9,8 +9,6 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
-PHYLANX_REGISTER_PLUGIN_FACTORY(all_to_all_plugin,
-    phylanx::execution_tree::primitives::all_to_all::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(apply_plugin,
     phylanx::execution_tree::primitives::apply::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(async_operation_plugin,
