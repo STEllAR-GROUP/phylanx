@@ -69,7 +69,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         template <typename Op>
         execution_tree::primitive_argument_type get_initial_scalar_value(
-            execution_tree::primitive_argument_type const& arg)
+            execution_tree::primitive_argument_type const& arg,
+            std::string const& name, std::string const& codename)
         {
             using namespace execution_tree;
             switch (extract_common_type(arg))
@@ -92,7 +93,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "Derived>::detail::get_initial_scalar_value",
                     util::generate_error_message(
                         "the dist_argminmax primitive requires for all "
-                        "arguments to be numeric data types"));
+                        "arguments to be numeric data types",
+                        name, codename));
             }
         }
 
@@ -172,7 +174,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 "dist_argminmax<Op, Derived>::detail::reduction_to_scalar",
                 util::generate_error_message(
                     "the dist_argminmax primitive requires for all arguments "
-                    "to be numeric data types"));
+                    "to be numeric data types", name, codename));
         }
     }    // namespace detail
 
@@ -205,7 +207,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         if (ndim == 0)
         {
             index = Op::index_initial();
-            local_value = detail::get_initial_scalar_value<Op>(args[0]);
+            local_value =
+                detail::get_initial_scalar_value<Op>(args[0], name_, codename_);
         }
         else    // ndim == 1
         {
@@ -250,8 +253,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_argminmax<Op, Derived>::argminmax2d",
-                generate_error_message(
-                    "the operand has incompatible dimensionalities"));
+                util::generate_error_message(
+                    "the operand has incompatible dimensionalities", name_,
+                    codename_));
         }
 
         std::int64_t axis = -1;
@@ -280,7 +284,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             if (ndim == 0)
             {
                 index = Op::index_initial();
-                local_value = detail::get_initial_scalar_value<Op>(args[0]);
+                local_value = detail::get_initial_scalar_value<Op>(
+                    args[0], name_, codename_);
             }
             else    // ndim == 2
             {
@@ -295,7 +300,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         }
         else // numargs == 2
         {
-            bool row_tiled = locs.is_row_tiled();
+            bool row_tiled = locs.is_row_tiled(name_, codename_);
 
         }
 
