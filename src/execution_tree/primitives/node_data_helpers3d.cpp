@@ -65,7 +65,8 @@ namespace phylanx { namespace execution_tree
 
                 result.resize(pages, rows, columns);
 
-                auto row = blaze::trans(rhs.vector());
+                auto v = rhs.vector();
+                auto row = blaze::trans(v);
                 for (std::size_t k = 0; k != pages; ++k)
                 {
                     auto page = blaze::pageslice(result, k);
@@ -160,8 +161,8 @@ namespace phylanx { namespace execution_tree
                     rhs.dimension(2) == columns)
                 {
                     result.resize(pages, rows, columns);
-                    auto t = rhs.tensor();
 
+                    auto t = rhs.tensor();
                     auto row = blaze::row(blaze::pageslice(t, 0), 0);
                     for (std::size_t k = 0; k != pages; ++k)
                     {
@@ -180,8 +181,8 @@ namespace phylanx { namespace execution_tree
                     rhs.dimension(2) == 1)
                 {
                     result.resize(pages, rows, columns);
-                    auto t = rhs.tensor();
 
+                    auto t = rhs.tensor();
                     auto column = blaze::column(blaze::pageslice(t, 0), 0);
                     for (std::size_t k = 0; k != pages; ++k)
                     {
@@ -200,8 +201,8 @@ namespace phylanx { namespace execution_tree
                     rhs.dimension(2) == 1)
                 {
                     result.resize(pages, rows, columns);
-                    auto t = rhs.tensor();
 
+                    auto t = rhs.tensor();
                     auto row = blaze::row(blaze::rowslice(t, 0), 0);
                     for (std::size_t i = 0; i != rows; ++i)
                     {
@@ -220,8 +221,8 @@ namespace phylanx { namespace execution_tree
                     rhs.dimension(2) == columns)
                 {
                     result.resize(pages, rows, columns);
-                    auto t = rhs.tensor();
 
+                    auto t = rhs.tensor();
                     auto rhs_page = blaze::pageslice(t, 0);
                     for (std::size_t k = 0; k != pages; ++k)
                     {
@@ -236,8 +237,8 @@ namespace phylanx { namespace execution_tree
                     rhs.dimension(2) == columns)
                 {
                     result.resize(pages, rows, columns);
-                    auto t = rhs.tensor();
 
+                    auto t = rhs.tensor();
                     auto rhs_rowslice = blaze::rowslice(t, 0);
                     for (std::size_t i = 0; i != rows; ++i)
                     {
