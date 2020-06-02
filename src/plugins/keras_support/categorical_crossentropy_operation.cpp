@@ -256,8 +256,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else
         {
+            auto norm = sum3d(output_tensor_,axis);
             if(axis == 0) {
-                auto norm = sum3d(output_tensor_,axis);
                 for(std::size_t j = 0; j < output_tensor_.pages(); ++j) {
                     auto slice = blaze::pageslice(output_tensor_,j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
@@ -265,7 +265,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
                 }
             } else if(axis == 1) {
-                auto norm = sum3d(output_tensor_,axis);
                 for(std::size_t j = 0; j < output_tensor_.rows(); ++j) {
                     auto slice = blaze::rowslice(output_tensor_,j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
@@ -273,7 +272,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
                 }
             } else {
-                auto norm = sum3d(output_tensor_,axis);
                 for(std::size_t j = 0; j < output_tensor_.columns(); ++j) {
                     auto slice = blaze::columnslice(output_tensor_,j);
                     slice = blaze::map(slice, norm,[](double s_,double n_){
