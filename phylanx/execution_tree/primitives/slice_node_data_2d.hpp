@@ -1483,8 +1483,8 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        std::size_t columns = arr_localities.columns();
-        if (val_ndim == 1 && columns != val_localities.size())
+        std::size_t columns = arr_localities.columns(name, codename);
+        if (val_ndim == 1 && columns != val_localities.size(name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice1d_extract2d",

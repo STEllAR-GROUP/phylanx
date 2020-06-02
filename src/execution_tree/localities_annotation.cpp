@@ -283,17 +283,19 @@ namespace phylanx { namespace execution_tree
         {
             HPX_ASSERT(!tiles.empty());
             return std::all_of(
-                tiles.begin(), tiles.end(), [&](tiling_information v)
+                tiles.begin(), tiles.end(), [&](tiling_information const& v)
                 {
                     if (N < v.spans_.size() && v.spans_[N].is_valid())
                         return dim_size == v.spans_[N].size();
+
                     return true;
                 });
         }
     }
 
     // Is this helpful? It may only introduce confusion
-    std::size_t localities_information::size() const
+    std::size_t localities_information::size(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -310,11 +312,13 @@ namespace phylanx { namespace execution_tree
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::size",
             util::generate_error_message("the given array does not have a "
-                                         "valid span on any of localities"));
+                                         "valid span on any of localities",
+                name, codename));
     }
 
     // we assume that all tiles have the same number of dimension
-    std::size_t localities_information::quats() const
+    std::size_t localities_information::quats(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -335,14 +339,17 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::quats",
                 util::generate_error_message(
-                    "unexpected dimensionality for calling quats()"));
+                    "unexpected dimensionality for calling quats()", name,
+                    codename));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::quats",
             util::generate_error_message(
-                "cannot call quats() when all tiles are empty"));
+                "cannot call quats() when all tiles are empty", name,
+                codename));
     }
 
-    std::size_t localities_information::pages() const
+    std::size_t localities_information::pages(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -365,14 +372,15 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::pages",
                 util::generate_error_message(
-                    "unexpected dimensionality for calling pages()"));
+                    "unexpected dimensionality for calling pages()", name, codename));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::pages",
             util::generate_error_message(
-                "cannot call pages() when all tiles are empty"));
+                "cannot call pages() when all tiles are empty", name, codename));
     }
 
-    std::size_t localities_information::rows() const
+    std::size_t localities_information::rows(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -401,14 +409,16 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::rows",
                 util::generate_error_message(
-                    "unexpected dimensionality for calling rows()"));
+                    "unexpected dimensionality for calling rows()", name,
+                    codename));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter, "localities_information::rows",
             util::generate_error_message(
-                "cannot call rows() when all tiles are empty"));
+                "cannot call rows() when all tiles are empty", name, codename));
     }
 
-    std::size_t localities_information::columns() const
+    std::size_t localities_information::columns(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -437,12 +447,13 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::columns",
                 util::generate_error_message(
-                    "the given dimensionality is unsupported"));
+                    "the given dimensionality is unsupported", name, codename));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "localities_information::columns",
             util::generate_error_message(
-                "cannot call columns() when all tiles are empty"));
+                "cannot call columns() when all tiles are empty", name,
+                codename));
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -507,7 +518,8 @@ namespace phylanx { namespace execution_tree
 //             annotation_.as_annotation());
 //     }
 
-    bool localities_information::is_row_tiled() const
+    bool localities_information::is_row_tiled(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -517,7 +529,7 @@ namespace phylanx { namespace execution_tree
                 continue;
 
             case 2:
-                return detail::dim_tiled<1>(tiles_, columns());
+                return detail::dim_tiled<1>(tiles_, columns(name, codename));
 
             case 1: HPX_FALLTHROUGH;
             case 3: HPX_FALLTHROUGH;
@@ -528,15 +540,18 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::is_row_tiled",
                 util::generate_error_message(
-                    "unexpected dimensionality for calling is_row_tiled()"));
+                    "unexpected dimensionality for calling is_row_tiled()",
+                    name, codename));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "localities_information::is_row_tiled",
             util::generate_error_message(
-                "cannot call is_row_tiled() when all tiles are empty"));
+                "cannot call is_row_tiled() when all tiles are empty", name,
+                codename));
     }
 
-    bool localities_information::is_column_tiled() const
+    bool localities_information::is_column_tiled(
+        std::string const& name, std::string const& codename) const
     {
         for (std::size_t i = 0; i != tiles_.size(); ++i)
         {
@@ -546,7 +561,7 @@ namespace phylanx { namespace execution_tree
                 continue;
 
             case 2:
-                return detail::dim_tiled<0>(tiles_, rows());
+                return detail::dim_tiled<0>(tiles_, rows(name, codename));
 
             case 1: HPX_FALLTHROUGH;
             case 3: HPX_FALLTHROUGH;
@@ -557,12 +572,14 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "localities_information::is_column_tiled",
                 util::generate_error_message(
-                    "unexpected dimensionality for calling is_column_tiled()"));
+                    "unexpected dimensionality for calling is_column_tiled()",
+                    name, codename));
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "localities_information::is_column_tiled",
             util::generate_error_message(
-                "cannot call is_column_tiled() when all tiles are empty"));
+                "cannot call is_column_tiled() when all tiles are empty", name,
+                codename));
     }
 }}
 

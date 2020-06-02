@@ -54,8 +54,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information const& rhs_localities) const
     {
         // What if RHS or LHS isn't distributed?
-        std::size_t lhs_num_cols = lhs_localities.columns();
-        std::size_t rhs_num_rows = rhs_localities.rows();
+        std::size_t lhs_num_cols = lhs_localities.columns(name_, codename_);
+        std::size_t rhs_num_rows = rhs_localities.rows(name_, codename_);
         execution_tree::tiling_span const& lhs_col_span =
             lhs_localities.get_span(1);
         execution_tree::tiling_span const& lhs_row_span =
@@ -285,7 +285,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operands have incompatible dimensionalities"));
         }
 
-        if (lhs_localities.columns() != rhs_localities.rows())
+        if (lhs_localities.columns(name_, codename_) !=
+            rhs_localities.rows(name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::dot2d2d_par",

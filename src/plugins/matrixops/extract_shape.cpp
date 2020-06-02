@@ -123,7 +123,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
-            size = localities.size();
+            size = localities.size(name_, codename_);
         }
         else
         {
@@ -148,7 +148,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
-            size = localities.size();
+            size = localities.size(name_, codename_);
         }
         else
         {
@@ -168,8 +168,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
-            rows = localities.rows();
-            columns = localities.columns();
+            rows = localities.rows(name_, codename_);
+            columns = localities.columns(name_, codename_);
         }
         else
         {
@@ -201,7 +201,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
-            size = (index == 0) ? localities.rows() : localities.columns();
+            size = (index == 0) ? localities.rows(name_, codename_) :
+                                  localities.columns(name_, codename_);
         }
         else
         {
@@ -223,9 +224,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
-            pages = localities.pages();
-            rows = localities.rows();
-            columns = localities.columns();
+            pages = localities.pages(name_, codename_);
+            rows = localities.rows(name_, codename_);
+            columns = localities.columns(name_, codename_);
         }
         else
         {
@@ -281,10 +282,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             localities_information localities =
                 extract_localities_information(arg, name_, codename_);
-            quats = localities.quats();
-            pages = localities.pages();
-            rows = localities.rows();
-            columns = localities.columns();
+            quats = localities.quats(name_, codename_);
+            pages = localities.pages(name_, codename_);
+            rows = localities.rows(name_, codename_);
+            columns = localities.columns(name_, codename_);
         }
         else
         {
