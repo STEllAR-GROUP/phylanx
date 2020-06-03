@@ -196,9 +196,19 @@ namespace phylanx { namespace execution_tree
         switch (local_tile.dimension())
         {
         case 0:
-            result[0] = 0;
-            break;
-
+            {
+                std::size_t ndim = local_tile.spans_.size();
+                if (ndim == 1 || (ndim == 2 && !has_span(0)))
+                {
+                    result[0] = 0;
+                }
+                else if (ndim == 2)
+                {
+                    result[0] = 1;
+                    result[1] = 0;
+                }
+                break;
+            }
         case 1:
             {
                 if (local_tile.spans_[0].is_valid())
