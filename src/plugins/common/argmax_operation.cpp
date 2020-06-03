@@ -30,7 +30,8 @@ namespace phylanx { namespace common {
 
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     argminmax2d<argmax_op>(execution_tree::primitive_arguments_type&& args,
-        std::string const& name, std::string const& codename);
+        std::string const& name, std::string const& codename,
+        execution_tree::primitive_argument_type* value);
 
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     argminmax3d<argmax_op>(execution_tree::primitive_arguments_type&& args,

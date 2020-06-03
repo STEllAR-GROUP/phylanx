@@ -216,8 +216,9 @@ namespace phylanx { namespace common {
 
         template <typename Operation, typename T>
         execution_tree::primitive_argument_type argminmax2d_flatten(
-            ir::node_data<T>&& arg, std::string const& name,
-            std::string const& codename)
+            ir::node_data<T>&& arg,
+            execution_tree::primitive_argument_type* value,
+            std::string const& name, std::string const& codename)
         {
             using phylanx::util::matrix_row_iterator;
 
@@ -242,14 +243,21 @@ namespace phylanx { namespace common {
                 }
             }
 
+            if (value != nullptr)
+            {
+                *value = execution_tree::primitive_argument_type(
+                    std::move(global_minmax));
+            }
+
             return execution_tree::primitive_argument_type(
                 std::int64_t(global_index));
         }
 
         template <typename Operation, typename T>
         execution_tree::primitive_argument_type argminmax2d_0_axis(
-            ir::node_data<T>&& arg, std::string const& name,
-            std::string const& codename)
+            ir::node_data<T>&& arg,
+            execution_tree::primitive_argument_type* value,
+            std::string const& name, std::string const& codename)
         {
             auto a = arg.matrix();
 
@@ -269,8 +277,9 @@ namespace phylanx { namespace common {
 
         template <typename Operation, typename T>
         execution_tree::primitive_argument_type argminmax2d_1_axis(
-            ir::node_data<T>&& arg, std::string const& name,
-            std::string const& codename)
+            ir::node_data<T>&& arg,
+            execution_tree::primitive_argument_type* value,
+            std::string const& name, std::string const& codename)
         {
             auto a = arg.matrix();
 
@@ -290,8 +299,9 @@ namespace phylanx { namespace common {
 
         template <typename Operation, typename T>
         execution_tree::primitive_argument_type argminmax2d(std::size_t numargs,
-            ir::node_data<T>&& arg, std::int64_t axis, std::string const& name,
-            std::string const& codename)
+            ir::node_data<T>&& arg, std::int64_t axis,
+            execution_tree::primitive_argument_type* value,
+            std::string const& name, std::string const& codename)
         {
             // a should not be empty
             auto m = arg.matrix();
@@ -309,7 +319,7 @@ namespace phylanx { namespace common {
             {
                 // Option 1: Flatten and find min/max
                 return argminmax2d_flatten<Operation>(
-                    std::move(arg), name, codename);
+                    std::move(arg), value, name, codename);
             }
 
             // `axis` can only be -2, -1, 0, or 1
@@ -330,14 +340,14 @@ namespace phylanx { namespace common {
                 HPX_FALLTHROUGH;
             case 0:
                 return argminmax2d_0_axis<Operation>(
-                    std::move(arg), name, codename);
+                    std::move(arg), value, name, codename);
 
                 // Option 3: Find min/max among columns
             case -1:
                 HPX_FALLTHROUGH;
             case 1:
                 return argminmax2d_1_axis<Operation>(
-                    std::move(arg), name, codename);
+                    std::move(arg), value, name, codename);
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -352,7 +362,8 @@ namespace phylanx { namespace common {
     template <typename Operation>
     execution_tree::primitive_argument_type argminmax2d(
         execution_tree::primitive_arguments_type&& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        execution_tree::primitive_argument_type* value)
     {
         std::int64_t axis = -1;
         std::size_t numargs = args.size();
@@ -368,25 +379,25 @@ namespace phylanx { namespace common {
             return detail::argminmax2d<Operation>(numargs,
                 execution_tree::extract_boolean_value_strict(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         case execution_tree::node_data_type_int64:
             return detail::argminmax2d<Operation>(numargs,
                 execution_tree::extract_integer_value_strict(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         case execution_tree::node_data_type_double:
             return detail::argminmax2d<Operation>(numargs,
                 execution_tree::extract_numeric_value_strict(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         case execution_tree::node_data_type_unknown:
             return detail::argminmax2d<Operation>(numargs,
                 execution_tree::extract_numeric_value(
                     std::move(args[0]), name, codename),
-                axis, name, codename);
+                axis, value, name, codename);
 
         default:
             break;
