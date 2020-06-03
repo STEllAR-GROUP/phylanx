@@ -1,5 +1,6 @@
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018-2020 Hartmut Kaiser
+// Copyright (c) 2020 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -176,8 +177,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the dist_argminmax primitive requires for all arguments "
                     "to be numeric data types", name, codename));
         }
+
+        inline std::size_t get_global_flatten_index(std::size_t index,
+            execution_tree::localities_information const& locs,
+            std::string const& name, std::string const& codename)
+        {
+            using namespace execution_tree;
+
+            HPX_ASSERT(locs.has_span(0));
+            HPX_ASSERT(locs.has_span(1));
+            std::size_t row_span_start = locs.get_span(0).start_;
+            tiling_span col_span = locs.get_span(1);
+            std::size_t col_span_size = col_span.size();
+
+            std::size_t index_row =
+                static_cast<std::size_t>(index / col_span_size);
+            std::size_t index_col = index - index_row * col_span_size;
+            std::size_t columns = locs.columns(name, codename);
+
+            index = index_col + col_span.start_ +
+                columns * (index_row + row_span_start);
+
+            return index;
+        }
     }    // namespace detail
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
     execution_tree::primitive_argument_type
     dist_argminmax<Op, Derived>::argminmax1d(
@@ -280,6 +305,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         if (numargs == 1)
         {
             std::size_t index;
+
             // flatten, we need all_reduce to get the final result
             if (ndim == 0)
             {
@@ -289,14 +315,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             }
             else    // ndim == 2
             {
-                //primitive_argument_type local_result =
-                //    common::argminmax2d_flatten<Op>(
-                //        std::move(args), name_, codename_, &local_value);
+                primitive_argument_type local_result = common::argminmax2d<Op>(
+                    std::move(args), name_, codename_, &local_value);
 
-                //// correct index to be global
-                //index = extract_scalar_integer_value_strict(
-                //    std::move(local_result), name_, codename_);
+                // correct index to be global
+                index = extract_scalar_integer_value_strict(
+                    std::move(local_result), name_, codename_);
+                index = detail::get_global_flatten_index(
+                    index, locs, name_, codename_);
             }
+
+            return detail::reduction_to_scalar<Op>(
+                std::move(local_value), index, locs, name_, codename_);
         }
         else // numargs == 2
         {
