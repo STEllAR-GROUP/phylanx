@@ -307,6 +307,32 @@ void test_argmax_d_2d_4()
     }
 }
 
+void test_argmax_d_2d_5()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmax_d_operation("test_argmax_d_3loc2d_5", R"(
+            argmax_d(annotate_d([[]], "array_5",
+                list("tile", list("columns", 0, 0), list("rows", 0, 0))))
+        )", "3");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_argmax_d_operation("test_argmax_d_3loc2d_5", R"(
+            argmax_d(annotate_d([[0, 1, 2, 4], [1, 2, 3, 4], [4, 3, 4, 0]],
+                "array_5",
+                list("tile", list("columns", 0, 4), list("rows", 0, 3))))
+        )", "3");
+    }
+    else
+    {
+        test_argmax_d_operation("test_argmax_d_3loc2d_5", R"(
+            argmax_d(annotate_d([[]], "array_5",
+                list("tile", list("columns", 0, 0), list("rows", 0, 0))))
+        )", "3");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -320,6 +346,7 @@ int hpx_main(int argc, char* argv[])
     test_argmax_d_2d_2();
     //test_argmax_d_2d_3();
     //test_argmax_d_2d_4();
+    test_argmax_d_2d_5();
 
     hpx::finalize();
     return hpx::util::report_errors();
