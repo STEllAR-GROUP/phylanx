@@ -35,7 +35,7 @@ namespace phylanx { namespace common {
 
         static constexpr std::int64_t index_initial()
         {
-            return 0;
+            return (std::numeric_limits<std::int64_t>::max)();
         }
 
         template <typename T, typename Comp = std::less<>>

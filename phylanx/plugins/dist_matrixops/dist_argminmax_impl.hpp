@@ -14,6 +14,7 @@
 #include <phylanx/plugins/common/argminmax_nd.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_argminmax.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/tensor_iterators.hpp>
 
 #include <hpx/assertion.hpp>
@@ -99,8 +100,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             }
         }
 
+        ///////////////////////////////////////////////////////////////////////
         template <typename Operation>
-        struct all_reduce_op_1d
+        struct all_reduce_op_0d
         {
             // the first element in the pairs is the (scalar) value, the second
             // element is the (global) index of that value
@@ -118,13 +120,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         };
 
         template <typename Op, typename T>
-        execution_tree::primitive_argument_type argminmax1d_reduce(T value,
+        execution_tree::primitive_argument_type argminmax0d_reduce(T value,
             std::size_t index,
             execution_tree::localities_information const& locs)
         {
             auto p = hpx::all_reduce(
                 ("all_reduce_" + locs.annotation_.name_).c_str(),
-                std::make_pair(value, index), all_reduce_op_1d<Op>{},
+                std::make_pair(value, index), all_reduce_op_0d<Op>{},
                 locs.locality_.num_localities_, std::size_t(-1),
                 locs.locality_.locality_id_)
                          .get();
@@ -144,25 +146,25 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             switch (extract_common_type(local_value))
             {
             case node_data_type_bool:
-                return detail::argminmax1d_reduce<Op>(
+                return detail::argminmax0d_reduce<Op>(
                     extract_scalar_boolean_value_strict(
                         std::move(local_value), name, codename),
                     index, locs);
 
             case node_data_type_int64:
-                return detail::argminmax1d_reduce<Op>(
+                return detail::argminmax0d_reduce<Op>(
                     extract_scalar_integer_value_strict(
                         std::move(local_value), name, codename),
                     index, locs);
 
             case node_data_type_double:
-                return detail::argminmax1d_reduce<Op>(
+                return detail::argminmax0d_reduce<Op>(
                     extract_scalar_numeric_value_strict(
                         std::move(local_value), name, codename),
                     index, locs);
 
             case node_data_type_unknown:
-                return detail::argminmax1d_reduce<Op>(
+                return detail::argminmax0d_reduce<Op>(
                     extract_scalar_numeric_value(
                         std::move(local_value), name, codename),
                     index, locs);
@@ -178,6 +180,112 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "to be numeric data types", name, codename));
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Operation>
+        struct all_reduce_op_1d
+        {
+            // arguments are vectors of pairs, the first element in the pairs
+            // is the (scalar) value, the second element is the (global) index
+            // of that value
+            template <typename T>
+            blaze::DynamicVector<std::pair<T, std::size_t>> operator()(
+                blaze::DynamicVector<std::pair<T, std::size_t>> const&
+                    result_data,
+                blaze::DynamicVector<std::pair<T, std::size_t>> const&
+                    current_data) const
+            {
+                blaze::DynamicVector<std::pair<T, std::size_t>> res =
+                    blaze::map(result_data, current_data,
+                        [](std::pair<T, std::size_t> result,
+                            std::pair<T, std::size_t> current)
+                        {
+                            if (Operation::index_compare(result, current))
+                            {
+                                return result;
+                            }
+                            return current;
+                        });
+                return res;
+            }
+        };
+
+        template <typename Op, typename T>
+        execution_tree::primitive_argument_type argminmax1d_reduce(
+            ir::node_data<T> const& values,
+            ir::node_data<std::size_t> const& indices,
+            execution_tree::localities_information const& locs)
+        {
+            auto value_vector = values.vector();
+            auto indices_vector = indices.vector();
+            HPX_ASSERT(value_vector.size() == indices_vector.size());
+
+            blaze::DynamicVector<std::pair<T, std::size_t>> value_index_vector =
+                blaze::map(value_vector, indices_vector,
+                    [](T value, std::size_t index) {
+                        return std::make_pair(value, index);
+                    });
+
+            auto p = hpx::all_reduce(
+                ("all_reduce_" + locs.annotation_.name_).c_str(),
+                value_index_vector, all_reduce_op_1d<Op>{},
+                locs.locality_.num_localities_, std::size_t(-1),
+                locs.locality_.locality_id_)
+                         .get();
+
+            blaze::DynamicVector<std::int64_t> res =
+                blaze::map(p, [](std::pair<T, std::size_t> r) {
+                    return static_cast<std::int64_t>(r.second);
+                });
+
+            return execution_tree::primitive_argument_type{std::move(res)};
+        }
+
+        template <typename Op>
+        execution_tree::primitive_argument_type reduction_to_vector(
+            execution_tree::primitive_argument_type&& local_value,
+            ir::node_data<std::size_t> const& indices,
+            execution_tree::localities_information const& locs,
+            std::string const& name, std::string const& codename)
+        {
+            using namespace execution_tree;
+            switch (extract_common_type(local_value))
+            {
+            case node_data_type_bool:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_boolean_value_strict(
+                        std::move(local_value), name, codename),
+                    indices, locs);
+
+            case node_data_type_int64:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_integer_value_strict(
+                        std::move(local_value), name, codename),
+                    indices, locs);
+
+            case node_data_type_double:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_numeric_value_strict(
+                        std::move(local_value), name, codename),
+                    indices, locs);
+
+            case node_data_type_unknown:
+                return detail::argminmax1d_reduce<Op>(
+                    extract_numeric_value(
+                        std::move(local_value), name, codename),
+                    indices, locs);
+
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_argminmax<Op, Derived>::detail::reduction_to_vector",
+                util::generate_error_message(
+                    "the dist_argminmax primitive requires for all arguments "
+                    "to be numeric data types", name, codename));
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         inline std::size_t get_global_flatten_index(std::size_t index,
             execution_tree::localities_information const& locs,
             std::string const& name, std::string const& codename)
@@ -283,22 +391,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     codename_));
         }
 
-        std::int64_t axis = -1;
         std::size_t numargs = args.size();
-        if (numargs == 2)
-        {
-            axis = execution_tree::extract_scalar_integer_value(
-                std::move(args[1]), name_, codename_);
-        }
-
-        if (axis < -2 || axis > 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_argminmax<Op, Derived>::argminmax2d",
-                util::generate_error_message(
-                    "operand axis can be between -2 and 1 for a matrix", name_,
-                    codename_));
-        }
 
         primitive_argument_type local_value;
 
@@ -328,11 +421,46 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             return detail::reduction_to_scalar<Op>(
                 std::move(local_value), index, locs, name_, codename_);
         }
-        else // numargs == 2
-        {
-            bool row_tiled = locs.is_row_tiled(name_, codename_);
 
+        // numargs == 2
+        std::int64_t axis = execution_tree::extract_scalar_integer_value_strict(
+            std::move(args[1]), name_, codename_);
+
+        if (axis < -2 || axis > 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_argminmax<Op, Derived>::argminmax2d",
+                util::generate_error_message(
+                    "operand axis can be between -2 and 1 for a matrix", name_,
+                    codename_));
         }
+
+        if (axis == 0 || axis == -2)
+        {
+            ir::node_data<std::size_t> indices;
+            if (ndim == 0)
+            {
+
+            }
+            else // ndim == 2
+            {
+                //bool column_tiled = locs.is_column_tiled(name_, codename_);
+                primitive_argument_type local_result = common::argminmax2d<Op>(
+                    std::move(args), name_, codename_, &local_value);
+
+                // correct index to be global
+                indices = extract_integer_value_strict(
+                    std::move(local_result), name_, codename_);
+                indices.vector() += locs.get_span(0).start_;
+            }
+            return detail::reduction_to_vector<Op>(std::move(local_value),
+                indices, locs, name_, codename_);
+        }
+
+        // axis == 1 or axis == -1
+        bool row_tiled = locs.is_row_tiled(name_, codename_);
+
+
 
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,

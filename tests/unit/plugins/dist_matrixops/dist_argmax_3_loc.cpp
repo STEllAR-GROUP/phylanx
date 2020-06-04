@@ -336,17 +336,17 @@ void test_argmax_d_2d_5()
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    test_argmax_d_1d_0();
-    test_argmax_d_1d_1();
-    test_argmax_d_1d_2();
-    test_argmax_d_1d_3();
+    //test_argmax_d_1d_0();
+    //test_argmax_d_1d_1();
+    //test_argmax_d_1d_2();
+    //test_argmax_d_1d_3();
 
-    test_argmax_d_2d_0();
-    test_argmax_d_2d_1();
-    test_argmax_d_2d_2();
-    //test_argmax_d_2d_3();
+    //test_argmax_d_2d_0();
+    //test_argmax_d_2d_1();
+    //test_argmax_d_2d_2();
+    test_argmax_d_2d_3();
     //test_argmax_d_2d_4();
-    test_argmax_d_2d_5();
+    //test_argmax_d_2d_5();
 
     hpx::finalize();
     return hpx::util::report_errors();

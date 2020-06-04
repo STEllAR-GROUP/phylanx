@@ -112,8 +112,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 1 ||
-            rhs_localities.num_dimensions() < 1)
+        if (lhs_localities.num_dimensions() > 1 ||
+            rhs_localities.num_dimensions() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d1d",
@@ -225,8 +225,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 1 ||
-            rhs_localities.num_dimensions() < 2)
+        std::size_t rhs_ndim = rhs_localities.num_dimensions();
+        if (lhs_localities.num_dimensions() > 1 ||
+            (rhs_ndim != 2 && rhs_ndim != 0))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d2d",
@@ -422,8 +423,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 2 ||
-            rhs_localities.num_dimensions() < 1)
+        std::size_t lhs_ndim = lhs_localities.num_dimensions();
+        if ((lhs_ndim != 2 && lhs_ndim != 0) ||
+            rhs_localities.num_dimensions() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d1d",
@@ -576,8 +578,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 2 ||
-            rhs_localities.num_dimensions() < 2)
+        std::size_t lhs_ndim = lhs_localities.num_dimensions();
+        std::size_t rhs_ndim = rhs_localities.num_dimensions();
+        if ((lhs_ndim != 2 && lhs_ndim != 0) ||
+            (rhs_ndim != 2 && rhs_ndim != 0))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d2d_par",

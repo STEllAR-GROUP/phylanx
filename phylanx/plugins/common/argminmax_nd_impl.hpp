@@ -369,7 +369,7 @@ namespace phylanx { namespace common {
         std::size_t numargs = args.size();
         if (numargs == 2)
         {
-            axis = execution_tree::extract_scalar_integer_value(
+            axis = execution_tree::extract_scalar_integer_value_strict(
                 std::move(args[1]), name, codename);
         }
 
