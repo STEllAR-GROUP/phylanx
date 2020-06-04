@@ -45,8 +45,11 @@ set(dist_argmax_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_argmin_2_loc_PARAMETERS LOCALITIES 2)
 =======
 
+<<<<<<< HEAD
 set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
 >>>>>>> add test for 2 loc
+=======
+>>>>>>> Revert "add test for 2 loc"
 set(dist_cannon_product_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_cannon_product_9_loc_PARAMETERS LOCALITIES 9)
 set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)
