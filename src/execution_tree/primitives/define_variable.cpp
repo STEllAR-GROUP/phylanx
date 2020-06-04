@@ -9,7 +9,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>

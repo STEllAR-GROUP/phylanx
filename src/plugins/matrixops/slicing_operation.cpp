@@ -12,7 +12,7 @@
 #include <phylanx/util/slicing_helpers.hpp>
 #include <phylanx/util/small_vector.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

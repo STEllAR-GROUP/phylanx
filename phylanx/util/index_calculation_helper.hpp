@@ -8,7 +8,7 @@
 #if !defined(PHYLANX_UTIL_INDEX_CALCULATION_HELPER)
 #define PHYLANX_UTIL_INDEX_CALCULATION_HELPER
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 
 #include <cstddef>
 #include <cstdint>

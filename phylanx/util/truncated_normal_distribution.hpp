@@ -8,7 +8,7 @@
 
 #include <phylanx/config.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 
 #include <cstddef>
 #include <type_traits>

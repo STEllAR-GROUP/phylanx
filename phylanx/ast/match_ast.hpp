@@ -13,10 +13,10 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/assertion.hpp>
-#include <hpx/datastructures.hpp>
-#include <hpx/functional.hpp>
-#include <hpx/type_support.hpp>
+#include <hpx/assert.hpp>
+#include <hpx/modules/datastructures.hpp>
+#include <hpx/modules/functional.hpp>
+#include <hpx/modules/type_support.hpp>
 
 #include <cstddef>
 #include <cstdint>

@@ -10,7 +10,7 @@
 
 #include <phylanx/config.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
@@ -18,7 +18,7 @@
 #include <hpx/runtime/components/component_factory.hpp>
 #include <hpx/runtime/components/new.hpp>
 #include <hpx/runtime/components/server/component.hpp>
-#include <hpx/runtime/get_locality_id.hpp>
+#include <hpx/runtime_local/get_locality_id.hpp>
 #include <hpx/runtime/get_num_localities.hpp>
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/runtime/launch_policy.hpp>
