@@ -230,13 +230,13 @@ def print_physl_src(src, with_symbol_info=False, tag=4):
     print("", sep="")
 
 
-def get_symbol_info(symbol, name):
+def get_symbol_info(symbol, name, line_offset):
     """Adds symbol info (line and column number) to the symbol."""
 
     if name in numpy_constants.keys():
         return name
     else:
-        return '%s$%d$%d' % (name, symbol.lineno, symbol.col_offset)
+        return '%s$%d$%d' % (name, symbol.lineno - line_offset, symbol.col_offset)
 
 
 def remove_line(a):
@@ -463,6 +463,12 @@ class PhySL:
         self.__src__ = None
         self.__ast__ = None
         self.ir = None
+        startatlineone = kwargs.get('startatlineone', False)
+        if startatlineone:
+            c = inspect.currentframe()
+            self.line_offset = inspect.getouterframes(c)[2].lineno
+        else:
+            self.line_offset = 0
         self.python_tree = tree
         if 'doc_src' in kwargs and kwargs['doc_src']:
             self.doc_src = func.__doc__
@@ -630,7 +636,7 @@ class PhySL:
             we can use this to let user provide type information!?!
         """
 
-        arg = get_symbol_info(node, node.arg)
+        arg = get_symbol_info(node, node.arg, self.line_offset)
         return arg
 
     def _arguments(self, node):
@@ -659,7 +665,7 @@ class PhySL:
             if default is None:
                 result = (*result, a)
             else:
-                op = get_symbol_info(arg, '__arg')
+                op = get_symbol_info(arg, '__arg', self.line_offset)
                 result = (*result, [op, (a, default)])
         return result
 
@@ -685,9 +691,9 @@ class PhySL:
         if isinstance(symbol, str):
             symbol_name = re.sub(r'\$\d+', '', symbol)
             if symbol_name in self.defined:
-                op = get_symbol_info(node.targets[0], "store")
+                op = get_symbol_info(node.targets[0], "store", self.line_offset)
             else:
-                op = get_symbol_info(node.targets[0], "define")
+                op = get_symbol_info(node.targets[0], "define", self.line_offset)
                 # TODO:
                 # For now `self.defined` is a set containing names of symbols
                 # with no extra information. We may want to make it a
@@ -696,7 +702,7 @@ class PhySL:
                 self.defined.add(symbol_name)
         # lhs is a subscript.
         else:
-            op = get_symbol_info(node.targets[0], "store")
+            op = get_symbol_info(node.targets[0], "store", self.line_offset)
 
         target = self._apply_rule(node.targets[0])
         value = self._apply_rule(node.value)
@@ -764,8 +770,8 @@ class PhySL:
             kw = self._apply_rule(k.value)
             return (k.arg, kw)
 
-        oplist = get_symbol_info(node.func, 'list')
-        oparg = get_symbol_info(node.func, '__arg')
+        oplist = get_symbol_info(node.func, 'list', self.line_offset)
+        oparg = get_symbol_info(node.func, '__arg', self.line_offset)
 
         symbol = self._apply_rule(node.func)
         args = tuple(self._apply_rule(arg) for arg in node.args)
@@ -1017,11 +1023,11 @@ class PhySL:
             We ignore decorator_list and returns.
         """
 
-        op = get_symbol_info(node, 'define')
-        symbol = get_symbol_info(node, node.name)
+        op = get_symbol_info(node, 'define', self.line_offset)
+        symbol = get_symbol_info(node, node.name, self.line_offset)
         args = self._apply_rule(node.args)
         body = self._block(node.body)
-        lambda_op = get_symbol_info(node, 'lambda')
+        lambda_op = get_symbol_info(node, 'lambda', self.line_offset)
 
         if (args):
             return [op, (symbol, args, body)]
@@ -1167,7 +1173,7 @@ class PhySL:
         `ctx` is one of `Load`, `Store`, `Del`.
         """
 
-        symbol = get_symbol_info(node, primitive_name(node.id))
+        symbol = get_symbol_info(node, primitive_name(node.id), self.line_offset)
         return symbol
 
     def _NameConstant(self, node):

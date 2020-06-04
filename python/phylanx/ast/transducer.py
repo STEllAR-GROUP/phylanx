@@ -41,7 +41,8 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 'compiler_state',
                 'doc_src',
                 'performance',
-                'localities'
+                'localities',
+                'startatlineone'
             ]
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
