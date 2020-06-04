@@ -5,9 +5,12 @@
 
 set(tests
     all_gather_2_loc
+<<<<<<< HEAD
     all_gather_4_loc
     dist_argmax_3_loc
     dist_argmin_2_loc
+=======
+>>>>>>> add test for 2 loc
     dist_cannon_product_4_loc
     dist_cannon_product_9_loc
     dist_constant_2_loc
@@ -46,10 +49,14 @@ set(dist_argmin_2_loc_PARAMETERS LOCALITIES 2)
 =======
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
 >>>>>>> add test for 2 loc
 =======
 >>>>>>> Revert "add test for 2 loc"
+=======
+set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
+>>>>>>> add test for 2 loc
 set(dist_cannon_product_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_cannon_product_9_loc_PARAMETERS LOCALITIES 9)
 set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)
