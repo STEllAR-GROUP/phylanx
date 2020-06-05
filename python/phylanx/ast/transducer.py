@@ -41,11 +41,13 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 'compiler_state',
                 'doc_src',
                 'performance',
-                'localities'
+                'localities',
+                'startatlineone'
             ]
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
+            self.startatlineone = kwargs.get("startatlineone", False)
             for key in kwargs.keys():
                 if key not in valid_kwargs:
                     raise NotImplementedError("Unknown Phylanx argument '%s'." % key)
@@ -89,7 +91,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """Generates the Python AST."""
 
             tree = ast.parse(src)
-            actual_lineno = inspect.getsourcelines(f)[-1]
+            if self.startatlineone:
+                actual_lineno = 0
+            else:
+                actual_lineno = inspect.getsourcelines(f)[-1]
             ast.increment_lineno(tree, actual_lineno)
             assert len(tree.body) == 1
             return tree
