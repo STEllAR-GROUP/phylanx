@@ -7,8 +7,8 @@
 #include <phylanx/plugins/plugin_factory.hpp>
 
 #include <hpx/include/components.hpp>
-#include <hpx/runtime/startup_function.hpp>
-#include <hpx/runtime/shutdown_function.hpp>
+#include <hpx/runtime_local/startup_function.hpp>
+#include <hpx/runtime_local/shutdown_function.hpp>
 
 namespace phylanx
 {

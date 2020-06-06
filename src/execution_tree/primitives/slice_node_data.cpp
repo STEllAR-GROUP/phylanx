@@ -14,7 +14,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/errors/exception.hpp>
 
 #include <algorithm>

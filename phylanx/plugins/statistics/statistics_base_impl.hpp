@@ -13,7 +13,7 @@
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/datastructures/optional.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

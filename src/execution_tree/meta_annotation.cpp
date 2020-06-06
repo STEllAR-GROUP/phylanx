@@ -13,7 +13,7 @@
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/collectives.hpp>
+#include <hpx/modules/collectives.hpp>
 
 #include <algorithm>
 #include <array>

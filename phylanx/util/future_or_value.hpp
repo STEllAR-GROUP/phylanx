@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/async.hpp>
+#include <hpx/modules/async.hpp>
 #include <hpx/futures/future.hpp>
 #include <hpx/memory/intrusive_ptr.hpp>
 #include <hpx/traits/acquire_future.hpp>

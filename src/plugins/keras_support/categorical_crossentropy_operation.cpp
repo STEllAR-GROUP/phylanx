@@ -13,7 +13,7 @@
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 #include <phylanx/plugins/statistics/sum_operation.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

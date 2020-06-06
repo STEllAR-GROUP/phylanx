@@ -9,7 +9,7 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/agas.hpp>
 #include <hpx/include/performance_counters.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <cstddef>
 #include <cstdint>

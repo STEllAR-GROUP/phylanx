@@ -20,7 +20,7 @@
 #include <phylanx/util/distributed_matrix.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/collectives/all_reduce.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>

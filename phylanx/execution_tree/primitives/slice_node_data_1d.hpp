@@ -16,8 +16,8 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
-#include <hpx/assertion.hpp>
-#include <hpx/format.hpp>
+#include <hpx/assert.hpp>
+#include <hpx/modules/format.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>

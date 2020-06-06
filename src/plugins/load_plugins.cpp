@@ -13,7 +13,7 @@
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
 
-#include <hpx/filesystem.hpp>
+#include <hpx/modules/filesystem.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/tokenizer.hpp>
 

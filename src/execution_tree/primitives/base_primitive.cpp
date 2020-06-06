@@ -23,7 +23,7 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/sync.hpp>
-#include <hpx/logging.hpp>
+#include <hpx/modules/logging.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 
 #include <array>
