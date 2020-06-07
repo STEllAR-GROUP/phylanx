@@ -14,7 +14,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/include/serialization.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
-#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/async_base/launch_policy.hpp>
 
 #include <cstddef>
 #include <cstdint>

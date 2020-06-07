@@ -125,8 +125,8 @@ void test_map_operation_func_arg()
 {
     std::string const code_str = R"(block(
             define(f, a, block(
-                define(fmap, x, x + a),
-                parallel_map(fmap, list(1, 2, 3))
+                define(__map, x, x + a),
+                parallel_map(__map, list(1, 2, 3))
             )),
             f
         ))";
@@ -163,8 +163,8 @@ void test_map_operation_func_lambda_arg()
 {
     std::string const code_str = R"(block(
             define(f, a, block(
-                define(fmap, lambda(x, x + a)),
-                parallel_map(fmap, list(1, 2, 3))
+                define(__map, lambda(x, x + a)),
+                parallel_map(__map, list(1, 2, 3))
             )),
             f
         ))";

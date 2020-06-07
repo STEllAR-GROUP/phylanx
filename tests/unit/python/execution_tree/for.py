@@ -11,10 +11,10 @@ from phylanx import Phylanx
 @Phylanx
 def sumn():
     n = 0
-    sum = 0
+    local_sum = 0
     for n in range(4):
-        sum += n
-    return sum
+        local_sum += n
+    return local_sum
 
 
 assert sumn() == 6
@@ -23,10 +23,10 @@ assert sumn() == 6
 @Phylanx
 def sumn2():
     n = 0
-    sum = 0
+    local_sum = 0
     for n in range(1, 4):
-        sum += n
-    return sum
+        local_sum += n
+    return local_sum
 
 
 assert sumn2() == 6
@@ -35,12 +35,12 @@ assert sumn2() == 6
 @Phylanx
 def sumn3():
     n = 0
-    sum = 0
+    local_sum = 0
     c = 0
     for n in range(3, 0, -1):
-        sum += n
+        local_sum += n
         c += 1
-    return sum + c
+    return local_sum + c
 
 
 assert sumn3() == 9

@@ -24,7 +24,7 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/sync.hpp>
 #include <hpx/modules/logging.hpp>
-#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/async_base/launch_policy.hpp>
 
 #include <array>
 #include <cstddef>
