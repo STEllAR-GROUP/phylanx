@@ -8,7 +8,7 @@
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
 #include <phylanx/util/blaze_traits.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 
 #include <cmath>
 #include <cstddef>

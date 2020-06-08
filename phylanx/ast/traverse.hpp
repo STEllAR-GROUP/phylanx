@@ -10,8 +10,8 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/concepts.hpp>
-#include <hpx/functional.hpp>
+#include <hpx/modules/concepts.hpp>
+#include <hpx/modules/functional.hpp>
 
 #include <cstdint>
 #include <list>

@@ -11,7 +11,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/util/hashed_string.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <set>
 #include <string>

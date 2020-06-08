@@ -7,8 +7,9 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -91,7 +92,7 @@ void test_mean_operation_2d_x_axis()
 
     phylanx::execution_tree::primitive second =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(0));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(0));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
@@ -120,7 +121,7 @@ void test_mean_operation_2d_y_axis()
 
     phylanx::execution_tree::primitive second =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(1));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
@@ -174,7 +175,7 @@ void test_mean_operation_3d_x_axis()
 
     phylanx::execution_tree::primitive second =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(0));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(0));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
@@ -204,7 +205,7 @@ void test_mean_operation_3d_y_axis()
 
     phylanx::execution_tree::primitive second =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(1));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
@@ -234,7 +235,7 @@ void test_mean_operation_3d_z_axis()
 
     phylanx::execution_tree::primitive second =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(2));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(2));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(

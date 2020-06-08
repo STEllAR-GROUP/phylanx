@@ -12,7 +12,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/util/random.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <array>
 #include <cstddef>

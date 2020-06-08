@@ -12,7 +12,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/config_entry.hpp>
-#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/async_base/launch_policy.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
 #include <hpx/errors/throw_exception.hpp>
 

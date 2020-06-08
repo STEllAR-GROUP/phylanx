@@ -7,11 +7,11 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/plugins/controls/apply.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/async_base/launch_policy.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>

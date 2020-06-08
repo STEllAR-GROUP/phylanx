@@ -10,17 +10,25 @@ set(tests
     dist_constant_3_loc
     dist_constant_4_loc
     dist_constant_6_loc
+    dist_diag_2_loc
+    dist_diag_4_loc
+    dist_diag_6_loc
     dist_dot_operation_2_loc
     dist_expand_dims_2_loc
     dist_expand_dims_3_loc
+    dist_generic_operation_2_loc
     dist_identity_2_loc
     dist_identity_4_loc
     dist_identity_6_loc
-    dist_transpose_operation
+    dist_inverse_2_loc
+    dist_inverse_3_loc
     dist_random_2_loc
     dist_random_4_loc
     dist_random_5_loc
     dist_shape_2_loc
+    dist_slice_2_loc
+    dist_slice_3_loc
+    dist_transpose_operation
     retile_2_loc
     retile_3_loc
     retile_6_loc
@@ -33,16 +41,24 @@ set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_constant_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_constant_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_constant_6_loc_PARAMETERS LOCALITIES 6)
+set(dist_diag_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_diag_4_loc_PARAMETERS LOCALITIES 4)
+set(dist_diag_6_loc_PARAMETERS LOCALITIES 6)
 set(dist_dot_operation_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_expand_dims_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_expand_dims_3_loc_PARAMETERS LOCALITIES 3)
+set(dist_generic_operation_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_identity_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_identity_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_identity_6_loc_PARAMETERS LOCALITIES 6)
+set(dist_inverse_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_inverse_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_random_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_random_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_random_5_loc_PARAMETERS LOCALITIES 5)
 set(dist_shape_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_slice_2_loc_PARAMETERS LOCALITIES 2)
+set(dist_slice_3_loc_PARAMETERS LOCALITIES 3)
 set(retile_2_loc_PARAMETERS LOCALITIES 2)
 set(retile_3_loc_PARAMETERS LOCALITIES 3)
 set(retile_6_loc_PARAMETERS LOCALITIES 6)

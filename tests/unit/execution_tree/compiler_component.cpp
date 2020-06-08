@@ -7,7 +7,7 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/runtime/find_here.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <list>
 #include <utility>
@@ -566,8 +566,8 @@ void test_define_variable_function_call()
 
     auto expr = phylanx::ast::generate_ast(R"(
         define(f, pts, block(
-            define(var, expand_dims(slice_column(pts, 0), 1)),
-            argmin(sqrt(power(var - var, 2) + power(var - var, 2)), 1)
+            define(__var, expand_dims(slice_column(pts, 0), 1)),
+            argmin(sqrt(power(__var - __var, 2) + power(__var - __var, 2)), 1)
         ))
         apply(f, sys_argv)
     )");

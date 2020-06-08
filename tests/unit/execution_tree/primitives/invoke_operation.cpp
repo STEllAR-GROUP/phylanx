@@ -7,7 +7,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 void test_invoke_operation(char const* expr, double expected)
 {

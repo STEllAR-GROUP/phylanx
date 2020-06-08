@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 tmp.find("tile", tiles_ann))
             {
                 ir::range tmp = tiles_ann.get_range();
-                localities = localities_annotation(locality_ann,
+                localities = localities_annotation(target, locality_ann,
                     annotation{std::move(tmp)}, ann_info, name_, codename_);
             }
             else
@@ -127,7 +127,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             "tile")
         {
             annotation locality_ann;
-            localities = localities_annotation(locality_ann,
+            localities = localities_annotation(target, locality_ann,
                 annotation{std::move(args)}, ann_info, name_, codename_);
         }
         else
@@ -137,6 +137,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 generate_error_message(
                     "no args annotation and tiles annotation not first"));
         }
+
         target.set_annotation(std::move(localities), name_, codename_);
         return std::move(target);
     }

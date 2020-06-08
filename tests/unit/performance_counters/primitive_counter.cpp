@@ -9,7 +9,7 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/agas.hpp>
 #include <hpx/include/performance_counters.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -25,22 +25,22 @@ char const* const lra_code = R"(block(
     //
     //   x: [30, 2]
     //   y: [30]
-    define(lra, x, y, alpha,
+    define(__lra, x, y, alpha,
         block(
             define(weights, constant(0.0, shape(x, 1))),     // weights: [2]
             define(transx, transpose(x)),                    // transx:  [2, 30]
             define(pred, constant(0.0, shape(x, 0))),
             define(error, constant(0.0, shape(x, 0))),
-            define(gradient, constant(0.0, shape(x, 1))),
+            define(__gradient, constant(0.0, shape(x, 1))),
             define(step, 0),
             while(
                 step < 10,
                 block(
                     store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
                     store(error, pred - y),                  // error: [30]
-                    store(gradient, dot(transx, error)),     // gradient: [2]
+                    store(__gradient, dot(transx, error)),   // gradient: [2]
                     parallel_block(
-                        store(weights, weights - (alpha * gradient)),
+                        store(weights, weights - (alpha * __gradient)),
                         store(step, step + 1)
                     )
                 )
@@ -48,7 +48,7 @@ char const* const lra_code = R"(block(
             weights
         )
     ),
-    lra
+    __lra
 ))";
 
 std::map<std::string, std::size_t> expected_counts =

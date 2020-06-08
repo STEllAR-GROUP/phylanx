@@ -7,7 +7,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <cstdint>
 #include <string>
@@ -135,6 +135,18 @@ int main(int argc, char* argv[])
     test_min_operation(
         "amin([[[13., 42., 33.],[101., 12., 65.]]], list(0, -1, 1), true)",
         "[[[12.]]]");
+
+    test_min_operation(
+        "amin([42, 1, 0, -1], list(), false, 13)", "[13,  1,  0, -1]");
+    test_min_operation("amin([[13, 0, -1], [42, -2, 0]], list(), nil, 3)",
+        "[[ 3,  0, -1], [ 3, -2,  0]]");
+    test_min_operation(R"(amin([[[1., 13.], [0, -2.]], [[2., -1.], [23., 5.]]],
+         list(), true, 3))",
+        "[[[ 1.,  3.], [ 0., -2.]], [[ 2., -1.], [ 3.,  3.]]]");
+    test_min_operation(
+        R"(amin([[[[1], [0]], [[-1], [2]]], [[[0], [1]], [[-3], [2]]]],
+            list(), nil, 0.))",
+        "[[[[ 0], [ 0]], [[-1], [ 0]]], [[[ 0], [ 0]], [[-3], [ 0]]]]");
 
     return hpx::util::report_errors();
 }

@@ -7,7 +7,7 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <iostream>
 #include <string>
@@ -133,6 +133,10 @@ int main(int argc, char* argv[])
     test_count_std_operation(
         "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], 2, true)",
         "[[[0.5], [0.5]], [[0.5], [0.5]]]");
+
+    test_count_std_operation(
+        "std([[[1.0, 2.0], [3.0, 4.0]], [[4.0, 3.0], [2.0, 1.0]]], list())",
+        "[[[0.0, 0.0], [0.0, 0.0]], [[0.0, 0.0], [0.0, 0.0]]]");
 
     return hpx::util::report_errors();
 }

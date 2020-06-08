@@ -7,7 +7,7 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <string>
 

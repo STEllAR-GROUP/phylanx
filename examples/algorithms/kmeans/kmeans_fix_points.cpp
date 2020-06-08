@@ -8,8 +8,6 @@
 #include <phylanx/phylanx.hpp>
 #include <hpx/hpx_init.hpp>
 
-#include <iostream>
-
 #include <blaze/Math.h>
 #include <hpx/program_options.hpp>
 
@@ -27,50 +25,64 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const kmeans_code = R"(
-    define(closest_centroids, points, centroids, block(
-        define(points_x,
-            expand_dims(slice_column(points, 0), -1)
-        ),
-        define(points_y,
-            expand_dims(slice_column(points, 1), -1)
-        ),
-        define(centroids_x,
-            slice_column(centroids, 0)
-        ),
-        define(centroids_y,
-            slice_column(centroids, 1)
-        ),
-        argmin(sqrt(
-                    power(points_x - centroids_x, 2
-                    )+power(points_y - centroids_y, 2)
-            ), 1
+    define(closest_centroids, points, centroids,
+        block(
+            define(points_x,
+                expand_dims(slice_column(points, 0), -1)
+            ),
+            define(points_y,
+                expand_dims(slice_column(points, 1), -1)
+            ),
+            define(centroids_x,
+                slice_column(centroids, 0)
+            ),
+            define(centroids_y,
+                slice_column(centroids, 1)
+            ),
+            argmin(sqrt(
+                        square(points_x - centroids_x)
+                        + square(points_y - centroids_y)
+                ), 1
+            )
         )
-    ))
+    )
 
-    define(move_centroids, points, closest, centroids, block(
-        fmap(lambda(k, block(
-                    define(x, closest == k),
-                    define(count, sum(x * constant(1, shape(x, 0)))),
-                    define(sum_, sum(points * expand_dims(x, -1), 0)),
-                    sum_/count
+    define(move_centroids, points, closest, centroids, num_points, num_centroids,
+        block(
+        define(result, constant(0.0, list(num_centroids, 2))),
+        define(count, 0),
+        for(define(k, 0), k < num_centroids, store(k, k + 1), block(
+            store(count, 0),
+            for(define(i, 0), i < num_points, store(i, i + 1),block(
+                if(slice(closest, i) == k, block(
+                    store(slice_row(result, k),
+                        slice_row(result, k) + slice_row(points, i)),
+                    store(count, count + 1)
+                ))
             )),
-            range(shape(centroids, 0))
-        )
+            if(count,
+                store(slice_row(result, k), slice_row(result, k)/count)
+            ))
+        ), result
     ))
 
     define(kmeans, points, iterations, initial_centroids, enable_output,
         block(
             define(centroids, initial_centroids),
+            define(num_centroids, shape(centroids, 0)),
+            define(num_points, shape(points, 0)),
             for(define(i, 0), i < iterations, store(i, i + 1),
                 block(
                     if(enable_output, block(
                         cout("centroids in iteration ", i,": ", centroids)
                     )),
                     store(centroids,
-                          apply(vstack,
-                                list(move_centroids(points,
-                                        closest_centroids(points, centroids),
-                                        centroids))))
+                          move_centroids(points,
+                                        closest_centroids(points,
+                                                         centroids),
+                                        centroids,
+                                        num_points,
+                                        num_centroids))
                 )
             ), centroids
         )

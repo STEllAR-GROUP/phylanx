@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <string>
 
@@ -26,6 +26,11 @@ namespace phylanx { namespace execution_tree
         std::string const& codename);
 
     PHYLANX_EXPORT annotation localities_annotation(annotation& locality_ann,
+        annotation&& ann, annotation_information const& ann_info,
+        std::string const& name, std::string const& codename);
+
+    PHYLANX_EXPORT annotation localities_annotation(
+        primitive_argument_type const& arg, annotation& locality_ann,
         annotation&& ann, annotation_information const& ann_info,
         std::string const& name, std::string const& codename);
 }}

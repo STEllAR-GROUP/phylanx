@@ -7,7 +7,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <string>
 
@@ -71,17 +71,32 @@ void test_annotation_equality_2()
         compile_and_run("annotation_1", annotation_1));
 }
 
-void test_annotation_equality_3()
+void test_annotation_non_equality_3()
 {
     std::string annotation_0 = R"(
             annotate_d([[91, 91]], "test2d2d_3_1/1",
-                list("tile", list("columns", 0, 2), list("rows", 2, 4)))
+                list("tile", list("columns", 0, 2), list("rows", 0, 1)))
         )";
     std::string annotation_1 = R"(
-            annotate_d([[91, 91]], "test2d2d_3_1/1",
+            annotate_d([91, 91], "test2d2d_3_1/1",
                 list("args",
                     list("locality", 0, 1),
-                    list("tile", list("rows", 0, 2), list("columns", 0, 2))))
+                    list("tile", list("columns", 0, 2))))
+        )";
+
+    HPX_TEST_NEQ(compile_and_run("annotation_0", annotation_0),
+        compile_and_run("annotation_1", annotation_1));
+}
+
+void test_annotation_non_equality_4()
+{
+    std::string annotation_0 = R"(
+            annotate_d([[]], "empty_array",
+                list("tile", list("columns", 0, 0), list("rows", 0, 0)))
+        )";
+    std::string annotation_1 = R"(
+            annotate_d([], "empty_array",
+                list("tile", list("columns", 0, 0)))
         )";
 
     HPX_TEST_NEQ(compile_and_run("annotation_0", annotation_0),
@@ -93,7 +108,8 @@ int main(int argc, char* argv[])
     test_annotation_equality_0();
     test_annotation_equality_1();
     test_annotation_equality_2();
-    test_annotation_equality_3();
+    test_annotation_non_equality_3();
+    test_annotation_non_equality_4();
 
     return hpx::util::report_errors();
 }

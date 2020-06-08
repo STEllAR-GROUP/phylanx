@@ -11,7 +11,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/lcos/future.hpp>
+#include <hpx/futures/future.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -66,17 +66,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         template <typename T>
-        primitive_argument_type diag0d(
-            ir::node_data<T>&& args, std::int64_t k) const;
-        template <typename T>
         primitive_argument_type diag1d(
             ir::node_data<T>&& args, std::int64_t k) const;
         template <typename T>
         primitive_argument_type diag2d(
             ir::node_data<T>&& args, std::int64_t k) const;
 
-        primitive_argument_type diag0d(
-            primitive_argument_type&& args, std::int64_t k) const;
         primitive_argument_type diag1d(
             primitive_argument_type&& args, std::int64_t k) const;
         primitive_argument_type diag2d(

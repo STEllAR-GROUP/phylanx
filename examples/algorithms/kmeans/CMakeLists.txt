@@ -5,6 +5,7 @@
 
 set(example_programs
     kmeans
+    kmeans_fix_points_3d
     kmeans_fix_points
    )
 

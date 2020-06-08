@@ -16,10 +16,12 @@
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/allocator_support/internal_allocator.hpp>
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/runtime.hpp>
 #include <hpx/serialization/serialization_fwd.hpp>
+
+#include <boost/utility/string_ref.hpp>
 
 #include <cstdint>
 #include <iosfwd>
@@ -904,7 +906,10 @@ namespace phylanx { namespace execution_tree
         annotation_ptr annotation_;
     };
 
-    // a argument is valid of its not nil{}
+    // specialize formatting of primitive_argument_types
+    void format_value(std::ostream& os, boost::string_ref spec,
+        primitive_argument_type const& value);
+
     inline bool valid(primitive_argument_type const& val) noexcept
     {
         return bool(val);

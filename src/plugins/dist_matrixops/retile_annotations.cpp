@@ -18,8 +18,9 @@
 #include <phylanx/util/detail/range_dimension.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 #include <phylanx/util/distributed_vector.hpp>
+#include <phylanx/util/index_calculation_helper.hpp>
 
-#include <hpx/assertion.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
@@ -221,45 +222,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             return tile_extraction_2d_helper(it, name, codename);
         }
 
-        ///////////////////////////////////////////////////////////////////////
-        struct indices_pack
-        {
-            std::int64_t intersection_size_;
-            std::int64_t projected_start_;
-            std::int64_t local_start_;
-        };
-
-        indices_pack index_calculation_1d(std::int64_t des_start,
-            std::int64_t des_stop, std::int64_t cur_start,
-            std::int64_t cur_stop)
-        {
-            std::int64_t local_intersection_size =
-                (std::min)(des_stop, cur_stop) -
-                (std::max)(des_start, cur_start);
-            std::int64_t rel_start = des_start - cur_start;
-
-            return indices_pack{local_intersection_size,
-                rel_start < 0 ? -rel_start : 0, rel_start > 0 ? rel_start : 0};
-        }
-
-        indices_pack retile_calculation_1d(
-            execution_tree::tiling_span const& loc_span,
-            std::int64_t des_start, std::int64_t des_stop)
-        {
-            execution_tree::tiling_span span(des_start, des_stop);
-            execution_tree::tiling_span intersection;
-            if (intersect(span, loc_span, intersection))
-            {
-                std::int64_t rel_loc_start =
-                    intersection.start_ - loc_span.start_;
-                HPX_ASSERT(rel_loc_start >= 0);
-                return indices_pack{intersection.size(),
-                    intersection.start_ - des_start, rel_loc_start};
-            }
-            return indices_pack{0, 0, 0};
-        }
-
-
     }    // namespace detail
 
     ///////////////////////////////////////////////////////////////////////////
@@ -351,7 +313,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             // copying the local part
             if (des_start < cur_stop && des_stop > cur_start)
             {
-                auto indices = detail::index_calculation_1d(
+                auto indices = util::index_calculation_1d(
                     des_start, des_stop, cur_start, cur_stop);
                 blaze::subvector(result, indices.projected_start_,
                     indices.intersection_size_) = blaze::subvector(v,
@@ -370,8 +332,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tiling_span loc_span =
                     arr_localities.tiles_[loc].spans_[span_index];
 
-                auto indices = detail::retile_calculation_1d(
-                    loc_span, des_start, des_stop);
+                auto indices =
+                    util::retile_calculation_1d(loc_span, des_start, des_stop);
                 if (indices.intersection_size_ > 0)
                 {
                     // loc_span has the part of result that we need
@@ -552,9 +514,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     des_row_stop > cur_row_start) &&
                 (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
             {
-                auto row_indices = detail::index_calculation_1d(
+                auto row_indices = util::index_calculation_1d(
                     des_row_start, des_row_stop, cur_row_start, cur_row_stop);
-                auto col_indices = detail::index_calculation_1d(
+                auto col_indices = util::index_calculation_1d(
                     des_col_start, des_col_stop, cur_col_start, cur_col_stop);
 
                 blaze::submatrix(result, row_indices.projected_start_,
@@ -577,9 +539,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tiling_span loc_row_span = arr_localities.tiles_[loc].spans_[0];
                 tiling_span loc_col_span = arr_localities.tiles_[loc].spans_[1];
 
-                auto row_indices = detail::retile_calculation_1d(
+                auto row_indices = util::retile_calculation_1d(
                     loc_row_span, des_row_start, des_row_stop);
-                auto col_indices = detail::retile_calculation_1d(
+                auto col_indices = util::retile_calculation_1d(
                     loc_col_span, des_col_start, des_col_stop);
                 if (row_indices.intersection_size_ > 0 &&
                     col_indices.intersection_size_ > 0)
