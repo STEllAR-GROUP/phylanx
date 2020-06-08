@@ -117,7 +117,7 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
                 t = int(abs(rnd()) * float(T))
                 while maxprob > 1e-10:
                     maxprob -= probs[t]
-                    t = ((t+1) % T)
+                    t = ( ( t + 1 ) % T )
 
                 z[n] = t
                 ztot[t] += 1.0
@@ -141,7 +141,7 @@ def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
     dfreq = sum(wdc, axis=1)
 
     for n in range(N):
-        z[n] = randint(0, T-1)
+        z[n] = randint(0, T - 1)
 
     k = 0
     for i in range(W):
