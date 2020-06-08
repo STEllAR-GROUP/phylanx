@@ -13,6 +13,7 @@
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/dist_matrixops/all_gather.hpp>
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/plugins/matrixops/concatenate.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
@@ -22,10 +23,12 @@
 
 
 #include <hpx/assertion.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/errors/throw_exception.hpp>
+#include <hpx/modules/collectives.hpp>
+
 
 
 #include <algorithm>
@@ -41,7 +44,7 @@
 namespace phylanx { namespace dist_matrixops { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const all_gather::match_data =
+    execution_tree::match_pattern_type const all_gather::match_data =
     {
         hpx::util::make_tuple("all_gather", std::vector<std::string>{R"(
                 all_gather_d(
@@ -73,115 +76,135 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     all_gather::all_gather(
-            execution_tree::primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+        execution_tree::primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    execution_tree::primitive_argument_type all_gather::all_gather2d(
-        ir::node_data<T>&& local_result, std::size_t numtiles,
-        std::size_t this_tile,
-        execution_tree::localities_information&& locs) const
-    {
-        using namespace execution_tree;
-        // use hpx::all_gather to get the whole vector of values
-        auto overall_result = hpx::all_to_all(
-            ("all_gather_" + locs.annotation_.name_).c_str(),
-            std::move(local_result), locs.locality_.num_localities_,
-            locs.annotation_.generation_,
-            locs.locality_.locality_id_)
-                .get();
+    namespace detail {
 
-        // row and column dimensions of the whole array 
-        std::size_t rows_dim, cols_dim;
-        rows_dim = locs.rows();
-        cols_dim = locs.columns();
-
-        // check the tiling type is column-tiling or row-tiling
-        tiling_information_2d tile_info(
-            locs.tiles_[loc_id], name_, codename_);
-
-        std::int64_t cur_row_size = tile_info.spans_[0].size();
-        std::int64_t cur_col_size = tile_info.spans_[1].size();
-
-        std::int64_t axis; // along with the array will be joined
-        if (cur_row_size == rows_dim)
+        template <typename T>
+        execution_tree::primitive_argument_type all_gather_to_2d_helper(
+            T value,
+            execution_tree::localities_information const& locs)
         {
-            // column-tiling
-            axis = 1;
+            using namespace execution_tree;
+            // use hpx::all_gather to get the whole vector of values
+            auto overall_result = hpx::all_to_all(
+                ("all_gather_" + locs.annotation_.name_).c_str(),
+                std::move(value), locs.locality_.num_localities_,
+                locs.annotation_.generation_,
+                locs.locality_.locality_id_)
+                    .get();
+
+            std::uint32_t const loc_id = locs.locality_.locality_id_;
+
+            // row and column dimensions of the whole array 
+            std::size_t rows_dim, cols_dim;
+            rows_dim = locs.rows();
+            cols_dim = locs.columns();
+
+            // check the tiling type is column-tiling or row-tiling
+            tiling_information_2d tile_info(
+                locs.tiles_[loc_id], name_, codename_);
+
+            std::int64_t cur_row_size = tile_info.spans_[0].size();
+            std::int64_t cur_col_size = tile_info.spans_[1].size();
+
+            std::int64_t axis; // along with the array will be joined
+            if (cur_row_size == rows_dim)
+            {
+                // column-tiling
+                axis = 1;
+            }
+            else if (cur_col_size == cols_dim)
+            {
+                // row-tiling
+                axis = 0;
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "all_gather::detail::all_gather_to_2d_helper",
+                        util::generate_error_message(
+                            "invalid tiling_type. The tiling_type can"
+                            "be `row` or `column`"));
+            }
+
+            //concatenate the vector of values according to the tiling-type
+            return execution_tree::primitives::concatenate::
+                concatenate2d_helper<T>(primitive_argument_type
+                {overall_result}, axis);
         }
-        else if (cur_col_size == cols_dim)
+        ///////////////////////////////////////////////////////////////////////////
+        execution_tree::primitive_argument_type all_gather_to_2d(
+            execution_tree::primitive_arguments_type&& local_result,
+            execution_tree::localities_information const& locs,
+            std::string const& name, std::string const& codename)
         {
-            // row-tiling
-            axis = 0;
-        }
-        else
-        {
+            using namespace execution_tree;
+
+            switch (extract_common_type(local_result))
+            {
+            case node_data_type_bool:
+                return detail::all_gather_to_2d_helper(
+                    extract_boolean_value_strict(std::move(local_result), name_,
+                    codename_), locs);
+
+            case node_data_type_int64:
+                return detail::all_gather_to_2d_helper(
+                    extract_integer_value_strict(std::move(local_result), name_,
+                    codename_), locs);
+
+            case node_data_type_unknown:
+                return detail::all_gather_to_2d_helper(
+                    extract_numeric_value(std::move(local_result), name_,
+                    codename_), locs);
+
+            case node_data_type_double:
+                return detail::all_gather_to_2d_helper(
+                    extract_numeric_value_strict(std::move(local_result), name_,
+                    codename_), locs);
+
+            default:
+                break;
+            }
+
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "all_gather::all_gather2d",
-                    util::generate_error_message(
-                        "invalid tiling_type. The tiling_type can"
-                        "be `row` or `column`"));
+                "all_gather::detail::all_gather_to_2d",
+                util::generate_error_message(
+                    "the primitive requires for all arguments to "
+                    "be numeric data types"));
         }
 
-        //concatenate the vector of values according to the tiling-type
-        return concatenate::concatenate2d_helper(primitive_argument_type
-            {ir::node_data<T>{std::move(local_result)}}, std::move(axis));
-    }
+    }// namespace detail
+
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type all_gather::all_gather2d(
-        execution_tree::primitive_arguments_type&& local_result,
-        std::size_t numtiles, std::size_t this_tile) const
+        execution_tree::primitive_arguments_type&& args) const
     {
         using namespace execution_tree;
 
-        execution_tree::localities_information locs =
-            extract_localities_information(local_result, name_, codename_);
+        localities_information locs =
+            extract_localities_information(args[0], name_, codename_);
 
         std::size_t ndim = locs.num_dimensions();
-        if (!(ndim == 2 || ndim == 1))
+        if (ndim > 2 || ndim < 1))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "all_gather::all_gather2d",
-                util::generate_error_message(
+                generate_error_message(
                     "the operand has incompatible dimensionalities"));
         }
 
-        switch (extract_common_type(local_result)
-        {
-        case node_data_type_bool:
-            return all_gather2d(
-                extract_boolean_value_strict(std::move(local_result), name_,
-                codename_), numtiles, this_tile, std::move(arr_localities));
+        primitive_argument_type local_result;
 
-        case node_data_type_int64:
-            return all_gather2d(
-                extract_integer_value_strict(std::move(local_result), name_,
-                codename_), numtiles, this_tile, std::move(arr_localities));
+        return detail::all_gather_to_2d(std::move(local_result), locs,
+        name_, codename_);
 
-        case node_data_type_unknown:
-            return all_gather2d(
-                extract_numeric_value(std::move(local_result), name_,
-                codename_), numtiles, this_tile, std::move(arr_localities));
-
-        case node_data_type_double:
-            return all_gather2d(
-                extract_numeric_value_strict(std::move(local_result), name_,
-                codename_), numtiles, this_tile, std::move(arr_localities));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::primitives::"
-            "all_gather::all_gather2d",
-            util::generate_error_message(
-                "the primitive requires for all arguments to "
-                "be numeric data types"));
     }
+
     ///////////////////////////////////////////////////////////////////////////
 
     hpx::future<execution_tree::primitive_argument_type> all_gather::eval(
@@ -200,7 +223,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         if (!valid(operands[0]))
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter, "all_gather::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "all_gather::eval",
                 generate_error_message(
                     "the all_gather primitive requires the first argument"
                     "given by the operands array is valid"));
@@ -216,7 +240,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     {
                         using namespace execution_tree;
 
-                        std::size_t numtiles =
+                        std::uint32_t numtiles =
                             hpx::get_num_localities(hpx::launch::sync);
                         if (valid(args[1]))
                         {
@@ -226,7 +250,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 this_->codename_);
                         }
 
-                        std::size_t this_tile = hpx::get_locality_id();
+                        std::uint32_t this_tile = hpx::get_locality_id();
                         if (valid(args[2]))
                         {
                             this_tile =
@@ -253,8 +277,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 HPX_FALLTHROUGH;
 
                             case 2:
-                                return this_->all_gather2d(std::move(args[0]),
-                                numtiles, this_tile);
+                                return this_->all_gather2d(std::move(args));
 
                             default:
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,

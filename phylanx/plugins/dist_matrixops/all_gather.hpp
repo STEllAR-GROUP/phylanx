@@ -15,8 +15,12 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/futures/future.hpp>
-#include <hpx/lcos/future.hpp>
+#include <hpx/assertion.hpp>
+#include <hpx/errors/throw_exception.hpp>
+#include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/modules/collectives.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -47,15 +51,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             execution_tree::eval_context ctx) const override;
     private:
 
-        template <typename T>
-        execution_tree::primitive_argument_type all_gather::all_gather2d(
-            ir::node_data<T>&& local_result, std::size_t numtiles,
-            std::size_t this_tile,
-            execution_tree::localities_information&& locs) const;
 
-        execution_tree::primitive_argument_type all_gather::all_gather2d(
-            execution_tree::primitive_arguments_type&& local_result,
-            std::size_t numtiles, std::size_t this_tile) const;
+        execution_tree::primitive_argument_type all_gather2d(
+            execution_tree::primitive_arguments_type&& args) const
     };
 
     inline execution_tree::primitive create_all_gather(
