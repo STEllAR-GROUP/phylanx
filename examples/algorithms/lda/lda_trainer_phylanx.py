@@ -64,7 +64,7 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
                 t = int(abs(rnd()) * float(T))
                 while maxprob > 1e-10:
                     maxprob -= probs[t]
-                    t = ( ( t + 1 ) % T )
+                    t = ((t + 1) % T)
 
                 z[n] = t
                 ztot[t] += 1.0
