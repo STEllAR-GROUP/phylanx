@@ -37,7 +37,7 @@
 /////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives {
 
-class lda_trainer {
+class lda_trainer_impl {
 
     private:
 
@@ -45,7 +45,7 @@ class lda_trainer {
 
     public:
 
-    lda_trainer(const double alpha_=0.1, const double beta_=0.01) :
+    lda_trainer_impl(const double alpha_=0.1, const double beta_=0.01) :
         alpha(alpha_), beta(beta_) {
     }
 
@@ -68,6 +68,6 @@ class lda_trainer {
         const std::int64_t iter=500);
 };
 
-} } } } // end namespaces
+} } } // end namespaces
 
 #endif

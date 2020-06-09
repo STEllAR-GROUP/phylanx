@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-#include "impl/lda_trainer.hpp"
+#include "lda_trainer.hpp"
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {

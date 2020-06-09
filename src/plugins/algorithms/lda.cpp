@@ -148,7 +148,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto word_doc_mat = arg5.matrix();
 
         using lda_trainer_t =
-            phylanx::execution_tree::primitives::impl::lda_trainer;
+            phylanx::execution_tree::primitives::lda_trainer_impl;
 
         lda_trainer_t trainer(alpha, beta);
 
