@@ -85,9 +85,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     namespace detail {
 
         template <typename T>
-        execution_tree::primitive_argument_type all_gather_to_2d_helper(
+        execution_tree::primitive_argument_type all_gather2d_helper_array(
             T value,
-            execution_tree::localities_information const& locs)
+            execution_tree::localities_information const& locs,
+            std::string const& name, std::string const& codename)
         {
             using namespace execution_tree;
             // use hpx::all_gather to get the whole vector of values
@@ -107,7 +108,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
             // check the tiling type is column-tiling or row-tiling
             tiling_information_2d tile_info(
-                locs.tiles_[loc_id], name_, codename_);
+                locs.tiles_[loc_id], name, codename);
 
             std::int64_t cur_row_size = tile_info.spans_[0].size();
             std::int64_t cur_col_size = tile_info.spans_[1].size();
@@ -126,10 +127,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             else
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "all_gather::detail::all_gather_to_2d_helper",
+                        "all_gather::detail::all_gather2d_helper_array",
                         util::generate_error_message(
                             "invalid tiling_type. The tiling_type can"
-                            "be `row` or `column`"));
+                            "be `row` or `column`", name, codename));
             }
 
             //concatenate the vector of values according to the tiling-type
@@ -138,44 +139,45 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 {overall_result}, axis);
         }
         ///////////////////////////////////////////////////////////////////////////
-        execution_tree::primitive_argument_type all_gather_to_2d(
-            execution_tree::primitive_arguments_type&& local_result,
+        execution_tree::primitive_argument_type all_gather2d_helper(
+            execution_tree::primitive_arguments_type&& local_value,
             execution_tree::localities_information const& locs,
             std::string const& name, std::string const& codename)
         {
             using namespace execution_tree;
 
-            switch (extract_common_type(local_result))
+            switch (extract_common_type(local_value))
             {
             case node_data_type_bool:
-                return detail::all_gather_to_2d_helper(
-                    extract_boolean_value_strict(std::move(local_result), name_,
-                    codename_), locs);
+                return detail::all_gather2d_helper_array(
+                    extract_boolean_value_strict(std::move(local_value), name,
+                    codename), locs, name, codename);
 
             case node_data_type_int64:
-                return detail::all_gather_to_2d_helper(
-                    extract_integer_value_strict(std::move(local_result), name_,
-                    codename_), locs);
+                return detail::all_gather2d_helper_array(
+                    extract_integer_value_strict(std::move(local_value), name,
+                    codename), locs, name, codename);
 
             case node_data_type_unknown:
-                return detail::all_gather_to_2d_helper(
-                    extract_numeric_value(std::move(local_result), name_,
-                    codename_), locs);
+                return detail::all_gather2d_helper_array(
+                    extract_numeric_value(std::move(local_value), name,
+                    codename), locs, name, codename);
 
             case node_data_type_double:
-                return detail::all_gather_to_2d_helper(
-                    extract_numeric_value_strict(std::move(local_result), name_,
-                    codename_), locs);
+                return detail::all_gather2d_helper_array(
+                    extract_numeric_value_strict(std::move(local_value), name,
+                    codename), locs, name, codename);
 
             default:
                 break;
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "all_gather::detail::all_gather_to_2d",
+                "all_gather::detail::all_gather2d_helper",
                 util::generate_error_message(
-                    "the primitive requires for all arguments to "
-                    "be numeric data types"));
+                    "the primitive requires for all arguments to"
+                    "be numeric data types",
+                    name, codename));
         }
 
     }// namespace detail
@@ -186,7 +188,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {
         using namespace execution_tree;
 
-        localities_information locs =
+        execution_tree::localities_information locs =
             extract_localities_information(args[0], name_, codename_);
 
         std::size_t ndim = locs.num_dimensions();
@@ -198,10 +200,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "the operand has incompatible dimensionalities"));
         }
 
-        primitive_argument_type local_result;
-
-        return detail::all_gather_to_2d(std::move(local_result), locs,
-        name_, codename_);
+        return detail::all_gather2d_helper(std::move(args[0]),
+            locs, name_, codename_);
 
     }
 
