@@ -90,14 +90,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto beta = arg3.scalar();
 
         auto arg4 = extract_scalar_integer_value(args[3], name_, codename_);
-        if (arg2.num_dimensions() != 0)
+        if (arg4.num_dimensions() != 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lda_trainer::eval",
                 generate_error_message(
                     "the lda_trainer algorithm primitive requires for the second "
                     "argument ('iters') to represent a scalar"));
         }
-        auto iterations = arg3.scalar();
+        auto iterations = arg4.scalar();
 
 
         // this is the word-count matrix

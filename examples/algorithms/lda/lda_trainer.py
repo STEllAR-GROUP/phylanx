@@ -13,38 +13,8 @@
 
 
 from random import randint, random as rnd
-from numpy import zeros, ones, sum
-
-
-# https://stackoverflow.com/questions/7287014/is-there-any-drand48-equivalent-in-python-or-a-wrapper-to-it/7287046#7287046
-#
-'''
-class Rand48(object):
-    def __init__(self, seed):
-        self.n = seed
-
-    def seed(self, seed):
-        self.n = seed
-
-    def srand(self, seed):
-        self.n = (seed << 16) + 0x330e
-
-    def next(self):
-        self.n = (25214903917 * self.n + 11) & (2**48 - 1)
-        return self.n
-
-    def drand(self):
-        return self.next() / 2**48
-
-    def lrand(self):
-        return self.next() >> 17
-
-    def mrand(self):
-        n = self.next() >> 16
-        if n & (1 << 31):
-            n -= 1 << 32
-        return n
-'''
+from numpy import zeros, ones
+import numpy as np
 
 
 def gibbs(wdc, a, b, z, wp, dp, ztot):
@@ -72,7 +42,9 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
             if wdf < 1.0:
                 continue
 
+            F = 0
             for f in range(int(wdf)):
+                F += f
                 t = int(z[n])
                 ztot[t] -= 1.0
                 wp[w, t] -= 1.0
@@ -82,32 +54,6 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
                 rhs[:] = dp[d, :] + a
                 zprob[:] = ztot[:] + wbeta
                 probs[:] = lhs * (rhs / zprob)
-
-                # algorithmic flaw, tends to oversample
-                # from a single topic
-                #
-                '''
-                maxprob = sum( probs ) * abs(drand.drand())
-                #maxprob = 2.0 * max( probs ) * abs(drand.drand())
-                curprobs = probs[0];
-
-                t = 0
-                while maxprob > curprobs:
-                    t = ((t + 1) % T)
-                    curprobs += probs[t]
-                '''
-
-                # inspired by: https://www.youtube.com/watch?v=aHLslaWO-AQ
-                #
-                '''
-                maxprob = max( probs ) * abs(drand.drand()) * 2.0
-                curprobs = 0.0
-
-                t = 0
-                while maxprob > curprobs:
-                    curprobs += probs[t]
-                    t = ((t + 1) % T)
-                '''
 
                 # inspired by: https://www.youtube.com/watch?v=aHLslaWO-AQ
                 #
@@ -131,23 +77,26 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
 def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
     alpha, beta = a, b
     D, W = wdc.shape[0], wdc.shape[1]
-    N = int(sum(wdc))
+    N = int(np.sum(wdc))
 
     z = zeros(N)
     wp = zeros((W, T))
     dp = zeros((D, T))
 
-    wfreq = sum(wdc, axis=0)
-    dfreq = sum(wdc, axis=1)
+    wfreq = np.sum(wdc, axis=0)
+    dfreq = np.sum(wdc, axis=1)
 
     for n in range(N):
         z[n] = randint(0, T - 1)
 
     k = 0
     for i in range(W):
-        for j in range(int(wfreq[i])):
+        I = int(wfreq[i])
+        J = 0
+        for j in range(I):
             wp[i, int(z[k])] += 1.0
             k += 1
+            J += j
 
     k = 0
     for i in range(D):
@@ -160,15 +109,13 @@ def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
 
     for i in range(iters):
         wp0[:, :] = wp[:, :]
-        ztot0[:] = sum(wp, 0)
+        ztot0[:] = np.sum(wp, 0)
         res = gibbs(wdc, alpha, beta, z, wp, dp, ztot0)
         z[:] = res[0]
         ztot0[:] = res[1]
         wp[:] = res[2]
         dp[:] = res[3]
         wp[:, :] = wp0 + (wp - wp0)
-        # print loop counter
-        # print(i)
 
     return (wp, dp, z)
 

@@ -13,8 +13,8 @@
 
 
 from random import randint, random as rnd
-from numpy import zeros, ones, sum
-import phylanx
+from numpy import zeros, ones
+import numpy as np
 from phylanx import Phylanx
 from phylanx import *
 from phylanx.ast import *
@@ -45,7 +45,9 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
             if wdf < 1.0:
                 continue
 
+            F = 0
             for f in range(int(wdf)):
+                F += f
                 t = int(z[n])
                 ztot[t] -= 1.0
                 wp[w, t] -= 1.0
@@ -79,21 +81,22 @@ def gibbs(wdc, a, b, z, wp, dp, ztot):
 def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
     alpha, beta = a, b
     D, W = wdc.shape[0], wdc.shape[1]
-    N = int(sum(wdc))
+    N = int(np.sum(wdc))
 
     z = zeros(N)
     wp = zeros((W, T))
     dp = zeros((D, T))
 
-    wfreq = sum(wdc, axis=0)
-    dfreq = sum(wdc, axis=1)
+    wfreq = np.sum(wdc, axis=0)
+    dfreq = np.sum(wdc, axis=1)
 
     for n in range(N):
         z[n] = randint(0, T - 1)
 
     k = 0
     for i in range(W):
-        for j in range(int(wfreq[i])):
+        I = int(wfreq[i])
+        for j in range(I):
             wp[i, int(z[k])] += 1.0
             k += 1
 
@@ -108,7 +111,7 @@ def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
 
     for i in range(iters):
         wp0 = wp
-        ztot0[:] = sum(wp, 0)
+        ztot0[:] = np.sum(wp, 0)
         res = gibbs(wdc, alpha, beta, z, wp, dp, ztot0)
         z = res[0]
         ztot0 = res[1]
