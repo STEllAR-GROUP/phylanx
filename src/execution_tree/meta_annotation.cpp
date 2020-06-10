@@ -24,9 +24,6 @@
 #include <utility>
 #include <vector>
 
-HPX_REGISTER_ALLTOALL(
-    phylanx::execution_tree::annotation, meta_annotation_all_to_all);
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {
@@ -95,7 +92,7 @@ namespace phylanx { namespace execution_tree
             extract_locality_information(locality_ann, name, codename);
 
         hpx::future<std::vector<annotation>> f =
-            hpx::all_to_all(("all_to_all_" + ann_name).c_str(), std::move(ann),
+            hpx::all_gather(("all_gather_" + ann_name).c_str(), std::move(ann),
                 locality_info.num_localities_, std::size_t(-1),
                 locality_info.locality_id_);
 
