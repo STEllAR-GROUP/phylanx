@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/testing.hpp>
 
@@ -36,7 +37,7 @@ void test_argmin_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    HPX_TEST_EQ(result, comparison);
+    HPX_TEST_EQ(hpx::cout, result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,7 +207,8 @@ void test_argmin_d_2d_2()
             argmin_d(annotate_d([[4, 1, 2, 4], [1, 2, 3, 4]], "array2d_2",
                 list("tile", list("columns", 0, 4), list("rows", 0, 2))), 1)
         )", R"(
-            annotate_d([1, 0], "array2d_2/1", list("columns", 0, 2))
+            annotate_d([1, 0], "array2d_2/1",
+                list("tile", list("columns", 0, 2)))
         )");
     }
     else
@@ -215,7 +217,7 @@ void test_argmin_d_2d_2()
             argmin_d(annotate_d([[0, 3, 2, 0]], "array2d_2",
                 list("tile", list("columns", 0, 4), list("rows", 2, 3))), 1)
         )", R"(
-            annotate_d([0], "array2d_2/1", list("columns", 2, 3))
+            annotate_d([0], "array2d_2/1", list("tile", list("columns", 2, 3)))
         )");
     }
 }
@@ -246,7 +248,8 @@ void test_argmin_d_2d_4()
             argmin_d(annotate_d([[2, 3, 4], [0, 0, 5], [5, 2, 3]], "array2d_4",
                 list("tile", list("columns", 1, 4), list("rows", 0, 3))), 0)
         )", R"(
-            annotate_d([1, 1, 2], "array2d_4/1", list("columns", 1, 4))
+            annotate_d([1, 1, 2], "array2d_4/1",
+                list("tile", list("columns", 1, 4)))
         )");
     }
     else
@@ -255,7 +258,7 @@ void test_argmin_d_2d_4()
             argmin_d(annotate_d([[1], [1], [0]], "array2d_4",
                 list("tile", list("columns", 0, 1), list("rows", 0, 3))), 0)
         )", R"(
-            annotate_d([2], "array2d_4/1", list("columns", 0, 1))
+            annotate_d([2], "array2d_4/1", list("tile", list("columns", 0, 1)))
         )");
     }
 }
@@ -278,6 +281,29 @@ void test_argmin_d_2d_5()
     }
 }
 
+void test_argmin_d_2d_6()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_6", R"(
+            argmin_d(annotate_d([[2, 3, 4], [0, 0, 5], [5, 2, 3]], "array2d_6",
+                list("tile", list("columns", 0, 3), list("rows", 0, 3))), 0)
+        )", R"(
+            annotate_d([1, 1, 2], "array2d_6/1",
+                list("tile", list("columns", 0, 3)))
+        )");
+    }
+    else
+    {
+        test_argmin_d_operation("test_argmin_d_2loc2d_6", R"(
+            argmin_d(annotate_d([[]], "array2d_6",
+                list("tile", list("columns", 0, 0), list("rows", 0, 0))), 0)
+        )", R"(
+            annotate_d([], "array2d_6/1", list("tile", list("columns", 0, 0)))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -289,11 +315,12 @@ int hpx_main(int argc, char* argv[])
     test_argmin_d_1d_5();
 
     test_argmin_d_2d_0();
-    //test_argmin_d_2d_1();
-    //test_argmin_d_2d_2();
+    test_argmin_d_2d_1();
+    test_argmin_d_2d_2();
     test_argmin_d_2d_3();
-    //test_argmin_d_2d_4();
-    //test_argmin_d_2d_5();
+    test_argmin_d_2d_4();
+    test_argmin_d_2d_5();
+    test_argmin_d_2d_6();
 
     hpx::finalize();
     return hpx::util::report_errors();

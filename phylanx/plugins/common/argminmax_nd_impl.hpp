@@ -250,7 +250,7 @@ namespace phylanx { namespace common {
             }
 
             return execution_tree::primitive_argument_type(
-                std::int64_t(global_index));
+                static_cast<std::int64_t>(global_index));
         }
 
         template <typename Operation, typename T>
@@ -260,18 +260,37 @@ namespace phylanx { namespace common {
             std::string const& name, std::string const& codename)
         {
             auto a = arg.matrix();
+            std::size_t columns = a.columns();
 
             using phylanx::util::matrix_column_iterator;
             matrix_column_iterator<decltype(a)> a_begin(a);
-            matrix_column_iterator<decltype(a)> a_end(a, a.columns());
+            matrix_column_iterator<decltype(a)> a_end(a, columns);
 
-            blaze::DynamicVector<std::int64_t> result(a.columns());
+            blaze::DynamicVector<std::int64_t> result(columns);
             auto result_it = result.begin();
-            for (auto it = a_begin; it != a_end; ++it, ++result_it)
+
+            if (value != nullptr)
             {
-                auto local_minmax = Operation{}(it->begin(), it->end());
-                *result_it = std::distance(it->begin(), local_minmax);
+                blaze::DynamicVector<T> local_value(columns);
+                std::size_t i = 0;
+                for (auto it = a_begin; it != a_end; ++it, ++result_it, ++i)
+                {
+                    auto local_minmax = Operation{}(it->begin(), it->end());
+                    local_value[i] = *local_minmax;
+                    *result_it = std::distance(it->begin(), local_minmax);
+                }
+                *value = execution_tree::primitive_argument_type(
+                    std::move(local_value));
             }
+            else
+            {
+                for (auto it = a_begin; it != a_end; ++it, ++result_it)
+                {
+                    auto local_minmax = Operation{}(it->begin(), it->end());
+                    *result_it = std::distance(it->begin(), local_minmax);
+                }
+            }
+
             return execution_tree::primitive_argument_type{std::move(result)};
         }
 
@@ -282,18 +301,37 @@ namespace phylanx { namespace common {
             std::string const& name, std::string const& codename)
         {
             auto a = arg.matrix();
+            std::size_t rows = a.rows();
 
             using phylanx::util::matrix_row_iterator;
             matrix_row_iterator<decltype(a)> a_begin(a);
-            matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+            matrix_row_iterator<decltype(a)> a_end(a, rows);
 
-            blaze::DynamicVector<std::int64_t> result(a.rows());
+            blaze::DynamicVector<std::int64_t> result(rows);
             auto result_it = result.begin();
-            for (auto it = a_begin; it != a_end; ++it, ++result_it)
+
+            if (value != nullptr)
             {
-                auto local_minmax = Operation{}(it->begin(), it->end());
-                *result_it = std::distance(it->begin(), local_minmax);
+                blaze::DynamicVector<T> local_value(rows);
+                std::size_t i = 0;
+                for (auto it = a_begin; it != a_end; ++it, ++result_it, ++i)
+                {
+                    auto local_minmax = Operation{}(it->begin(), it->end());
+                    local_value[i] = *local_minmax;
+                    *result_it = std::distance(it->begin(), local_minmax);
+                }
+                *value = execution_tree::primitive_argument_type(
+                    std::move(local_value));
             }
+            else
+            {
+                for (auto it = a_begin; it != a_end; ++it, ++result_it)
+                {
+                    auto local_minmax = Operation{}(it->begin(), it->end());
+                    *result_it = std::distance(it->begin(), local_minmax);
+                }
+            }
+
             return execution_tree::primitive_argument_type{std::move(result)};
         }
 
@@ -369,7 +407,7 @@ namespace phylanx { namespace common {
         std::size_t numargs = args.size();
         if (numargs == 2)
         {
-            axis = execution_tree::extract_scalar_integer_value(
+            axis = execution_tree::extract_scalar_integer_value_strict(
                 std::move(args[1]), name, codename);
         }
 

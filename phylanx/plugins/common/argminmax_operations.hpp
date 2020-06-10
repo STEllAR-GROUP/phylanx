@@ -35,7 +35,7 @@ namespace phylanx { namespace common {
 
         static constexpr std::int64_t index_initial()
         {
-            return 0;
+            return (std::numeric_limits<std::int64_t>::max)();
         }
 
         template <typename T, typename Comp = std::less<>>
@@ -45,8 +45,8 @@ namespace phylanx { namespace common {
         }
 
         template <typename T, typename Comp = std::less<>>
-        static bool index_compare(std::pair<T, std::size_t> const& lhs,
-            std::pair<T, std::size_t> const& rhs, Comp comp = Comp{})
+        static bool index_compare(std::pair<T, std::int64_t> const& lhs,
+            std::pair<T, std::int64_t> const& rhs, Comp comp = Comp{})
         {
             if (comp(rhs.first, lhs.first))
             {
@@ -88,8 +88,8 @@ namespace phylanx { namespace common {
         }
 
         template <typename T, typename Comp = std::less<>>
-        static bool index_compare(std::pair<T, std::size_t> const& lhs,
-            std::pair<T, std::size_t> const& rhs, Comp comp = Comp{})
+        static bool index_compare(std::pair<T, std::int64_t> const& lhs,
+            std::pair<T, std::int64_t> const& rhs, Comp comp = Comp{})
         {
             if (comp(lhs.first, rhs.first))
             {
