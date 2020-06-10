@@ -24,6 +24,10 @@
 #include <utility>
 #include <vector>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> change hpx::all_to_all to hpx::all_gather; correcting meta_annotation
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {

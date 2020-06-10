@@ -51,8 +51,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             execution_tree::eval_context ctx) const override;
     private:
 
+        template <typename T>
         execution_tree::primitive_argument_type all_gather2d(
-            execution_tree::primitive_arguments_type&& args) const;
+            ir::node_data<T>&& arr,
+        execution_tree::localities_information&& locs) const;
+
+        execution_tree::primitive_argument_type all_gather2d(
+            execution_tree::primitive_argument_type&& arr) const;
     };
 
     inline execution_tree::primitive create_all_gather(
