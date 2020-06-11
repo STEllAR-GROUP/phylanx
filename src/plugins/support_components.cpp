@@ -26,22 +26,3 @@ REGISTER_DISTRIBUTED_MATRIX(double);
 REGISTER_DISTRIBUTED_MATRIX(std_int64_t);
 REGISTER_DISTRIBUTED_MATRIX(std_uint8_t);
 
-HPX_REGISTER_ALLREDUCE(double);
-HPX_REGISTER_ALLREDUCE(std_int64_t);
-HPX_REGISTER_ALLREDUCE(std_uint8_t);
-
-using blaze_vector_double = blaze::DynamicVector<double>;
-using blaze_vector_std_int64_t = blaze::DynamicVector<std::int64_t>;
-using blaze_vector_std_uint8_t = blaze::DynamicVector<std::uint8_t>;
-
-HPX_REGISTER_ALLREDUCE(blaze_vector_double);
-HPX_REGISTER_ALLREDUCE(blaze_vector_std_int64_t);
-HPX_REGISTER_ALLREDUCE(blaze_vector_std_uint8_t);
-
-using blaze_matrix_double =      blaze::DynamicMatrix<double>;
-using blaze_matrix_std_int64_t = blaze::DynamicMatrix<std::int64_t>;
-using blaze_matrix_std_uint8_t = blaze::DynamicMatrix<std::uint8_t>;
-
-HPX_REGISTER_ALLREDUCE(blaze_matrix_double);
-HPX_REGISTER_ALLREDUCE(blaze_matrix_std_int64_t);
-HPX_REGISTER_ALLREDUCE(blaze_matrix_std_uint8_t);
