@@ -50,6 +50,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             execution_tree::primitive_arguments_type const& args,
             execution_tree::eval_context ctx) const override;
     private:
+        template <typename T>
+        execution_tree::primitive_argument_type concatenate2d_axis0(
+            execution_tree::primitive_arguments_type&& args) const;
+
+        template <typename T>
+        execution_tree::primitive_argument_type concatenate2d_axis1(
+            execution_tree::primitive_arguments_type&& args) const;
+
+        template <typename T>
+        execution_tree::primitive_argument_type concatenate2d(
+            execution_tree::primitive_arguments_type&& args,
+            std::int64_t axis) const;
 
         template <typename T>
         execution_tree::primitive_argument_type all_gather2d(

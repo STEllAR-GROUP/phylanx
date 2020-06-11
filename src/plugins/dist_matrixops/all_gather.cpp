@@ -1,4 +1,4 @@
-//  Copyright (c) 2019 Shahrzad Shirzad
+// Copyright (c) 2019 Shahrzad Shirzad
 // Copyright (c) 2020 Hartmut Kaiser
 // Copyright (c) 2020 Nanmiao Wu
 //
@@ -22,7 +22,7 @@
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/index_calculation_helper.hpp>
 
-
+#include <hpx/allocator_support/internal_allocator.hpp>
 #include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
@@ -58,8 +58,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             local_result
             Args:
 
-                local_result (array) : a distributed array. A scalar, vector,
-                    or matrix.
+                local_result (array) : a distributed array. A vector or matrix.
 
             Returns:
 
@@ -76,117 +75,91 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
 
-        template <typename T>
-        execution_tree::primitive_argument_type concatenate2d_axis0(
-            execution_tree::primitive_arguments_type&& args,
-            std::string const& name, std::string const& codename)
+    template <typename T>
+    execution_tree::primitive_argument_type all_gather::concatenate2d_axis0(
+        execution_tree::primitive_arguments_type&& args) const
+    {
+        // how many arrays in this vector
+        std::size_t args_size = args.size();
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
+            extract_numeric_value_dimensions(args[0], name_, codename_);
+        std::size_t total_rows = 0;
+        for (std::size_t i = 0; i != args_size; ++i)
         {
-            // how many arrays in this vector
-            std::size_t args_size = args.size();
-
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
-                extract_numeric_value_dimensions(args[0], name, codename);
-            std::size_t total_rows = 0;
-
-            for (std::size_t i = 0; i != args_size; ++i)
-            {
-
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
-                    extract_numeric_value_dimensions(args[i], name, codename);
-
-                total_rows += dim[0];
-                prevdim = dim;
-            }
-
-            blaze::DynamicMatrix<T> result(total_rows, prevdim[1]);
-
-            std::size_t step = 0;
-            for (auto&& arg : args)
-            {
-                auto&& val = execution_tree::extract_node_data
-                    <T>(std::move(arg));
-
-                std::size_t num_rows = val.dimension(0);
-                for (std::size_t j = 0; j != num_rows; ++j)
-                {
-                    blaze::row(result, j + step) = blaze::row(val.matrix(), j);
-                }
-
-                step += num_rows;
-            }
-
-            return execution_tree::primitive_argument_type{
-                ir::node_data<T>{std::move(result)}};
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
+                extract_numeric_value_dimensions(args[i], name_, codename_);
+            total_rows += dim[0];
+            prevdim = dim;
         }
-
-        template <typename T>
-        execution_tree::primitive_argument_type concatenate2d_axis1(
-            execution_tree::primitive_arguments_type&& args,
-            std::string const& name, std::string const& codename)
+        blaze::DynamicMatrix<T> result(total_rows, prevdim[1]);
+        std::size_t step = 0;
+        for (auto&& arg : args)
         {
-            std::size_t args_size = args.size();
-
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
-                extract_numeric_value_dimensions(args[0], name, codename);
-            std::size_t total_cols = 0;
-
-            for (std::size_t i = 0; i != args_size; ++i)
+            auto&& val = execution_tree::extract_node_data
+                <T>(std::move(arg));
+            std::size_t num_rows = val.dimension(0);
+            for (std::size_t j = 0; j != num_rows; ++j)
             {
-
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
-                    extract_numeric_value_dimensions(args[i], name, codename);
-
-                total_cols += dim[1];
-                prevdim = dim;
+                blaze::row(result, j + step) = blaze::row(val.matrix(), j);
             }
-
-            blaze::DynamicMatrix<T> result(prevdim[0], total_cols);
-
-            std::size_t step = 0;
-            for (auto&& arg : args)
-            {
-                auto&& val = execution_tree::extract_node_data
-                    <T>(std::move(arg));
-
-                std::size_t num_cols = val.dimension(1);
-                for (std::size_t j = 0; j != num_cols; ++j)
-                {
-                    blaze::column(result, j + step) =
-                        blaze::column(val.matrix(), j);
-                }
-
-                step += num_cols;
-            }
-
-            return execution_tree::primitive_argument_type{
-                ir::node_data<T>{std::move(result)}};
+            step += num_rows;
         }
-
-        template <typename T>
-        execution_tree::primitive_argument_type concatenate2d(
-            execution_tree::primitive_arguments_type&& args, std::int64_t axis,
-            std::string const& name, std::string const& codename)
+        return execution_tree::primitive_argument_type{
+            ir::node_data<T>{std::move(result)}};
+    }
+    template <typename T>
+    execution_tree::primitive_argument_type all_gather::concatenate2d_axis1(
+        execution_tree::primitive_arguments_type&& args) const
+    {
+        std::size_t args_size = args.size();
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
+            extract_numeric_value_dimensions(args[0], name_, codename_);
+        std::size_t total_cols = 0;
+        for (std::size_t i = 0; i != args_size; ++i)
         {
-            switch (axis)
-            {
-            case 0:
-                return concatenate2d_axis0<T>(std::move(args));
-
-            case 1:
-                return concatenate2d_axis1<T>(std::move(args));
-
-            default:
-                break;
-            }
-
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "all_gather::detail::concatenate2d",
-                util::generate_error_message(
-                    "axis is out of bounds of dimension"));
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
+                extract_numeric_value_dimensions(args[i], name_, codename_);
+            total_cols += dim[1];
+            prevdim = dim;
         }
-    }    // namespace detail
+        blaze::DynamicMatrix<T> result(prevdim[0], total_cols);
+        std::size_t step = 0;
+        for (auto&& arg : args)
+        {
+            auto&& val = execution_tree::extract_node_data
+                <T>(std::move(arg));
+            std::size_t num_cols = val.dimension(1);
+            for (std::size_t j = 0; j != num_cols; ++j)
+            {
+                blaze::column(result, j + step) =
+                    blaze::column(val.matrix(), j);
+            }
+            step += num_cols;
+        }
+        return execution_tree::primitive_argument_type{
+            ir::node_data<T>{std::move(result)}};
+    }
+    template <typename T>
+    execution_tree::primitive_argument_type all_gather::concatenate2d(
+        execution_tree::primitive_arguments_type&& args,
+        std::int64_t axis) const
+    {
+        switch (axis)
+        {
+        case 0:
+            return concatenate2d_axis0<T>(std::move(args));
+        case 1:
+            return concatenate2d_axis1<T>(std::move(args));
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "all_gather::detail::concatenate2d",
+            generate_error_message(
+                "axis is out of bounds of dimension"));
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -199,7 +172,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         blaze::DynamicMatrix<T> res_value(m.rows(), m.columns());
         res_value = m;
         // use hpx::all_gather to get a vector of values
-        auto overall_result = hpx::all_gather(
+        auto p = hpx::all_gather(
             ("all_gather_" + locs.annotation_.name_).c_str(),
             res_value, locs.locality_.num_localities_,
             std::size_t(-1),
@@ -232,8 +205,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "be `row` or `column`"));
         }
 
-        return detail::concatenate2d<T>(primitive_arguments_type
-            {std::move(overall_result)}, axis, name_, codename_);
+        // the type of p should be std::vector< ir::node_data<T> > (?)
+        // how to pass p as primitive_arguments_type (?)
+
+        return all_gather::concatenate2d<T>(primitive_arguments_type
+            {ir::node_data<T>{std::move(p)}}, axis);
     }
 
     ///////////////////////////////////////////////////////////////////////////
