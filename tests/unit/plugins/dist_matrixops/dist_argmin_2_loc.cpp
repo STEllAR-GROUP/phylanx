@@ -10,7 +10,7 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <string>
 #include <utility>
@@ -131,7 +131,7 @@ void test_argmin_d_1d_4()
     if (hpx::get_locality_id() == 0)
     {
         test_argmin_d_operation("test_argmin_d_2loc1d_4", R"(
-            argmin_d(annotate_d([], "array_4",
+            argmin_d(annotate_d(astype([], "int"), "array_4",
                 list("tile", list("rows", 0, 0))))
         )", "2");
     }
@@ -156,7 +156,7 @@ void test_argmin_d_1d_5()
     else
     {
         test_argmin_d_operation("test_argmin_d_2loc1d_5", R"(
-            argmin_d(annotate_d([], "array_5",
+            argmin_d(annotate_d(astype([], "int"), "array_5",
                 list("tile", list("rows", 0, 0))))
         )", "2");
     }
@@ -296,10 +296,11 @@ void test_argmin_d_2d_6()
     else
     {
         test_argmin_d_operation("test_argmin_d_2loc2d_6", R"(
-            argmin_d(annotate_d([[]], "array2d_6",
+            argmin_d(annotate_d(astype([[]], "int"), "array2d_6",
                 list("tile", list("columns", 0, 0), list("rows", 0, 0))), 0)
         )", R"(
-            annotate_d([], "array2d_6/1", list("tile", list("columns", 0, 0)))
+            annotate_d(astype([], "int"), "array2d_6/1",
+                list("tile", list("columns", 0, 0)))
         )");
     }
 }

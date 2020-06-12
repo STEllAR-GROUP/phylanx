@@ -171,20 +171,19 @@ namespace phylanx { namespace bindings {
             }
 #endif
 
-            using hpx::util::placeholders::_1;
-            using hpx::util::placeholders::_2;
             hpx::util::function_nonser<int(int, char**)> start_function =
-                hpx::util::bind(&manage_global_runtime::hpx_main, this, _1, _2);
+                hpx::util::bind_front(&manage_global_runtime::hpx_main, this);
 
             if (!hpx::start(start_function, __argc, __argv, cfg,
-                    hpx::runtime_mode_console))
+                    hpx::runtime_mode::console))
             {
                 // Something went wrong while initializing the runtime.
                 // This early we can't generate any output, just bail out.
                 std::abort();
             }
 
-            // Wait for the main HPX thread (hpx_main below) to have started running
+            // Wait for the main HPX thread (hpx_main below) to have started
+            // running
             std::unique_lock<std::mutex> lk(startup_mtx_);
             while (!running_)
                 startup_cond_.wait(lk);
