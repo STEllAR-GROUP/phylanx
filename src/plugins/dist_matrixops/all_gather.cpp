@@ -205,11 +205,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "be `row` or `column`"));
         }
 
+        primitive_arguments_type ops;
+        ops.reserve(p.size());
+        for (auto && op : p)
+        {
+            ops.push_back(primitive_argument_type{ir::node_data<T>
+                {std::move(op)}});
+        }
+
         // the type of p should be std::vector< ir::node_data<T> > (?)
         // how to pass p as primitive_arguments_type (?)
 
         return all_gather::concatenate2d<T>(primitive_arguments_type
-            {ir::node_data<T>{std::move(p)}}, axis);
+            {(std::move(op)), axis);
     }
 
     ///////////////////////////////////////////////////////////////////////////
