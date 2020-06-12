@@ -46,37 +46,23 @@ void test_all_gather_2d_0()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_all_gather_d_operation("test1d_0", R"(
+        test_all_gather_d_operation("test2d_0", R"(
             all_gather_d(
-                annotate_d([[1, 2, 3], [4, 5, 6]], "mytest2d_0",
+                annotate_d([[1, 2, 3], [4, 5, 6]], "array_0",
                     list("tile", list("columns", 0, 3), list("rows", 0, 2))
                 )
             )
-        )", R"(
-            annotate_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                "all_gather_mytest2d_0",
-                list("args",
-                    list("locality", 0, 2),
-                    list("tile", list("columns", 0, 3),
-                    list("rows", 0, 3))))
-        )");
+        )", "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
     }
     else
     {
         test_all_gather_d_operation("test1d_0", R"(
             all_gather_d(
-                annotate_d([[7, 8, 9]], "mytest2d_0",
+                annotate_d([[7, 8, 9]], "array_0",
                     list("tile", list("columns", 0, 3), list("rows", 2, 3))
                 )
             )
-        )", R"(
-            annotate_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                "all_gather_mytest2d_0",
-                list("args",
-                    list("locality", 1, 2),
-                    list("tile", list("columns", 0, 3),
-                    list("rows", 0, 3))))
-        )");
+        )", "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
     }
 }
 
