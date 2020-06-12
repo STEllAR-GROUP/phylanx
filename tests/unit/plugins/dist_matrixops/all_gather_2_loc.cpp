@@ -9,7 +9,7 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
-#include <hpx/testing.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <string>
 #include <utility>
@@ -38,6 +38,7 @@ void test_all_gather_d_operation(std::string const& name,
         compile_and_run(name, expected_str);
 
     HPX_TEST_EQ(hpx::cout, result, comparison);
+    std::cout << result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,8 +50,7 @@ void test_all_gather_2d_0()
             all_gather_d(
                 annotate_d([[1, 2, 3], [4, 5, 6]], "mytest2d_0",
                     list("tile", list("columns", 0, 3), list("rows", 0, 2))
-                ),
-                2, 0
+                )
             )
         )", R"(
             annotate_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -67,8 +67,7 @@ void test_all_gather_2d_0()
             all_gather_d(
                 annotate_d([[7, 8, 9]], "mytest2d_0",
                     list("tile", list("columns", 0, 3), list("rows", 2, 3))
-                ),
-                2, 1
+                )
             )
         )", R"(
             annotate_d([[1, 2, 3], [4, 5, 6], [7, 8, 9]],

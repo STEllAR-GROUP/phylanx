@@ -108,6 +108,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         return execution_tree::primitive_argument_type{
             ir::node_data<T>{std::move(result)}};
     }
+
     template <typename T>
     execution_tree::primitive_argument_type all_gather::concatenate2d_axis1(
         execution_tree::primitive_arguments_type&& args) const
@@ -140,6 +141,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         return execution_tree::primitive_argument_type{
             ir::node_data<T>{std::move(result)}};
     }
+
     template <typename T>
     execution_tree::primitive_argument_type all_gather::concatenate2d(
         execution_tree::primitive_arguments_type&& args,
@@ -216,8 +218,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         // the type of p should be std::vector< ir::node_data<T> > (?)
         // how to pass p as primitive_arguments_type (?)
 
-        return all_gather::concatenate2d<T>(primitive_arguments_type
-            {(std::move(op)), axis);
+        return all_gather::concatenate2d<T>(std::move(ops), axis);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -263,6 +264,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         default:
             break;
         }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_matrixops::primitives::all_gather::all_gather2d",
+            generate_error_message(
+                "the all_gather_d primitive requires for all arguments to "
+                "be numeric data types"));
 
     }
 
