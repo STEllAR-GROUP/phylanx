@@ -22,8 +22,8 @@
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/index_calculation_helper.hpp>
 
-#include <hpx/allocator_support/internal_allocator.hpp>
-#include <hpx/assertion.hpp>
+
+#include <hpx/assert.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -31,11 +31,9 @@
 #include <hpx/modules/collectives.hpp>
 
 
-
-#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -235,7 +233,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             locs.locality_.locality_id_)
                 .get();
 
-        // row and column dimensions of the whole array 
+        // row and column dimensions of the whole array
         std::size_t rows_dim, cols_dim;
         rows_dim = locs.rows();
         cols_dim = locs.columns();
