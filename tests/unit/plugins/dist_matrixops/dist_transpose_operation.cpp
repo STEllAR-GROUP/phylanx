@@ -139,6 +139,74 @@ void test_transpose_2d()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void test_transpose_3d()
+{
+    //test_transpose_operation("test3d_1",
+    //    R"(
+    //        transpose_d(
+    //            annotate_d(
+    //                [[[1, 2, 3],[4, 5, 6]],[[7, 8, 9],[10, 11, 12]]],
+    //                "test3d_1",
+    //                list("tile", list("pages", 0, 2),
+    //                    list("columns", 0, 3), list("rows", 0, 2))
+    //            )
+    //        )
+    //    )",
+    //    R"(
+    //        annotate_d(
+    //            [[[ 1,  7], [ 4, 10]],
+    //             [[ 2,  8], [ 5, 11]],
+    //             [[ 3,  9], [ 6, 12]]],
+    //            "test3d_1_transposed/1",
+    //            list("tile", list("pages", 0, 3),
+    //                list("rows", 0, 2), list("columns", 0, 2))
+    //        )
+    //    )");
+
+    test_transpose_operation("test3d_2",
+        R"(
+            transpose_d(
+                annotate_d(
+                    [[[1, 2, 3]],[[7, 8, 9]]],
+                    "test3d_2",
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 0, 1))
+                ),
+                [1, 0, 2]
+            )
+        )",
+        R"(
+            annotate_d(
+                [[[1, 2, 3], [7, 8, 9]]],
+                "test3d_2_transposed/1",
+                list("tile", list("rows", 0, 2),
+                    list("pages", 0, 1), list("columns", 0, 3))
+            )
+        )");
+
+    test_transpose_operation("test3d_3",
+        R"(
+            transpose_d(
+                annotate_d(
+                    [[[1, 2, 3]],[[7, 8, 9]]],
+                    "test3d_3",
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 0, 1))
+                ),
+                [2, 0, 1]
+            )
+        )",
+        R"(
+            annotate_d(
+                [[[1], [7]], [[2], [8]], [[3], [9]]],
+                "test3d_3_transposed/1",
+                list("tile", list("rows", 0, 2),
+                    list("pages", 0, 3), list("columns", 0, 1))
+            )
+        )");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     // transposing a scalar is a no-op
@@ -146,6 +214,7 @@ int main(int argc, char* argv[])
 
     test_transpose_1d();
     test_transpose_2d();
+    test_transpose_3d();
 
     return hpx::util::report_errors();
 }
