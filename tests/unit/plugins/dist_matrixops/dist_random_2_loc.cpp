@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/modules/testing.hpp>
 
@@ -37,7 +38,7 @@ void test_random_d_operation(std::string const& name, std::string const& code,
         compile_and_run(name, expected_str);
 
     // comparing annotations
-    HPX_TEST_EQ(*(result.annotation()),*(comparison.annotation()));
+    HPX_TEST_EQ(hpx::cout, *(result.annotation()),*(comparison.annotation()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

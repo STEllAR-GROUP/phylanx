@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/modules/testing.hpp>
 
@@ -36,7 +37,7 @@ void test_constant_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    HPX_TEST_EQ(result, comparison);
+    HPX_TEST_EQ(hpx::cout, result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,6 +248,63 @@ void test_constant_4loc_2d_2()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_constant_4loc_3d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_4loc3d_0", R"(
+            constant_d(42, list(3, 4, 5), nil, nil, "const3d", "row")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "const3d",
+                list("tile", list("pages", 0, 3),
+                    list("columns", 0, 5), list("rows", 0, 1)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_constant_d_operation("test_constant_4loc3d_0", R"(
+            constant_d(42, list(3, 4, 5), nil, nil, "const3d", "row")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "const3d",
+                list("tile", list("pages", 0, 3),
+                    list("columns", 0, 5), list("rows", 1, 2)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_constant_d_operation("test_constant_4loc3d_0", R"(
+            constant_d(42, list(3, 4, 5), nil, nil, "const3d", "row")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "const3d",
+                list("tile", list("pages", 0, 3),
+                    list("columns", 0, 5), list("rows", 2, 3)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_constant_d_operation("test_constant_4loc3d_0", R"(
+            constant_d(42, list(3, 4, 5), nil, nil, "const3d", "row")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "const3d",
+                list("tile", list("pages", 0, 3),
+                    list("columns", 0, 5), list("rows", 3, 4)))
+        )");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_constant_4loc_1d_0();
@@ -254,6 +312,8 @@ int hpx_main(int argc, char* argv[])
     test_constant_4loc_2d_0();
     test_constant_4loc_2d_1();
     test_constant_4loc_2d_2();
+
+    test_constant_4loc_3d_0();
 
     hpx::finalize();
     return hpx::util::report_errors();
