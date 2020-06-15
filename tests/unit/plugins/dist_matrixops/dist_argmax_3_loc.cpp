@@ -319,7 +319,7 @@ void test_argmax_d_2d_5()
     if (hpx::get_locality_id() == 0)
     {
         test_argmax_d_operation("test_argmax_d_3loc2d_5", R"(
-            argmax_d(annotate_d([[]], "array_5",
+            argmax_d(annotate_d(astype([[]], "int"), "array_5",
                 list("tile", list("columns", 0, 0), list("rows", 0, 0))))
         )", "3");
     }
@@ -334,7 +334,7 @@ void test_argmax_d_2d_5()
     else
     {
         test_argmax_d_operation("test_argmax_d_3loc2d_5", R"(
-            argmax_d(annotate_d([[]], "array_5",
+            argmax_d(annotate_d(astype([[]], "int"), "array_5",
                 list("tile", list("columns", 0, 0), list("rows", 0, 0))))
         )", "3");
     }
@@ -352,7 +352,7 @@ void test_argmax_d_2d_6()
     else if (hpx::get_locality_id() == 1)
     {
         test_argmax_d_operation("test_argmax_d_3loc2d_6", R"(
-            argmax_d(annotate_d([[]], "array2d_6",
+            argmax_d(annotate_d(astype([[]], "int"), "array2d_6",
                 list("tile", list("columns", 0, 0), list("rows", 0, 0))), 0)
         )", "[3, 1, 2]");
     }
@@ -384,7 +384,7 @@ void test_argmax_d_2d_7()
     else
     {
         test_argmax_d_operation("test_argmax_d_3loc2d_7", R"(
-            argmax_d(annotate_d([[]], "array2d_7",
+            argmax_d(annotate_d(astype([[]], "int"), "array2d_7",
                 list("tile", list("columns", 0, 0), list("rows", 0, 0))), -1)
         )", "[2, 2, 3]");
     }

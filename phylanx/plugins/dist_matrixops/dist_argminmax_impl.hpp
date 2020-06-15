@@ -138,8 +138,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_argminmax<Op, "
-                    "Derived>::detail::get_initial_vector_value",
+                    "dist_argminmax<Op, Derived>::"
+                    "detail::get_initial_vector_value",
                     util::generate_error_message(
                         "the dist_argminmax primitive requires for all "
                         "arguments to be numeric data types",
