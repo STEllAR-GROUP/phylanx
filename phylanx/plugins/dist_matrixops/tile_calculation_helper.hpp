@@ -108,7 +108,8 @@ namespace tile_calculation
 
     inline std::tuple<std::int64_t, std::int64_t, std::size_t, std::size_t>
     tile_calculation_2d(std::uint32_t tile_idx, std::size_t row_dim,
-        std::size_t column_dim, std::uint32_t numtiles, std::string tiling_type)
+        std::size_t column_dim, std::uint32_t numtiles,
+        std::string const& tiling_type)
     {
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -207,7 +208,7 @@ namespace tile_calculation
         std::size_t, std::size_t>
     tile_calculation_3d(std::uint32_t tile_idx, std::size_t page_dim,
         std::size_t row_dim, std::size_t column_dim, std::uint32_t numtiles,
-        std::string tiling_type)
+        std::string const& tiling_type)
     {
         std::int64_t page_start, row_start, column_start;
         std::size_t page_size, row_size, column_size;
