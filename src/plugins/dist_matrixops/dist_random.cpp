@@ -69,8 +69,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all the numtiles localities.
-                    Other options are `row` or `column` tiling. For a vector
-                    all these three tiling_types are the same.
+                    Other options are `page`, `row` or `column` tiling. For a
+                    vector, all these three tiling_types are the same.
                 mean (float, optional): the mean value of the distribution. It
                     sets to 0.0 by default.
                 std (float, optional): the standard deviation of the normal
@@ -143,6 +143,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         return primitive_argument_type(std::move(v), attached_annotation);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type dist_random::dist_random2d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
         std::uint32_t tile_idx, std::uint32_t numtiles,
@@ -190,6 +191,61 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         }
 
         return primitive_argument_type(std::move(m), attached_annotation);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    execution_tree::primitive_argument_type dist_random::dist_random3d(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+        std::uint32_t tile_idx, std::uint32_t numtiles,
+        std::string&& given_name, std::string const& tiling_type,
+        double const& mean, double const& std) const
+    {
+        using namespace execution_tree;
+
+        std::size_t const pages = dims[0];
+        std::size_t const rows = dims[1];
+        std::size_t const columns = dims[2];
+        std::int64_t page_start, row_start, column_start;
+        std::size_t page_size, row_size, column_size;
+
+        std::tie(page_start, row_start, column_start, page_size, row_size,
+            column_size) = tile_calculation::tile_calculation_3d(tile_idx,
+            pages, rows, columns, numtiles, tiling_type);
+
+        std::normal_distribution<> dist(mean, std);
+
+        tiling_information_3d tile_info(
+            tiling_span(page_start, page_start + page_size),
+            tiling_span(row_start, row_start + row_size),
+            tiling_span(column_start, column_start + column_size));
+
+        locality_information locality_info(tile_idx, numtiles);
+        annotation locality_ann = locality_info.as_annotation();
+
+        std::string base_name =
+            detail::generate_random_name(std::move(given_name));
+
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
+
+        auto attached_annotation =
+            std::make_shared<execution_tree::annotation>(localities_annotation(
+                locality_ann, tile_info.as_annotation(name_, codename_),
+                ann_info, name_, codename_));
+
+        blaze::DynamicTensor<double> t(page_size, row_size, column_size);
+        for (std::size_t k = 0; k != page_size; ++k)
+        {
+            for (std::size_t i = 0; i != row_size; ++i)
+            {
+                for (std::size_t j = 0; j != column_size; ++j)
+                {
+                    t(k, i, j) = dist(util::rng_);
+                }
+            }
+        }
+
+        return primitive_argument_type(std::move(t), attached_annotation);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -286,14 +342,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     {
                         tiling_type = extract_string_value(
                             std::move(args[4]), this_->name_, this_->codename_);
-                        if ((tiling_type != "sym" && tiling_type != "row") &&
-                            tiling_type != "column")
+                        if ((tiling_type != "sym" && tiling_type != "page") &&
+                            (tiling_type != "row" && tiling_type != "column"))
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_constant::eval",
                                 this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type can be "
-                                    "one of these: `sym`, `row` or `column`"));
+                                    "invalid tiling_type. The tiling_type can "
+                                    "be one of these: `sym`, `page`, `row` or "
+                                    "`column`"));
                         }
                     }
 
@@ -319,6 +376,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
                     case 2:
                         return this_->dist_random2d(dims, tile_idx, numtiles,
+                            std::move(given_name), tiling_type, mean, std);
+
+                    case 3:
+                        return this_->dist_random3d(dims, tile_idx, numtiles,
                             std::move(given_name), tiling_type, mean, std);
 
                     default:

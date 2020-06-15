@@ -171,5 +171,176 @@ namespace tile_calculation
         }
         return std::make_tuple(row_start, column_start, row_size, column_size);
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline std::tuple<std::size_t, std::size_t, std::size_t>
+    three_middle_divisors(std::size_t num)
+    {
+        if (num == 2 || num == 3 || num == 5)
+        {
+            return std::make_tuple(
+                static_cast<std::size_t>(1), static_cast<std::size_t>(1), num);
+        }
+        if (num == 4)
+        {
+            return std::make_tuple(static_cast<std::size_t>(1),
+                static_cast<std::size_t>(2), static_cast<std::size_t>(2));
+        }
+
+        std::size_t second, third;
+        std::size_t first = blaze::cbrt(num);    //cubic root
+        while (true)
+        {
+            if (num % first == 0)
+            {
+                // the worst case scenario is a prime number where `first`
+                // becomes 1
+                std::tie(second, third) = middle_divisors(num / first);
+                break;
+            }
+            first -= 1;
+        }
+        return std::make_tuple(first, second, third);
+    }
+
+    inline std::tuple<std::int64_t, std::int64_t, std::int64_t, std::size_t,
+        std::size_t, std::size_t>
+    tile_calculation_3d(std::uint32_t tile_idx, std::size_t page_dim,
+        std::size_t row_dim, std::size_t column_dim, std::uint32_t numtiles,
+        std::string tiling_type)
+    {
+        std::int64_t page_start, row_start, column_start;
+        std::size_t page_size, row_size, column_size;
+        if (tiling_type == "page")
+        {
+            // page_tiling
+            row_start = column_start = 0;
+            row_size = row_dim;
+            column_size = column_dim;
+            std::tie(page_start, page_size) =
+                tile_calculation_1d(tile_idx, page_dim, numtiles);
+        }
+        else if (tiling_type == "row")
+        {
+            // row_tiling (horizontal tiling)
+            page_start = column_start = 0;
+            page_size = page_dim;
+            column_size = column_dim;
+            std::tie(row_start, row_size) =
+                tile_calculation_1d(tile_idx, row_dim, numtiles);
+        }
+        else if (tiling_type == "column")
+        {
+            // column_tiling (vertical tiling)
+            page_start = row_start = 0;
+            page_size = page_dim;
+            row_size = row_dim;
+            std::tie(column_start, column_size) =
+                tile_calculation_1d(tile_idx, column_dim, numtiles);
+        }
+        else if (tiling_type == "sym")
+        {
+            // the assumption is tiles are numbered in a row-major fashion in
+            // each page (the default order of numpy.flatten())
+            std::uint32_t first_div, second_div, third_div;
+            std::tie(first_div, second_div, third_div) =
+                three_middle_divisors(numtiles);
+
+            if (column_dim <= row_dim && row_dim <= page_dim)
+            {
+                // column_dim(first_div) < row_dim(second_div) < page_dim(third_div)
+                std::tie(page_start, page_size) = tile_calculation_1d(
+                    blaze::floor(tile_idx / (first_div * second_div)), page_dim,
+                    third_div);
+                std::tie(row_start, row_size) = tile_calculation_1d(
+                    static_cast<std::uint32_t>(
+                        blaze::floor(tile_idx / first_div)) %
+                        second_div,
+                    row_dim, second_div);
+                std::tie(column_start, column_size) = tile_calculation_1d(
+                    tile_idx % first_div, column_dim, first_div);
+            }
+            else if (column_dim <= page_dim && page_dim <= row_dim)
+            {
+                // column_dim(first_div) < page_dim(second_div) < row_dim(third_div)
+                std::tie(page_start, page_size) = tile_calculation_1d(
+                    blaze::floor(tile_idx / (first_div * third_div)), page_dim,
+                    second_div);
+                std::tie(row_start, row_size) = tile_calculation_1d(
+                    static_cast<std::uint32_t>(
+                        blaze::floor(tile_idx / first_div)) %
+                        third_div,
+                    row_dim, third_div);
+                std::tie(column_start, column_size) = tile_calculation_1d(
+                    tile_idx % first_div, column_dim, first_div);
+            }
+            else if (row_dim <= page_dim && page_dim <= column_dim)
+            {
+                // row_dim(first_div) < page_dim(second_div) < column_dim(third_div)
+                std::tie(page_start, page_size) = tile_calculation_1d(
+                    blaze::floor(tile_idx / (first_div * third_div)), page_dim,
+                    second_div);
+                std::tie(row_start, row_size) = tile_calculation_1d(
+                    static_cast<std::uint32_t>(
+                        blaze::floor(tile_idx / third_div)) %
+                        first_div,
+                    row_dim, first_div);
+                std::tie(column_start, column_size) = tile_calculation_1d(
+                    tile_idx % third_div, column_dim, third_div);
+            }
+            else if (row_dim <= column_dim && column_dim <= page_dim)
+            {
+                // row_dim(first_div) < column_dim(second_div) < page_dim(third_div)
+                std::tie(page_start, page_size) = tile_calculation_1d(
+                    blaze::floor(tile_idx / (first_div * second_div)), page_dim,
+                    third_div);
+                std::tie(row_start, row_size) = tile_calculation_1d(
+                    static_cast<std::uint32_t>(
+                        blaze::floor(tile_idx / second_div)) %
+                        first_div,
+                    row_dim, first_div);
+                std::tie(column_start, column_size) = tile_calculation_1d(
+                    tile_idx % second_div, column_dim, second_div);
+            }
+            else if (page_dim <= column_dim && column_dim <= row_dim)
+            {
+                // page_dim(first_div) < column_dim(second_div) < row_dim(third_div)
+                std::tie(page_start, page_size) = tile_calculation_1d(
+                    blaze::floor(tile_idx / (second_div * third_div)), page_dim,
+                    first_div);
+                std::tie(row_start, row_size) = tile_calculation_1d(
+                    static_cast<std::uint32_t>(
+                        blaze::floor(tile_idx / second_div)) %
+                        third_div,
+                    row_dim, third_div);
+                std::tie(column_start, column_size) = tile_calculation_1d(
+                    tile_idx % second_div, column_dim, second_div);
+            }
+            else
+            {
+                // page_dim(first_div) < row_dim(second_div) < column_dim(third_div)
+                std::tie(page_start, page_size) = tile_calculation_1d(
+                    blaze::floor(tile_idx / (second_div * third_div)), page_dim,
+                    first_div);
+                std::tie(row_start, row_size) = tile_calculation_1d(
+                    static_cast<std::uint32_t>(
+                        blaze::floor(tile_idx / third_div)) %
+                        second_div,
+                    row_dim, second_div);
+                std::tie(column_start, column_size) = tile_calculation_1d(
+                    tile_idx % third_div, column_dim, third_div);
+            }
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_calculation::tile_calculation_3d",
+                phylanx::util::generate_error_message(
+                    "the given tiling_type is invalid. tiling_type can be "
+                    "`sym`, `page`, `row` or `column` for a tensor"));
+        }
+        return std::make_tuple(page_start, row_start, column_start, page_size,
+            row_size, column_size);
+    }
 }
 #endif

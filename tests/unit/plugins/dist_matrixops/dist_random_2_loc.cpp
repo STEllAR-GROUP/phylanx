@@ -236,6 +236,73 @@ void test_random_2d_2()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_random_3d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_random_d_operation("test_random_2loc3d_0", R"(
+            random_d(list(2, 4, 6))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
+                        [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
+                        [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]]],
+                "random_array_4",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 3),
+                        list("pages", 0, 2), list("rows", 0, 4))))
+        )");
+    }
+    else
+    {
+        test_random_d_operation("test_random_2loc3d_0", R"(
+            random_d(list(2, 4, 6))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
+                        [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
+                        [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]]],
+                "random_array_4",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 3, 6),
+                        list("rows", 0, 4), list("pages", 0, 2))))
+        )");
+    }
+}
+
+void test_random_3d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_random_d_operation("test_random_2loc3d_1", R"(
+            random_d(list(2, 2, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0], [42.0, 42.0]]],
+                "random_array_5",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 2),
+                        list("pages", 0, 1), list("rows", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_random_d_operation("test_random_2loc3d_1", R"(
+            random_d(list(2, 2, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0], [42.0, 42.0]]],
+                "random_array_5",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 0, 2),
+                        list("rows", 0, 2), list("pages", 1, 2))))
+        )");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     // only annotations are compared
@@ -247,6 +314,9 @@ int hpx_main(int argc, char* argv[])
     test_random_2d_0();
     test_random_2d_1();
     test_random_2d_2();
+
+    test_random_3d_0();
+    test_random_3d_1();
 
     hpx::finalize();
     return hpx::util::report_errors();
