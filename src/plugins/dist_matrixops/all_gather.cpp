@@ -94,7 +94,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "detail::concatenate2d_axis0",
                         util::generate_error_message(
                             "all the input arrays must have "
-                            "the same number of dimensions"));
+                            "the same number of dimensions", name, codename));
                 }
 
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
@@ -107,7 +107,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "all_gather::detail::concatenate2d_axis0",
                         util::generate_error_message(
                             "all the input array dimensions except for "
-                            "the concatenation axis must match exactly "));
+                            "the concatenation axis must match exactly ",
+                            name, codename));
                 }
 
                 total_rows += dim[0];
@@ -117,12 +118,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::size_t step = 0;
             for (auto&& arg : args)
             {
-                auto&& val = execution_tree::extract_node_data
-                    <T>(std::move(arg));
+                auto&& val =
+                    execution_tree::extract_node_data<T>(std::move(arg));
                 std::size_t num_rows = val.dimension(0);
+                auto m = val.matrix();
                 for (std::size_t j = 0; j != num_rows; ++j)
                 {
-                    blaze::row(result, j + step) = blaze::row(val.matrix(), j);
+                    blaze::row(result, j + step) = blaze::row(m, j);
                 }
                 step += num_rows;
             }
@@ -151,7 +153,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "all_gather::detail::concatenate2d_axis1",
                         util::generate_error_message(
                             "all the input arrays must have "
-                            "the same number of dimensions"));
+                            "the same number of dimensions", name, codename));
                 }
 
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
@@ -164,7 +166,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "all_gather::detail::concatenate2d_axis1",
                         util::generate_error_message(
                             "all the input array dimensions except for"
-                            "the concatenation axis must match exactly"));
+                            "the concatenation axis must match exactly",
+                            name, codename));
                 }
 
                 total_cols += dim[1];
@@ -176,13 +179,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::size_t step = 0;
             for (auto&& arg : args)
             {
-                auto&& val = execution_tree::extract_node_data
-                    <T>(std::move(arg));
+                auto&& val =
+                    execution_tree::extract_node_data<T>(std::move(arg));
                 std::size_t num_cols = val.dimension(1);
+                auto m = val.matrix();
                 for (std::size_t j = 0; j != num_cols; ++j)
                 {
-                    blaze::column(result, j + step) =
-                        blaze::column(val.matrix(), j);
+                    blaze::column(result, j + step) = blaze::column(m, j);
                 }
                 step += num_cols;
             }
@@ -199,11 +202,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             switch (axis)
             {
             case 0:
-                return detail::concatenate2d_axis0<T>(std::move(args),
-                    name, codename);
+                return detail::concatenate2d_axis0<T>(
+                    std::move(args), name, codename);
             case 1:
-                return detail::concatenate2d_axis1<T>(std::move(args),
-                    name, codename);
+                return detail::concatenate2d_axis1<T>(
+                    std::move(args), name, codename);
             default:
                 break;
             }
@@ -211,7 +214,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 "dist_matrixops::primitives::"
                 "all_gather::detail::concatenate2d",
                 util::generate_error_message(
-                    "axis is out of bounds of dimension"));
+                    "axis is out of bounds of dimension", name, codename));
         }
     }
 
@@ -253,18 +256,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         else
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "all_gather::detail::all_gather2d",
-                    util::generate_error_message(
-                        "invalid tiling_type. The tiling_type can"
-                        "be `row` or `column`"));
+                "all_gather::detail::all_gather2d",
+                generate_error_message(
+                    "invalid tiling_type. The tiling_type can"
+                    "be `row` or `column`"));
         }
 
         primitive_arguments_type ops;
         ops.reserve(p.size());
         for (auto && op : p)
         {
-            ops.push_back(primitive_argument_type{ir::node_data<T>
-                {std::move(op)}});
+            ops.push_back(
+                primitive_argument_type{ir::node_data<T>{std::move(op)}});
         }
 
         return detail::concatenate2d<T>(std::move(ops), axis, name_, codename_);
@@ -282,9 +285,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::size_t ndim = locs.num_dimensions();
         if (ndim > 2 || ndim < 1)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "all_gather::all_gather2d",
-                util::generate_error_message(
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "all_gather::all_gather2d",
+                generate_error_message(
                     "the operand has incompatible dimensionalities"));
         }
 
@@ -323,7 +325,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     hpx::future<execution_tree::primitive_argument_type> all_gather::eval(
         execution_tree::primitive_arguments_type const& operands,
         execution_tree::primitive_arguments_type const& args,
@@ -346,7 +347,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "the all_gather primitive requires the first argument"
                     "given by the operands array is valid"));
         }
-
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
