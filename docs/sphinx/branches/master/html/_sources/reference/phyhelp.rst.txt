@@ -2200,8 +2200,8 @@ random_d (shape, tile_index, numtiles, name, tiling_type, mean, std)
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all the numtiles localities.
-                    Other options are `row` or `column` tiling. For a vector
-                    all these three tiling_types are the same.
+                    Other options are `page`, `row` or `column` tiling. For a
+                    vector, all these three tiling_types are the same.
                 mean (float, optional): the mean value of the distribution. It
                     sets to 0.0 by default.
                 std (float, optional): the standard deviation of the normal
