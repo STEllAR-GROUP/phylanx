@@ -256,6 +256,88 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    execution_tree::primitive_argument_type dist_constant::constant3d_helper(
+        execution_tree::primitive_argument_type&& value,
+        operand_type::dimensions_type const& dims,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type) const
+    {
+        using namespace execution_tree;
+
+        T const_value =
+            extract_scalar_data<T>(std::move(value), name_, codename_);
+
+        std::int64_t page_start, row_start, column_start;
+        std::size_t page_size, row_size, column_size;
+        std::uint32_t page_dim = dims[0];
+        std::uint32_t row_dim = dims[1];
+        std::uint32_t column_dim = dims[2];
+
+        std::tie(page_start, row_start, column_start, page_size, row_size,
+            column_size) = tile_calculation::tile_calculation_3d(tile_idx,
+            page_dim, row_dim, column_dim, numtiles, tiling_type);
+
+        tiling_information_3d tile_info(
+            tiling_span(page_start, page_start + page_size),
+            tiling_span(row_start, row_start + row_size),
+            tiling_span(column_start, column_start + column_size));
+
+        locality_information locality_info(tile_idx, numtiles);
+        annotation locality_ann = locality_info.as_annotation();
+
+        std::string base_name =
+            detail::generate_const_name(std::move(given_name));
+
+        annotation_information ann_info(
+            std::move(base_name), 0);    //generation 0
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_), ann_info, name_,
+                codename_));
+
+        return primitive_argument_type(blaze::DynamicTensor<T>(page_size,
+                                           row_size, column_size, const_value),
+            attached_annotation);
+    }
+
+    execution_tree::primitive_argument_type dist_constant::constant3d(
+        execution_tree::primitive_argument_type&& value,
+        operand_type::dimensions_type const& dims,
+        std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
+        std::string&& given_name, std::string const& tiling_type,
+        execution_tree::node_data_type dtype) const
+    {
+        using namespace execution_tree;
+
+        switch (dtype)
+        {
+        case node_data_type_bool:
+            return constant3d_helper<std::uint8_t>(std::move(value), dims,
+                tile_idx, numtiles, std::move(given_name), tiling_type);
+
+        case node_data_type_int64:
+            return constant3d_helper<std::int64_t>(std::move(value), dims,
+                tile_idx, numtiles, std::move(given_name), tiling_type);
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return constant3d_helper<double>(std::move(value), dims, tile_idx,
+                numtiles, std::move(given_name), tiling_type);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_matrixops::dist_constant::constant3d",
+            util::generate_error_message(
+                "the constant primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<execution_tree::primitive_argument_type> dist_constant::eval(
         execution_tree::primitive_arguments_type const& operands,
         execution_tree::primitive_arguments_type const& args,
@@ -361,14 +443,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     {
                         tiling_type = extract_string_value(
                             std::move(args[5]), this_->name_, this_->codename_);
-                        if ((tiling_type != "sym" && tiling_type != "row") &&
-                            tiling_type != "column")
+                        if ((tiling_type != "sym" && tiling_type != "page") &&
+                            tiling_type != "row" && tiling_type != "column")
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dist_constant::eval",
                                 this_->generate_error_message(
                                     "invalid tiling_type. The tiling_type can "
-                                    "be one of these: `sym`, `row` or "
+                                    "be one of these: `sym`, `page`, `row` or "
                                     "`column`"));
                         }
                     }
@@ -392,6 +474,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             tile_idx, numtiles, std::move(given_name),
                             tiling_type, dtype);
 
+                    case 3:
+                        return this_->constant3d(std::move(args[0]), dims,
+                            tile_idx, numtiles, std::move(given_name),
+                            tiling_type, dtype);
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_constant::eval",

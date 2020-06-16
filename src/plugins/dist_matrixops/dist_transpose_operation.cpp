@@ -342,7 +342,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         static constexpr std::int64_t indices[] = {2, 1, 0};
 
         // perform actual operation
-        arg = blaze::trans(arg.tensor(), indices, 3);
+        arg = blaze::trans(arg.tensor());
 
         execution_tree::primitive_argument_type result{std::move(arg)};
 
@@ -414,7 +414,26 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 axis += 3;
         }
 
-        arg = blaze::trans(arg.tensor(), v.data(), v.size());
+        if (v[0] == 2 && v[1] == 1 && v[2] == 0)
+        {
+            arg = blaze::trans(arg.tensor());
+        }
+        else if (v[0] == 2 && v[1] == 0 && v[2] == 1)
+        {
+            arg = blaze::trans(arg.tensor(), {2, 0, 1});
+        }
+        else if (v[0] == 1 && v[1] == 2 && v[2] == 0)
+        {
+            arg = blaze::trans(arg.tensor(), {1, 2, 0});
+        }
+        else if (v[0] == 1 && v[1] == 0 && v[2] == 2)
+        {
+            arg = blaze::trans(arg.tensor(), {1, 0, 2});
+        }
+        else if (v[0] == 0 && v[1] == 2 && v[2] == 1)
+        {
+            arg = blaze::trans(arg.tensor(), {0, 2, 1});
+        }
 
         execution_tree::primitive_argument_type result{std::move(arg)};
 
