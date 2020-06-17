@@ -15,12 +15,8 @@
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/dist_matrixops/all_gather.hpp>
-#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
-#include <phylanx/plugins/matrixops/concatenate.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
-#include <phylanx/util/distributed_vector.hpp>
 #include <phylanx/util/generate_error_message.hpp>
-#include <phylanx/util/index_calculation_helper.hpp>
 
 
 #include <hpx/assert.hpp>
@@ -122,11 +118,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     execution_tree::extract_node_data<T>(std::move(arg));
                 std::size_t num_rows = val.dimension(0);
                 auto m = val.matrix();
-                for (std::size_t j = 0; j != num_rows; ++j)
-                {
-                    blaze::row(result, j + step) = blaze::row(m, j);
-                }
+                blaze::submatrix(
+                    result, step, 0, num_rows, prevdim[1]) = m;
                 step += num_rows;
+
             }
             return execution_tree::primitive_argument_type{
                 ir::node_data<T>{std::move(result)}};
@@ -225,13 +220,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::localities_information&& locs) const
     {
         using namespace execution_tree;
-        auto m = arr.matrix();
-        blaze::DynamicMatrix<T> res_value(m.rows(), m.columns());
-        res_value = m;
+
+        blaze::DynamicMatrix<T> m = arr.matrix();
         // use hpx::all_gather to get a vector of values
         auto p = hpx::all_gather(
             ("all_gather_" + locs.annotation_.name_).c_str(),
-            res_value, locs.locality_.num_localities_,
+            m, locs.locality_.num_localities_,
             std::size_t(-1),
             locs.locality_.locality_id_)
                 .get();
@@ -283,7 +277,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             extract_localities_information(arr, name_, codename_);
 
         std::size_t ndim = locs.num_dimensions();
-        if (ndim > 2 || ndim < 1)
+
+        if (ndim != 2 && ndim != 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "all_gather::all_gather2d",
                 generate_error_message(
@@ -360,9 +355,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         switch (extract_numeric_value_dimension(
                             std::move(args[0]), this_->name_, this_->codename_))
                         {
-
-                            case 1:
-                                HPX_FALLTHROUGH;
 
                             case 2:
                                 return this_->all_gather2d(std::move(args[0]));
