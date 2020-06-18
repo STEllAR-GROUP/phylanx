@@ -178,10 +178,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     execution_tree::extract_node_data<T>(std::move(arg));
                 std::size_t num_cols = val.dimension(1);
                 auto m = val.matrix();
-                for (std::size_t j = 0; j != num_cols; ++j)
-                {
-                    blaze::column(result, j + step) = blaze::column(m, j);
-                }
+                blaze::submatrix(
+                    result, 0, step, prevdim[0], num_cols) = m;
                 step += num_cols;
             }
 
@@ -232,8 +230,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         // row and column dimensions of the whole array
         std::size_t rows_dim, cols_dim;
-        rows_dim = locs.rows();
-        cols_dim = locs.columns();
+        rows_dim = locs.rows(name_, codename_);
+        cols_dim = locs.columns(name_, codename_);
 
         // check the tiling type is column-tiling or row-tiling
         std::int64_t axis; // along with the array will be joined

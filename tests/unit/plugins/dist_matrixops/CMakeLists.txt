@@ -5,16 +5,9 @@
 
 set(tests
     all_gather_2_loc
-<<<<<<< HEAD
-<<<<<<< HEAD
     all_gather_4_loc
     dist_argmax_3_loc
     dist_argmin_2_loc
-=======
->>>>>>> add test for 2 loc
-=======
-    all_gather_4_loc
->>>>>>> 4 loc test pass; multi-examples
     dist_cannon_product_4_loc
     dist_cannon_product_9_loc
     dist_constant_2_loc
@@ -45,26 +38,10 @@ set(tests
     retile_6_loc
    )
 
-<<<<<<< HEAD
 set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
 set(all_gather_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_argmax_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_argmin_2_loc_PARAMETERS LOCALITIES 2)
-=======
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
->>>>>>> add test for 2 loc
-=======
->>>>>>> Revert "add test for 2 loc"
-=======
-set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
-<<<<<<< HEAD
->>>>>>> add test for 2 loc
-=======
-set(all_gather_4_loc_PARAMETERS LOCALITIES 4)
->>>>>>> 4 loc test pass; multi-examples
 set(dist_cannon_product_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_cannon_product_9_loc_PARAMETERS LOCALITIES 9)
 set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)
