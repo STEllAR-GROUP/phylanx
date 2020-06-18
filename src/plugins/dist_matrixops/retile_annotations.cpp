@@ -17,7 +17,7 @@
 #include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/util/detail/range_dimension.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
-//#include <phylanx/util/distributed_tensor.hpp>
+#include <phylanx/util/distributed_tensor.hpp>
 #include <phylanx/util/distributed_vector.hpp>
 #include <phylanx/util/index_calculation_helper.hpp>
 
@@ -785,12 +785,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                         "smaller than its stop point on each dimension"));
             }
         }
-        else    // tiling_type is one of "sym", "row" or "column"
+        else    // tiling_type is one of "sym", "page", "row" or "column"
         {
-            /*std::tie(des_page_start, des_row_start, des_col_start,
+            std::tie(des_page_start, des_row_start, des_col_start,
                 des_page_size, des_row_size, des_col_size) =
                 tile_calculation::tile_calculation_3d(loc_id, pages_dim,
-                    rows_dim, cols_dim, numtiles, tiling_type);*/
+                    rows_dim, cols_dim, numtiles, tiling_type);
 
             if (des_page_size != pages_dim &&
                 intersections[0] != 0)    // pages overlap
@@ -822,106 +822,107 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
 
         // updating the array
-        //auto t = arr.tensor();
-        //blaze::DynamicTensor<T> result(des_page_size, des_row_size, des_col_size);
-        //util::distributed_tensor<T> t_data(
-        //    arr_localities.annotation_.name_, t, num_localities, loc_id);
+        auto t = arr.tensor();
+        blaze::DynamicTensor<T> result(
+            des_page_size, des_row_size, des_col_size);
+        util::distributed_tensor<T> t_data(
+            arr_localities.annotation_.name_, t, num_localities, loc_id);
 
-        //// relative starts
-        //std::int64_t rel_page_start = des_page_start - cur_page_start;
-        //std::int64_t rel_row_start = des_row_start - cur_row_start;
-        //std::int64_t rel_col_start = des_col_start - cur_col_start;
-        //if ((rel_row_start < 0 || des_row_stop > cur_row_stop) ||
-        //    (rel_col_start < 0 || des_col_stop > cur_col_stop))
-        //{
-        //    // copying the local part
-        //    if ((des_row_start < cur_row_stop &&
-        //            des_row_stop > cur_row_start) &&
-        //        (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
-        //    {
-        //        auto page_indices = util::index_calculation_1d(
-        //            des_page_start, des_page_stop, cur_page_start, cur_page_stop);
-        //        auto row_indices = util::index_calculation_1d(
-        //            des_row_start, des_row_stop, cur_row_start, cur_row_stop);
-        //        auto col_indices = util::index_calculation_1d(
-        //            des_col_start, des_col_stop, cur_col_start, cur_col_stop);
+        // relative starts
+        std::int64_t rel_page_start = des_page_start - cur_page_start;
+        std::int64_t rel_row_start = des_row_start - cur_row_start;
+        std::int64_t rel_col_start = des_col_start - cur_col_start;
+        if ((rel_page_start < 0 || des_page_stop > cur_page_stop) ||
+            (rel_row_start < 0 || des_row_stop > cur_row_stop) ||
+            (rel_col_start < 0 || des_col_stop > cur_col_stop))
+        {
+            // copying the local part
+            if ((des_page_start < cur_page_stop &&
+                    des_page_stop > cur_page_start) &&
+                (des_row_start < cur_row_stop &&
+                    des_row_stop > cur_row_start) &&
+                (des_col_start < cur_col_stop && des_col_stop > cur_col_start))
+            {
+                auto page_indices = util::index_calculation_1d(des_page_start,
+                    des_page_stop, cur_page_start, cur_page_stop);
+                auto row_indices = util::index_calculation_1d(
+                    des_row_start, des_row_stop, cur_row_start, cur_row_stop);
+                auto col_indices = util::index_calculation_1d(
+                    des_col_start, des_col_stop, cur_col_start, cur_col_stop);
 
-        //        blaze::subtensor(result, page_indices.projected_start_,
-        //            row_indices.projected_start_, col_indices.projected_start_,
-        //            page_indices.intersection_size_,
-        //            row_indices.intersection_size_,
-        //            col_indices.intersection_size_) = blaze::subtensor(t,
-        //            page_indices.local_start_, row_indices.local_start_,
-        //            col_indices.local_start_, page_indices.intersection_size_,
-        //            row_indices.intersection_size_,
-        //            col_indices.intersection_size_);
-        //    }
+                blaze::subtensor(result, page_indices.projected_start_,
+                    row_indices.projected_start_, col_indices.projected_start_,
+                    page_indices.intersection_size_,
+                    row_indices.intersection_size_,
+                    col_indices.intersection_size_) = blaze::subtensor(t,
+                    page_indices.local_start_, row_indices.local_start_,
+                    col_indices.local_start_, page_indices.intersection_size_,
+                    row_indices.intersection_size_,
+                    col_indices.intersection_size_);
+            }
 
-        //    for (std::uint32_t loc = 0; loc != num_localities; ++loc)
-        //    {
-        //        if (loc == loc_id)
-        //        {
-        //            continue;
-        //        }
+            for (std::uint32_t loc = 0; loc != num_localities; ++loc)
+            {
+                if (loc == loc_id)
+                {
+                    continue;
+                }
 
-        //        // the array span in locality loc
-        //        tiling_span loc_page_span = arr_localities.tiles_[loc].spans_[0];
-        //        tiling_span loc_row_span = arr_localities.tiles_[loc].spans_[1];
-        //        tiling_span loc_col_span = arr_localities.tiles_[loc].spans_[2];
+                // the array span in locality loc
+                tiling_span loc_page_span = arr_localities.tiles_[loc].spans_[0];
+                tiling_span loc_row_span = arr_localities.tiles_[loc].spans_[1];
+                tiling_span loc_col_span = arr_localities.tiles_[loc].spans_[2];
 
-        //        auto page_indices = util::retile_calculation_1d(
-        //            loc_page_span, des_page_start, des_page_stop);
-        //        auto row_indices = util::retile_calculation_1d(
-        //            loc_row_span, des_row_start, des_row_stop);
-        //        auto col_indices = util::retile_calculation_1d(
-        //            loc_col_span, des_col_start, des_col_stop);
-        //        if (row_indices.intersection_size_ > 0 &&
-        //            col_indices.intersection_size_ > 0)
-        //        {
-        //            // loc_span has the block of result that we need
-        //            blaze::subtensor(result, page_indices.projected_start_,
-        //                row_indices.projected_start_,
-        //                col_indices.projected_start_,
-        //                page_indices.intersection_size_,
-        //                row_indices.intersection_size_,
-        //                col_indices.intersection_size_) =
-        //                t_data
-        //                    .fetch(loc, page_indices.local_start_,
-        //                        row_indices.local_start_,
-        //                        col_indices.local_start_,
-        //                        page_indices.local_start_ +
-        //                            page_indices.intersection_size_,
-        //                        row_indices.local_start_ +
-        //                            row_indices.intersection_size_,
-        //                        col_indices.local_start_ +
-        //                            col_indices.intersection_size_)
-        //                    .get();
-        //        }
-        //    }
-        //}
-        //else // the new array is a subset of the original array
-        //{
-        //    result = blaze::subtensor(t, rel_page_start, rel_row_start,
-        //        rel_col_start, des_page_size, des_row_size, des_col_size);
-        //}
+                auto page_indices = util::retile_calculation_1d(
+                    loc_page_span, des_page_start, des_page_stop);
+                auto row_indices = util::retile_calculation_1d(
+                    loc_row_span, des_row_start, des_row_stop);
+                auto col_indices = util::retile_calculation_1d(
+                    loc_col_span, des_col_start, des_col_stop);
+                if (page_indices.intersection_size_ > 0 &&
+                    row_indices.intersection_size_ > 0 &&
+                    col_indices.intersection_size_ > 0)
+                {
+                    // loc_span has the block of result that we need
+                    blaze::subtensor(result, page_indices.projected_start_,
+                        row_indices.projected_start_,
+                        col_indices.projected_start_,
+                        page_indices.intersection_size_,
+                        row_indices.intersection_size_,
+                        col_indices.intersection_size_) =
+                        t_data
+                            .fetch(loc, page_indices.local_start_,
+                                row_indices.local_start_,
+                                col_indices.local_start_,
+                                page_indices.local_start_ +
+                                    page_indices.intersection_size_,
+                                row_indices.local_start_ +
+                                    row_indices.intersection_size_,
+                                col_indices.local_start_ +
+                                    col_indices.intersection_size_)
+                            .get();
+                }
+            }
+        }
+        else // the new array is a subset of the original array
+        {
+            result = blaze::subtensor(t, rel_page_start, rel_row_start,
+                rel_col_start, des_page_size, des_row_size, des_col_size);
+        }
 
-        //// updating the tile information
-        //tile_info =
-        //    tiling_information_3d(tiling_span(des_page_start, des_page_stop),
-        //        tiling_span(des_row_start, des_row_stop),
-        //        tiling_span(des_col_start, des_col_stop));
+        // updating the tile information
+        tile_info =
+            tiling_information_3d(tiling_span(des_page_start, des_page_stop),
+                tiling_span(des_row_start, des_row_stop),
+                tiling_span(des_col_start, des_col_stop));
 
-        //auto locality_ann = arr_localities.locality_.as_annotation();
-        //auto attached_annotation =
-        //    std::make_shared<annotation>(localities_annotation(locality_ann,
-        //        tile_info.as_annotation(name_, codename_),
-        //        arr_localities.annotation_, name_, codename_));
+        auto locality_ann = arr_localities.locality_.as_annotation();
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name_, codename_),
+                arr_localities.annotation_, name_, codename_));
 
-        //return primitive_argument_type(result, attached_annotation);
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "dist_matrixops::primitives::retile_annotations::retile3d",
-                    generate_error_message(
-                        "the g"));
+        return primitive_argument_type(result, attached_annotation);
     }
 
     execution_tree::primitive_argument_type retile_annotations::retile3d(

@@ -1,11 +1,12 @@
 // Copyright (c) 2019 Hartmut Kaiser
 // Copyright (c) 2019 Maxwell Reeser
+// Copyright (c) 2020 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_UTIL_DISTRIBUTED_VECTOR_HPP)
-#define PHYLANX_UTIL_DISTRIBUTED_VECTOR_HPP
+#if !defined(PHYLANX_UTIL_DISTRIBUTED_TENSOR_HPP)
+#define PHYLANX_UTIL_DISTRIBUTED_TENSOR_HPP
 
 #include <phylanx/config.hpp>
 #include <phylanx/util/serialization/blaze.hpp>
@@ -32,28 +33,29 @@
 #include <utility>
 
 #include <blaze/Math.h>
+#include <blaze_tensor/Math.h>
 
 /// \cond NOINTERNAL
 namespace phylanx { namespace util { namespace server
 {
     ////////////////////////////////////////////////////////////////////////////
     template <typename T>
-    class distributed_vector_part
-      : public hpx::components::component_base<distributed_vector_part<T>>
+    class distributed_tensor_part
+      : public hpx::components::component_base<distributed_tensor_part<T>>
     {
     public:
-        using data_type = blaze::DynamicVector<T>;
+        using data_type = blaze::DynamicTensor<T>;
         using reference_type =
-            blaze::CustomVector<T, blaze::aligned, blaze::padded>;
+            blaze::CustomTensor<T, blaze::aligned, blaze::padded>;
 
-        distributed_vector_part() = default;
+        distributed_tensor_part() = default;
 
-        explicit distributed_vector_part(reference_type const& data)
+        explicit distributed_tensor_part(reference_type const& data)
           : data_(data)
         {
         }
 
-        explicit distributed_vector_part(reference_type&& data)
+        explicit distributed_tensor_part(reference_type&& data)
           : data_(std::move(data))
         {
         }
@@ -83,14 +85,18 @@ namespace phylanx { namespace util { namespace server
             return data_;
         }
 
-        HPX_DEFINE_COMPONENT_ACTION(distributed_vector_part, fetch);
+        HPX_DEFINE_COMPONENT_ACTION(distributed_tensor_part, fetch);
 
-        data_type fetch_part(std::size_t start, std::size_t stop) const
+        data_type fetch_part(std::size_t start_page, std::size_t start_row,
+            std::size_t start_column, std::size_t stop_page,
+            std::size_t stop_row, std::size_t stop_column) const
         {
-            return data_type{blaze::subvector(data_, start, stop-start)};
+            return data_type{blaze::subtensor(data_, start_page, start_row,
+                start_column, stop_page - start_page, stop_row - start_row,
+                stop_column - start_column)};
         }
 
-        HPX_DEFINE_COMPONENT_ACTION(distributed_vector_part, fetch_part);
+        HPX_DEFINE_COMPONENT_ACTION(distributed_tensor_part, fetch_part);
 
     private:
         reference_type data_;
@@ -98,48 +104,48 @@ namespace phylanx { namespace util { namespace server
 }}}
 /// \endcond
 
-#define REGISTER_DISTRIBUTED_VECTOR_DECLARATION(type)                          \
+#define REGISTER_DISTRIBUTED_TENSOR_DECLARATION(type)                          \
     HPX_REGISTER_ACTION_DECLARATION(                                           \
-        phylanx::util::server::distributed_vector_part<type>::fetch_action,    \
-        HPX_PP_CAT(__distributed_vector_part_fetch_action_, type));            \
+        phylanx::util::server::distributed_tensor_part<type>::fetch_action,    \
+        HPX_PP_CAT(__distributed_tensor_part_fetch_action_, type));            \
     HPX_REGISTER_ACTION_DECLARATION(                                           \
-        phylanx::util::server::distributed_vector_part<                        \
+        phylanx::util::server::distributed_tensor_part<                        \
             type>::fetch_part_action,                                          \
-        HPX_PP_CAT(__distributed_vector_part_fetch_part_action_, type))        \
+        HPX_PP_CAT(__distributed_tensor_part_fetch_part_action_, type))        \
     /**/
 
-#define REGISTER_DISTRIBUTED_VECTOR(type)                                      \
+#define REGISTER_DISTRIBUTED_TENSOR(type)                                      \
     HPX_REGISTER_ACTION(                                                       \
-        phylanx::util::server::distributed_vector_part<type>::fetch_action,    \
-        HPX_PP_CAT(__distributed_vector_part_fetch_action_, type));            \
-    HPX_REGISTER_ACTION(phylanx::util::server::distributed_vector_part<type>:: \
+        phylanx::util::server::distributed_tensor_part<type>::fetch_action,    \
+        HPX_PP_CAT(__distributed_tensor_part_fetch_action_, type));            \
+    HPX_REGISTER_ACTION(phylanx::util::server::distributed_tensor_part<type>:: \
             fetch_part_action,                                                 \
-        HPX_PP_CAT(__distributed_vector_part_fetch_part_action_, type));       \
+        HPX_PP_CAT(__distributed_tensor_part_fetch_part_action_, type));       \
     typedef ::hpx::components::component<                                      \
-        phylanx::util::server::distributed_vector_part<type>>                  \
-        HPX_PP_CAT(__distributed_vector_part_, type);                          \
-    HPX_REGISTER_COMPONENT(HPX_PP_CAT(__distributed_vector_part_, type))       \
+        phylanx::util::server::distributed_tensor_part<type>>                  \
+        HPX_PP_CAT(__distributed_tensor_part_, type);                          \
+    HPX_REGISTER_COMPONENT(HPX_PP_CAT(__distributed_tensor_part_, type))       \
     /**/
 
 namespace phylanx { namespace util
 {
     template <typename T>
-    class distributed_vector
+    class distributed_tensor
     {
     private:
         using data_type =
-            typename server::distributed_vector_part<T>::data_type;
+            typename server::distributed_tensor_part<T>::data_type;
         using reference_type =
-            typename server::distributed_vector_part<T>::reference_type;
+            typename server::distributed_tensor_part<T>::reference_type;
 
     public:
-        /// Creates a distributed_vector in every locality
+        /// Creates a distributed_tensor in every locality
         ///
-        /// A distributed_vector \a base_name is created through default
+        /// A distributed_tensor \a base_name is created through default
         /// constructor.
-        distributed_vector() = default;
+        distributed_tensor() = default;
 
-        /// Creates a distributed_vector in every locality with a given
+        /// Creates a distributed_tensor in every locality with a given
         /// base_name string, data, and a type and construction_type in the
         /// template parameters.
         ///
@@ -148,17 +154,17 @@ namespace phylanx { namespace util
         ///             and it is set to all_to_all by default. The meta_object
         ///             option provides meta object registration in the root
         ///             locality and meta object is essentially a table that
-        ///             can find the instances of distributed_vector in all
+        ///             can find the instances of distributed_tensor in all
         ///             localities. The all_to_all option only locally holds
-        ///             the client and server of the distributed_vector.
-        /// \param base_name The name of the distributed_vector, which should
+        ///             the client and server of the distributed_tensor.
+        /// \param base_name The name of the distributed_tensor, which should
         ///             be a unique string across the localities
-        /// \param data The data of the type T of the distributed_vector
+        /// \param data The data of the type T of the distributed_tensor
         /// \param sub_localities The sub_localities accepts a list of locality
         ///             index. By default, it is initialized to a list of all
         ///             provided locality index.
         ///
-        distributed_vector(std::string basename, reference_type const& data,
+        distributed_tensor(std::string basename, reference_type const& data,
                 std::size_t num_sites = std::size_t(-1),
                 std::size_t this_site = std::size_t(-1))
           : num_sites_(num_sites == std::size_t(-1) ?
@@ -166,19 +172,19 @@ namespace phylanx { namespace util
                     num_sites)
           , this_site_(this_site == std::size_t(-1) ? hpx::get_locality_id() :
                                                       this_site)
-          , basename_("dist_vector_" + std::move(basename))
+          , basename_("dist_tensor_" + std::move(basename))
         {
             if (this_site_ >= num_sites_)
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
-                    "distributed_vector::distributed_vector",
+                    "distributed_tensor::distributed_tensor",
                     "attempting to construct invalid part of the "
                         "distributed object");
             }
             create_and_register_server(data);
         }
 
-        /// Creates a distributed_vector in every locality with a given
+        /// Creates a distributed_tensor in every locality with a given
         /// base_name string, data, and a type and construction_type in the
         /// template parameters
         ///
@@ -187,17 +193,17 @@ namespace phylanx { namespace util
         ///             and it is set to all_to_all by default. The meta_object
         ///             option provides meta object registration in the root
         ///             locality and meta object is essentially a table that
-        ///             can find the instances of distributed_vector in all
+        ///             can find the instances of distributed_tensor in all
         ///             localities. The all_to_all option only locally holds
-        ///             the client and server of the distributed_vector.
-        /// \param base_name The name of the distributed_vector, which should
+        ///             the client and server of the distributed_tensor.
+        /// \param base_name The name of the distributed_tensor, which should
         ///             be a unique string across the localities
-        /// \param data The data of the type T of the distributed_vector
+        /// \param data The data of the type T of the distributed_tensor
         /// \param sub_localities The sub_localities accepts a list of locality
         ///             index. By default, it is initialized to a list of all
         ///             provided locality index.
         ///
-        distributed_vector(std::string basename, reference_type&& data,
+        distributed_tensor(std::string basename, reference_type&& data,
                 std::size_t num_sites = std::size_t(-1),
                 std::size_t this_site = std::size_t(-1))
           : num_sites_(num_sites == std::size_t(-1) ?
@@ -205,12 +211,12 @@ namespace phylanx { namespace util
                     num_sites)
           , this_site_(this_site == std::size_t(-1) ? hpx::get_locality_id() :
                                                       this_site)
-          , basename_("dist_vector_" + std::move(basename))
+          , basename_("dist_tensor_" + std::move(basename))
         {
             if (this_site_ >= num_sites_)
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
-                    "distributed_vector::distributed_vector",
+                    "distributed_tensor::distributed_tensor",
                     "attempting to construct invalid part of the "
                         "distributed object");
             }
@@ -219,33 +225,33 @@ namespace phylanx { namespace util
 
         /// Destroy the local reference to the distributed object, unregister
         /// the symbolic name
-        ~distributed_vector()
+        ~distributed_tensor()
         {
             hpx::unregister_with_basename(basename_, this_site_).get();
         }
 
-        /// Access the calling locality's value instance for this distributed_vector
+        /// Access the calling locality's value instance for this distributed_tensor
         reference_type& operator*()
         {
             HPX_ASSERT(!!ptr_);
             return **ptr_;
         }
 
-        /// Access the calling locality's value instance for this distributed_vector
+        /// Access the calling locality's value instance for this distributed_tensor
         reference_type const& operator*() const
         {
             HPX_ASSERT(!!ptr_);
             return **ptr_;
         }
 
-        /// Access the calling locality's value instance for this distributed_vector
+        /// Access the calling locality's value instance for this distributed_tensor
         reference_type* operator->()
         {
             HPX_ASSERT(!!ptr_);
             return &**ptr_;
         }
 
-        /// Access the calling locality's value instance for this distributed_vector
+        /// Access the calling locality's value instance for this distributed_tensor
         reference_type const* operator->() const
         {
             HPX_ASSERT(!!ptr_);
@@ -253,7 +259,7 @@ namespace phylanx { namespace util
         }
 
         /// fetch() function is an asynchronous function. This returns a future
-        /// of a copy of the instance of this distributed_vector associated with
+        /// of a copy of the instance of this distributed_tensor associated with
         /// the given locality index. The provided locality index must be valid
         /// within the sub localities where this distributed object is
         /// constructed. Also, if the provided locality index is same as current
@@ -264,29 +270,32 @@ namespace phylanx { namespace util
             /// \cond NOINTERNAL
             HPX_ASSERT(!!ptr_);
             using action_type =
-                typename server::distributed_vector_part<T>::fetch_action;
+                typename server::distributed_tensor_part<T>::fetch_action;
 
             return hpx::async<action_type>(get_part_id(idx));
             /// \endcond
         }
 
         /// fetch() function is an asynchronous function. This returns a future
-        /// of (part of) a copy of the instance of this distributed_vector
+        /// of (part of) a copy of the instance of this distributed_tensor
         /// associated with the given locality index. The provided locality
         /// index must be valid within the sub localities where this distributed
         /// object is constructed. Also, if the provided locality index is same
         /// as current locality, fetch function still returns a future of it
         /// local data copy.
         /// It is suggested to use star operator to access local data.
-        hpx::future<data_type> fetch(
-            std::size_t idx, std::size_t start, std::size_t stop) const
+        hpx::future<data_type> fetch(std::size_t idx, std::size_t start_page,
+            std::size_t start_row, std::size_t start_column,
+            std::size_t stop_page, std::size_t stop_row,
+            std::size_t stop_column) const
         {
             /// \cond NOINTERNAL
             HPX_ASSERT(!!ptr_);
             using action_type =
-                typename server::distributed_vector_part<T>::fetch_part_action;
+                typename server::distributed_tensor_part<T>::fetch_part_action;
 
-            return hpx::async<action_type>(get_part_id(idx), start, stop);
+            return hpx::async<action_type>(get_part_id(idx), start_page,
+                start_row, start_column, stop_page, stop_row, stop_column);
             /// \endcond
         }
 
@@ -295,15 +304,15 @@ namespace phylanx { namespace util
         template <typename Arg>
         hpx::id_type create_and_register_server(Arg&& value)
         {
-            // create new distributed_vector component and register it with AGAS
+            // create new distributed_tensor component and register it with AGAS
             hpx::id_type part_id =
-                hpx::local_new<server::distributed_vector_part<T>>(
+                hpx::local_new<server::distributed_tensor_part<T>>(
                     hpx::launch::sync, std::forward<Arg>(value));
 
             hpx::register_with_basename(basename_, part_id, this_site_).get();
 
             part_ids_[this_site_] = part_id;
-            ptr_ = hpx::get_ptr<server::distributed_vector_part<T>>(
+            ptr_ = hpx::get_ptr<server::distributed_tensor_part<T>>(
                 hpx::launch::sync, part_id);
 
             return part_id;
@@ -320,9 +329,9 @@ namespace phylanx { namespace util
             if (idx >= num_sites_)
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
-                    "distributed_vector::get_part_id",
+                    "distributed_tensor::get_part_id",
                     "attempting to access invalid part of the distributed "
-                    "vector");
+                    "tensor");
             }
 
             std::lock_guard<hpx::lcos::local::spinlock> l(part_ids_mtx_);
@@ -352,7 +361,7 @@ namespace phylanx { namespace util
         std::size_t const num_sites_;
         std::size_t const this_site_;
         std::string const basename_;
-        std::shared_ptr<server::distributed_vector_part<T>> ptr_;
+        std::shared_ptr<server::distributed_tensor_part<T>> ptr_;
 
         mutable hpx::lcos::local::spinlock part_ids_mtx_;
         mutable std::map<std::size_t, hpx::id_type> part_ids_;
