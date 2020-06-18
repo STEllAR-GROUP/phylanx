@@ -6,72 +6,14 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/mean_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/blaze_traits.hpp>
 
-#include <cstddef>
-#include <functional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
-
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_mean_op
-        {
-            using result_type = double;
-
-            statistics_mean_op(std::string const& name,
-                    std::string const& codename)
-              : name_(name), codename_(codename)
-            {
-            }
-
-            static constexpr double initial()
-            {
-                return 0.0;
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, double initial) const
-            {
-                return s + initial;
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, double initial) const
-            {
-                return blaze::sum(v) + initial;
-            }
-
-            double finalize(double value, std::size_t size) const
-            {
-                if (size == 0)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "statistics_mean_op::finalize",
-                        util::generate_error_message(
-                            "empty sequences are not supported", name_,
-                            codename_));
-                }
-
-                return value / size;
-            }
-
-            std::string const& name_;
-            std::string const& codename_;
-        };
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const mean_operation::match_data =
@@ -99,10 +41,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    mean_operation::mean_operation(
-            primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    mean_operation::mean_operation(primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : base_type(std::move(operands), name, codename)
     {
     }
-}}}
+
+}}}    // namespace phylanx::execution_tree::primitives

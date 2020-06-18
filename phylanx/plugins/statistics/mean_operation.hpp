@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Monil, Mohammad Alaul Haque
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,21 +9,16 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/plugins/common/statistics_operations.hpp>
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_mean_op;
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
+    ///////////////////////////////////////////////////////////////////////////
     /// \brief Mean Operation Primitive
     ///
     /// This primitive computes the arithmetic mean along the specified axis.
@@ -37,10 +33,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///          keepdims : keep dimension of input
     ///
     class mean_operation
-      : public statistics<detail::statistics_mean_op, mean_operation>
+      : public statistics_base<common::statistics_mean_op, mean_operation>
     {
         using base_type =
-            statistics<detail::statistics_mean_op, mean_operation>;
+            statistics_base<common::statistics_mean_op, mean_operation>;
 
     public:
         static match_pattern_type const match_data;
@@ -58,6 +54,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "mean", std::move(operands), name, codename);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 #endif //PHYLANX_MEAN_OPERATION_HPP

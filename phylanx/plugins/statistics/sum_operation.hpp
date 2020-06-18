@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,21 +9,16 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/plugins/common/statistics_operations.hpp>
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_sum_op;
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
+    ///////////////////////////////////////////////////////////////////////////
     /// \brief Sums the values of the elements of a vector or a matrix or
     ///        returns the value of the scalar that was given to it.
     /// \param a         The scalar, vector, or matrix to perform sum over
@@ -35,10 +30,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///                  number of dimensions as \p a. Ignored if \p axis is
     ///                  anything except nil.
     class sum_operation
-      : public statistics<detail::statistics_sum_op, sum_operation>
+      : public statistics_base<common::statistics_sum_op, sum_operation>
     {
         using base_type =
-            statistics<detail::statistics_sum_op, sum_operation>;
+            statistics_base<common::statistics_sum_op, sum_operation>;
 
     public:
         static match_pattern_type const match_data;
@@ -56,6 +51,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "sum", std::move(operands), name, codename);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 #endif

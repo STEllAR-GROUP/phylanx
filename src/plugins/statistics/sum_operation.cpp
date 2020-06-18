@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,58 +7,14 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/sum_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/blaze_traits.hpp>
 
-#include <cstddef>
-#include <functional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
-
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_sum_op
-        {
-            using result_type = T;
-
-            statistics_sum_op(std::string const& name,
-                std::string const& codename)
-            {}
-
-            static constexpr T initial()
-            {
-                return T(0);
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial) const
-            {
-                return s + initial;
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, T initial) const
-            {
-                return blaze::sum(v) + initial;
-            }
-
-            static T finalize(T value, std::size_t size)
-            {
-                return value;
-            }
-        };
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const sum_operation::match_data =
@@ -91,4 +47,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : base_type(std::move(operands), name, codename)
     {
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives

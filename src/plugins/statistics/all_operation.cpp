@@ -6,67 +6,14 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/all_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/blaze_traits.hpp>
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <limits>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
-
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_all_op
-        {
-            using result_type = std::uint8_t;
-
-            statistics_all_op(std::string const& name,
-                std::string const& codename)
-            {}
-
-            static constexpr std::uint8_t initial()
-            {
-                return 1;
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value,
-                std::uint8_t>::type
-            operator()(Scalar s, std::uint8_t initial) const
-            {
-                return (s && initial) ? 1 : 0;
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value,
-                std::uint8_t>::type
-            operator()(Vector& v, std::uint8_t initial) const
-            {
-                return initial && std::all_of(v.begin(), v.end(),
-                    [](T val) -> std::uint8_t
-                    {
-                        return (val != 0) ? 1 : 0;
-                    });
-            }
-
-            static constexpr std::uint8_t finalize(
-                std::uint8_t value, std::size_t size)
-            {
-                return value ? 1 : 0;
-            }
-        };
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const all_operation::match_data =
@@ -95,4 +42,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : base_type(std::move(operands), name, codename)
     {
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
