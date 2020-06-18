@@ -41,12 +41,17 @@ namespace phylanx { namespace execution_tree
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dimensions(
             std::string const& name, std::string const& codename) const;
 
-        std::size_t size() const;
+        std::size_t size(
+            std::string const& name, std::string const& codename) const;
 
-        std::size_t quats() const;
-        std::size_t pages() const;
-        std::size_t rows() const;
-        std::size_t columns() const;
+        std::size_t quats(
+            std::string const& name, std::string const& codename) const;
+        std::size_t pages(
+            std::string const& name, std::string const& codename) const;
+        std::size_t rows(
+            std::string const& name, std::string const& codename) const;
+        std::size_t columns(
+            std::string const& name, std::string const& codename) const;
 
         // extract local span
         bool has_span(std::size_t dim) const;
@@ -58,6 +63,11 @@ namespace phylanx { namespace execution_tree
 
 //         annotation as_annotation(
 //             std::string const& name, std::string const& codename) const;
+
+        bool is_row_tiled(
+            std::string const& name, std::string const& codename) const;
+        bool is_column_tiled(
+            std::string const& name, std::string const& codename) const;
 
         locality_information locality_;
         annotation_information annotation_;

@@ -238,7 +238,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         std::uint32_t const num_localities =
             arr_localities.locality_.num_localities_;
-        std::size_t dim = arr_localities.size();    // size of the whole array
+
+        // size of the whole array
+        std::size_t dim =
+            arr_localities.size(name_, codename_);
         tiling_information_1d tile_info(
             arr_localities.tiles_[loc_id], name_, codename_);
 
@@ -435,8 +438,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         std::uint32_t const num_localities =
             arr_localities.locality_.num_localities_;
-        std::size_t rows_dim = arr_localities.rows();
-        std::size_t cols_dim = arr_localities.columns();
+        std::size_t rows_dim = arr_localities.rows(name_, codename_);
+        std::size_t cols_dim = arr_localities.columns(name_, codename_);
         tiling_information_2d tile_info(
             arr_localities.tiles_[loc_id], name_, codename_);
 

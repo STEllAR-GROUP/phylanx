@@ -9,7 +9,9 @@
 
 #include <hpx/collectives/all_reduce.hpp>
 
+#include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>

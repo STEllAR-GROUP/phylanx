@@ -1228,7 +1228,7 @@ namespace phylanx { namespace execution_tree
 
             // return an empty array
             return primitive_argument_type(
-                blaze::DynamicVector<std::uint8_t>(0), attached_annotation);
+                blaze::DynamicVector<double>(0), attached_annotation);
         }
 
         auto m = data.matrix();
@@ -1307,7 +1307,7 @@ namespace phylanx { namespace execution_tree
 
             // return an empty array
             return primitive_argument_type(
-                blaze::DynamicVector<std::uint8_t>(0), attached_annotation);
+                blaze::DynamicVector<double>(0), attached_annotation);
         }
 
         auto m = data.matrix();
@@ -1483,8 +1483,8 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        std::size_t columns = arr_localities.columns();
-        if (val_ndim == 1 && columns != val_localities.size())
+        std::size_t columns = arr_localities.columns(name, codename);
+        if (val_ndim == 1 && columns != val_localities.size(name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice1d_extract2d",

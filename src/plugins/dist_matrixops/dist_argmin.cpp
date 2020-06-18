@@ -5,24 +5,22 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/matrixops/argmin.hpp>
-#include <phylanx/plugins/matrixops/argminmax_impl.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_argmin.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_argminmax_impl.hpp>
 
-#include <algorithm>
-#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace dist_matrixops { namespace primitives {
+
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const argmin::match_data =
-    {
-        hpx::util::make_tuple("argmin",
-            std::vector<std::string>{"argmin(_1, _2)", "argmin(_1)"},
-            &create_argmin, &create_primitive<argmin>, R"(
+    execution_tree::match_pattern_type const dist_argmin::match_data = {
+        hpx::util::make_tuple("argmin_d",
+            std::vector<std::string>{"argmin_d(_1, _2)", "argmin_d(_1)"},
+            &create_dist_argmin, &execution_tree::create_primitive<dist_argmin>,
+            R"(
             a, axis
             Args:
 
@@ -32,12 +30,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             Returns:
 
             The index of the minimum value in the array. If an axis is
-            specified, a vector of minima along the axis is returned.)")
-    };
+            specified, a vector of minima along the axis is returned.)")};
 
     ///////////////////////////////////////////////////////////////////////////
-    argmin::argmin(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    dist_argmin::dist_argmin(
+        execution_tree::primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : base_type(std::move(operands), name, codename)
-    {}
-}}}
+    {
+    }
+}}}    // namespace phylanx::dist_matrixops::primitives
