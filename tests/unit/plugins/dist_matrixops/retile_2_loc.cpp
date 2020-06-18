@@ -531,22 +531,73 @@ void test_retile_2loc_2d_3()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_retile_2loc_3d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc3d_0", R"(
+            retile_d(
+                annotate_d([[[1, 2, 3], [-1, -2, -3]],
+                            [[7, 8, 9], [-7, -8, -9]]],
+                    "tiled_array_3d_0",
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 0, 2))
+                ),
+                "user", nil, nil, list("tile", list("pages", 0, 1),
+                        list("rows", 0, 2), list("columns", 0, 6))
+            )
+        )", R"(
+            annotate_d([[[1, 2, 3, 4, 5, 6], [-1, -2, -3, -4, -5, -6]]],
+                "tiled_array_3d_0_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("pages", 0, 1),
+                        list("rows", 0, 2), list("columns", 0, 6))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc3d_0", R"(
+            retile_d(
+                annotate_d([[[4, 5, 6], [-4, -5, -6]],
+                            [[10, 11, 12], [-10, -11, -12]]],
+                    "tiled_array_3d_0",
+                    list("tile", list("pages", 0, 2),
+                        list("rows", 0, 2), list("columns", 3, 6))
+                ),
+                "user", nil, nil, list("tile", list("pages", 1, 2),
+                    list("rows", 0, 2), list("columns", 0, 6))
+            )
+        )", R"(
+            annotate_d([[[7, 8, 9, 10, 11, 12], [7, 8, 9, 10, 11, 12]]],
+                "tiled_array_3d_0_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 0, 2),
+                        list("pages", 1, 2), list("columns", 0, 6))))
+        )");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
-    test_retile_2loc_1d_0();
-    test_retile_2loc_1d_1();
-    test_retile_2loc_1d_2();
-    test_retile_2loc_1d_3();
-    test_retile_2loc_1d_4();
-    test_retile_2loc_1d_5();
-    test_retile_2loc_1d_6();
-    test_retile_2loc_1d_7();
-    test_retile_2loc_1d_8();
+    //test_retile_2loc_1d_0();
+    //test_retile_2loc_1d_1();
+    //test_retile_2loc_1d_2();
+    //test_retile_2loc_1d_3();
+    //test_retile_2loc_1d_4();
+    //test_retile_2loc_1d_5();
+    //test_retile_2loc_1d_6();
+    //test_retile_2loc_1d_7();
+    //test_retile_2loc_1d_8();
 
-    test_retile_2loc_2d_0();
-    test_retile_2loc_2d_1();
-    test_retile_2loc_2d_2();
-    test_retile_2loc_2d_3();
+    //test_retile_2loc_2d_0();
+    //test_retile_2loc_2d_1();
+    //test_retile_2loc_2d_2();
+    //test_retile_2loc_2d_3();
+
+    test_retile_2loc_3d_0();
 
     hpx::finalize();
     return hpx::util::report_errors();
