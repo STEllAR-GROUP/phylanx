@@ -127,7 +127,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#apply">apply</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#arange">arange</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argmax">argmax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#argmax-d">argmax_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argmin">argmin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#argmin-d">argmin_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#argsort">argsort</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#assert">assert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#astype">astype</a></li>
@@ -907,10 +909,38 @@ specified, a vector of maxima along the axis is returned.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="argmax-d">
+<h2>argmax_d<a class="headerlink" href="#argmax-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>argmax_d (a, axis)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>a (array) : a vector, matrix, or tensor
+axis (optional, int): the axis along which to find the max</p>
+</div></blockquote>
+<p>Returns:</p>
+<p>The index of the maximum value in the array. If an axis is
+specified, a vector of maxima along the axis is returned.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="argmin">
 <h2>argmin<a class="headerlink" href="#argmin" title="Permalink to this headline">¶</a></h2>
 <dl>
 <dt>argmin (a, axis)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>a (array) : a vector, matrix, or tensor
+axis (optional, int) : the axis along which to find the min</p>
+</div></blockquote>
+<p>Returns:</p>
+<p>The index of the minimum value in the array. If an axis is
+specified, a vector of minima along the axis is returned.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="argmin-d">
+<h2>argmin_d<a class="headerlink" href="#argmin-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>argmin_d (a, axis)</dt><dd><p>Args:</p>
 <blockquote>
 <div><p>a (array) : a vector, matrix, or tensor
 axis (optional, int) : the axis along which to find the min</p>
@@ -3528,7 +3558,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Jun 16, 2020.
+        Last updated on Jun 18, 2020.
       </span>
 
     </p>

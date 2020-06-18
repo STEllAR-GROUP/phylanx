@@ -503,9 +503,37 @@ argmax (a, axis)
             specified, a vector of maxima along the axis is returned.
 
 
+argmax_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+argmax_d (a, axis)
+            Args:
+
+                a (array) : a vector, matrix, or tensor
+                axis (optional, int): the axis along which to find the max
+
+            Returns:
+
+            The index of the maximum value in the array. If an axis is
+            specified, a vector of maxima along the axis is returned.
+
+
 argmin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 argmin (a, axis)
+            Args:
+
+                a (array) : a vector, matrix, or tensor
+                axis (optional, int) : the axis along which to find the min
+
+            Returns:
+
+            The index of the minimum value in the array. If an axis is
+            specified, a vector of minima along the axis is returned.
+
+
+argmin_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+argmin_d (a, axis)
             Args:
 
                 a (array) : a vector, matrix, or tensor
