@@ -743,9 +743,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
         std::uint32_t const num_localities =
             arr_localities.locality_.num_localities_;
-        std::size_t pages_dim = arr_localities.pages();
-        std::size_t rows_dim = arr_localities.rows();
-        std::size_t cols_dim = arr_localities.columns();
+        std::size_t pages_dim = arr_localities.pages(name_, codename_);
+        std::size_t rows_dim = arr_localities.rows(name_, codename_);
+        std::size_t cols_dim = arr_localities.columns(name_, codename_);
         tiling_information_3d tile_info(
             arr_localities.tiles_[loc_id], name_, codename_);
 
