@@ -6,6 +6,7 @@
 #if !defined(PHYLANX_PLUGINS_DIST_MATRIXOPS_PRIMITIVES_JUN_18_2019_0654AM)
 #define PHYLANX_PLUGINS_DIST_MATRIXOPS_PRIMITIVES_JUN_18_2019_0654AM
 
+#include <phylanx/plugins/dist_matrixops/all_gather.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_argmax.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_argmin.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_cannon_product.hpp>
