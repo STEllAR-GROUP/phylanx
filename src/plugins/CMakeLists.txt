@@ -10,6 +10,7 @@ set(subdirs
     common
     controls
     dist_matrixops
+    dist_statistics
     fileio
     keras_support
     listops

@@ -14,6 +14,8 @@
 #include <hpx/assert.hpp>
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <type_traits>

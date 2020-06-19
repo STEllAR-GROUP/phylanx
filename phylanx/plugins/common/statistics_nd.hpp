@@ -9,6 +9,7 @@
 #define PHYLANX_COMMON_STATISTICS_DEC_24_2018_0227PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/plugins/common/export_definitions.hpp>
 

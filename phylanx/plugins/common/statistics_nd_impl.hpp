@@ -99,7 +99,7 @@ namespace phylanx { namespace common {
         }
 
         template <template <class T> class Op, typename T, typename Init>
-        execution_tree::primitive_argument_type statistics1d_flat(
+        execution_tree::primitive_argument_type statistics1d(
             ir::node_data<T>&& arg, hpx::util::optional<Init> const& initial,
             std::string const& name, std::string const& codename)
         {
@@ -157,8 +157,27 @@ namespace phylanx { namespace common {
                         name, codename));
             }
 
-            return statistics1d_flat<Op>(
-                std::move(arg), initial, name, codename);
+            Op<T> op{ name, codename };
+
+            Init initial_value = Op<T>::initial();
+            if (initial)
+            {
+                initial_value = *initial;
+            }
+
+            auto v = arg.vector();
+            T result = op(v, initial_value);
+            if (keepdims)
+            {
+                using result_type = typename Op<T>::result_type;
+
+                return execution_tree::primitive_argument_type{
+                    blaze::DynamicVector<result_type>(
+                        1, op.finalize(result, v.size()))};
+            }
+
+            return execution_tree::primitive_argument_type{
+                op.finalize(result, v.size())};
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -2082,7 +2101,7 @@ namespace phylanx { namespace common {
                     codename);
 
             case 1:
-                return statistics1d_flat<Op>(
+                return statistics1d<Op>(
                     std::move(arg), initial_value, name, codename);
 
             case 2:
@@ -2176,7 +2195,7 @@ namespace phylanx { namespace common {
                     codename);
 
             case 1:
-                return statistics1d_flat<Op>(
+                return statistics1d<Op>(
                     std::move(arg), initial_value, name, codename);
 
             case 2:
