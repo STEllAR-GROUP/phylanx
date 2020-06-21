@@ -64,6 +64,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersection,
             std::uint32_t numtiles, ir::range&& new_tiling,
             execution_tree::localities_information&& arr_localities) const;
+
+        execution_tree::primitive_argument_type retile3d(
+            execution_tree::primitive_argument_type&& arr,
+            std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersection,
+            std::uint32_t numtiles, ir::range&& new_tiling) const;
+        template <typename T>
+        execution_tree::primitive_argument_type retile3d(ir::node_data<T>&& arr,
+            std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersection,
+            std::uint32_t numtiles, ir::range&& new_tiling,
+            execution_tree::localities_information&& arr_localities) const;
     };
 
     inline execution_tree::primitive create_retile_annotations(
