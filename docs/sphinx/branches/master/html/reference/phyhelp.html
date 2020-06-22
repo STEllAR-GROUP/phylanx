@@ -117,6 +117,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#decomposition">_decomposition</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linear-solver">_linear_solver</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#all">all</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#all-gather-d">all_gather_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#als">als</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#amax">amax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#amin">amin</a></li>
@@ -717,6 +718,23 @@ b (vector) : a vector</p>
 <p>Returns:</p>
 <p>True if all values in the matrix/vector are nonzero, False
 otherwise.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="all-gather-d">
+<h2>all_gather_d<a class="headerlink" href="#all-gather-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>all_gather_d (local_result)</dt><dd><p>Arg:</p>
+<blockquote>
+<div><p>local_result (array) : a distributed array. A vector or matrix.</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>A future holding a 2-D array with all values send</dt><dd><p>by all participating localities.</p>
+</dd>
+</dl>
+</div></blockquote>
 </dd>
 </dl>
 </div>
@@ -2918,10 +2936,10 @@ width_factor using the specified interpolation .</p>
 tiling_type (string, optional): defaults to <cite>sym</cite> which is a</p>
 <blockquote>
 <div><p>balanced way of tiling among all localities. Other options
-are <cite>row</cite>, <cite>column</cite> or <cite>user</cite> tiling types. If an
-intersection is given, retile produces tiles that have
-overlapped parts. In the <cite>user</cite> mode, using new_tiling,
-tiles are specified with their spans.</p>
+are <cite>page</cite> (at least 3d array), <cite>row</cite>, <cite>column</cite> or <cite>user</cite>
+tiling types. If an intersection is given, retile produces
+tiles that have overlapped parts. In the <cite>user</cite> mode, using
+new_tiling, tiles are specified with their spans.</p>
 </div></blockquote>
 <dl>
 <dt>intersection (int or tuple of ints, optional): the size of</dt><dd><p>overlapped part on each dimension. If an integer is given,
@@ -3558,7 +3576,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Jun 18, 2020.
+        Last updated on Jun 22, 2020.
       </span>
 
     </p>

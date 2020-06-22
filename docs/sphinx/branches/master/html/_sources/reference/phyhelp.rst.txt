@@ -327,6 +327,19 @@ all (a, axis, keepdims, initial)
             otherwise.
 
 
+all_gather_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+all_gather_d (local_result)
+            Arg:
+
+                local_result (array) : a distributed array. A vector or matrix.
+
+            Returns:
+
+                A future holding a 2-D array with all values send
+                    by all participating localities.
+
+
 als
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 als (ratings, reg, num, iters, alpha, enable_output)
@@ -2338,10 +2351,10 @@ retile_d (a, tiling_type, intersection, numtiles, new_tiling)
                 a (array): a distributed array. A vector or a matrix.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all localities. Other options
-                    are `row`, `column` or `user` tiling types. If an
-                    intersection is given, retile produces tiles that have
-                    overlapped parts. In the `user` mode, using new_tiling,
-                    tiles are specified with their spans.
+                    are `page` (at least 3d array), `row`, `column` or `user`
+                    tiling types. If an intersection is given, retile produces
+                    tiles that have overlapped parts. In the `user` mode, using
+                    new_tiling, tiles are specified with their spans.
                 intersection (int or tuple of ints, optional): the size of
                     overlapped part on each dimension. If an integer is given,
                     that would be the intersection length on all dimensions
