@@ -612,6 +612,11 @@ class PhySL:
 
         return '__add'
 
+    def _Mod(self, node):
+        """Leaf node, returning raw string of the `mod` operation."""
+
+        return '__mod'
+
     def _And(self, node):
         """Leaf node, returning raw string of the `and` operation."""
 
