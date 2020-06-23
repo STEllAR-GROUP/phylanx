@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/util/distributed_vector.hpp>
+#include <phylanx/util/distributed_tensor.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 
 #include <hpx/collectives/all_reduce.hpp>
@@ -27,4 +28,8 @@ REGISTER_DISTRIBUTED_VECTOR(std_uint8_t);
 REGISTER_DISTRIBUTED_MATRIX(double);
 REGISTER_DISTRIBUTED_MATRIX(std_int64_t);
 REGISTER_DISTRIBUTED_MATRIX(std_uint8_t);
+
+REGISTER_DISTRIBUTED_TENSOR(double);
+REGISTER_DISTRIBUTED_TENSOR(std_int64_t);
+REGISTER_DISTRIBUTED_TENSOR(std_uint8_t);
 

@@ -11,6 +11,8 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(all_gather_plugin,
+    phylanx::dist_matrixops::primitives::all_gather::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_argmax_plugin,
     phylanx::dist_matrixops::primitives::dist_argmax::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_argmin_plugin,

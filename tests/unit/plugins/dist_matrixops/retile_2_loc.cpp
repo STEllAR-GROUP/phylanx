@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/modules/testing.hpp>
 
@@ -36,7 +37,7 @@ void test_retile_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    HPX_TEST_EQ(result, comparison);
+    HPX_TEST_EQ(hpx::cout, result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -531,6 +532,154 @@ void test_retile_2loc_2d_3()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_retile_2loc_3d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc3d_0", R"(
+            retile_d(
+                annotate_d([[[1, 2, 3], [-1, -2, -3]],
+                            [[7, 8, 9], [-7, -8, -9]]],
+                    "tiled_array_3d_0",
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 0, 2))
+                ),
+                "user", nil, nil, list("tile", list("pages", 0, 1),
+                        list("rows", 0, 2), list("columns", 0, 6))
+            )
+        )", R"(
+            annotate_d([[[1, 2, 3, 4, 5, 6], [-1, -2, -3, -4, -5, -6]]],
+                "tiled_array_3d_0_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("pages", 0, 1),
+                        list("rows", 0, 2), list("columns", 0, 6))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc3d_0", R"(
+            retile_d(
+                annotate_d([[[4, 5, 6], [-4, -5, -6]],
+                            [[10, 11, 12], [-10, -11, -12]]],
+                    "tiled_array_3d_0",
+                    list("tile", list("pages", 0, 2),
+                        list("rows", 0, 2), list("columns", 3, 6))
+                ),
+                "user", nil, nil, list("tile", list("pages", 1, 2),
+                    list("rows", 0, 2), list("columns", 0, 6))
+            )
+        )", R"(
+            annotate_d([[[7, 8, 9, 10, 11, 12], [-7, -8, -9, -10, -11, -12]]],
+                "tiled_array_3d_0_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 0, 2),
+                        list("pages", 1, 2), list("columns", 0, 6))))
+        )");
+    }
+}
+
+void test_retile_2loc_3d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc3d_1", R"(
+            retile_d(
+                annotate_d([[[1, 2, 3], [-1, -2, -3]],
+                            [[7, 8, 9], [-7, -8, -9]]],
+                    "tiled_array_3d_1",
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 0, 2))
+                ),
+                "row"
+            )
+        )", R"(
+            annotate_d([[[1, 2, 3, 4, 5, 6]], [[7, 8, 9, 10, 11, 12]]],
+                "tiled_array_3d_1_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 6),
+                        list("rows", 0, 1), list("pages", 0, 2))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc3d_1", R"(
+            retile_d(
+                annotate_d([[[4, 5, 6], [-4, -5, -6]],
+                            [[10, 11, 12], [-10, -11, -12]]],
+                    "tiled_array_3d_1",
+                    list("tile", list("pages", 0, 2),
+                        list("rows", 0, 2), list("columns", 3, 6))
+                ),
+                "row"
+            )
+        )", R"(
+            annotate_d([[[-1, -2, -3, -4, -5, -6]],
+                        [[-7, -8, -9, -10, -11, -12]]],
+                "tiled_array_3d_1_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 1, 2),
+                        list("pages", 0, 2), list("columns", 0, 6))))
+        )");
+    }
+}
+
+void test_retile_2loc_3d_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_retile_d_operation("test_retile_2loc3d_2", R"(
+            retile_d(
+                annotate_d([[[7, 8, 9, 10, 11, 12],
+                            [-7, -8, -9, -10, -11, -12]],
+                            [[-1, -2, -3, -4, -5, -6],
+                            [-7, -8, -9, -10, -11, -12]]],
+                    "tiled_array_3d_2",
+                    list("tile", list("pages", 1, 3),
+                        list("columns", 0, 6), list("rows", 0, 2))
+                ),
+                "page", 1
+            )
+        )", R"(
+            annotate_d([[[1, 2, 3, 4, 5, 6], [-1, -2, -3, -4, -5, -6]],
+                        [[7, 8, 9, 10, 11, 12], [-7, -8, -9, -10, -11, -12]],
+                        [[-1, -2, -3, -4, -5, -6], [-7, -8, -9, -10, -11, -12]]],
+                "tiled_array_3d_2_retiled/1",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 6),
+                        list("rows", 0, 2), list("pages", 0, 3))))
+        )");
+    }
+    else
+    {
+        test_retile_d_operation("test_retile_2loc3d_2", R"(
+            retile_d(
+                annotate_d([[[1, 2, 3, 4, 5, 6], [-1, -2, -3, -4, -5, -6]]],
+                    "tiled_array_3d_2",
+                    list("tile", list("pages", 0, 1),
+                        list("rows", 0, 2), list("columns", 0, 6))
+                ),
+                "page", 1
+            )
+        )", R"(
+            annotate_d([[[7, 8, 9, 10, 11, 12],
+                       [-7, -8, -9, -10, -11, -12]],
+                       [[-1, -2, -3, -4, -5, -6],
+                       [-7, -8, -9, -10, -11, -12]]],
+                "tiled_array_3d_2_retiled/1",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("rows", 0, 2),
+                        list("pages", 1, 3), list("columns", 0, 6))))
+        )");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_retile_2loc_1d_0();
@@ -547,6 +696,10 @@ int hpx_main(int argc, char* argv[])
     test_retile_2loc_2d_1();
     test_retile_2loc_2d_2();
     test_retile_2loc_2d_3();
+
+    test_retile_2loc_3d_0();
+    test_retile_2loc_3d_1();
+    test_retile_2loc_3d_2();
 
     hpx::finalize();
     return hpx::util::report_errors();
