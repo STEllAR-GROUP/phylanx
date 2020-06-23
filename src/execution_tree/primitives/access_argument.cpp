@@ -256,17 +256,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 3:
                 slice(std::move(target),
                     value_operand_sync(std::move(operands_[2]),
-                        std::move(params), name_, codename_),
+                        std::move(params), name_, codename_, std::move(ctx)),
                     std::move(data[0]), name_, codename_);
                 return;
 
             case 4:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
                     slice(std::move(target), std::move(data1),
-                        value_operand_sync(
-                            operands_[3], std::move(params), name_, codename_),
+                        value_operand_sync(operands_[3], std::move(params),
+                            name_, codename_, std::move(ctx)),
                         std::move(data[0]), name_, codename_);
                 }
                 return;
@@ -274,13 +274,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 5:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
                     auto data2 = value_operand_sync(
-                        operands_[3], params, name_, codename_);
-                    slice(std::move(target),
-                        std::move(data1), std::move(data2),
-                        value_operand_sync(
-                            operands_[4], std::move(params), name_, codename_),
+                        operands_[3], params, name_, codename_, ctx);
+                    slice(std::move(target), std::move(data1), std::move(data2),
+                        value_operand_sync(operands_[4], std::move(params),
+                            name_, codename_, std::move(ctx)),
                         std::move(data[0]), name_, codename_);
                 }
                 return;
@@ -378,17 +377,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 3:
                 slice(std::move(target),
                     value_operand_sync(std::move(operands_[2]),
-                        std::move(params), name_, codename_),
+                        std::move(params), name_, codename_, std::move(ctx)),
                     std::move(data), name_, codename_);
                 return;
 
             case 4:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
                     slice(std::move(target), std::move(data1),
                         value_operand_sync(operands_[3], std::move(params),
-                            name_, codename_),
+                            name_, codename_, std::move(ctx)),
                         std::move(data), name_, codename_);
                 }
                 return;
@@ -396,13 +395,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 5:
                 {
                     auto data1 = value_operand_sync(
-                        operands_[2], params, name_, codename_);
+                        operands_[2], params, name_, codename_, ctx);
                     auto data2 = value_operand_sync(
-                        operands_[3], params, name_, codename_);
-                    slice(std::move(target),
-                        std::move(data1), std::move(data2),
+                        operands_[3], params, name_, codename_, ctx);
+                    slice(std::move(target), std::move(data1), std::move(data2),
                         value_operand_sync(operands_[4], std::move(params),
-                            name_, codename_),
+                            name_, codename_, std::move(ctx)),
                         std::move(data), name_, codename_);
                 }
                 return;
