@@ -30,7 +30,7 @@ char const* const als_code = R"(
     //
     // Alternating Least squares algorithm
     //
-    define(als, ratings, regularization, num_factors, iterations, alpha, enable_output,
+    define(__als, ratings, regularization, num_factors, iterations, alpha, enable_output,
         block(
             define(num_users, shape(ratings, 0)),
             define(num_items, shape(ratings, 1)),
@@ -101,7 +101,7 @@ char const* const als_code = R"(
             list(X, Y)
         )
     )
-    als
+    __als
 )";
 
 int hpx_main(hpx::program_options::variables_map& vm)
