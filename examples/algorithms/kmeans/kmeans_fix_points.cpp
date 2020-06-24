@@ -66,7 +66,7 @@ char const* const kmeans_code = R"(
         ), result
     ))
 
-    define(kmeans, points, iterations, initial_centroids, enable_output,
+    define(__kmeans, points, iterations, initial_centroids, enable_output,
         block(
             define(centroids, initial_centroids),
             define(num_centroids, shape(centroids, 0)),

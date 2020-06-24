@@ -46,7 +46,7 @@ char const* const kmeans_code = R"(
         )
     ))
 
-    define(kmeans, points, iterations, initial_centroids, enable_output,
+    define(__kmeans, points, iterations, initial_centroids, enable_output,
         block(
             define(centroids, initial_centroids),
             for(define(i, 0), i < iterations, store(i, i + 1),
