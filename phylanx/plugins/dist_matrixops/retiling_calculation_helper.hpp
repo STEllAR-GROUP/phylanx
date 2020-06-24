@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include <blaze/Math.h>
 
@@ -26,7 +27,7 @@ namespace retiling_calculation
     template <typename T>
     inline blaze::DynamicTensor<T> retile3d_calculation(
         phylanx::ir::node_data<T>&& arr,
-        phylanx::execution_tree::localities_information&& arr_localities,
+        phylanx::execution_tree::localities_information const& arr_localities,
         std::int64_t des_page_start, std::int64_t des_page_stop,
         std::int64_t des_row_start, std::int64_t des_row_stop,
         std::int64_t des_col_start, std::int64_t des_col_stop,

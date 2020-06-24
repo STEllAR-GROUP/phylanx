@@ -21,6 +21,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(dist_cannon_product_plugin,
     phylanx::dist_matrixops::primitives::dist_cannon_product::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_constant_plugin,
     phylanx::dist_matrixops::primitives::dist_constant::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_conv1d_plugin,
+    phylanx::dist_matrixops::primitives::dist_conv1d::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_diag_plugin,
     phylanx::dist_matrixops::primitives::dist_diag::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_dot_operation_plugin,

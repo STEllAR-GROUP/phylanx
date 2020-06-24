@@ -810,6 +810,12 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             des_col_stop = des_col_start + des_col_size;
         }
 
+        blaze::DynamicTensor<T> result =
+            retiling_calculation::retile3d_calculation(std::move(arr),
+                arr_localities, des_page_start, des_page_stop,
+                des_row_start, des_row_stop, des_col_start, des_col_stop, name_,
+                codename_);
+
         // updating the tile information
         tiling_information_3d tile_info =
             tiling_information_3d(tiling_span(des_page_start, des_page_stop),
@@ -821,12 +827,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::make_shared<annotation>(localities_annotation(locality_ann,
                 tile_info.as_annotation(name_, codename_),
                 arr_localities.annotation_, name_, codename_));
-
-        blaze::DynamicTensor<T> result =
-            retiling_calculation::retile3d_calculation(std::move(arr),
-                std::move(arr_localities), des_page_start, des_page_stop,
-                des_row_start, des_row_stop, des_col_start, des_col_stop, name_,
-                codename_);
 
         return primitive_argument_type(result, attached_annotation);
     }

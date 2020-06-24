@@ -11,6 +11,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_argmin.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_cannon_product.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_constant.hpp>
+#include <phylanx/plugins/dist_matrixops/dist_conv1d.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_diag.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_dot_operation.hpp>
 #include <phylanx/plugins/dist_matrixops/dist_identity.hpp>
