@@ -10,6 +10,7 @@ set(tests
     817_compare_nil
     817_cout_nil
     817_lambda_nil
+    1198_inaccessible_variable
     allow_empty_blocks_278
     assign_variable_twice_491
     assign_wrong_variable_245
