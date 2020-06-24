@@ -16,6 +16,7 @@ set(tests
     make_array
     map_numpy
     map_numpy_constants
+    modulus_test
     multi_init
     multi_return
     parallel

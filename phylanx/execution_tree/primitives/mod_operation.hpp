@@ -25,23 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct mod_op;
     }
 
-    template<typename T>
-    class base
-      : public primitive_component_base
-      , public std::enable_shared_from_this<T>
-    {
-    public:
-        base() = default;
-
-        base(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
-        : primitive_component_base(std::move(operands), name, codename) {}
-    };
-
     ///////////////////////////////////////////////////////////////////////////
-    class mod_operation : public base<mod_operation>
+    class mod_operation 
+      : public primitive_component_base
+      , public std::enable_shared_from_this<mod_operation>
     {
-        using base_type = base<mod_operation>;
+        using base_type = primitive_component_base;
 
     protected:
         hpx::future<primitive_argument_type> eval(
