@@ -10,10 +10,10 @@
 #include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
-#include <hpx/basic_execution/register_locks.hpp>
 #include <hpx/errors/exception.hpp>
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/modules/execution_base.hpp>
 #include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <atomic>

@@ -58,7 +58,7 @@ char const* const lra_code = R"(block(
     //   x: [N, M]
     //   y: [N]
     //
-    define(lra, x, y, alpha, iterations, enable_output,
+    define(__lra, x, y, alpha, iterations, enable_output,
         block(
             define(weights, constant(0.0, shape(x, 1))),            // weights: [M]
             define(transx, transpose(x)),                           // transx:  [M, N]
@@ -83,7 +83,7 @@ char const* const lra_code = R"(block(
             weights
         )
     ),
-    lra
+    __lra
 ))";
 
 int hpx_main(hpx::program_options::variables_map& vm)

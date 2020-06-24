@@ -73,7 +73,7 @@ char const* const lra_code = R"(block(
     //   x: [N, M]
     //   y: [N]
     //
-    define(lra, x, y, alpha, iterations, enable_output,
+    define(__lra, x, y, alpha, iterations, enable_output,
         block(
             define(transx, transpose_d(x)),                     // transx:   [M, N]
             define(error, constant(0.0, shape(x, 0))),          // error:    [N]
@@ -97,7 +97,7 @@ char const* const lra_code = R"(block(
             weights
         )
     ),
-    lra
+    __lra
 ))";
 
 ////////////////////////////////////////////////////////////////////////////////
