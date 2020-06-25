@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    class mod_operation 
+    class mod_operation
       : public primitive_component_base
       , public std::enable_shared_from_this<mod_operation>
     {
