@@ -15,7 +15,7 @@ r1 = mod_test()
 r2 = mod_test2()
 for i in range(len(r1)):
     if not np.all(r1[i] == r2[i]):
-        print("Differences found:",i)
+        print("Differences found:", i)
         print(r1[i])
         print(r2[i])
         assert False
