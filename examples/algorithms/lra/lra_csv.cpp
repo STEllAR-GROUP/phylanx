@@ -64,7 +64,7 @@ char const* const lra_code = R"(block(
             define(transx, transpose(x)),                           // transx:  [M, N]
             define(pred, constant(0.0, shape(x, 0))),
             define(error, constant(0.0, shape(x, 0))),
-            define(gradient, constant(0.0, shape(x, 1))),
+            define(grad, constant(0.0, shape(x, 1))),
             define(step, 0),
             while(
                 step < iterations,
@@ -73,9 +73,9 @@ char const* const lra_code = R"(block(
                     // exp(-dot(x, weights)): [N], pred: [N]
                     store(pred, sigmoid(dot(x, weights))),
                     store(error, pred - y),                         // error: [N]
-                    store(gradient, dot(transx, error)),            // gradient: [M]
+                    store(grad, dot(transx, error)),            // grad: [M]
                     parallel_block(
-                        store(weights, weights - (alpha * gradient)),
+                        store(weights, weights - (alpha * grad)),
                         store(step, step + 1)
                     )
                 )
