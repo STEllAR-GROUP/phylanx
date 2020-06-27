@@ -9,6 +9,7 @@ set(subdirs
     booleans
     common
     controls
+    dist_keras_support
     dist_matrixops
     fileio
     keras_support

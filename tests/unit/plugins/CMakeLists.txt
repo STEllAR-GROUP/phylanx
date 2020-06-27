@@ -7,6 +7,7 @@ set(subdirs
     arithmetics
     booleans
     controls
+    dist_keras_support
     dist_matrixops
     fileio
     keras_support

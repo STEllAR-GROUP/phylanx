@@ -530,7 +530,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 primitive_argument_type local_result = common::argminmax2d<Op>(
                     std::move(args), name_, codename_, &local_value);
 
-                // correct index to be global
                 auto indices_node_data = extract_integer_value_strict(
                     std::move(local_result), name_, codename_);
 
