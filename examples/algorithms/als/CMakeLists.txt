@@ -6,6 +6,7 @@
 set(example_programs
     als
     als_csv
+    als_csv_distributed
     als_csv_instrumented
    )
 
