@@ -64,6 +64,8 @@ namespace phylanx { namespace execution_tree
 //         annotation as_annotation(
 //             std::string const& name, std::string const& codename) const;
 
+        bool is_page_tiled(
+            std::string const& name, std::string const& codename) const;
         bool is_row_tiled(
             std::string const& name, std::string const& codename) const;
         bool is_column_tiled(

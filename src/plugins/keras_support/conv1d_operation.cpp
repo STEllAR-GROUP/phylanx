@@ -221,7 +221,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[0]), this_->name_, this_->codename_),
                         extract_numeric_value(
                             std::move(args[1]), this_->name_, this_->codename_),
-                        std::move(padding));
+                        std::move(padding), this_->name_, this_->codename_);
                 }
                 if (dilation_rate == 1) // strides > 1
                 {
@@ -230,7 +230,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(args[0]), this_->name_, this_->codename_),
                         extract_numeric_value(
                             std::move(args[1]), this_->name_, this_->codename_),
-                        std::move(padding), strides);
+                        std::move(padding), strides, this_->name_,
+                        this_->codename_);
                 }
 
                 // strides == 1 and dilation_rate > 1
@@ -239,7 +240,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(args[0]), this_->name_, this_->codename_),
                     extract_numeric_value(
                         std::move(args[1]), this_->name_, this_->codename_),
-                    std::move(padding), dilation_rate);
+                    std::move(padding), dilation_rate, this_->name_,
+                    this_->codename_);
             }),
             detail::map_operands(operands, functional::value_operand{},
                 args, name_, codename_, std::move(ctx)));

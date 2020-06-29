@@ -146,7 +146,7 @@ namespace phylanx { namespace common {
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
 
-        std::int64_t pad_left = (filter_length - 1) / 2;
+        std::int64_t pad_top = (filter_length - 1) / 2;
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
@@ -156,7 +156,7 @@ namespace phylanx { namespace common {
             for (std::size_t i = 0; i != data_length; ++i)
             {
                 auto sub = conv_indices::get_subsizes(
-                    data_length, filter_length, i - pad_left);
+                    data_length, filter_length, i - pad_top);
                 auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
                                          batch, sub.size_, in_channels) %
                     blaze::submatrix(
@@ -201,7 +201,7 @@ namespace phylanx { namespace common {
             strides);
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
-        std::size_t pad_left = pad_width / 2;
+        std::size_t pad_top = pad_width / 2;
 
         for (std::size_t c = 0; c != out_channels; ++c)
         {
@@ -209,7 +209,7 @@ namespace phylanx { namespace common {
             for (std::size_t i = 0; i != result_length; ++i)
             {
                 auto sub = conv_indices::get_subsizes(
-                    data_length, filter_length, i * strides - pad_left);
+                    data_length, filter_length, i * strides - pad_top);
                 auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
                                          batch, sub.size_, in_channels) %
                     blaze::submatrix(
@@ -235,7 +235,7 @@ namespace phylanx { namespace common {
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
-        std::int64_t pad_left = (dilation_rate * (filter_length - 1)) / 2;
+        std::int64_t pad_top = (dilation_rate * (filter_length - 1)) / 2;
 
         blaze::DynamicTensor<double> result(
             batch, data_length, out_channels, 0.);
@@ -246,7 +246,7 @@ namespace phylanx { namespace common {
             for (std::size_t i = 0; i != data_length; ++i)
             {
                 auto sub = conv_indices::get_subsizes_dilated(
-                    data_length, filter_length, i - pad_left, dilation_rate);
+                    data_length, filter_length, i - pad_top, dilation_rate);
 
                 if (sub.size_ == 0)
                     continue;
@@ -315,7 +315,7 @@ namespace phylanx { namespace common {
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
-        std::int64_t pad_left = filter_length - 1;    // no pad_right
+        std::int64_t pad_top = filter_length - 1;    // no pad_bottom
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
@@ -325,7 +325,7 @@ namespace phylanx { namespace common {
             for (std::size_t i = 0; i != data_length; ++i)
             {
                 auto sub = detail::get_subsizes_causal(
-                    data_length, filter_length, i - pad_left);
+                    data_length, filter_length, i - pad_top);
                 auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
                                          batch, sub.size_, in_channels) %
                     blaze::submatrix(
@@ -351,7 +351,7 @@ namespace phylanx { namespace common {
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
-        std::int64_t pad_left = filter_length - 1;    // no pad_right
+        std::int64_t pad_top = filter_length - 1;    // no pad_bottom
 
         std::size_t result_length =
             blaze::ceil(static_cast<double>(data_length) / strides);
@@ -364,7 +364,7 @@ namespace phylanx { namespace common {
             for (std::size_t i = 0; i != result_length; ++i)
             {
                 auto sub = detail::get_subsizes_causal(
-                    data_length, filter_length, i * strides - pad_left);
+                    data_length, filter_length, i * strides - pad_top);
                 auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
                                          batch, sub.size_, in_channels) %
                     blaze::submatrix(
@@ -390,8 +390,8 @@ namespace phylanx { namespace common {
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
-        std::int64_t pad_left =
-            dilation_rate * (filter_length - 1);    // no pad_right
+        std::int64_t pad_top =
+            dilation_rate * (filter_length - 1);    // no pad_bottom
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
@@ -401,7 +401,7 @@ namespace phylanx { namespace common {
             for (std::size_t i = 0; i != data_length; ++i)
             {
                 auto sub = detail::get_subsizes_causal_dilated(
-                    data_length, filter_length, i - pad_left, dilation_rate);
+                    data_length, filter_length, i - pad_top, dilation_rate);
 
                 if (sub.size_ == 0)
                     continue;
@@ -424,8 +424,22 @@ namespace phylanx { namespace common {
     /////////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type conv1d_all_paddings(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        std::string&& padding)
+        std::string&& padding, std::string const& name,
+        std::string const& codename)
     {
+        if (execution_tree::extract_numeric_value_dimensions(
+            arg, name, codename)[2] !=
+            execution_tree::extract_numeric_value_dimensions(
+                kernel, name, codename)[1])
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "conv1d_all_paddings::conv1d_all_paddings",
+                util::generate_error_message(
+                    "input depth must be evenly divisible by filter depth. "
+                    "Number of input channels is not the same",
+                    name, codename));
+        }
+
         if (padding == "valid")
         {
             return conv1d_valid(std::move(arg), std::move(kernel));
@@ -441,8 +455,22 @@ namespace phylanx { namespace common {
 
     execution_tree::primitive_argument_type conv1d_all_paddings(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        std::string&& padding, std::int64_t strides)
+        std::string&& padding, std::int64_t strides, std::string const& name,
+        std::string const& codename)
     {
+        if (execution_tree::extract_numeric_value_dimensions(
+                arg, name, codename)[2] !=
+            execution_tree::extract_numeric_value_dimensions(
+                kernel, name, codename)[1])
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "conv1d_all_paddings::conv1d_all_paddings",
+                util::generate_error_message(
+                    "input depth must be evenly divisible by filter depth. "
+                    "Number of input channels is not the same",
+                    name, codename));
+        }
+
         if (padding == "valid")
         {
             return conv1d_valid(std::move(arg), std::move(kernel), strides);
@@ -458,8 +486,22 @@ namespace phylanx { namespace common {
 
     execution_tree::primitive_argument_type conv1d_all_paddings_dilation(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-        std::string&& padding, std::int64_t dilation_rate)
+        std::string&& padding, std::int64_t dilation_rate,
+        std::string const& name, std::string const& codename)
     {
+        if (execution_tree::extract_numeric_value_dimensions(
+                arg, name, codename)[2] !=
+            execution_tree::extract_numeric_value_dimensions(
+                kernel, name, codename)[1])
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "conv1d_all_paddings::conv1d_all_paddings",
+                util::generate_error_message(
+                    "input depth must be evenly divisible by filter depth. "
+                    "Number of input channels is not the same",
+                    name, codename));
+        }
+
         if (padding == "valid")
         {
             return conv1d_valid_dilation(

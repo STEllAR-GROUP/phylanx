@@ -46,15 +46,18 @@ namespace phylanx { namespace common {
 
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     conv1d_all_paddings(ir::node_data<double>&& arg,
-        ir::node_data<double>&& kernel, std::string&& padding);
+        ir::node_data<double>&& kernel, std::string&& padding,
+        std::string const& name, std::string const& codename);
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     conv1d_all_paddings(ir::node_data<double>&& arg,
         ir::node_data<double>&& kernel, std::string&& padding,
-        std::int64_t strides);
+        std::int64_t strides, std::string const& name,
+        std::string const& codename);
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     conv1d_all_paddings_dilation(ir::node_data<double>&& arg,
         ir::node_data<double>&& kernel, std::string&& padding,
-        std::int64_t dilation_rate);
+        std::int64_t dilation_rate, std::string const& name,
+        std::string const& codename);
 
 }}    // namespace phylanx::common
 

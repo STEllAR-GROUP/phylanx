@@ -14,10 +14,10 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/conv1d_all_paddings.hpp>
 #include <phylanx/plugins/dist_keras_support/dist_conv1d.hpp>
-#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
-#include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
-#include <phylanx/util/distributed_tensor.hpp>
-#include <phylanx/util/index_calculation_helper.hpp>
+//#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
+//#include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
+//#include <phylanx/util/distributed_tensor.hpp>
+//#include <phylanx/util/index_calculation_helper.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -46,10 +46,10 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             __arg(_3_padding, "valid"),
             __arg(_4_strides, 1),
             __arg(_5_dilation_rate, 1),
-            __arg(_6_parallelization, "data"))
+            __arg(_6_name, ""))
         )"},
         &create_dist_conv1d, &execution_tree::create_primitive<dist_conv1d>,
-        R"(x, kernel, padding, strides, dilation_rate
+        R"(x, kernel, padding, strides, dilation_rate, name
         Args:
             x (array) : a 3d array consiting of batch, in_length and
                 in_channels dimensions.
@@ -67,99 +67,149 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             dilation_rate (optional, integer) : indicates the dilation rate,
                 the rate to sample the array in each step of convolution, 1
                 by default.
-            parallelization (optional, string) : can be set to exploit `data`,
-                `spatial` or both of `data_spatial` parallelization. The
-                default mode is `data` parallelization. `data` parallelizes the
-                batch dimension and `spatial` parallelization is on the
-                in_length dimension.
+            name (optional, string): the result name. If not given it will be
+                the same as the next generation of the original distributed
+                array.
         Returns:
         1D convolution (or 1D mathematical cross-correlation))")
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    dist_conv1d::dist_conv1d(execution_tree::primitive_arguments_type&& operands,
+    dist_conv1d::dist_conv1d(
+        execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        std::size_t global_row_start_valid(
+            std::size_t arg_start, std::size_t filter_length)
+        {
+            if (arg_start == 0)
+            {
+                return static_cast<std::size_t>(0);
+            }
+
+            // padding == "same" or padding == "causal"
+            return arg_start;
+        }
+
+        std::size_t global_row_start(std::size_t arg_start,
+            std::string const& padding, std::size_t filter_length)
+        {
+            if (arg_start == 0)
+            {
+                return static_cast<std::size_t>(0);
+            }
+
+            if (padding == "valid")
+            {
+                return arg_start - filter_length + 1;
+            }
+
+            // padding == "same" or padding == "causal"
+            return arg_start;
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type dist_conv1d::conv1d_all_paddings(
     ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
     execution_tree::localities_information&& arg_locs,
     execution_tree::localities_information&& kernel_locs,
-    std::string&& padding, std::string&& par_mode) const
+    std::string&& padding, std::string&& given_name) const
     {
         using namespace execution_tree;
         std::uint32_t const loc_id = arg_locs.locality_.locality_id_;
-        std::uint32_t const num_localities =
-            hpx::get_num_localities(hpx::launch::sync);
-        auto locality_ann = arg_locs.locality_.as_annotation();
-        std::size_t pages_dim = arg_locs.pages(name_, codename_);
-        std::size_t rows_dim = arg_locs.rows(name_, codename_);
-        std::size_t cols_dim = arg_locs.columns(name_, codename_);
-        std::size_t rows_dim_k = kernel_locs.rows(name_, codename_);
-        std::size_t cols_dim_k = kernel_locs.columns(name_, codename_);
-
-        if (cols_dim != rows_dim_k)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_conv1d::conv1d_all_paddings",
-                generate_error_message(
-                    "two different input_channels are given. The array's "
-                    "number of columns should be the same as the kernel's "
-                    "number of rows"));
-        }
-
-        // updating the generation of localities annotation
-        ++arg_locs.annotation_.generation_;
-
-        // desired annotation information for arg
-        std::int64_t des_page_start, des_page_stop, des_row_start, des_row_stop,
-            des_col_start, des_col_stop, des_page_size, des_row_size,
-            des_col_size;
+        std::uint32_t const numtiles = arg_locs.locality_.num_localities_;
+        std::uint32_t const numtiles_k = kernel_locs.locality_.num_localities_;
 
         // tiling start and stop of the result tensor
         std::int64_t res_page_start, res_page_stop, res_row_start, res_row_stop,
             res_col_start, res_col_stop;
+        primitive_argument_type local_result;
 
-        if (par_mode == "data")
+        if (numtiles > 1 && numtiles_k == 1)
         {
-            // batches of data are pages of the arg
-            des_row_start = des_col_start = 0;
-            des_row_stop = rows_dim;
-            des_col_stop = cols_dim;
-            std::tie(des_page_start, des_page_size) =
-                tile_calculation::tile_calculation_1d(
-                    loc_id, pages_dim, num_localities);
+            std::size_t filter_length = kernel.tensor().pages();
 
-            des_page_stop = des_page_start + des_page_size;
+            // parallelization mode is data, spatial or a combination of both
+            std::string base_name =
+                given_name.empty() ? arg_locs.annotation_.name_ : given_name;
 
-            blaze::DynamicTensor<double> local_arg;
-                //retiling_calculation::retile3d_calculation<double>(
-                //    std::move(arg), arg_locs, des_page_start, des_page_stop,
-                //    des_row_start, des_row_stop, des_col_start, des_col_stop,
-                //    name_, codename_);
+            // updating the generation of localities annotation
+            ++arg_locs.annotation_.generation_;
 
-            // padding has no effect on data parallelization
-            primitive_argument_type local_result = common::conv1d_all_paddings(
-                ir::node_data<double>(std::move(local_arg)), std::move(kernel),
-                std::move(padding));
+            auto locality_ann = arg_locs.locality_.as_annotation();
 
-            res_page_start = des_page_start;
-            res_page_stop = des_page_stop;
-            res_row_start = res_col_start = 0;
-            res_col_stop = cols_dim_k;
-            // getting res_row_stop considering the padding
-            res_row_stop = extract_numeric_value_dimensions(
-                local_result, name_, codename_)[1];
+            res_col_start = 0;
+            res_col_stop = kernel_locs.columns(name_, codename_);
 
-            tiling_information_3d tile_info = tiling_information_3d(
+            tiling_information_3d tile_info(
+                arg_locs.tiles_[loc_id], name_, codename_);
+            res_page_start = tile_info.spans_[0].start_;
+            res_page_stop = tile_info.spans_[0].stop_;
+            std::int64_t arg_row_start = tile_info.spans_[1].start_;
+            std::int64_t arg_row_stop = tile_info.spans_[1].stop_;
+
+            if (padding == "valid" || arg_locs.is_page_tiled(name_, codename_))
+            {
+                res_row_start = arg_row_start;
+                local_result = common::conv1d_all_paddings(
+                    ir::node_data<double>(std::move(arg)), std::move(kernel),
+                    std::move(padding), name_, codename_);
+
+                // getting res_row_stop considering the padding
+                res_row_stop = padding == "valid" ?
+                    arg_row_stop - filter_length + 1 :
+                    arg_row_stop;
+            }
+            else
+            {
+                // spatial parallelization where padding is same of causal
+                if (arg_row_start == 0)
+                {
+                    // one-sided pad from top
+                    //local_result = dist_conv1d_all_paddings(
+                    //    ir::node_data<double>(std::move(arg)),
+                    //    std::move(kernel), "top", name_, codename_);
+                }
+                else if (arg_row_stop == arg_locs.rows(name_, codename_))
+                {
+                    // one-sided pad from bottom
+                    //local_result = dist_conv1d_all_paddings(
+                    //    ir::node_data<double>(std::move(arg)),
+                    //    std::move(kernel), "top", name_, codename_);
+                }
+                else
+                {
+                    // no padding (valid)
+                    local_result = common::conv1d_all_paddings(
+                        ir::node_data<double>(std::move(arg)),
+                        std::move(kernel), "valid", name_, codename_);
+                }
+
+                //local_result = common::conv1d_all_paddings(
+                //    ir::node_data<double>(std::move(arg)), std::move(kernel),
+                //    std::move(padding), name_, codename_);
+                //res_row_start = detail::global_row_start(
+                //    tile_info.spans_[1].start_, padding, kernel_pages);
+
+                //// getting res_row_stop considering the padding
+                //res_row_stop = res_row_start +
+                //    extract_numeric_value_dimensions(
+                //        local_result, name_, codename_)[1];
+            }
+
+            tiling_information_3d res_tile_info = tiling_information_3d(
                 tiling_span(res_page_start, res_page_stop),
                 tiling_span(res_row_start, res_row_stop),
                 tiling_span(res_col_start, res_col_stop));
             auto attached_annotation = std::make_shared<annotation>(
                         localities_annotation(locality_ann,
-                            tile_info.as_annotation(name_, codename_),
+                            res_tile_info.as_annotation(name_, codename_),
                             arg_locs.annotation_, name_, codename_));
 
             // construct new tiling annotation
@@ -167,19 +217,19 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             return local_result;
         }
 
-        HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_conv1d::eval",
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "dist_conv1d::conv1d_all_paddings",
             generate_error_message(
-                "strides > 1 not supported in conjunction with "
-                "dilation_rate > 1"));
+                "at this point only data and spatial parallelizans are valid"));
     }
 
     execution_tree::primitive_argument_type dist_conv1d::conv1d_all_paddings(
         execution_tree::primitive_argument_type&& arg,
         execution_tree::primitive_argument_type&& kernel,
-        std::string&& padding, std::string&& par_mode) const
+        std::string&& padding, std::string&& given_name) const
     {
         using namespace execution_tree;
-        if (arg.has_annotation() /*&& kernel.has_annotation()*/)
+        if (arg.has_annotation() || kernel.has_annotation())
         {
             localities_information arg_locs =
                 extract_localities_information(arg, name_, codename_);
@@ -189,13 +239,13 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                 extract_numeric_value(std::move(arg), name_, codename_),
                 extract_numeric_value(std::move(kernel), name_, codename_),
                 std::move(arg_locs), std::move(kernel_locs), std::move(padding),
-                std::move(par_mode));
+                std::move(given_name));
         }
 
         return common::conv1d_all_paddings(
             extract_numeric_value(std::move(arg), name_, codename_),
             extract_numeric_value(std::move(kernel), name_, codename_),
-            std::move(padding));
+            std::move(padding), name_, codename_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -347,28 +397,18 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                             "dilation_rate > 1"));
                 }
 
-                std::string par_mode = "data";
+                std::string given_name = "";
                 if (valid(args[5]))
                 {
-                    par_mode = extract_string_value_strict(
-                        args[5], this_->name_, this_->codename_);
-
-                    if (par_mode != "data" && par_mode != "spatial" &&
-                        par_mode != "data_spatial")
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_conv1d::eval",
-                            this_->generate_error_message(
-                                "invalid parallelization mode. It can be one "
-                                "of the `data`, `spatial`, or `data_spatial`"));
-                    }
+                    given_name = extract_string_value(std::move(args[5]),
+                            this_->name_, this_->codename_);
                 }
 
                 if (strides == 1 && dilation_rate == 1)
                 {
                     return this_->conv1d_all_paddings(std::move(args[0]),
                         std::move(args[1]), std::move(padding),
-                        std::move(par_mode));
+                        std::move(given_name));
                 }
                 //if (dilation_rate == 1) // strides > 1
                 //{

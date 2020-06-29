@@ -46,11 +46,11 @@ namespace phylanx { namespace dist_keras_support { namespace primitives {
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
             execution_tree::localities_information&& arg_locs,
             execution_tree::localities_information&& kernel_locs,
-            std::string&& padding, std::string&& par_mode) const;
+            std::string&& padding, std::string&& given_name) const;
         execution_tree::primitive_argument_type conv1d_all_paddings(
             execution_tree::primitive_argument_type&& arg,
             execution_tree::primitive_argument_type&& kernel,
-            std::string&& padding, std::string&& par_mode) const;
+            std::string&& padding, std::string&& given_name) const;
 
         execution_tree::primitive_argument_type conv1d_any_pad(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,

@@ -528,6 +528,39 @@ namespace phylanx { namespace execution_tree
 //             annotation_.as_annotation());
 //     }
 
+    bool localities_information::is_page_tiled(
+        std::string const& name, std::string const& codename) const
+    {
+        for (std::size_t i = 0; i != tiles_.size(); ++i)
+        {
+            switch (tiles_[i].dimension())
+            {
+            case 0:
+                continue;
+
+            case 3:
+                return detail::dim_tiled<1>(tiles_, rows(name, codename)) &&
+                    detail::dim_tiled<2>(tiles_, columns(name, codename));
+
+            case 1: HPX_FALLTHROUGH;
+            case 2: HPX_FALLTHROUGH;
+            case 4: HPX_FALLTHROUGH;
+            default:
+                break;
+            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "localities_information::is_page_tiled",
+                util::generate_error_message(
+                    "unexpected dimensionality for calling is_page_tiled()",
+                    name, codename));
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "localities_information::is_page_tiled",
+            util::generate_error_message(
+                "cannot call is_page_tiled() when all tiles are empty", name,
+                codename));
+    }
+
     bool localities_information::is_row_tiled(
         std::string const& name, std::string const& codename) const
     {
@@ -541,8 +574,11 @@ namespace phylanx { namespace execution_tree
             case 2:
                 return detail::dim_tiled<1>(tiles_, columns(name, codename));
 
+            case 3:
+                return detail::dim_tiled<0>(tiles_, pages(name, codename)) &&
+                    detail::dim_tiled<2>(tiles_, columns(name, codename));
+
             case 1: HPX_FALLTHROUGH;
-            case 3: HPX_FALLTHROUGH;
             case 4: HPX_FALLTHROUGH;
             default:
                 break;
@@ -573,8 +609,11 @@ namespace phylanx { namespace execution_tree
             case 2:
                 return detail::dim_tiled<0>(tiles_, rows(name, codename));
 
+            case 3:
+                return detail::dim_tiled<0>(tiles_, pages(name, codename)) &&
+                    detail::dim_tiled<1>(tiles_, rows(name, codename));
+
             case 1: HPX_FALLTHROUGH;
-            case 3: HPX_FALLTHROUGH;
             case 4: HPX_FALLTHROUGH;
             default:
                 break;
