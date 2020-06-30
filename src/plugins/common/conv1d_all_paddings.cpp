@@ -267,44 +267,6 @@ namespace phylanx { namespace common {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        using sizes = conv_indices::sizes;
-        inline sizes get_subsizes_causal(std::int64_t image_size,
-            std::int64_t kernel_size, std::int64_t relative_position)
-        {
-            if (relative_position < 0)
-            {
-                return sizes{
-                    0, -relative_position, kernel_size + relative_position};
-            }
-
-            return sizes{relative_position, 0, kernel_size};
-        }
-
-        inline sizes get_subsizes_causal_dilated(std::int64_t image_size,
-            std::int64_t kernel_size, std::int64_t relative_position,
-            std::int64_t dilation_rate)
-        {
-            if (relative_position < 0)
-            {
-                std::int64_t remainder = relative_position % dilation_rate;
-                remainder =
-                    remainder >= 0 ? remainder : dilation_rate + remainder;
-                std::int64_t corrected_kernel_size = kernel_size +
-                    blaze::floor(
-                        static_cast<double>(relative_position) / dilation_rate);
-
-                std::int64_t kernel_beg_ = blaze::ceil(
-                    static_cast<double>(-relative_position) / dilation_rate);
-                return sizes{remainder, kernel_beg_, corrected_kernel_size};
-            }
-
-            return sizes{relative_position, 0, kernel_size};
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type conv1d_causal(
         ir::node_data<double>&& arg, ir::node_data<double>&& kernel)
     {
@@ -324,8 +286,8 @@ namespace phylanx { namespace common {
             auto kslice = blaze::columnslice(k, c);
             for (std::size_t i = 0; i != data_length; ++i)
             {
-                auto sub = detail::get_subsizes_causal(
-                    data_length, filter_length, i - pad_top);
+                auto sub = conv_indices::get_subsizes_causal(
+                    filter_length, i - pad_top);
                 auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
                                          batch, sub.size_, in_channels) %
                     blaze::submatrix(
@@ -363,8 +325,8 @@ namespace phylanx { namespace common {
             auto kslice = blaze::columnslice(k, c);
             for (std::size_t i = 0; i != result_length; ++i)
             {
-                auto sub = detail::get_subsizes_causal(
-                    data_length, filter_length, i * strides - pad_top);
+                auto sub = conv_indices::get_subsizes_causal(
+                    filter_length, i * strides - pad_top);
                 auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
                                          batch, sub.size_, in_channels) %
                     blaze::submatrix(
@@ -400,8 +362,8 @@ namespace phylanx { namespace common {
             auto kslice = blaze::columnslice(k, c);
             for (std::size_t i = 0; i != data_length; ++i)
             {
-                auto sub = detail::get_subsizes_causal_dilated(
-                    data_length, filter_length, i - pad_top, dilation_rate);
+                auto sub = conv_indices::get_subsizes_causal_dilated(
+                    filter_length, i - pad_top, dilation_rate);
 
                 if (sub.size_ == 0)
                     continue;
