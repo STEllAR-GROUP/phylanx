@@ -12,7 +12,7 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
 
     conf = alpha * ratings
     conf_u = np.zeros((num_items, 1))
-    conf_i = np.zeros((num_items, 1))
+    conf_i = np.zeros((num_users, 1))
 
     c_u = np.zeros((num_items, num_items))
     c_i = np.zeros((num_users, num_users))
