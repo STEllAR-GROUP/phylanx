@@ -14,10 +14,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/conv1d_all_paddings.hpp>
 #include <phylanx/plugins/dist_keras_support/dist_conv1d.hpp>
-//#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 #include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
-//#include <phylanx/util/distributed_tensor.hpp>
-//#include <phylanx/util/index_calculation_helper.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -84,38 +81,9 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::size_t global_row_start_valid(
-            std::size_t arg_start, std::size_t filter_length)
-        {
-            if (arg_start == 0)
-            {
-                return static_cast<std::size_t>(0);
-            }
-
-            // padding == "same" or padding == "causal"
-            return arg_start;
-        }
-
-        std::size_t global_row_start(std::size_t arg_start,
-            std::string const& padding, std::size_t filter_length)
-        {
-            if (arg_start == 0)
-            {
-                return static_cast<std::size_t>(0);
-            }
-
-            if (padding == "valid")
-            {
-                return arg_start - filter_length + 1;
-            }
-
-            // padding == "same" or padding == "causal"
-            return arg_start;
-        }
-
-        execution_tree::primitive_argument_type conv1d_pad_top(
+        execution_tree::primitive_argument_type conv1d_pad_top_bottom(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-            std::size_t pad_top)
+            std::size_t pad, bool mode)
         {
             auto a = arg.tensor();
             auto k = kernel.tensor();
@@ -124,68 +92,56 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             std::size_t batch = a.pages();
             std::size_t in_channels = a.columns();
             std::size_t out_channels = k.columns();
-            std::size_t result_length =
-                pad_top + data_length - filter_length + 1;
+            std::size_t result_length = pad + data_length - filter_length + 1;
 
             blaze::DynamicTensor<double> result(
                 batch, result_length, out_channels);
 
-            for (std::size_t c = 0; c != out_channels; ++c)
+            if (mode)    // top padding
             {
-                auto kslice = blaze::columnslice(k, c);
-                for (std::size_t i = 0; i != result_length; ++i)
+                for (std::size_t c = 0; c != out_channels; ++c)
                 {
-                    auto sub = conv_indices::get_subsizes_causal(
-                        filter_length, i - pad_top);
-                    auto schur_product = blaze::subtensor(a, 0, sub.image_beg_,
-                                             0, batch, sub.size_, in_channels) %
-                        blaze::submatrix(
-                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                    for (std::size_t p = 0; p != batch; ++p)
+                    auto kslice = blaze::columnslice(k, c);
+                    for (std::size_t i = 0; i != result_length; ++i)
                     {
-                        auto pslice = blaze::pageslice(schur_product, p);
-                        result(p, i, c) = blaze::sum(pslice);
+                        auto sub = conv_indices::get_subsizes_causal(
+                            filter_length, i - pad);
+                        auto schur_product =
+                            blaze::subtensor(a, 0, sub.image_beg_, 0, batch,
+                                sub.size_, in_channels) %
+                            blaze::submatrix(kslice, sub.kernel_beg_, 0,
+                                sub.size_, in_channels);
+                        for (std::size_t p = 0; p != batch; ++p)
+                        {
+                            auto pslice = blaze::pageslice(schur_product, p);
+                            result(p, i, c) = blaze::sum(pslice);
+                        }
                     }
                 }
             }
-            return execution_tree::primitive_argument_type{std::move(result)};
-        }
-
-        execution_tree::primitive_argument_type conv1d_pad_bottom(
-            ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-            std::size_t pad_bottom)
-        {
-            auto a = arg.tensor();
-            auto k = kernel.tensor();
-            auto filter_length = static_cast<std::int64_t>(k.pages());
-            auto data_length = static_cast<std::int64_t>(a.rows());
-            std::size_t batch = a.pages();
-            std::size_t in_channels = a.columns();
-            std::size_t out_channels = k.columns();
-            std::size_t result_length =
-                pad_bottom + data_length - filter_length + 1;
-
-            blaze::DynamicTensor<double> result(
-                batch, result_length, out_channels);
-
-            for (std::size_t c = 0; c != out_channels; ++c)
+            else    // bottom padding
             {
-                auto kslice = blaze::columnslice(k, c);
-                for (std::size_t i = 0; i != result_length; ++i)
+                for (std::size_t c = 0; c != out_channels; ++c)
                 {
-                    auto sub = conv_indices::get_subsizes(
-                        data_length, filter_length, i);
-                    auto schur_product = blaze::subtensor(a, 0, sub.image_beg_,
-                                             0, batch, sub.size_, in_channels) %
-                        blaze::submatrix(
-                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                    for (std::size_t p = 0; p != batch; ++p)
+                    auto kslice = blaze::columnslice(k, c);
+                    for (std::size_t i = 0; i != result_length; ++i)
                     {
-                        auto pslice = blaze::pageslice(schur_product, p);
-                        result(p, i, c) = blaze::sum(pslice);
+                        auto sub = conv_indices::get_subsizes(
+                            data_length, filter_length, i);
+                        auto schur_product =
+                            blaze::subtensor(a, 0, sub.image_beg_, 0, batch,
+                                sub.size_, in_channels) %
+                            blaze::submatrix(kslice, sub.kernel_beg_, 0,
+                                sub.size_, in_channels);
+                        for (std::size_t p = 0; p != batch; ++p)
+                        {
+                            auto pslice = blaze::pageslice(schur_product, p);
+                            result(p, i, c) = blaze::sum(pslice);
+                        }
                     }
                 }
             }
+
             return execution_tree::primitive_argument_type{std::move(result)};
         }
     }    // namespace detail
@@ -244,32 +200,45 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             }
             else
             {
-                // spatial parallelization where padding is same of causal
-                std::size_t pad_top = (filter_length - 1) / 2;
+                // spatial parallelization where padding is same or causal
+                std ::size_t pad_top;
+                if (padding == "same")
+                {
+                    pad_top = (filter_length - 1) / 2;
+                }
+                else    // causal
+                {
+                    pad_top = filter_length - 1;
+                }
                 if (arg_row_start == 0)
                 {
                     // one-sided pad from top
-                    local_result = detail::conv1d_pad_top(
+                    // same or causal padding
+                    local_result = detail::conv1d_pad_top_bottom(
                         ir::node_data<double>(std::move(arg)),
-                        std::move(kernel), pad_top);
+                        std::move(kernel), pad_top, true);
                     res_row_start = 0;
                     res_row_stop = pad_top + arg_row_stop - filter_length + 1;
                 }
                 else
                 {
                     res_row_start = pad_top + arg_row_start;
-                    if (arg_row_stop == arg_locs.rows(name_, codename_))
+                    if (padding != "causal" &&
+                        arg_row_stop == arg_locs.rows(name_, codename_))
                     {
-                        // one-sided pad from bottom
-                        local_result = detail::conv1d_pad_bottom(
+                        // one-sided pad from bottom only in same padding
+                        local_result = detail::conv1d_pad_top_bottom(
                             ir::node_data<double>(std::move(arg)),
-                            std::move(kernel), filter_length - 1 - pad_top);
+                            std::move(kernel), filter_length - 1 - pad_top,
+                            false);
                         res_row_stop = res_row_start + arg_row_stop -
                             arg_row_start - pad_top;
                     }
                     else
                     {
                         // no padding (valid)
+                        // middle parts of the array for the same padding
+                        // non-top part of the array for the causal padding
                         local_result = common::conv1d_all_paddings(
                             ir::node_data<double>(std::move(arg)),
                             std::move(kernel), "valid", name_, codename_);
@@ -295,8 +264,8 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_conv1d::conv1d_all_paddings",
-            generate_error_message(
-                "at this point only data and spatial parallelizans are valid"));
+            generate_error_message("at this point only data and spatial "
+                                   "parallelizans are supported"));
     }
 
     execution_tree::primitive_argument_type dist_conv1d::conv1d_all_paddings(
@@ -486,29 +455,11 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                         std::move(args[1]), std::move(padding),
                         std::move(given_name));
                 }
-                //if (dilation_rate == 1) // strides > 1
-                //{
-                //    return this_->conv1d_any_pad(
-                //        extract_numeric_value(
-                //            std::move(args[0]), this_->name_, this_->codename_),
-                //        extract_numeric_value(
-                //            std::move(args[1]), this_->name_, this_->codename_),
-                //        std::move(padding), strides);
-                //}
 
-                //// strides == 1 and dilation_rate > 1
-                //return this_->conv1d_any_pad_dilation(
-                //    extract_numeric_value(
-                //        std::move(args[0]), this_->name_, this_->codename_),
-                //    extract_numeric_value(
-                //        std::move(args[1]), this_->name_, this_->codename_),
-                //    std::move(padding), dilation_rate);
-
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_conv1d::eval",
-                        this_->generate_error_message(
-                            "strides > 1 not supported in conjunction with "
-                            "dilation_rate > 1"));
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_conv1d::eval",
+                    this_->generate_error_message(
+                        "strides > 1 or dilation_rate > 1 are not currently "
+                        "supported"));
             }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
