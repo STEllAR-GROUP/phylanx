@@ -5,6 +5,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
 import numpy as np
+from phylanx import *
 from phylanx.ast import *
 
 
@@ -27,7 +28,7 @@ def lra(x, y, alpha, iterations, enable_output):
     return weights
 
 
-file_name = "breast_cancer.csv"
+file_name = "../datasets/breast_cancer.csv"
 
 data = np.genfromtxt(file_name, skip_header=1, delimiter=",")
 x = data[:, :-1]
