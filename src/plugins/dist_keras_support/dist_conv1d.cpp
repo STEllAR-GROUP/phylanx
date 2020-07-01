@@ -185,8 +185,9 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             std::string base_name =
                 given_name.empty() ? arg_locs.annotation_.name_ : given_name;
 
-            // updating the generation of localities annotation
-            ++arg_locs.annotation_.generation_;
+            // updating the generation of localities annotation            ;
+            annotation_information ann_info(
+                std::move(base_name), ++arg_locs.annotation_.generation_);
 
             auto locality_ann = arg_locs.locality_.as_annotation();
 
@@ -266,10 +267,10 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                 tiling_span(res_page_start, res_page_stop),
                 tiling_span(res_row_start, res_row_stop),
                 tiling_span(res_col_start, res_col_stop));
-            auto attached_annotation = std::make_shared<annotation>(
-                        localities_annotation(locality_ann,
-                            res_tile_info.as_annotation(name_, codename_),
-                            arg_locs.annotation_, name_, codename_));
+            auto attached_annotation =
+                std::make_shared<annotation>(localities_annotation(locality_ann,
+                    res_tile_info.as_annotation(name_, codename_), ann_info,
+                    name_, codename_));
 
             // construct new tiling annotation
             local_result.set_annotation(attached_annotation);

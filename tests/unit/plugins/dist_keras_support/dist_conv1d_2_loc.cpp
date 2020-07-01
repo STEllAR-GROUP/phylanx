@@ -37,8 +37,6 @@ void test_conv1d_d_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    //std::cout << result << std::endl;
-
     HPX_TEST_EQ(hpx::cout, result, comparison);
 }
 
@@ -49,10 +47,13 @@ char const* const conv1d_d_code1 = R"(
     conv1d_d(
         constant_d(1, list(8, 6, 3), nil, nil, "const1", "page"),
         constant(-1, list(4, 3, 5)),
-        "valid"
+        "valid",
+        1,
+        1,
+        "conv_result"
     ))";
 char const* const res_code1 = R"(
-    constant_d(-12, list(8, 3, 5), nil, nil, "const1/1", "page")
+    constant_d(-12, list(8, 3, 5), nil, nil, "conv_result/1", "page")
 )";
 
 // data parallelizaion with same padding. The array is tiled on its pages and
