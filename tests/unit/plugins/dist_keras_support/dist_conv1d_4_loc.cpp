@@ -66,7 +66,7 @@ char const* const conv1d_d_code2 = R"(
 // the filter is local
 char const* const conv1d_d_code3 = R"(
     conv1d_d(
-        constant_d(1, list(3, 6, 2), nil, nil, "data_par_causal", "page"),
+        constant_d(1, list(4, 6, 2), nil, nil, "data_par_causal", "page"),
         constant(2, list(4, 2, 3)),
         "causal"
     ))";
@@ -87,20 +87,28 @@ void test_conv1d_d_1()
                              [-8., -8., -8.],
                              [-8., -8., -8.],
                              [-6., -6., -6.],
-                             [-4., -4., -4.]],
-
-                            [[-6., -6., -6.],
-                             [-8., -8., -8.],
-                             [-8., -8., -8.],
-                             [-8., -8., -8.],
-                             [-6., -6., -6.],
                              [-4., -4., -4.]]],
-                    "data_par/1", list("tile", list("pages", 0, 2),
+                    "data_par/1", list("tile", list("pages", 0, 1),
                         list("rows", 0, 6), list("columns", 0, 3))
                 )
         )");
     }
     else if (hpx::get_locality_id() == 1)
+    {
+        test_conv1d_d_d_operation(
+            "test_conv1d_d__1", conv1d_d_code2, R"(
+                annotate_d([[[-6., -6., -6.],
+                             [-8., -8., -8.],
+                             [-8., -8., -8.],
+                             [-8., -8., -8.],
+                             [-6., -6., -6.],
+                             [-4., -4., -4.]]],
+                    "data_par/1", list("tile", list("pages", 1, 2),
+                        list("rows", 0, 6), list("columns", 0, 3))
+                )
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
     {
         test_conv1d_d_d_operation(
             "test_conv1d_d__1", conv1d_d_code2, R"(
@@ -164,7 +172,7 @@ void test_conv1d_d_2()
                 )
         )");
     }
-    else
+    else if (hpx::get_locality_id() == 2)
     {
         test_conv1d_d_d_operation(
             "test_conv1d_d__2", conv1d_d_code3, R"(
@@ -175,6 +183,21 @@ void test_conv1d_d_2()
                              [16., 16., 16.],
                              [16., 16., 16.]]],
                     "data_par_causal/1", list("tile", list("pages", 2, 3),
+                        list("rows", 0, 6), list("columns", 0, 3))
+                )
+        )");
+    }
+    else
+    {
+        test_conv1d_d_d_operation(
+            "test_conv1d_d__2", conv1d_d_code3, R"(
+                annotate_d([[[ 4.,  4.,  4.],
+                             [ 8.,  8.,  8.],
+                             [12., 12., 12.],
+                             [16., 16., 16.],
+                             [16., 16., 16.],
+                             [16., 16., 16.]]],
+                    "data_par_causal/1", list("tile", list("pages", 3, 4),
                         list("rows", 0, 6), list("columns", 0, 3))
                 )
         )");
@@ -192,22 +215,18 @@ void test_conv1d_d_3()
             "test_conv1d_d__3", R"(
                 conv1d_d(
                     annotate_d(
-                        [[[1, 2], [3, 4], [5, 6]],
-                         [[-1,-2],[-3,-4],[-5,-6]]], "arg_3loc_0",
-                        list("tile", list("pages", 0, 2), list("rows", 0, 3),
+                        [[[1, 2]], [[-1,-2]]], "arg_4loc_0",
+                        list("tile", list("pages", 0, 2), list("rows", 0, 1),
                             list("columns", 0, 2))
                     ),
-                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 1, 1, 2, 1], [-1, 1, 1, 1]]],
+                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]]],
                     "valid"
                 )
              )" , R"(
-                annotate_d([[[ 1., 12.,  5.,  5.],
-                             [ 5., 24.,  3.,  5.]],
-                            [[-1.,-12., -5., -5.],
-                             [-5.,-24., -3., -5.]]],
-                    "arg_3loc_0/1", list("tile", list("pages", 0, 2),
-                        list("rows", 0, 2), list("columns", 0, 4))
+                annotate_d([[[  2.,   5.,  -5.,  -2.]],
+                            [[ -2.,  -5.,   5.,   2.]]],
+                    "arg_4loc_0/1", list("tile", list("pages", 0, 2),
+                        list("rows", 0, 1), list("columns", 0, 4))
                 )
         )");
     }
@@ -217,24 +236,39 @@ void test_conv1d_d_3()
             "test_conv1d_d__3", R"(
                 conv1d_d(
                     annotate_d(
-                        [[[3, 4], [5, 6], [7, 8], [9,10]],
-                        [[-3,-4],[-5,-6],[-7,-8],[-9,-10]]], "arg_3loc_0",
-                        list("tile", list("pages", 0, 2), list("rows", 1, 5),
+                        [[[3, 4]], [[-3,-4]]], "arg_4loc_0",
+                        list("tile", list("pages", 0, 2), list("rows", 1, 2),
                             list("columns", 0, 2))
                     ),
-                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 1, 1, 2, 1], [-1, 1, 1, 1]]],
+                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]]],
                     "valid"
                 )
              )" , R"(
-                annotate_d([[[  5.,  24.,   3.,   5.],
-                             [  9.,  36.,   1.,   5.],
-                             [ 13.,  48.,  -1.,   5.]],
-                            [[ -5., -24.,  -3.,  -5.],
-                             [ -9., -36.,  -1.,  -5.],
-                             [-13., -48.,   1.,  -5.]]],
-                    "arg_3loc_0/1", list("tile", list("pages", 0, 2),
-                        list("rows", 1, 4), list("columns", 0, 4))
+                annotate_d([[[  6.,  13., -13.,  -6.]],
+                            [[ -6., -13.,  13.,   6.]]],
+                    "arg_4loc_0/1", list("tile", list("pages", 0, 2),
+                        list("rows", 1, 2), list("columns", 0, 4))
+                )
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_conv1d_d_d_operation(
+            "test_conv1d_d__3", R"(
+                conv1d_d(
+                    annotate_d(
+                        [[[5, 6]], [[-5,-6]]], "arg_4loc_0",
+                        list("tile", list("pages", 0, 2), list("rows", 2, 3),
+                            list("columns", 0, 2))
+                    ),
+                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]]],
+                    "valid"
+                )
+             )" , R"(
+                annotate_d([[[  10.,  21., -21., -10.]],
+                            [[ -10., -21.,  21.,  10.]]],
+                    "arg_4loc_0/1", list("tile", list("pages", 0, 2),
+                        list("rows", 2, 3), list("columns", 0, 4))
                 )
         )");
     }
@@ -244,22 +278,18 @@ void test_conv1d_d_3()
             "test_conv1d_d__3", R"(
                 conv1d_d(
                     annotate_d(
-                        [[[7, 8],[9, 10], [11, 12]],
-                        [[-7,-8],[-9,-10],[-11,-12]]], "arg_3loc_0",
-                        list("tile", list("pages", 0, 2), list("rows", 3, 6),
+                        [[[7, 8]], [[-7,-8]]], "arg_4loc_0",
+                        list("tile", list("pages", 0, 2), list("rows", 3, 4),
                             list("columns", 0, 2))
                     ),
-                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 1, 1, 2, 1], [-1, 1, 1, 1]]],
+                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]]],
                     "valid"
                 )
              )" , R"(
-                annotate_d([[[ 13.,  48.,  -1.,   5.],
-                             [ 17.,  60.,  -3.,   5.]],
-                            [[-13., -48.,   1.,  -5.],
-                             [-17., -60.,   3.,  -5.]]],
-                    "arg_3loc_0/1", list("tile", list("pages", 0, 2),
-                        list("rows", 3, 5), list("columns", 0, 4))
+                annotate_d([[[ 14.,  29., -29., -14.]],
+                            [[-14., -29.,  29.,  14.]]],
+                    "arg_4loc_0/1", list("tile", list("pages", 0, 2),
+                        list("rows", 3, 4), list("columns", 0, 4))
                 )
         )");
     }
@@ -275,21 +305,21 @@ void test_conv1d_d_4()
             "test_conv1d_d__4", R"(
                 conv1d_d(
                     annotate_d(
-                        [[[1, 2], [3, 4], [5, 6]],
-                         [[-1,-2],[-3,-4],[-5,-6]]], "arg_3loc_4",
+                        [[[ 1, 2],[ 3, 4],[ 5, 6]],
+                         [[-1,-2],[-3,-4],[-5,-6]]], "arg_4loc_4",
                         list("tile", list("pages", 0, 2), list("rows", 0, 3),
                             list("columns", 0, 2))
                     ),
                     [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 3, 1, 2,-1], [ 0, 1, 0,-1]]],
+                     [[ 0, 1, 0, 0], [ 2,-1, 0, 1]]],
                     "same"
                 )
              )" , R"(
-                annotate_d([[[ 11.,  12.,   1.,  -9.],
-                             [ 21.,  24.,  -3., -17.]],
-                            [[-11., -12.,  -1.,   9.],
-                             [-21., -24.,   3.,  17.]]],
-                    "arg_3loc_4/1", list("tile", list("pages", 0, 2),
+                annotate_d([[[ 10.,   4.,  -5.,   2.],
+                             [ 18.,  12., -13.,   0.]],
+                            [[-10.,  -4.,   5.,  -2.],
+                             [-18., -12.,  13.,   0.]]],
+                    "arg_4loc_4/1", list("tile", list("pages", 0, 2),
                         list("rows", 0, 2), list("columns", 0, 4))
                 )
         )");
@@ -300,24 +330,51 @@ void test_conv1d_d_4()
             "test_conv1d_d__4", R"(
                 conv1d_d(
                     annotate_d(
-                        [[[3, 4], [5, 6], [7, 8], [9,10]],
-                        [[-3,-4],[-5,-6],[-7,-8],[-9,-10]]], "arg_3loc_4",
+                        [[[ 3, 4],[ 5, 6],[ 7, 8],[ 11, 12]],
+                         [[-3,-4],[-5,-6],[-7,-8],[-11,-12]]], "arg_4loc_4",
                         list("tile", list("pages", 0, 2), list("rows", 1, 5),
                             list("columns", 0, 2))
                     ),
                     [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 3, 1, 2,-1], [ 0, 1, 0,-1]]],
+                     [[ 0, 1, 0, 0], [ 2,-1, 0, 1]]],
                     "same"
                 )
              )" , R"(
-                annotate_d([[[ 21.,  24.,  -3., -17.],
-                             [ 31.,  36.,  -7., -25.],
-                             [ 41.,  48., -11., -33.]],
-                            [[-21., -24.,   3.,  17.],
-                             [-31., -36.,   7.,  25.],
-                             [-41., -48.,  11.,  33.]]],
-                    "arg_3loc_4/1", list("tile", list("pages", 0, 2),
+                annotate_d([[[ 18.,  12., -13.,   0.],
+                             [ 26.,  20., -21.,  -2.],
+                             [ 38.,  28., -29.,  -2.]],
+                            [[-18., -12.,  13.,   0.],
+                             [-26., -20.,  21.,   2.],
+                             [-38., -28.,  29.,   2.]]],
+                    "arg_4loc_4/1", list("tile", list("pages", 0, 2),
                         list("rows", 1, 4), list("columns", 0, 4))
+                )
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_conv1d_d_d_operation(
+            "test_conv1d_d__4", R"(
+                conv1d_d(
+                    annotate_d(
+                        [[[7, 8],[ 11, 12],[ 13, 14],[ 15, 16]],
+                        [[-7,-8],[-11,-12],[-13,-14],[-15,-16]]], "arg_4loc_4",
+                        list("tile", list("pages", 0, 2), list("rows", 3, 7),
+                            list("columns", 0, 2))
+                    ),
+                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
+                     [[ 0, 1, 0, 0], [ 2,-1, 0, 1]]],
+                    "same"
+                )
+             )" , R"(
+                annotate_d([[[ 38.,  28., -29.,  -2.],
+                             [ 50.,  44., -45.,  -8.],
+                             [ 58.,  52., -53., -10.]],
+                            [[-38., -28.,  29.,   2.],
+                             [-50., -44.,  45.,   8.],
+                             [-58., -52.,  53.,  10.]]],
+                    "arg_4loc_4/1", list("tile", list("pages", 0, 2),
+                        list("rows", 3, 6), list("columns", 0, 4))
                 )
         )");
     }
@@ -327,109 +384,24 @@ void test_conv1d_d_4()
             "test_conv1d_d__4", R"(
                 conv1d_d(
                     annotate_d(
-                        [[[7, 8],[9, 10], [11, 12]],
-                        [[-7,-8],[-9,-10],[-11,-12]]], "arg_3loc_4",
-                        list("tile", list("pages", 0, 2), list("rows", 3, 6),
+                        [[[ 13, 14],[ 15, 16],[ 17, 18]],
+                         [[-13,-14],[-15,-16],[-17,-18]]], "arg_4loc_4",
+                        list("tile", list("pages", 0, 2), list("rows", 5, 8),
                             list("columns", 0, 2))
                     ),
                     [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 3, 1, 2,-1], [ 0, 1, 0,-1]]],
+                     [[ 0, 1, 0, 0], [ 2,-1, 0, 1]]],
                     "same"
                 )
              )" , R"(
-                annotate_d([[[ 41.,  48., -11., -33.],
-                             [ 51.,  60., -15., -41.],
-                             [ 22.,  45., -45., -22.]],
-                            [[-41., -48.,  11.,  33.],
-                             [-51., -60.,  15.,  41.],
-                             [-22., -45.,  45.,  22.]]],
-                    "arg_3loc_4/1", list("tile", list("pages", 0, 2),
-                        list("rows", 3, 6), list("columns", 0, 4))
-                )
-        )");
-    }
-}
-
-// spatial parallelization with causal padding, local kernel. The array is tiled
-// on its rows and it has overlaps of fileter_length - 1
-void test_conv1d_d_5()
-{
-    if (hpx::get_locality_id() == 0)
-    {
-        test_conv1d_d_d_operation(
-            "test_conv1d_d__5", R"(
-                conv1d_d(
-                    annotate_d(
-                        [[[1, 2], [3, 4], [5, 6]],
-                         [[-1,-2],[-3,-4],[-5,-6]]], "arg_3loc_5",
-                        list("tile", list("pages", 0, 2), list("rows", 0, 3),
-                            list("columns", 0, 2))
-                    ),
-                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 3, 1, 2,-1], [ 0, 1, 0,-1]]],
-                    "causal"
-                )
-             )" , R"(
-                annotate_d([[[  3.,   3.,   2.,  -3.],
-                             [ 11.,  12.,   1.,  -9.],
-                             [ 21.,  24.,  -3., -17.]],
-                            [[ -3.,  -3.,  -2.,   3.],
-                             [-11., -12.,  -1.,   9.],
-                             [-21., -24.,   3.,  17.]]],
-                    "arg_3loc_5/1", list("tile", list("pages", 0, 2),
-                        list("rows", 0, 3), list("columns", 0, 4))
-                )
-        )");
-    }
-    else if (hpx::get_locality_id() == 1)
-    {
-        test_conv1d_d_d_operation(
-            "test_conv1d_d__5", R"(
-                conv1d_d(
-                    annotate_d(
-                        [[[3, 4], [5, 6], [7, 8], [9,10]],
-                        [[-3,-4],[-5,-6],[-7,-8],[-9,-10]]], "arg_3loc_5",
-                        list("tile", list("pages", 0, 2), list("rows", 1, 5),
-                            list("columns", 0, 2))
-                    ),
-                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 3, 1, 2,-1], [ 0, 1, 0,-1]]],
-                    "causal"
-                )
-             )" , R"(
-                annotate_d([[[ 21.,  24.,  -3., -17.],
-                             [ 31.,  36.,  -7., -25.],
-                             [ 41.,  48., -11., -33.]],
-                            [[-21., -24.,   3.,  17.],
-                             [-31., -36.,   7.,  25.],
-                             [-41., -48.,  11.,  33.]]],
-                    "arg_3loc_5/1", list("tile", list("pages", 0, 2),
-                        list("rows", 2, 5), list("columns", 0, 4))
-                )
-        )");
-    }
-    else
-    {
-        test_conv1d_d_d_operation(
-            "test_conv1d_d__5", R"(
-                conv1d_d(
-                    annotate_d(
-                        [[[7, 8],[9, 10], [11, 12]],
-                        [[-7,-8],[-9,-10],[-11,-12]]], "arg_3loc_5",
-                        list("tile", list("pages", 0, 2), list("rows", 3, 6),
-                            list("columns", 0, 2))
-                    ),
-                    [[[ 2, 3,-3,-2], [ 0, 1,-1, 0]],
-                     [[ 3, 1, 2,-1], [ 0, 1, 0,-1]]],
-                    "causal"
-                )
-             )" , R"(
-                annotate_d([[[ 41.,  48., -11., -33.],
-                             [ 51.,  60., -15., -41.]],
-                            [[-41., -48.,  11.,  33.],
-                             [-51., -60.,  15.,  41.]]],
-                    "arg_3loc_5/1", list("tile", list("pages", 0, 2),
-                        list("rows", 4, 6), list("columns", 0, 4))
+                annotate_d([[[ 58.,  52., -53., -10.],
+                             [ 66.,  60., -61., -12.],
+                             [ 34.,  69., -69., -34.]],
+                            [[-58., -52.,  53.,  10.],
+                             [-66., -60.,  61.,  12.],
+                             [-34., -69.,  69.,  34.]]],
+                    "arg_4loc_4/1", list("tile", list("pages", 0, 2),
+                        list("rows", 5, 8), list("columns", 0, 4))
                 )
         )");
     }
@@ -444,7 +416,6 @@ int hpx_main(int argc, char* argv[])
 
     test_conv1d_d_3();
     test_conv1d_d_4();
-    test_conv1d_d_5();
 
     hpx::finalize();
     return hpx::util::report_errors();

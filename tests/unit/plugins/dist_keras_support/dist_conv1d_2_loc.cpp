@@ -52,7 +52,7 @@ char const* const conv1d_d_code1 = R"(
         "valid"
     ))";
 char const* const res_code1 = R"(
-    constant_d(-12, list(8, 3, 5), nil, nil, "const1/1")
+    constant_d(-12, list(8, 3, 5), nil, nil, "const1/1", "page")
 )";
 
 // data parallelizaion with same padding. The array is tiled on its pages and

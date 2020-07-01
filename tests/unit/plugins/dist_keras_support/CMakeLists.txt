@@ -6,10 +6,12 @@
 set(tests
     dist_conv1d_2_loc
     dist_conv1d_3_loc
+    dist_conv1d_4_loc
    )
 
 set(dist_conv1d_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_conv1d_3_loc_PARAMETERS LOCALITIES 3)
+set(dist_conv1d_4_loc_PARAMETERS LOCALITIES 4)
 
 
 foreach(test ${tests})

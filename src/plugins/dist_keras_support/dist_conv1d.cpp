@@ -83,8 +83,22 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
     {
         execution_tree::primitive_argument_type conv1d_pad_top_bottom(
             ir::node_data<double>&& arg, ir::node_data<double>&& kernel,
-            std::size_t pad, bool mode)
+            std::size_t pad, bool mode, std::string const& name,
+            std::string const& codename)
         {
+            if (execution_tree::extract_numeric_value_dimensions(
+                    arg, name, codename)[2] !=
+                execution_tree::extract_numeric_value_dimensions(
+                    kernel, name, codename)[1])
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "conv1d_all_paddings::conv1d_pad_top_bottom",
+                    util::generate_error_message(
+                        "input depth must be evenly divisible by filter depth. "
+                        "Number of input channels is not the same",
+                        name, codename));
+            }
+
             auto a = arg.tensor();
             auto k = kernel.tensor();
             auto filter_length = static_cast<std::int64_t>(k.pages());
@@ -216,7 +230,7 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                     // same or causal padding
                     local_result = detail::conv1d_pad_top_bottom(
                         ir::node_data<double>(std::move(arg)),
-                        std::move(kernel), pad_top, true);
+                        std::move(kernel), pad_top, true, name_, codename_);
                     res_row_start = 0;
                     res_row_stop = pad_top + arg_row_stop - filter_length + 1;
                 }
@@ -230,7 +244,7 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                         local_result = detail::conv1d_pad_top_bottom(
                             ir::node_data<double>(std::move(arg)),
                             std::move(kernel), filter_length - 1 - pad_top,
-                            false);
+                            false, name_, codename_);
                         res_row_stop = res_row_start + arg_row_stop -
                             arg_row_start - pad_top;
                     }
