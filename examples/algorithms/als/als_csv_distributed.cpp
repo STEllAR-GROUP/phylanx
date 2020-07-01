@@ -54,37 +54,42 @@ char const* const als_code = R"(
     //
     // Alternating Least squares algorithm
     //
-    define(__als, ratings_user, ratings_movie, regularization, num_factors,
-        iterations, alpha, enable_output, row_start, row_stop, col_start, col_stop,
+    define(__als, ratings_row, ratings_column, regularization, num_factors,
+        iterations, alpha, enable_output,
         block(
-            define(num_users_u, shape(ratings_user, 0)),
-            define(num_items_u, shape(ratings_user, 1)),
-            define(num_users_i, shape(ratings_movie, 0)),
-            define(num_items_i, shape(ratings_movie, 1)),
+            define(num_users, shape(ratings_row, 0)),
+            define(total_num_items, shape(ratings_row, 1)),
 
-            define(confu, alpha * ratings_user),
-            define(confi, alpha * ratings_movie),
+            define(total_num_users, shape(ratings_column, 0)),
+            define(num_items, shape(ratings_column, 1)),
 
-            define(conf_u, constant_d(0.0, list(num_items_u))),
-            define(conf_i, constant_d(0.0, list(num_users_i))),
+            define(confu, alpha * ratings_row),
+            define(confi, alpha * ratings_column),
 
-            define(c_u, constant_d(0.0, list(num_items_u, num_items_u))),
-            define(c_i, constant_d(0.0, list(num_users_i, num_users_i))),
-            define(p_u, constant_d(0.0, list(num_items_u))),
-            define(p_i, constant_d(0.0, list(num_users_i))),
+            define(conf_u, constant_d(0.0, list(total_num_items))),
+            define(conf_i, constant_d(0.0, list(total_num_users))),
+
+            define(c_u, constant_d(0.0, list(total_num_items, total_num_items))),
+            define(c_i, constant_d(0.0, list(total_num_users, total_num_users))),
+
+            define(p_u, constant_d(0.0, list(total_num_items))),
+            define(p_i, constant_d(0.0, list(total_num_users))),
 
             set_seed(0),
-            define(X, random_d(list(num_users_u, num_factors))),
-            define(Y, random_d(list(num_items_i, num_factors))),
+            define(X, random_d(list(num_users, num_factors))),
+            define(Y, random_d(list(num_items, num_factors))),
+
             define(I_f, identity(num_factors)),
-            define(I_i, identity_d(num_items_u)),
-            define(I_u, identity_d(num_users_i)),
+            define(I_i, identity_d(num_items)),
+            define(I_u, identity_d(num_users)),
+
             define(k, 0),
             define(i, 0),
             define(u, 0),
 
             define(XtX, constant(0.0, make_list(num_factors, num_factors))),
             define(YtY, constant(0.0, make_list(num_factors, num_factors))),
+
             define(A, constant(0.0, make_list(num_factors, num_factors))),
             define(b, constant(0.0, make_list(num_factors))),
 
@@ -97,33 +102,34 @@ char const* const als_code = R"(
                                     cout("Y: ", Y)
                             )
                     ),
+
                     store(Y, all_gather_d(Y)),
                     store(YtY, dot(transpose(Y), Y) + regularization * I_f),
 
-                    while(u < num_users_u,
+                    while(u < num_users,
                         block(
                             store(conf_u, slice_row(confu, u)),
-                            store(c_u, diag_d(annotate_d(conf_u,
-                                list("tile", list("rows", row_start, row_stop)))),
-                            store(p_u, __ne(conf_u,0.0,true)),
-                            store(A, dot(dot(transpose(Y), c_u), Y)+ YtY),
-                            store(b, dot(dot(transpose_d(Y), (c_u + I_i)), transpose(p_u))),
-                            store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
+                            store(c_u, diag_d(conf_u)),
+                            store(p_u, __ne(conf_u, 0.0, true)),
+                            store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
+                            store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
+                            store(slice(X, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
 
                     store(X, all_gather_d(X)),
-                    store(XtX, dot_d(transpose_d(X), X) + regularization * I_f),
-                    while(i < num_items_i,
+                    store(XtX, dot(transpose_d(X), X) + regularization * I_f),
+
+                    while(i < num_items,
                         block(
                             store(conf_i, slice_column(confi, i)),
-                            store(c_i, diag(conf_i)),
+                            store(c_i, conf_i)),
                             store(p_i, __ne(conf_i, 0.0, true)),
-                            store(A, dot_d(dot_d(transpose_d(X), c_i),X) + XtX),
-                            store(b, dot_d(dot_d(transpose_d(X), (c_i + I_u)), transpose(p_i))),
-                            store(slice(Y, list(i, i + 1, 1),nil), dot_d(inverse(A), b)),
+                            store(A, dot(dot(transpose(X), c_i), X) + XtX),
+                            store(b, dot(dot(transpose(X), (c_i + I_u)), transpose(p_i))),
+                            store(slice(Y, list(i, i + 1, 1), nil), dot(inverse(A), b)),
                             store(i, i + 1)
                         )
                     ),
@@ -234,7 +240,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     bool enable_output = vm.count("enable_output") != 0;
 
     // calculate tiling parameters for this locality, read data
-    primitive_argument_type ratings;
+    //primitive_argument_type ratings;
 
     //if (vm["tiling"].as<std::string>() == "horizontal")
     //{
@@ -252,13 +258,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
     //    ratings = read_r(filename, row_start, row_stop, col_start, col_stop);
     //}
 
+    primitive_argument_type ratings_row, ratings_column;
     // read the data from the file for user (rows)
     calculate_tiling_parameters(row_start, row_stop);
-    ratings_user = read_r(filename, row_start, row_stop, col_start, col_stop);
+    ratings_row = read_r(filename, row_start, row_stop, col_start, col_stop);
 
-    // read the X-data from the file for movies (column)
+    // read the data from the file for movies (column)
     calculate_tiling_parameters(col_start, col_stop);
-    ratings_movie = read_r(filename, row_start, row_stop, col_start, col_stop);
+    ratings_column = read_r(filename, row_start, row_stop, col_start, col_stop);
 
     // evaluate ALS using the read data
     auto const& code_als = compile("als", als_code, snippets);
@@ -269,7 +276,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     hpx::util::high_resolution_timer t;
 
     auto result =
-        als(std::move(ratings_user), std::move(ratings_movie), regularization,
+        als(std::move(ratings_row), std::move(ratings_column), regularization,
             num_factors, iterations, alpha, enable_output);
 
     auto time_diff = t.elapsed();
