@@ -6,7 +6,6 @@
 //   file LICENSE_1_0.0.txt or copy at http://www.boost.org/LICENSE_1_0.0.txt)
 
 #include <phylanx/phylanx.hpp>
-#include <phylanx/plugins/dist_matrixops/tile_calculation_helper.hpp>
 
 
 #include <hpx/hpx_init.hpp>
@@ -66,14 +65,14 @@ char const* const als_code = R"(
             define(confu, alpha * ratings_row),
             define(confi, alpha * ratings_column),
 
-            define(conf_u, constant_d(0.0, list(total_num_items))),
-            define(conf_i, constant_d(0.0, list(total_num_users))),
+            define(conf_u, constant(0.0, make_list(total_num_items))),
+            define(conf_i, constant(0.0, make_list(total_num_users))),
 
-            define(c_u, constant_d(0.0, list(total_num_items, total_num_items))),
-            define(c_i, constant_d(0.0, list(total_num_users, total_num_users))),
+            define(c_u, constant(0.0, make_list(total_num_items, total_num_items))),
+            define(c_i, constant(0.0, make_list(total_num_users, total_num_users))),
 
-            define(p_u, constant_d(0.0, list(total_num_items))),
-            define(p_i, constant_d(0.0, list(total_num_users))),
+            define(p_u, constant(0.0, make_list(total_num_items))),
+            define(p_i, constant(0.0, make_list(total_num_users))),
 
             set_seed(0),
             define(X, random_d(list(num_users, num_factors))),
@@ -109,7 +108,7 @@ char const* const als_code = R"(
                     while(u < num_users,
                         block(
                             store(conf_u, slice_row(confu, u)),
-                            store(c_u, diag_d(conf_u)),
+                            store(c_u, diag(conf_u)),
                             store(p_u, __ne(conf_u, 0.0, true)),
                             store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
                             store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
@@ -125,7 +124,7 @@ char const* const als_code = R"(
                     while(i < num_items,
                         block(
                             store(conf_i, slice_column(confi, i)),
-                            store(c_i, conf_i)),
+                            store(c_i, diag(conf_i)),
                             store(p_i, __ne(conf_i, 0.0, true)),
                             store(A, dot(dot(transpose(X), c_i), X) + XtX),
                             store(b, dot(dot(transpose(X), (c_i + I_u)), transpose(p_i))),
@@ -177,38 +176,7 @@ void calculate_tiling_parameters(std::int64_t& start,
     }
 }
 
-//void calculate_horizontal_tiling_parameters(std::int64_t& row_start,
-//    std::int64_t& row_stop)
-//{
-//    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-//    std::uint32_t this_locality = hpx::get_locality_id();
-//
-//    std::int64_t rows = row_stop - row_start;
-//
-//    if (rows > num_localities)
-//    {
-//        rows = (rows + num_localities) / num_localities;
-//        row_start += this_locality * rows;
-//        row_stop = (std::min)(row_stop, row_start + rows);
-//    }
-//}
-//
-//void calculate_vertical_tiling_parameters(
-//    std::int64_t& col_start, std::int64_t& col_stop)
-//{
-//    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-//    std::uint32_t this_locality = hpx::get_locality_id();
-//
-//    std::int64_t columns = col_stop - col_start;
-//
-//    if (columns > num_localities)
-//    {
-//        columns = (columns + num_localities) / num_localities - 1;
-//        col_start = col_start + this_locality * columns;
-//        col_stop = col_start + columns;
-//    }
-//}
-//
+
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(hpx::program_options::variables_map& vm)
 {
@@ -239,24 +207,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto alpha = vm["alpha"].as<double>();
     bool enable_output = vm.count("enable_output") != 0;
 
-    // calculate tiling parameters for this locality, read data
-    //primitive_argument_type ratings;
-
-    //if (vm["tiling"].as<std::string>() == "horizontal")
-    //{
-    //    calculate_tiling_parameters(row_start, row_stop);
-//
-    //    // read the data from the file 
-    //    ratings = read_r(filename, row_start, row_stop, col_start, col_stop);
-//
-    //}
-    //else
-    //{
-    //    calculate_tiling_parameters(col_start, col_stop);
-//
-    //    // read the X-data from the file
-    //    ratings = read_r(filename, row_start, row_stop, col_start, col_stop);
-    //}
 
     primitive_argument_type ratings_row, ratings_column;
     // read the data from the file for user (rows)
@@ -318,16 +268,15 @@ int main(int argc, char* argv[])
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(718),
+        ("row_stop", value<std::int64_t>()->default_value(10),
          "row_stop (default: 718)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(27278),
+        ("col_stop", value<std::int64_t>()->default_value(100),
          "col_stop (default: 27278)")
         ("tiling", value<std::string>()->default_value("horizontal"),
           "tiling method ('horizontal' (default) or 'vertical')")
     ;
-// 718 user (rows) and 27278 movies (columns)
 
     // make sure hpx_main is run on all localities
     std::vector<std::string> cfg = {
