@@ -24,6 +24,7 @@
 #include <phylanx/execution_tree/primitives/function.hpp>
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/execution_tree/primitives/lambda.hpp>
+#include <phylanx/execution_tree/primitives/mod_operation.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
 #include <phylanx/execution_tree/primitives/target_reference.hpp>

@@ -1148,6 +1148,11 @@ class PhySL:
 
         return '__le'
 
+    def _Mod(self, node):
+        """Leaf node, returning raw string of the `mod` operation."""
+
+        return '__mod'
+
     def _Module(self, node):
         """Root node of the Python AST."""
         module = list(self._apply_rule(m) for m in node.body)
