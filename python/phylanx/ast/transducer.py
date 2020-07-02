@@ -12,6 +12,7 @@ import types
 import phylanx
 from .physl import PhySL
 from .openscop import OpenSCoP
+from .utils import dump_ast
 from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
@@ -27,6 +28,19 @@ class LambdaExtractor(ast.NodeVisitor):
 def lambda_counter(init=[0]):
     init[0] += 1
     return init[0]
+
+
+def remove_defaults(tree):
+    """
+    Remove the default arguments from the
+    source tree. These will be filled in
+    by Python at run time.
+    """
+    if type(tree) == ast.Module:
+        for i in range(len(tree.body)):
+            remove_defaults(tree.body[i])
+    elif type(tree) == ast.FunctionDef:
+        tree.args.defaults = []
 
 
 def Phylanx(__phylanx_arg=None, **kwargs):
@@ -45,6 +59,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 'startatlineone'
             ]
 
+            self.func_argspec = inspect.getfullargspec(f)
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
             self.startatlineone = kwargs.get("startatlineone", False)
@@ -91,6 +106,9 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """Generates the Python AST."""
 
             tree = ast.parse(src)
+
+            remove_defaults(tree)
+
             if self.startatlineone:
                 actual_lineno = 0
             else:
@@ -107,6 +125,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         def compile_function(self, func):
             fn_src = inspect.getsource(func).strip()
             fn_ast = ast.parse(fn_src)
+            remove_defaults(fn_ast)
             if func.__name__ == '<lambda>':
                 func.__name__ = "__Physl_lambda_%d" % lambda_counter()
                 LambdaExtractor().visit(fn_ast)
@@ -162,6 +181,9 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
 
+            defaults_needed = len(self.func_argspec.args) - len(args)
+            if defaults_needed > 0:
+                args += self.func_argspec.defaults[-defaults_needed:]
             mapped_args = tuple(map(self.map_decorated, args))
             kwitems = kwargs.items()
             mapped_kwargs = {k: self.map_decorated(v) for k, v in kwitems}

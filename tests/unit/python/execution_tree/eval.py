@@ -270,3 +270,13 @@ assert types == [
     np.dtype('float64'),
     np.dtype('O'),
     np.dtype('O')], types
+
+default_val = 57
+
+
+@Phylanx
+def usedefault(arg=default_val):
+    return arg
+
+
+assert default_val == usedefault()
