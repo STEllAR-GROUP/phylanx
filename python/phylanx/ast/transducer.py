@@ -12,7 +12,6 @@ import types
 import phylanx
 from .physl import PhySL
 from .openscop import OpenSCoP
-from .utils import dump_ast
 from phylanx import execution_tree
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
@@ -36,10 +35,10 @@ def remove_defaults(tree):
     source tree. These will be filled in
     by Python at run time.
     """
-    if type(tree) == ast.Module:
+    if isinstance(tree, ast.Module):
         for i in range(len(tree.body)):
             remove_defaults(tree.body[i])
-    elif type(tree) == ast.FunctionDef:
+    elif isinstance(tree, ast.FunctionDef):
         tree.args.defaults = []
 
 
