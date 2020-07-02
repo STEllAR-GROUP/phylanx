@@ -181,6 +181,19 @@ __minus (arg)
             The negated value arg.
 
 
+__mod
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+__mod (x0, x1)
+            Args:
+
+                 x0 (int): A dividend.\n"
+                 x1 (int): A divisor.\n"
+
+            Returns:
+
+            The remainder of the division.
+
+
 __mul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 __mul (x0, x1)
