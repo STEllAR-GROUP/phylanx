@@ -660,7 +660,11 @@ namespace phylanx { namespace execution_tree { namespace compiler {
         function compile_body(std::vector<ast::expression> const& args,
             ast::expression const& body, hpx::id_type const& locality) const
         {
+#if !defined(PHYLANX_HAVE_CXX17_SHARED_PTR_ARRAY)
+            boost::shared_array<std::string> named_args;
+#else
             std::shared_ptr<std::string[]> named_args;
+#endif
             std::size_t base_arg_num = env_.base_arg_num();
 
             bool has_default_value = false;
