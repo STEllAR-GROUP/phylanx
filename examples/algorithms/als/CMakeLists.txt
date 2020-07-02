@@ -10,7 +10,7 @@ set(example_programs
     als_csv_instrumented
    )
 
-#set(als_csv_distributed_PARAMETERS LOCALITIES 2)
+set(als_csv_distributed_PARAMETERS LOCALITIES 7)
 
 foreach(example_program ${example_programs})
 

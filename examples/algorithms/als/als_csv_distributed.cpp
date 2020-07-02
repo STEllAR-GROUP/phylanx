@@ -7,7 +7,8 @@
 
 #include <phylanx/phylanx.hpp>
 
-
+#include <hpx/errors/exception.hpp>
+#include <hpx/errors/exception_list.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/program_options.hpp>
 
@@ -122,7 +123,7 @@ char const* const als_code = R"(
                     store(u, 0),
 
                     store(X, all_gather_d(X_local)),
-                    store(XtX, dot(transpose_d(X), X) + regularization * I_f),
+                    store(XtX, dot(transpose(X), X) + regularization * I_f),
 
                     while(i < num_items,
                         block(
@@ -235,20 +236,20 @@ int hpx_main(hpx::program_options::variables_map& vm)
             num_factors, iterations, alpha, enable_output);
 
     auto time_diff = t.elapsed();
-    
+    std::cout << time_diff;
+
 
     hpx::evaluate_active_counters(true, " finish");
 
     auto result_r = extract_list_value(result);
     auto it = result_r.begin();
 
-
     std::cout << "X: \n"
-              << extract_numeric_value(*it++)
-              << "\nY: \n"
-              << extract_numeric_value(*it)
-              << std::endl;
-    std::cout << "Calculated in: " << time_diff << " seconds" << std::endl;
+              << extract_numeric_value(*it++);
+    //          << "\nY: \n"
+    //          << extract_numeric_value(*it)
+    //          << std::endl;
+    //std::cout << "Calculated in: " << time_diff << " seconds" << std::endl;
 
     return hpx::finalize();
 }
@@ -274,11 +275,11 @@ int main(int argc, char* argv[])
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(10),
+        ("row_stop", value<std::int64_t>()->default_value(718),
          "row_stop (default: 718)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(100),
+        ("col_stop", value<std::int64_t>()->default_value(2000),
          "col_stop (default: 27278)")
         ("tiling", value<std::string>()->default_value("horizontal"),
           "tiling method ('horizontal' (default) or 'vertical')")
