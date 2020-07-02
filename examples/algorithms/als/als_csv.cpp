@@ -69,7 +69,6 @@ char const* const als_code = R"(
                             )
                     ),
                     store(YtY, dot(transpose(Y), Y) + regularization * I_f),
-                    store(XtX, dot(transpose(X), X) + regularization * I_f),
 
                     while(u < num_users,
                         block(
@@ -83,6 +82,8 @@ char const* const als_code = R"(
                         )
                     ),
                     store(u, 0),
+
+                    store(XtX, dot(transpose(X), X) + regularization * I_f),
                     while(i < num_items,
                         block(
                             store(conf_i, slice_column(conf, i)),
@@ -148,11 +149,21 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     auto result_r = phylanx::execution_tree::extract_list_value(result);
     auto it = result_r.begin();
-    std::cout << "X: \n"
-              << phylanx::execution_tree::extract_numeric_value(*it++)
-              << "\nY: \n"
-              << phylanx::execution_tree::extract_numeric_value(*it)
-              << std::endl;
+
+    std::ofstream alsFile;
+    alsFile.open("als.csv");
+    alsFile << "Time: " << t.elapsed()
+            << "X: \n"
+            << phylanx::execution_tree::extract_numeric_value(*it++)
+            << "\nY: \n"
+            << phylanx::execution_tree::extract_numeric_value(*it)
+            << std::endl;
+
+    //std::cout << "X: \n"
+    //          << phylanx::execution_tree::extract_numeric_value(*it++)
+    //          << "\nY: \n"
+    //          << phylanx::execution_tree::extract_numeric_value(*it)
+    //          << std::endl;
 
     return hpx::finalize();
 }
@@ -179,10 +190,10 @@ int main(int argc, char* argv[])
              hpx::program_options::value<std::string>(),
              "file name for reading data")
             ("row_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(10),
+             hpx::program_options::value<std::int64_t>()->default_value(718),
              "row_stop (default: 10)")
             ("col_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(100),
+             hpx::program_options::value<std::int64_t>()->default_value(4000),
              "col_stop (default: 100)")
             ;
     return hpx::init(desc, argc, argv);
