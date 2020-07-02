@@ -9,7 +9,8 @@ add_phylanx_primitive_plugin(keras_support
   AUTOGLOB
   PLUGIN
   FOLDER "Core/Plugins"
-  COMPONENT_DEPENDENCIES phylanx)
+  COMPONENT_DEPENDENCIES phylanx
+  DEPENDENCIES common)
 
 add_phylanx_pseudo_target(primitives.keras_support_dir.keras_support_plugin)
 add_phylanx_pseudo_dependencies(primitives.keras_support_dir

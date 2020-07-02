@@ -119,5 +119,37 @@ namespace conv_indices
             blaze::ceil(static_cast<double>(kernel_size) / dilation_rate);
         return sizes{image_begin, kernel_begin, corrected_kernel_size};
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline sizes get_subsizes_causal(
+        std::int64_t kernel_size, std::int64_t relative_position)
+    {
+        if (relative_position < 0)
+        {
+            return sizes{
+                0, -relative_position, kernel_size + relative_position};
+        }
+
+        return sizes{relative_position, 0, kernel_size};
+    }
+
+    inline sizes get_subsizes_causal_dilated(std::int64_t kernel_size,
+        std::int64_t relative_position, std::int64_t dilation_rate)
+    {
+        if (relative_position < 0)
+        {
+            std::int64_t remainder = relative_position % dilation_rate;
+            remainder = remainder >= 0 ? remainder : dilation_rate + remainder;
+            std::int64_t corrected_kernel_size = kernel_size +
+                blaze::floor(
+                    static_cast<double>(relative_position) / dilation_rate);
+
+            std::int64_t kernel_beg_ = blaze::ceil(
+                static_cast<double>(-relative_position) / dilation_rate);
+            return sizes{remainder, kernel_beg_, corrected_kernel_size};
+        }
+
+        return sizes{relative_position, 0, kernel_size};
+    }
 }
 #endif
