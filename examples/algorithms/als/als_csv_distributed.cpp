@@ -62,8 +62,8 @@ char const* const als_code = R"(
             define(total_num_users, shape(ratings_column, 0)),
             define(num_items, shape(ratings_column, 1)),
 
-            define(confu, alpha * ratings_row),
-            define(confi, alpha * ratings_column),
+            define(conf_row, alpha * ratings_row),
+            define(conf_column, alpha * ratings_column),
 
             define(conf_u, constant(0.0, make_list(total_num_items))),
             define(conf_i, constant(0.0, make_list(total_num_users))),
@@ -75,12 +75,15 @@ char const* const als_code = R"(
             define(p_i, constant(0.0, make_list(total_num_users))),
 
             set_seed(0),
-            define(X, random_d(list(num_users, num_factors))),
-            define(Y, random_d(list(num_items, num_factors))),
+            define(X_local, random_d(list(num_users, num_factors))),
+            define(Y_local, random_d(list(num_items, num_factors))),
+
+            define(X, constant(0.0, make_list(total_num_users, num_factors))),
+            define(Y, constant(0.0, make_list(total_num_items, num_factors))),
 
             define(I_f, identity(num_factors)),
-            define(I_i, identity_d(num_items)),
-            define(I_u, identity_d(num_users)),
+            define(I_i, identity(total_num_items)),
+            define(I_u, identity(total_num_users)),
 
             define(k, 0),
             define(i, 0),
@@ -102,33 +105,33 @@ char const* const als_code = R"(
                             )
                     ),
 
-                    store(Y, all_gather_d(Y)),
+                    store(Y, all_gather_d(Y_local)),
                     store(YtY, dot(transpose(Y), Y) + regularization * I_f),
 
                     while(u < num_users,
                         block(
-                            store(conf_u, slice_row(confu, u)),
+                            store(conf_u, slice_row(conf_row, u)),
                             store(c_u, diag(conf_u)),
                             store(p_u, __ne(conf_u, 0.0, true)),
                             store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
                             store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
-                            store(slice(X, list(u, u + 1, 1), nil), dot(inverse(A), b)),
+                            store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
 
-                    store(X, all_gather_d(X)),
+                    store(X, all_gather_d(X_local)),
                     store(XtX, dot(transpose_d(X), X) + regularization * I_f),
 
                     while(i < num_items,
                         block(
-                            store(conf_i, slice_column(confi, i)),
+                            store(conf_i, slice_column(conf_column, i)),
                             store(c_i, diag(conf_i)),
                             store(p_i, __ne(conf_i, 0.0, true)),
                             store(A, dot(dot(transpose(X), c_i), X) + XtX),
                             store(b, dot(dot(transpose(X), (c_i + I_u)), transpose(p_i))),
-                            store(slice(Y, list(i, i + 1, 1), nil), dot(inverse(A), b)),
+                            store(slice(Y_local, list(i, i + 1, 1), nil), dot(inverse(A), b)),
                             store(i, i + 1)
                         )
                     ),
@@ -136,6 +139,8 @@ char const* const als_code = R"(
                     store(k, k + 1)
                 )
             ),
+            store(X, all_gather_d(X_local)),
+            store(Y, all_gather_d(Y_local)),
             list(X, Y)
         )
     )
@@ -236,6 +241,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     auto result_r = extract_list_value(result);
     auto it = result_r.begin();
+
 
     std::cout << "X: \n"
               << extract_numeric_value(*it++)
