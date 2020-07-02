@@ -69,8 +69,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 intersection (int or tuple of ints, optional): the size of
                     overlapped part on each dimension. If an integer is given,
                     that would be the intersection length on all dimensions
-                    that are tiled. If the given intersection is odd, the extra
-                    overlapped vector will be at the end of the part.
+                    that are tiled. The middle parts get to have two
+                    intersections, one with the tile before it and one with the
+                    tile after it.
                     In the `user` mode, `intersection` cannot be used.
                 numtiles (int, optional): number of tiles of the returned array
                     If not given it sets to the number of localities in the

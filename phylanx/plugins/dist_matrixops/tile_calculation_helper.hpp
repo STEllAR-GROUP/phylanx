@@ -58,15 +58,20 @@ namespace tile_calculation
         std::int64_t start, std::size_t size, std::size_t dim,
         std::size_t intersection)
     {
-        if (start + size == dim)
+        if (start + size == dim)    // bottom part
         {
             start -= intersection;
+            size += intersection;
         }
-        else if (start != 0)
+        else if (start == 0)    // top part
         {
-            start -= static_cast<std::size_t>(intersection / 2);
+            size += intersection;
         }
-        size += intersection;
+        else    // middle part
+        {
+            start -= static_cast<std::size_t>(intersection);
+            size += 2 * intersection;
+        }
 
         if (start < 0)
         {

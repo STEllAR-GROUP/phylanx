@@ -385,8 +385,8 @@ void test_retile_3loc_1d_6()
                 "row", list(2), 3
             )
         )", R"(
-            annotate_d([5, 6, 7, 8, 9, 10], "tiled_array_1d_6_retiled/1",
-                list("tile", list("rows", 4, 10)))
+            annotate_d([4, 5, 6, 7, 8, 9, 10, 11], "tiled_array_1d_6_retiled/1",
+                list("tile", list("rows", 3, 11)))
         )");
 
     }
@@ -615,11 +615,11 @@ void test_retile_3loc_2d_3()
                 "sym", 1
             )
         )", R"(
-            annotate_d([[3, 4, 5], [-3, -4, -5], [13, 14, 15]],
+            annotate_d([[2, 3, 4, 5], [-2, -3, -4, -5], [12, 13, 14, 15]],
                 "tiled_array_2d_3_retiled/1",
                 list("args",
                     list("locality", 1, 3),
-                    list("tile", list("columns", 2, 5), list("rows", 0, 3))))
+                    list("tile", list("columns", 1, 5), list("rows", 0, 3))))
         )");
     }
     else

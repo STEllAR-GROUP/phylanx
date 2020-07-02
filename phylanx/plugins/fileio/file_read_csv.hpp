@@ -31,6 +31,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         file_read_csv(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
+        primitive_argument_type read(
+            std::ifstream&& infile, std::string const& filename) const;
+
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,

@@ -147,6 +147,32 @@ void test_constant_1d_3()
     }
 }
 
+void test_constant_1d_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_2loc1d_4", R"(
+            constant_d(13.0, list(7), 0, 2, "const_overlap", "row", 2)
+        )", R"(
+            annotate_d([13.0, 13.0, 13.0, 13.0, 13.0, 13.0], "const_overlap",
+                list("args",
+                    list("locality", 0, 2),
+                    list("tile", list("columns", 0, 6))))
+        )");
+    }
+    else
+    {
+        test_constant_d_operation("test_constant_2loc1d_2", R"(
+            constant_d(13.0, list(7), 1, 2, "const_overlap", "row", 2)
+        )", R"(
+            annotate_d([13.0, 13.0, 13.0, 13.0, 13.0], "const_overlap",
+                list("args",
+                    list("locality", 1, 2),
+                    list("tile", list("columns", 2, 7))))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void test_constant_2d_0()
 {
@@ -288,6 +314,7 @@ int hpx_main(int argc, char* argv[])
     test_constant_1d_1();
     test_constant_1d_2();
     test_constant_1d_3();
+    test_constant_1d_4();
 
     test_constant_2d_0();
     test_constant_2d_1();
