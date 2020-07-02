@@ -915,6 +915,33 @@ conv1d (x, kernel, padding, strides, dilation_rate)
         1D convolution (or 1D mathematical cross-correlation)
 
 
+conv1d_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+conv1d_d (x, kernel, padding, strides, dilation_rate, name)
+        Args:
+            x (array) : a 3d array consiting of batch, in_length and
+                in_channels dimensions.
+            kernel (array) : a 3d array consisting of filter_length,
+                in_channels and out_channels dimension. Note that the
+                in_channels should be the same in kernel and original array.
+            padding (optional, string) : padding mode, `valid` by default. It
+                can be either `valid`, `same` or `causal`. `vaild` means no
+                padding. `same` results the output with the same shape as
+                original array in case of unit strides. `causal` zero pads the
+                array in a way that no output element depend on the input
+                elements of its future.
+            strides (optional, integer) : the step to apply convolution over
+                array. It sets to 1 by default.
+            dilation_rate (optional, integer) : indicates the dilation rate,
+                the rate to sample the array in each step of convolution, 1
+                by default.
+            name (optional, string): the result name. If not given it will be
+                the same as the next generation of the original distributed
+                array.
+        Returns:
+        1D convolution (or 1D mathematical cross-correlation)
+
+
 conv2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 conv2d (x, kernel, padding, strides, dilation_rate)
