@@ -49,7 +49,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     __arg(_4_numtiles, num_localities()),
                     __arg(_5_name, ""),
                     __arg(_6_tiling_type, "sym"),
-                    __arg(_7_itersection, nil),
+                    __arg(_7_intersection, nil),
                     __arg(_8_dtype, "float64")
                 )
             )"},

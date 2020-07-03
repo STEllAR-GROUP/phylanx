@@ -6,6 +6,7 @@
 #if !defined(PHYLANX_PLUGINS_FILEIO_APR_10_2108_1130AM)
 #define PHYLANX_PLUGINS_FILEIO_APR_10_2108_1130AM
 
+#include <phylanx/plugins/fileio/dist_file_read_csv.hpp>
 #include <phylanx/plugins/fileio/file_read.hpp>
 #include <phylanx/plugins/fileio/file_read_csv.hpp>
 #include <phylanx/plugins/fileio/file_read_hdf5.hpp>
