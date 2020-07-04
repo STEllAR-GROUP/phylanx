@@ -114,8 +114,8 @@ char const* const als_code = R"(
                             store(conf_u, slice_row(conf_row, u)),
                             store(c_u, diag(conf_u)),
                             store(p_u, __ne(conf_u, 0.0, true)),
-                            store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
-                            store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
+                            store(A, dot(dot(transpose(Y), (c_u - I_i)), Y) + YtY),
+                            store(b, dot(dot(transpose(Y), c_u), transpose(p_u))),
                             store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
@@ -130,8 +130,8 @@ char const* const als_code = R"(
                             store(conf_i, slice_column(conf_column, i)),
                             store(c_i, diag(conf_i)),
                             store(p_i, __ne(conf_i, 0.0, true)),
-                            store(A, dot(dot(transpose(X), c_i), X) + XtX),
-                            store(b, dot(dot(transpose(X), (c_i + I_u)), transpose(p_i))),
+                            store(A, dot(dot(transpose(X), (c_i - I_u)), X) + XtX),
+                            store(b, dot(dot(transpose(X), c_i), transpose(p_i))),
                             store(slice(Y_local, list(i, i + 1, 1), nil), dot(inverse(A), b)),
                             store(i, i + 1)
                         )
