@@ -83,7 +83,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                       -> primitive_argument_type
             {
                 typedef phylanx::ir::node_data<std::int64_t> itype;
-                using vector_type = blaze::DynamicVector<std::int64_t>;
 
                 itype left_ = extract_integer_value(
                     std::move(args[0]), this_->name_, this_->codename_);
@@ -93,22 +92,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t left_dims = left_.num_dimensions();
                 std::size_t right_dims = right_.num_dimensions();
 
-                if(left_dims == 1 and right_dims == 0) {
+                if(right_dims == 0) {
+                    if(left_dims == 1) {
+                        assign_vector<itype> lvec{left_};
+                        auto r = right_.scalar();
+                        lvec = blaze::map(left_.vector(), [r](std::int64_t v){
+                            return v % r;
+                        });
+                        primitive_argument_type p(std::move(left_));
+                        return p;
+                    }
+                    if(left_dims == 2) {
+                        assign_matrix<itype> lmat{left_};
+                        auto r = right_.scalar();
+                        lmat = blaze::map(left_.matrix(), [r](std::int64_t v){
+                            return v % r;
+                        });
+                        primitive_argument_type p(std::move(left_));
+                        return p;
+                    }
+                }
+                if(left_dims == 0) {
+                    if(right_dims == 1) {
+                        assign_vector<itype> rvec{right_};
+                        auto l = left_.scalar();
+                        rvec = blaze::map(right_.vector(), [l](std::int64_t v){
+                            return l % v;
+                        });
+                        primitive_argument_type p(std::move(right_));
+                        return p;
+                    }
+                    if(right_dims == 2) {
+                        assign_matrix<itype> rmat{right_};
+                        auto l = left_.scalar();
+                        rmat = blaze::map(right_.matrix(), [l](std::int64_t v){
+                            return l % v;
+                        });
+                        primitive_argument_type p(std::move(right_));
+                        return p;
+                    }
+                }
+                if(left_dims == 1 && right_dims == 1) {
                     assign_vector<itype> lvec{left_};
-                    auto r = right_.scalar();
-                    lvec = blaze::map(left_.vector(), [r](std::int64_t v){
-                        return v % r;
+                    assign_vector<itype> rvec{right_};
+                    rvec = blaze::map(left_.vector(), right_.vector(),
+                        [](std::int64_t l,std::int64_t r){
+                        return l % r;
                     });
                     primitive_argument_type p(std::move(left_));
-                    return p;
-                }
-                if(right_dims == 1 and left_dims == 0) {
-                    assign_vector<itype> rvec{right_};
-                    auto l = left_.scalar();
-                    rvec = blaze::map(right_.vector(), [l](std::int64_t v){
-                        return l % v;
-                    });
-                    primitive_argument_type p(std::move(right_));
                     return p;
                 }
                 return primitive_argument_type{
