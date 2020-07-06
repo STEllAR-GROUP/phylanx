@@ -676,11 +676,11 @@ class PhySL:
 
         if len(node.targets) > 1:
             raise Exception(
-                ("Error in line %d. Phylanx does not support chain " +
+                ("Error in line %d. Phylanx does not support chain " + \
                  "assignments.") % node.lineno)
         if isinstance(node.targets[0], ast.Tuple):
             raise Exception(
-                ("Error in line %d. Phylanx does not support multi-target " +
+                ("Error in line %d. Phylanx does not support multi-target " + \
                  "assignments.") % node.lineno)
 
         symbol = self._apply_rule(node.targets[0])
