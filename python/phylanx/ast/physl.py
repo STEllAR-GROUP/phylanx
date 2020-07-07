@@ -555,8 +555,10 @@ class PhySL:
         mapped_kwargs = {k: map_wrapped(v) for k, v in kwitems}
 
         class lazy_wrapper:
+
             def __init__(self, lazy):
                 self.lazy = lazy
+
             def eval(self2, *args, **kwargs):
                 defaults_needed = len(self.func_argspec.args) - len(args)
                 if defaults_needed > 0:
