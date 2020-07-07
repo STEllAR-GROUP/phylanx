@@ -12,9 +12,12 @@
 
 #include <hpx/futures/future.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -32,8 +35,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         file_read_csv(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
+        std::tuple<std::vector<double>, std::size_t, std::size_t> read_helper(
+            std::ifstream&& infile, std::string const& filename) const;
+
         primitive_argument_type read(
             std::ifstream&& infile, std::string const& filename) const;
+
+        primitive_argument_type read_3d(std::ifstream&& infile,
+            std::string const& filename, std::int64_t given_nrows) const;
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,

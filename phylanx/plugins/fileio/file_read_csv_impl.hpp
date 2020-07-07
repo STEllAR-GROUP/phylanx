@@ -25,11 +25,13 @@
 #include <boost/spirit/include/qi_real.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -37,8 +39,10 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+
     // read data from given file and return content
-    inline primitive_argument_type file_read_csv::read(
+    inline std::tuple<std::vector<double>, std::size_t, std::size_t>
+    file_read_csv::read_helper(
         std::ifstream&& infile, std::string const& filename) const
     {
         std::string line;
@@ -70,7 +74,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else if (n_cols != (after_readln - before_readln))
                     {
                         throw std::runtime_error(generate_error_message(
-                            "wrong data format, different number "
+                            "wrong data format, different "
+                            "number "
                             "of element in this row " +
                             filename + ':' + std::to_string(n_rows)));
                     }
@@ -86,28 +91,64 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+        return std::move(std::make_tuple(matrix_array, n_rows, n_cols));
+    }
+
+    inline primitive_argument_type file_read_csv::read(
+        std::ifstream&& infile, std::string const& filename) const
+    {
+        std::vector<double> data;
+        std::size_t n_rows, n_cols;
+        std::tie(data, n_rows, n_cols) =
+            read_helper(std::move(infile), filename);
+
         if (n_rows == 1)
         {
             if (n_cols == 1)
             {
                 // scalar value
                 return primitive_argument_type{
-                    ir::node_data<double>{matrix_array[0]}};
+                    ir::node_data<double>{data[0]}};
             }
 
             // vector
-            blaze::DynamicVector<double> vector(n_cols, matrix_array.data());
+            blaze::DynamicVector<double> vector(n_cols, data.data());
 
             return primitive_argument_type{
                 ir::node_data<double>{std::move(vector)}};
         }
 
         // matrix
-        blaze::DynamicMatrix<double> matrix(
-            n_rows, n_cols, matrix_array.data());
+        blaze::DynamicMatrix<double> matrix(n_rows, n_cols, data.data());
 
         return primitive_argument_type{
             ir::node_data<double>{std::move(matrix)}};
+    }
+
+    inline primitive_argument_type file_read_csv::read_3d(
+        std::ifstream&& infile, std::string const& filename,
+        std::int64_t given_nrows) const
+    {
+        std::vector<double> data;
+        std::size_t n_rows, n_cols;
+        std::tie(data, n_rows, n_cols) =
+            read_helper(std::move(infile), filename);
+
+        if (n_rows % given_nrows != 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "file_read_csv::read_3d",
+                util::generate_error_message(
+                    "the number of rows in the csv file is not divisible by "
+                    "the given number of rows in a page"));
+        }
+
+        // tensor
+        blaze::DynamicTensor<double> result(
+            static_cast<std::size_t>(n_rows / given_nrows), given_nrows, n_cols,
+            data.data());
+
+        return primitive_argument_type{
+            ir::node_data<double>{std::move(result)}};
     }
 }}}
 

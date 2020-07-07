@@ -29,16 +29,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const file_read_csv::match_data =
     {
         hpx::util::make_tuple("file_read_csv",
-            std::vector<std::string>{"file_read_csv(_1)"},
+            std::vector<std::string>{R"(
+                file_read_csv(
+                    _1_filename,
+                    __arg(_2_mode3d, false),
+                    __arg(_3_page_nrows, 1)
+                )
+            )"},
             &create_file_read_csv, &create_primitive<file_read_csv>,
-            R"(fname
+            R"(filename, mode3d, page_nrows
             Args:
 
-                fname (string) : file name
+                filename (string) : file name
+                mode3d (bool, optional) : If sets to true, the result will be a
+                    3d array. Each page_nrows rows of the data is stored in a
+                    new page of the result.
+                page_nrows (int, optional) : it is used only whenmode3d is true.
+                    It determines the number of rows in each page of the
+                    resulted array.
 
             Returns:
 
-            Returns a matrix representation of the contents of a
+            Returns an array representation of the contents of a
             csv file.)"
             )
     };
@@ -55,13 +67,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1)
+        if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::eval",
-                generate_error_message(
-                    "the file_read_csv primitive requires exactly one "
-                        "literal argument"));
+                generate_error_message("the file_read_csv primitive requires "
+                                       "at least one and at most 3 operands."));
         }
 
         if (!valid(operands[0]))
@@ -73,14 +84,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "operand is valid"));
         }
 
-        std::string filename = string_operand_sync(
-            operands[0], args, name_, codename_, std::move(ctx));
-
         auto this_ = this->shared_from_this();
-        return hpx::threads::run_as_os_thread(
-            [filename = std::move(filename), this_ = std::move(this_)]()
-            ->  primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](
+                primitive_arguments_type&& args)
+                -> primitive_argument_type
             {
+
+                std::string filename = extract_string_value_strict(
+                    std::move(args[0]), this_->name_, this_->codename_);
+
+                bool mode3d = false;
+                if (args.size() > 1)
+                {
+                    mode3d = extract_scalar_boolean_value(
+                        std::move(args[1]), this_->name_, this_->codename_);
+                }
+
+                std::int64_t page_nrows;
+                if (args.size() > 2)
+                {
+                    page_nrows = extract_scalar_positive_integer_value_strict(
+                        std::move(args[2]), this_->name_, this_->codename_);
+                }
+
                 std::ifstream infile(filename.c_str(), std::ios::in);
 
                 if (!infile.is_open())
@@ -89,7 +116,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "couldn't open file: " + filename));
                 }
 
+                if (mode3d)
+                {
+                    return this_->read_3d(
+                        std::move(infile), filename, page_nrows);
+                }
                 return this_->read(std::move(infile), filename);
-            });
+
+                }),
+            detail::map_operands(operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}
