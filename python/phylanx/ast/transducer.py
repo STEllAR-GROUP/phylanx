@@ -77,6 +77,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             self.kwargs = kwargs
             self.backend = self.backends_map[self.backend](f, python_ast, kwargs)
+            self.backend.func_argspec = self.func_argspec
             self.__src__ = self.backend.__src__
 
         def get_backend(self, target):

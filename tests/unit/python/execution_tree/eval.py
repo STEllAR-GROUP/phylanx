@@ -280,3 +280,5 @@ def usedefault(arg=default_val):
 
 
 assert default_val == usedefault()
+
+assert 42 == usedefault(42)

@@ -554,10 +554,19 @@ class PhySL:
         kwitems = kwargs.items()
         mapped_kwargs = {k: map_wrapped(v) for k, v in kwitems}
 
-        return phylanx.execution_tree.variable(
+        class lazy_wrapper:
+            def __init__(self, lazy):
+                self.lazy = lazy
+            def eval(self2, *args, **kwargs):
+                defaults_needed = len(self.func_argspec.args) - len(args)
+                if defaults_needed > 0:
+                    args += self.func_argspec.defaults[-defaults_needed:]
+                return self2.lazy.eval(*args, **kwargs)
+
+        return lazy_wrapper(phylanx.execution_tree.variable(
             phylanx.execution_tree.bound_code_for(
                 PhySL.compiler_state, self.file_name,
-                self.wrapped_function.__name__, *mapped_args, **mapped_kwargs))
+                self.wrapped_function.__name__, *mapped_args, **mapped_kwargs)))
 
     def call(self, *args, **kwargs):
         """Invoke this Phylanx function, pass along the given arguments"""

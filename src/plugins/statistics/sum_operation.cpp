@@ -66,8 +66,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{
             "sum",
             std::vector<std::string>{
-                "sum(_1)", "sum(_1, _2_axis)", "sum(_1, _2_axis, _3)",
-                "sum(_1, _2_axis, _3, _4)"
+                "sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)",
+                "sum(_1, _2, _3, _4)"
             },
             &create_sum_operation, &create_primitive<sum_operation>, R"(
             v, axis, keepdims, initial
