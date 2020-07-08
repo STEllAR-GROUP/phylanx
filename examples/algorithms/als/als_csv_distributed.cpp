@@ -236,7 +236,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
             num_factors, iterations, alpha, enable_output);
 
     auto time_diff = t.elapsed();
-    std::cout << time_diff;
+    std::cout << "end: " << time_diff;
 
 
     hpx::evaluate_active_counters(true, " finish");
@@ -244,13 +244,38 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto result_r = extract_list_value(result);
     auto it = result_r.begin();
 
-    //if (hpx::get_locality_id() == 0)
-    //{
-    //    auto result_r = extract_list_value(result);
-    //    auto it = result_r.begin();
-    //    std::cout << "X: \n"
-    //          << extract_numeric_value(*it++);
-    //}
+    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+
+    if (hpx::get_locality_id() == 0)
+    {
+        auto result_r = extract_list_value(result);
+        auto it_0 = result_r.begin();
+        std::cout << " on loc 0: \n"
+                  << "there are " << num_localities << " localities "
+                  << "X: \n"
+                  << extract_numeric_value(*it_0++)
+                  << std::endl;
+    }
+    if (hpx::get_locality_id() == 1)
+    {
+
+        auto result_r = extract_list_value(result);
+        auto it_1 = result_r.begin();
+        std::cout << " on loc 1: \n"
+                  << "there are " << num_localities << " localities "
+                  << "X: \n"
+                  << extract_numeric_value(*it_1++)
+                  << std::endl;
+    }
+
+    //std::ofstream alsdistFile;
+    //alsdistFile.open("als_d.csv");
+    //alsdistFile << "Total Time: " << t.elapsed()
+    //        << "X: \n"
+    //        << extract_numeric_value(*it++)
+    //        //<< "\nY: \n"
+    //        //<< extract_numeric_value(*it)
+    //        << std::endl;
 
     std::cout << "X: \n"
               << extract_numeric_value(*it++)
@@ -283,11 +308,11 @@ int main(int argc, char* argv[])
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(718),
+        ("row_stop", value<std::int64_t>()->default_value(20),
          "row_stop (default: 718)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(20000),
+        ("col_stop", value<std::int64_t>()->default_value(100),
          "col_stop (default: 27278)")
         ("tiling", value<std::string>()->default_value("horizontal"),
           "tiling method ('horizontal' (default) or 'vertical')")
