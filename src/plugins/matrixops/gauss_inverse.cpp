@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         // Do gaussian elimination to get upper triangular
         // matrix with 1's across diagonal
-        for (std::size_t current_row = 0; current_row < n; current_row++)
+        for (std::size_t current_row = 0; current_row != n; current_row++)
         {
             // Swaps current row with nearest subsequent row such that
             // after swapping A[i][i] != 0.
@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             else    // the inversion has not already failed
             {
                 double scale = myMatrix(current_row, current_row);
-                for (std::size_t col = 0; col < n; col++)
+                for (std::size_t col = 0; col != n; col++)
                 {
                     myMatrix(current_row, col) =
                         myMatrix(current_row, col) / scale;
@@ -144,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                          nextRow++)
                     {
                         double factor = myMatrix(nextRow, current_row);
-                        for (std::size_t nextCol = 0; nextCol < n; nextCol++)
+                        for (std::size_t nextCol = 0; nextCol != n; nextCol++)
                         {
                             myMatrix(nextRow, nextCol) =
                                 myMatrix(nextRow, nextCol) -

@@ -18,6 +18,7 @@
 #include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 
 #include <cstdint>
+#include <exception>
 #include <string>
 #include <vector>
 #include <utility>
@@ -31,7 +32,9 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
     // Compiler State
     pybind11::class_<phylanx::bindings::compiler_state>(
             execution_tree, "compiler_state")
-        .def(pybind11::init<std::string>());
+        .def(pybind11::init<std::string, pybind11::object>(),
+            pybind11::arg("filename"),
+            pybind11::arg("locality") = pybind11::none());
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,
@@ -42,6 +45,13 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
 
     execution_tree.def("eval", phylanx::bindings::expression_evaluator,
         "compile and evaluate a numerical expression in PhySL");
+
+    execution_tree.def("async_eval",
+        phylanx::bindings::async_expression_evaluator,
+        "compile and asynchronously evaluate a numerical expression in PhySL");
+
+    execution_tree.def("find_here", phylanx::bindings::find_here,
+        "return locality-id of current locality");
 
     execution_tree.def(
         "eval",
@@ -284,5 +294,42 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                         return f.get();
                     });
             },
+            "wait for future to become ready")
+        .def(
+            "__call__",
+            [](hpx::shared_future<
+                phylanx::execution_tree::primitive_argument_type> const& f)
+            {
+                pybind11::gil_scoped_release release;    // release GIL
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() -> phylanx::execution_tree::primitive_argument_type
+                    {
+                        return f.get();
+                    });
+            },
             "wait for future to become ready");
+
+    // translate HPX exceptions and provide more error information, if desired
+    static pybind11::exception<hpx::exception> exc(
+        m, "HPXError", PyExc_RuntimeError);
+
+    pybind11::register_exception_translator([](std::exception_ptr p) {
+        try
+        {
+            if (p)
+                std::rethrow_exception(p);
+        }
+        catch (hpx::exception& e)
+        {
+            if (hpx::get_config_entry("phylanx.full_error_diagnostics", "0") ==
+                "1")
+            {
+                exc(hpx::diagnostic_information(e).c_str());
+            }
+            else
+            {
+                exc(e.what());
+            }
+        }
+    });
 }

@@ -34,29 +34,31 @@ namespace phylanx { namespace bindings
         std::string const& file_name, std::string const& func_name,
         std::string const& xexpr_str)
     {
+        auto locality = state.get_locality();
+
         pybind11::gil_scoped_release release;       // release GIL
 
         return hpx::threads::run_as_hpx_thread(
             [&]() -> std::string
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, func_name, xexpr_str, state.eval_snippets,
-                    state.eval_env);
+                    file_name, func_name, xexpr_str, state.eval_snippets_,
+                    state.eval_env_, locality);
 
                 auto const& funcs = code.functions();
 
-                if (state.enable_measurements)
+                if (state.enable_measurements_)
                 {
                     if (!funcs.empty())
                     {
-                        state.primitive_instances.push_back(
+                        state.primitive_instances_.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
                 // add all definitions to the global execution environment
-                code.run(state.eval_ctx);
+                code.run(state.eval_ctx_);
 
                 return !funcs.empty() ? funcs.front().name_ : "";
             });
@@ -67,29 +69,31 @@ namespace phylanx { namespace bindings
         std::string const& file_name, std::string const& func_name,
         std::vector<phylanx::ast::expression> const& xexpr)
     {
+        auto locality = state.get_locality();
+
         pybind11::gil_scoped_release release;       // release GIL
 
         return hpx::threads::run_as_hpx_thread(
             [&]() -> std::string
             {
                 auto const& code = phylanx::execution_tree::compile(
-                    file_name, func_name, xexpr, state.eval_snippets,
-                    state.eval_env);
+                    file_name, func_name, xexpr, state.eval_snippets_,
+                    state.eval_env_, locality);
 
                 auto const& funcs = code.functions();
 
-                if (state.enable_measurements)
+                if (state.enable_measurements_)
                 {
                     if (!funcs.empty())
                     {
-                        state.primitive_instances.push_back(
+                        state.primitive_instances_.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
                 // add all definitions to the global execution environment
-                code.run(state.eval_ctx);
+                code.run(state.eval_ctx_);
 
                 return !funcs.empty() ? funcs.front().name_ : "";
             });
@@ -100,6 +104,8 @@ namespace phylanx { namespace bindings
         std::string const& xexpr_str, pybind11::args args,
         pybind11::kwargs kwargs)
     {
+        auto locality = state.get_locality();
+
         pybind11::gil_scoped_release release;       // release GIL
 
         using phylanx::execution_tree::primitive_argument_type;
@@ -111,22 +117,22 @@ namespace phylanx { namespace bindings
                 phylanx::util::none_wrapper wrap_cout(hpx::cout);
                 phylanx::util::none_wrapper wrap_debug(hpx::consolestream);
 
-                auto const& code_x =
-                    phylanx::execution_tree::compile(file_name, xexpr_str,
-                        xexpr_str, state.eval_snippets, state.eval_env);
+                auto const& code_x = phylanx::execution_tree::compile(file_name,
+                    xexpr_str, xexpr_str, state.eval_snippets_, state.eval_env_,
+                    locality);
 
-                if (state.enable_measurements)
+                if (state.enable_measurements_)
                 {
                     auto const& funcs = code_x.functions();
                     if (!funcs.empty())
                     {
-                        state.primitive_instances.push_back(
+                        state.primitive_instances_.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto x = code_x.run(state.eval_ctx);
+                auto x = code_x.run(state.eval_ctx_);
 
                 phylanx::execution_tree::primitive_arguments_type fargs;
                 fargs.reserve(args.size() + kwargs.size());
@@ -151,7 +157,7 @@ namespace phylanx { namespace bindings
                 if (kwargs.size() == 0)
                 {
                     primitive_argument_type&& result =
-                        x(std::move(fargs), state.eval_ctx);
+                        x(std::move(fargs), state.eval_ctx_);
 
                     pybind11::gil_scoped_acquire acquire;
                     return pybind11::reinterpret_steal<pybind11::object>(
@@ -162,7 +168,7 @@ namespace phylanx { namespace bindings
                 }
 
                 primitive_argument_type&& result =
-                    x(std::move(fargs), std::move(fkwargs), state.eval_ctx);
+                    x(std::move(fargs), std::move(fkwargs), state.eval_ctx_);
 
                 pybind11::gil_scoped_acquire acquire;
                 return pybind11::reinterpret_steal<pybind11::object>(
@@ -170,6 +176,71 @@ namespace phylanx { namespace bindings
                         primitive_argument_type>::cast(std::move(result),
                         pybind11::return_value_policy::move,
                         pybind11::handle()));
+            });
+    }
+
+    hpx::shared_future<phylanx::execution_tree::primitive_argument_type>
+    async_expression_evaluator(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str,
+        pybind11::args args, pybind11::kwargs kwargs)
+    {
+        auto locality = state.get_locality();
+
+        pybind11::gil_scoped_release release;       // release GIL
+
+        using phylanx::execution_tree::primitive_argument_type;
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> hpx::shared_future<primitive_argument_type>
+            {
+                // Make sure None is printed as "None"
+                phylanx::util::none_wrapper wrap_cout(hpx::cout);
+                phylanx::util::none_wrapper wrap_debug(hpx::consolestream);
+
+                auto const& code_x = phylanx::execution_tree::compile(file_name,
+                    xexpr_str, xexpr_str, state.eval_snippets_, state.eval_env_,
+                    locality);
+
+                if (state.enable_measurements_)
+                {
+                    auto const& funcs = code_x.functions();
+                    if (!funcs.empty())
+                    {
+                        state.primitive_instances_.push_back(
+                            phylanx::util::enable_measurements(
+                                funcs.front().name_));
+                    }
+                }
+
+                auto x = code_x.run(state.eval_ctx_);
+
+                phylanx::execution_tree::primitive_arguments_type fargs;
+                fargs.reserve(args.size() + kwargs.size());
+
+                std::map<std::string, primitive_argument_type> fkwargs;
+
+                {
+                    pybind11::gil_scoped_acquire acquire;
+                    for (auto const& item : args)
+                    {
+                        fargs.emplace_back(item.cast<primitive_argument_type>());
+                    }
+
+                    if (kwargs)
+                    {
+                        fkwargs = kwargs.cast<
+                            std::map<std::string, primitive_argument_type>>();
+                    }
+                }
+
+                // potentially handle keyword arguments
+                if (kwargs.size() == 0)
+                {
+                     return x.async(std::move(fargs), state.eval_ctx_);
+                }
+
+                return x.async(
+                    std::move(fargs), std::move(fkwargs), state.eval_ctx_);
             });
     }
 
@@ -184,7 +255,7 @@ namespace phylanx { namespace bindings
             using namespace phylanx::execution_tree;
 
             // if the requested name is defined in the environment, use it
-            primitive_argument_type* var = state.eval_ctx.get_var(func_name);
+            primitive_argument_type* var = state.eval_ctx_.get_var(func_name);
             if (var != nullptr)
             {
                 if (is_primitive_operand(*var))
@@ -199,7 +270,7 @@ namespace phylanx { namespace bindings
 
             // alternatively, locate requested function entry point
             for (auto const& entry_point :
-                state.eval_snippets.program_.entry_points())
+                state.eval_snippets_.program_.entry_points())
             {
                 if (func_name == entry_point.func_name_)
                 {
@@ -323,7 +394,7 @@ namespace phylanx { namespace bindings
             using namespace phylanx::execution_tree;
 
             // if the requested name is defined in the environment, use it
-            primitive_argument_type* var = state.eval_ctx.get_var(func_name);
+            primitive_argument_type* var = state.eval_ctx_.get_var(func_name);
             if (var != nullptr && kwargs.size() == 0)
             {
                 execution_tree::compiler::function f(*var, func_name);
@@ -335,8 +406,8 @@ namespace phylanx { namespace bindings
             // locate requested function entry point
             execution_tree::compiler::entry_point ep(func_name, file_name);
             auto it =
-                state.eval_snippets.program_.entry_points().find(ep);
-            if (it != state.eval_snippets.program_.entry_points().end())
+                state.eval_snippets_.program_.entry_points().find(ep);
+            if (it != state.eval_snippets_.program_.entry_points().end())
             {
                 auto && funcs = it->functions();
                 if (funcs.empty())
@@ -359,6 +430,17 @@ namespace phylanx { namespace bindings
         });
     }
 
+    // return locality-id of current locality
+    std::uint32_t find_here()
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread(
+            []()
+            {
+                return hpx::get_locality_id();
+            });
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // initialize measurements for tree evaluations
     std::vector<std::string> enable_measurements(compiler_state& c,
@@ -370,27 +452,29 @@ namespace phylanx { namespace bindings
             [&]() -> std::vector<std::string>
         {
             // measurements have been enabled
-            c.enable_measurements = true;
+            c.enable_measurements_ = true;
 
-            c.primitive_instances =
-                phylanx::util::enable_measurements(c.primitive_instances);
+            c.primitive_instances_ =
+                phylanx::util::enable_measurements(c.primitive_instances_);
 
             if (reset_counters)
             {
                 hpx::reset_active_counters();
             }
 
-            return c.primitive_instances;
+            return c.primitive_instances_;
         });
     }
 
     // retrieve performance data from all active performance counters
     std::string retrieve_counter_data(compiler_state& c)
     {
-        if (!c.enable_measurements)
+        if (!c.enable_measurements_)
         {
             return std::string{};
         }
+
+        auto locality = c.get_locality();
 
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -406,8 +490,8 @@ namespace phylanx { namespace bindings
                 os << "primitive_instance,display_name,count,time,eval_direct\n";
 
                 // Print performance data
-                for (auto const& entry :
-                    phylanx::util::retrieve_counter_data(c.primitive_instances))
+                for (auto const& entry : phylanx::util::retrieve_counter_data(
+                         c.primitive_instances_, locality))
                 {
                     os << "\"" << entry.first << "\",\""
                        << phylanx::execution_tree::compiler::
@@ -429,26 +513,28 @@ namespace phylanx { namespace bindings
     std::string retrieve_dot_tree_topology(compiler_state& state,
         std::string const& file_name, std::string const& xexpr_str)
     {
+        auto locality = state.get_locality();
+
         pybind11::gil_scoped_release release;       // release GIL
 
         return hpx::threads::run_as_hpx_thread(
             [&]() -> std::string
             {
-                auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, state.eval_snippets, state.eval_env);
+                auto const& code = phylanx::execution_tree::compile(file_name,
+                    xexpr_str, state.eval_snippets_, state.eval_env_, locality);
 
-                if (state.enable_measurements)
+                if (state.enable_measurements_)
                 {
                     auto const& funcs = code.functions();
                     if (!funcs.empty())
                     {
-                        state.primitive_instances.push_back(
+                        state.primitive_instances_.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto const& program = state.eval_snippets.program_;
+                auto const& program = state.eval_snippets_.program_;
 
                 std::set<std::string> resolve_children;
                 for (auto const& ep : program.entry_points())
@@ -476,26 +562,28 @@ namespace phylanx { namespace bindings
     std::string retrieve_newick_tree_topology(compiler_state& state,
         std::string const& file_name, std::string const& xexpr_str)
     {
+        auto locality = state.get_locality();
+
         pybind11::gil_scoped_release release;       // release GIL
 
         return hpx::threads::run_as_hpx_thread(
             [&]() -> std::string
             {
-                auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, state.eval_snippets, state.eval_env);
+                auto const& code = phylanx::execution_tree::compile(file_name,
+                    xexpr_str, state.eval_snippets_, state.eval_env_, locality);
 
-                if (state.enable_measurements)
+                if (state.enable_measurements_)
                 {
                     auto const& funcs = code.functions();
                     if (!funcs.empty())
                     {
-                        state.primitive_instances.push_back(
+                        state.primitive_instances_.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto const& program = state.eval_snippets.program_;
+                auto const& program = state.eval_snippets_.program_;
 
                 std::set<std::string> resolve_children;
                 for (auto const& ep : program.entry_points())
@@ -523,26 +611,28 @@ namespace phylanx { namespace bindings
     std::list<std::string> retrieve_tree_topology(compiler_state& state,
         std::string const& file_name, std::string const& xexpr_str)
     {
+        auto locality = state.get_locality();
+
         pybind11::gil_scoped_release release;       // release GIL
 
         return hpx::threads::run_as_hpx_thread(
             [&]() -> std::list<std::string>
             {
-                auto const& code = phylanx::execution_tree::compile(
-                    file_name, xexpr_str, state.eval_snippets, state.eval_env);
+                auto const& code = phylanx::execution_tree::compile(file_name,
+                    xexpr_str, state.eval_snippets_, state.eval_env_, locality);
 
-                if (state.enable_measurements)
+                if (state.enable_measurements_)
                 {
                     auto const& funcs = code.functions();
                     if (!funcs.empty())
                     {
-                        state.primitive_instances.push_back(
+                        state.primitive_instances_.push_back(
                             phylanx::util::enable_measurements(
                                 funcs.front().name_));
                     }
                 }
 
-                auto const& program = state.eval_snippets.program_;
+                auto const& program = state.eval_snippets_.program_;
 
                 std::set<std::string> resolve_children;
                 for (auto const& ep : program.entry_points())

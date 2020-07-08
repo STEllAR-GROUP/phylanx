@@ -36,18 +36,32 @@ namespace phylanx { namespace bindings
     struct compiler_state
     {
         // keep module alive until this has been free'd
-        pybind11::weakref m;
+        pybind11::weakref m_;
 
-        phylanx::execution_tree::compiler::environment eval_env;
-        phylanx::execution_tree::compiler::function_list eval_snippets;
-        phylanx::execution_tree::eval_context eval_ctx;
+        phylanx::execution_tree::compiler::environment eval_env_;
+        phylanx::execution_tree::compiler::function_list eval_snippets_;
+        phylanx::execution_tree::eval_context eval_ctx_;
 
         // name of the main source compiled file
         std::string codename_;
 
         // data related to measurement status
-        bool enable_measurements;
-        std::vector<std::string> primitive_instances;
+        bool enable_measurements_;
+        std::vector<std::string> primitive_instances_;
+
+        // The locality this compiler instance refers to (None if local)
+        pybind11::object locality_;
+
+        // retrieve target locality_id
+        hpx::id_type get_locality() const
+        {
+            if (locality_.is_none())
+            {
+                return hpx::find_here();
+            }
+            return hpx::naming::get_id_from_locality_id(
+                locality_.cast<std::uint32_t>());
+        }
 
         static pybind11::object import_phylanx()
         {
@@ -71,12 +85,13 @@ namespace phylanx { namespace bindings
                 });
         }
 
-        compiler_state(std::string codename)
-          : m(import_phylanx())
-          , eval_env(construct_default_environment())
-          , eval_snippets()
+        compiler_state(std::string codename, pybind11::object locality)
+          : m_(import_phylanx())
+          , eval_env_(construct_default_environment())
+          , eval_snippets_()
           , codename_(std::move(codename))
-          , enable_measurements(false)
+          , enable_measurements_(false)
+          , locality_(locality)
         {
         }
     };
@@ -210,6 +225,12 @@ namespace phylanx { namespace bindings
         std::string const& xexpr_str, pybind11::args args,
         pybind11::kwargs kwargs);
 
+    // asynchronously evaluate compiled expression
+    hpx::shared_future<phylanx::execution_tree::primitive_argument_type>
+    async_expression_evaluator(compiler_state& state,
+        std::string const& file_name, std::string const& xexpr_str,
+        pybind11::args args, pybind11::kwargs kwargs);
+
     // extract pre-compiled code for given function name
     phylanx::execution_tree::primitive code_for(
         phylanx::bindings::compiler_state& state,
@@ -221,6 +242,9 @@ namespace phylanx { namespace bindings
         phylanx::bindings::compiler_state& state,
         std::string const& file_name, std::string const& func_name,
         pybind11::args args, pybind11::kwargs kwargs);
+
+    // return locality-id of current locality
+    std::uint32_t find_here();
 
     ///////////////////////////////////////////////////////////////////////////
     // initialize measurements for tree evaluations

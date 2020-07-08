@@ -177,6 +177,49 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return extract_copy_value(arg_, name_);
         }
 
+        // evaluate object itself and use the returned value to
+        // asynchronously evaluate the arguments
+        hpx::shared_future<result_type> async(
+            arguments_type const& args, eval_context ctx) const
+        {
+            if (is_primitive_operand(arg_))
+            {
+                arguments_type params;
+                params.reserve(args.size());
+                for (auto const& arg : args)
+                {
+                    params.emplace_back(extract_ref_value(arg, name_));
+                }
+
+                return value_operand(arg_, std::move(params), name_).share();
+            }
+            return hpx::make_ready_future(extract_copy_value(arg_, name_))
+                .share();
+        }
+
+        hpx::shared_future<result_type> async(
+            arguments_type&& args, eval_context ctx) const
+        {
+            if (is_primitive_operand(arg_))
+            {
+                arguments_type keep_alive(std::move(args));
+
+                // construct argument-pack to use for actual call
+                arguments_type params;
+                params.reserve(keep_alive.size());
+                for (auto const& arg : keep_alive)
+                {
+                    params.emplace_back(extract_ref_value(arg, name_));
+                }
+
+                return value_operand(
+                    arg_, std::move(params), name_, "<unknown>", std::move(ctx))
+                    .share();
+            }
+            return hpx::make_ready_future(extract_copy_value(arg_, name_))
+                .share();
+        }
+
         using kwarguments_type = std::map<std::string, primitive_argument_type>;
 
         result_type operator()(arguments_type&& args, kwarguments_type&& kwargs,
@@ -224,6 +267,53 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name_);
             }
             return extract_copy_value(arg_, name_);
+        }
+
+        hpx::shared_future<result_type> async(arguments_type&& args,
+            kwarguments_type&& kwargs, eval_context ctx) const
+        {
+            if (is_primitive_operand(arg_))
+            {
+                arguments_type keep_alive(std::move(args));
+                kwarguments_type kw_keep_alive(std::move(kwargs));
+
+                // construct argument-pack to use for actual call
+                arguments_type params;
+                params.reserve(keep_alive.size() + num_named_args_);
+                for (auto const& arg : keep_alive)
+                {
+                    params.emplace_back(extract_ref_value(arg, name_));
+                }
+
+                // fill in the given named arguments at their correct positions
+                for (auto const& kwarg : kw_keep_alive)
+                {
+                    auto it = std::find(named_args_.get(),
+                        named_args_.get() + num_named_args_, kwarg.first);
+                    if (it == named_args_.get() + num_named_args_)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "function::operator()",
+                            hpx::util::format("cannot locate requested "
+                                "named argument '{}'", kwarg.first));
+                    }
+
+                    std::ptrdiff_t kwarg_pos =
+                        std::distance(named_args_.get(), it);
+                    if (kwarg_pos >= std::ptrdiff_t(params.size()))
+                    {
+                        params.resize(kwarg_pos + 1);
+                    }
+
+                    params[kwarg_pos] = extract_ref_value(kwarg.second, name_);
+                }
+
+                return value_operand(
+                    arg_, std::move(params), name_, "<unknown>", std::move(ctx))
+                    .share();
+            }
+            return hpx::make_ready_future(extract_copy_value(arg_, name_))
+                .share();
         }
 
         template <typename T1, typename ... Ts>

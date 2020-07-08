@@ -102,6 +102,11 @@ phylanx_option(
   ON ADVANCED CATEGORY "Build")
 
 phylanx_option(
+  PHYLANX_WITH_PYTHON_TESTS_EMIT_FULL_DIAGNOSTICS BOOL
+  "Python tests emit the full HPX diagnostics if exceptions are thrown"
+  OFF ADVANCED CATEGORY "Build")
+
+phylanx_option(
   PHYLANX_WITH_TESTS_REGRESSIONS BOOL
   "Enable or disable the compilation of regression tests"
   ON ADVANCED CATEGORY "Build")

@@ -589,16 +589,16 @@ namespace phylanx { namespace execution_tree
                     "define(_get_variable_size, x, shape(x, 0))");
 
                 auto& state = var.state();
-                auto* p = state.eval_ctx.get_var(funcname.key());
+                auto* p = state.eval_ctx_.get_var(funcname.key());
                 if (p == nullptr)
                 {
                     phylanx::execution_tree::compile(state.codename_,
-                        funcname.key(), expr, state.eval_snippets,
-                        state.eval_env)
-                        .run(state.eval_ctx);
+                        funcname.key(), expr, state.eval_snippets_,
+                        state.eval_env_)
+                        .run(state.eval_ctx_);
 
                     // now, the variable should have been defined
-                    p = state.eval_ctx.get_var(funcname.key());
+                    p = state.eval_ctx_.get_var(funcname.key());
                     HPX_ASSERT(p != nullptr);
                 }
 
@@ -608,7 +608,7 @@ namespace phylanx { namespace execution_tree
                 args.emplace_back(var.value());
 
                 auto result = phylanx::execution_tree::bind_arguments(
-                    state.codename_, funcname.key(), state.eval_snippets, *p,
+                    state.codename_, funcname.key(), state.eval_snippets_, *p,
                     std::move(args));
 
                 pybind11::gil_scoped_acquire acquire;       // acquire GIL
@@ -647,16 +647,16 @@ namespace phylanx { namespace execution_tree
                     "define(_get_variable_item, x, i, slice(x, i))");
 
                 auto& state = var.state();
-                auto* p = state.eval_ctx.get_var(funcname.key());
+                auto* p = state.eval_ctx_.get_var(funcname.key());
                 if (p == nullptr)
                 {
                     phylanx::execution_tree::compile(state.codename_,
-                        funcname.key(), expr, state.eval_snippets,
-                        state.eval_env)
-                        .run(state.eval_ctx);
+                        funcname.key(), expr, state.eval_snippets_,
+                        state.eval_env_)
+                        .run(state.eval_ctx_);
 
                     // now, the variable should have been defined
-                    p = state.eval_ctx.get_var(funcname.key());
+                    p = state.eval_ctx_.get_var(funcname.key());
                     HPX_ASSERT(p != nullptr);
                 }
 
@@ -667,7 +667,7 @@ namespace phylanx { namespace execution_tree
                 args.emplace_back(std::int64_t(i));
 
                 auto result = phylanx::execution_tree::bind_arguments(
-                    state.codename_, funcname.key(), state.eval_snippets, *p,
+                    state.codename_, funcname.key(), state.eval_snippets_, *p,
                     std::move(args));
 
                 pybind11::gil_scoped_acquire acquire;    // acquire GIL
@@ -709,16 +709,16 @@ namespace phylanx { namespace execution_tree
                                         "store(slice(x, i), val))");
 
                 auto& state = var.state();
-                auto* p = state.eval_ctx.get_var(funcname.key());
+                auto* p = state.eval_ctx_.get_var(funcname.key());
                 if (p == nullptr)
                 {
                     phylanx::execution_tree::compile(state.codename_,
-                        funcname.key(), expr, state.eval_snippets,
-                        state.eval_env)
-                        .run(state.eval_ctx);
+                        funcname.key(), expr, state.eval_snippets_,
+                        state.eval_env_)
+                        .run(state.eval_ctx_);
 
                     // now, the variable should have been defined
-                    p = state.eval_ctx.get_var(funcname.key());
+                    p = state.eval_ctx_.get_var(funcname.key());
                     HPX_ASSERT(p != nullptr);
                 }
 
@@ -730,7 +730,7 @@ namespace phylanx { namespace execution_tree
                 args.emplace_back(std::move(value));
 
                 auto result = phylanx::execution_tree::bind_arguments(
-                    state.codename_, funcname.key(), state.eval_snippets, *p,
+                    state.codename_, funcname.key(), state.eval_snippets_, *p,
                     std::move(args));
 
                 pybind11::gil_scoped_acquire acquire;    // acquire GIL
