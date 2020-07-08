@@ -50,8 +50,8 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
             c_u = np.diag(conf_u)
             p_u = conf_u.copy()
             p_u[p_u != 0] = 1
-            A = YtY + np.dot(np.dot(np.transpose(Y), c_u - I_i), Y)
-            b = np.dot(np.dot(np.transpose(Y), c_u), np.transpose(p_u))
+            A = YtY + np.dot(np.dot(np.transpose(Y), c_u), Y)
+            b = np.dot(np.dot(np.transpose(Y), c_u + I_i), np.transpose(p_u))
             X[u, :] = np.dot(np.linalg.inv(A), b)
             u = u + 1
         XtX = np.dot(np.transpose(X), X) + regularization * I_f
@@ -60,8 +60,8 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
             c_i = np.diag(conf_i)
             p_i = conf_i.copy()
             p_i[p_i != 0] = 1
-            A = XtX + np.dot(np.dot(np.transpose(X), c_i - I_u), X)
-            b = np.dot(np.dot(np.transpose(X), c_i), np.transpose(p_i))
+            A = XtX + np.dot(np.dot(np.transpose(X), c_i), X)
+            b = np.dot(np.dot(np.transpose(X), c_i + I_u), np.transpose(p_i))
             Y[i, :] = np.dot(np.linalg.inv(A), b)
             i = i + 1
         u = 0
