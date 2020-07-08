@@ -14,6 +14,9 @@
 
 #include <hpx/futures/future.hpp>
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -33,6 +36,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         dist_file_read_csv(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
+
+    private:
+        primitive_argument_type dist_read_2d(std::ifstream&& infile,
+            std::string const& filename, std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                intersections,
+            std::string&& given_name, std::uint32_t numtiles) const;
+        primitive_argument_type dist_read_3d(std::ifstream&& infile,
+            std::string const& filename, std::int64_t given_nrows,
+            std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                intersections,
+            std::string&& given_name, std::uint32_t numtiles) const;
 
     protected:
         hpx::future<primitive_argument_type> eval(

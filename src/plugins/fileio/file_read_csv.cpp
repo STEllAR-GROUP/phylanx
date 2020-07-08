@@ -12,8 +12,8 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
-#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <memory>
@@ -63,6 +63,64 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    inline primitive_argument_type file_read_csv::read(
+        std::ifstream&& infile, std::string const& filename) const
+    {
+        std::vector<double> data;
+        std::size_t n_rows, n_cols;
+        std::tie(data, n_rows, n_cols) =
+            read_helper(std::move(infile), filename);
+
+        if (n_rows == 1)
+        {
+            if (n_cols == 1)
+            {
+                // scalar value
+                return primitive_argument_type{
+                    ir::node_data<double>{data[0]}};
+            }
+
+            // vector
+            blaze::DynamicVector<double> vector(n_cols, data.data());
+
+            return primitive_argument_type{
+                ir::node_data<double>{std::move(vector)}};
+        }
+
+        // matrix
+        blaze::DynamicMatrix<double> matrix(n_rows, n_cols, data.data());
+
+        return primitive_argument_type{
+            ir::node_data<double>{std::move(matrix)}};
+    }
+
+    inline primitive_argument_type file_read_csv::read_3d(
+        std::ifstream&& infile, std::string const& filename,
+        std::int64_t given_nrows) const
+    {
+        std::vector<double> data;
+        std::size_t n_rows, n_cols;
+        std::tie(data, n_rows, n_cols) =
+            read_helper(std::move(infile), filename);
+
+        if (n_rows % given_nrows != 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "file_read_csv::read_3d",
+                util::generate_error_message(
+                    "the number of rows in the csv file is not divisible by "
+                    "the given number of rows in a page"));
+        }
+
+        // tensor
+        blaze::DynamicTensor<double> result(
+            static_cast<std::size_t>(n_rows / given_nrows), given_nrows, n_cols,
+            data.data());
+
+        return primitive_argument_type{
+            ir::node_data<double>{std::move(result)}};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> file_read_csv::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -95,14 +153,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(args[0]), this_->name_, this_->codename_);
 
                 bool mode3d = false;
-                if (args.size() > 1)
+                if (args.size() > 1 && valid(args[1]))
                 {
                     mode3d = extract_scalar_boolean_value(
                         std::move(args[1]), this_->name_, this_->codename_);
                 }
 
                 std::int64_t page_nrows;
-                if (args.size() > 2)
+                if (args.size() > 2 && valid(args[2]))
                 {
                     page_nrows = extract_scalar_positive_integer_value_strict(
                         std::move(args[2]), this_->name_, this_->codename_);
