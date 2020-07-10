@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
              hpx::program_options::value<std::string>(),
              "file name for reading data")
             ("row_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(20),
+             hpx::program_options::value<std::int64_t>()->default_value(30),
              "row_stop (default: 10)")
             ("col_stop",
              hpx::program_options::value<std::int64_t>()->default_value(100),
