@@ -8,9 +8,11 @@ set(example_programs
     lra_csv
     lra_csv_distributed
     lra_csv_instrumented
+    lra_dist
    )
 
 set(lra_csv_distributed_PARAMETERS LOCALITIES 2)
+set(lra_dist_PARAMETERS LOCALITIES 2)
 
 foreach(example_program ${example_programs})
 
