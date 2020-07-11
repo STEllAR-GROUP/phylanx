@@ -81,38 +81,24 @@ char const* const read_r_code = R"(block(
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
-std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(std::int64_t start,
-    std::int64_t stop)
+void calculate_horizontal_tiling_parameters(std::int64_t& row_start,
+    std::int64_t& row_stop)
 {
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     std::uint32_t this_locality = hpx::get_locality_id();
 
-    std::int64_t dim = stop - start;
+    std::int64_t rows = row_stop - row_start;
 
-    if (dim > num_localities)
+    if (rows > num_localities)
     {
-        std::size_t size = static_cast<std::size_t>(dim / num_localities);
-        std::size_t remainder = dim % num_localities;
-
-        if (this_locality < remainder)
-        {
-            size++;
-        }
-
-        if (remainder != 0 && this_locality >= remainder)
-        {
-            start =
-                (size + 1) * remainder + size * (this_locality - remainder);
-        }
-        else
-        {
-            start = size * this_locality;
-        }
-
-        stop = start + size;
+        rows = (rows + num_localities) / num_localities;
+        row_start += this_locality * rows;
+        row_stop = (std::min)(row_stop, row_start + rows);
     }
-    return std::make_tuple(start, stop);
 }
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -148,10 +134,10 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
 
     primitive_argument_type ratings_row, ratings_column;
-    std::int64_t user_row_start, user_row_stop, item_col_start, item_col_stop;
+
     // read the data from the file for user (rows)
-    std::tie(user_row_start, user_row_stop) = calculate_tiling_parameters(row_start, row_stop);
-//    ratings_row = read_r(filename, user_row_start, user_row_stop, col_start, col_stop);
+    calculate_horizontal_tiling_parameters(row_start, row_stop);
+    ratings_row = read_r(filename, row_start, row_stop, col_start, col_stop);
     //std::cout << "row tiling: row_start is " << row_start << " and row_stop is "
     //          <<  row_stop << " col_start is "<< col_start << " and col_stop is "
     //          <<  col_stop << " user_row_start is "<< user_row_start << " and user_row_stop is "
@@ -194,8 +180,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
         //auto it_0 = result_r.begin();
         std::cout << " on loc 0: \n"
                   << "there are " << num_localities << " localities "
-                  << " user_row_start: " << user_row_start
-                  << " user_row_stop: " << user_row_stop
+                  << " row_start: " << row_start
+                  << " row_stop: " << row_stop
                   << std::endl;
     }
     if (hpx::get_locality_id() == 1)
@@ -205,8 +191,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
         //auto it_1 = result_r.begin();
         std::cout << " on loc 1: \n"
                   << "there are " << num_localities << " localities "
-                  << " user_row_start: " << user_row_start
-                  << " user_row_stop: " << user_row_stop
+                  << " row_start: " << row_start
+                  << " row_stop: " << row_stop
                   << std::endl;
     }
 
@@ -246,8 +232,8 @@ int main(int argc, char* argv[])
           "col_start (default: 0)")
         ("col_stop", value<std::int64_t>()->default_value(100),
          "col_stop (default: 27278)")
-        ("tiling", value<std::string>()->default_value("horizontal"),
-          "tiling method ('horizontal' (default) or 'vertical')")
+        //("tiling", value<std::string>()->default_value("horizontal"),
+          //"tiling method ('horizontal' (default) or 'vertical')")
     ;
 
     // make sure hpx_main is run on all localities
