@@ -48,23 +48,6 @@ char const* const read_r_code = R"(block(
     read_r
 ))";
 
-char const* const read_y_code = R"(block(
-    //
-    // Read Y-data from given CSV file
-    //
-    define(read_y, filepath, row_start, row_stop, col_stop,
-        annotate_d(
-            slice(file_read_csv(filepath),
-                list(row_start, row_stop), col_stop),
-            "read_y",
-            list("tile",
-                list("rows", row_start, row_stop),
-                list("columns", col_stop, col_stop+1)
-            )
-        )
-    ),
-    read_y
-))";
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const als_code = R"(
@@ -199,9 +182,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto const& code_read_r = compile("read_r", read_r_code, snippets);
     auto read_r = code_read_r.run();
 
-    //auto const& code_read_y = compile("read_y", read_y_code, snippets);
-    //auto read_y = code_read_y.run();
-
     // handle command line arguments
     auto filename = vm["data_csv"].as<std::string>();
 
@@ -211,19 +191,20 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto col_stop = vm["col_stop"].as<std::int64_t>();
 
     auto alpha = vm["alpha"].as<double>();
-
+    auto regularization = vm["regularization"].as<double>();
+    auto num_factors = vm["factors"].as<int64_t>();
     auto iterations = vm["num_iterations"].as<std::int64_t>();
     bool enable_output = vm.count("enable_output") != 0;
 
     // calculate tiling parameters for this locality, read data
-    primitive_argument_type x, y;
+    primitive_argument_type ratings_row, ratings_column;
     std::int64_t user_row_start, user_row_stop, item_col_start, item_col_stop;
 
     std::tie(user_row_start, user_row_stop) = calculate_tiling_parameters(row_start, row_stop);
-    x = read_r(filename, user_row_start, user_row_stop, col_start, col_stop);
+    ratings_row = read_r(filename, user_row_start, user_row_stop, col_start, col_stop);
 
     std::tie(item_col_start, item_col_stop) = calculate_tiling_parameters(col_start, col_stop);
-    y = read_r(filename, row_start, row_stop, item_col_start, item_col_stop);
+    ratings_column = read_r(filename, row_start, row_stop, item_col_start, item_col_stop);
 
 
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
@@ -266,6 +247,27 @@ int hpx_main(hpx::program_options::variables_map& vm)
                   << " item_col_stop: " << item_col_stop
                   << std::endl;
     }
+
+    // evaluate ALS using the read data
+    auto const& code_als = compile("__als", als_code, snippets);
+    auto als = code_als.run();
+
+//    // time the execution
+//    hpx::util::high_resolution_timer t;
+//
+//    auto result =
+//        als(std::move(ratings_row), std::move(ratings_column), regularization, num_factors,
+//        iterations, alpha, enable_output);
+//
+//    auto elapsed = t.elapsed();
+//    auto result_r = extract_list_value(result);
+//    auto it = result_r.begin();
+//
+//    std::cout << "X: \n"
+//              << extract_numeric_value(*it++)
+//              << "\nY: \n"
+//              << extract_numeric_value(*it) << std::endl
+//              << "Calculated in: " << elapsed << " seconds" << std::endl;
 
 
     return hpx::finalize();
