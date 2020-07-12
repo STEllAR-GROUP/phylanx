@@ -1,4 +1,7 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2018 Shahrzad Shirzad
+//   Copyright (c) 2020 Hartmut Kaiser
+//   Copyright (c) 2020 Bita Hasheminezhad
+//   Copyright (c) 2020 Nanmiao Wu
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -47,7 +50,6 @@ char const* const read_r_code = R"(block(
     ),
     read_r
 ))";
-
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const als_code = R"(
@@ -110,38 +112,19 @@ char const* const als_code = R"(
                         block(
                             store(conf_u, slice_row(conf_row, u)),
                             store(c_u, diag(conf_u)),
-                            store(p_u, __ne(conf_u, 0.0, true)),
-                            store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
-                            store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
-                            store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
+                            //store(p_u, __ne(conf_u, 0.0, true)),
+                            //store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
+                            //store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
+                            //store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
 
-                    store(X, all_gather_d(X_local)),
-                    store(XtX, dot(transpose(X), X) + regularization * I_f),
-
-                    while(i < num_items,
-                        block(
-                            store(conf_i, slice_column(conf_column, i)),
-                            store(c_i, diag(conf_i)),
-                            store(p_i, __ne(conf_i, 0.0, true)),
-                            store(A, dot(dot(transpose(X), c_i), X) + XtX),
-                            store(b, dot(dot(transpose(X), (c_i + I_u)), transpose(p_i))),
-                            store(slice(Y_local, list(i, i + 1, 1), nil), dot(inverse(A), b)),
-                            store(i, i + 1)
-                        )
-                    ),
-                    store(i, 0),
-
-                    store(Y, all_gather_d(Y_local)),
-                    store(YtY, dot(transpose(Y), Y) + regularization * I_f),
-
                     store(k, k + 1)
                 )
             ),
-            list(X, Y)
+            list(conf_row, conf_u)
         )
     )
     __als
@@ -149,19 +132,52 @@ char const* const als_code = R"(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(std::int64_t start,
+//    std::int64_t stop)
+//{
+//    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+//    std::uint32_t this_locality = hpx::get_locality_id();
+//
+//    std::int64_t dims = stop - start;
+//
+//    if (dims > num_localities)
+//    {
+//        dims = (dims + num_localities) / num_localities;
+//        start += this_locality * dims;
+//        stop = (std::min)(stop, start + dims);
+//    }
+//    return std::make_tuple(start, stop);
+//}
+
 std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(std::int64_t start,
     std::int64_t stop)
 {
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     std::uint32_t this_locality = hpx::get_locality_id();
 
-    std::int64_t dims = stop - start;
+    std::int64_t dim = stop - start;
 
-    if (dims > num_localities)
+    if (dim > num_localities)
     {
-        dims = (dims + num_localities) / num_localities;
-        start += this_locality * dims;
-        stop = (std::min)(stop, start + dims);
+        std::size_t size = static_cast<std::size_t>(dim / num_localities);
+        std::size_t remainder = dim % num_localities;
+
+        if (this_locality < remainder)
+        {
+            size++;
+        }
+
+        if (remainder != 0 && this_locality >= remainder)
+        {
+            start =
+                (size + 1) * remainder + size * (this_locality - remainder);
+        }
+        else
+        {
+            start = size * this_locality;
+        }
+
+        stop = start + size;
     }
     return std::make_tuple(start, stop);
 }
@@ -195,6 +211,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto num_factors = vm["factors"].as<int64_t>();
     auto iterations = vm["num_iterations"].as<std::int64_t>();
     bool enable_output = vm.count("enable_output") != 0;
+    //bool enable_output = 1;
 
     // calculate tiling parameters for this locality, read data
     primitive_argument_type ratings_row, ratings_column;
@@ -212,8 +229,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     if (hpx::get_locality_id() == 0)
     {
-        //auto result_r = extract_list_value(result);
-        //auto it_0 = result_r.begin();
         std::cout << " on loc 0: \n"
                   << "there are " << num_localities << " localities \n"
                   << "user row partition: \n"
@@ -230,9 +245,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
     if (hpx::get_locality_id() == 1)
     {
-
-        //auto result_r = extract_list_value(result);
-        //auto it_1 = result_r.begin();
         std::cout << " on loc 1: \n"
                   << "there are " << num_localities << " localities "
                   << "user row partition: \n"
@@ -249,25 +261,57 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
 
     // evaluate ALS using the read data
-    auto const& code_als = compile("__als", als_code, snippets);
+    auto const& code_als = compile("als", als_code, snippets);
     auto als = code_als.run();
 
-//    // time the execution
-//    hpx::util::high_resolution_timer t;
-//
-//    auto result =
-//        als(std::move(ratings_row), std::move(ratings_column), regularization, num_factors,
-//        iterations, alpha, enable_output);
-//
-//    auto elapsed = t.elapsed();
-//    auto result_r = extract_list_value(result);
-//    auto it = result_r.begin();
-//
-//    std::cout << "X: \n"
-//              << extract_numeric_value(*it++)
-//              << "\nY: \n"
-//              << extract_numeric_value(*it) << std::endl
-//              << "Calculated in: " << elapsed << " seconds" << std::endl;
+    // time the execution
+    hpx::evaluate_active_counters(true, "start");
+    hpx::util::high_resolution_timer t;
+
+    auto result =
+        als(std::move(ratings_row), std::move(ratings_column), regularization,
+            num_factors, iterations, alpha, enable_output);
+
+    auto time_diff = t.elapsed();
+    std::cout << "Calculated in: " << time_diff << " seconds" << std::endl;
+
+    hpx::evaluate_active_counters(true, " finish");
+
+    auto result_r = extract_list_value(result);
+    auto it = result_r.begin();
+
+    //std::cout << "X: \n"
+    //          << extract_numeric_value(*it++)
+    //          << "\nY: \n"
+    //          << extract_numeric_value(*it)
+    //          << std::endl;
+    //std::cout << "Calculated in: " << time_diff << " seconds" << std::endl;
+
+    if (hpx::get_locality_id() == 0)
+    {
+        auto result_r = extract_list_value(result);
+        auto it_0 = result_r.begin();
+        std::cout << " on loc 0: \n"
+                  << "there are " << num_localities << " localities \n"
+                  << "X: "
+                  << extract_numeric_value(*it_0++)
+                  << "\nY: "
+                  << extract_numeric_value(*it_0)
+                  << std::endl;
+    }
+    if (hpx::get_locality_id() == 1)
+    {
+
+        auto result_r_1 = extract_list_value(result);
+        auto it_1 = result_r_1.begin();
+        std::cout << " on loc 1: \n"
+                  << "there are " << num_localities << " localities \n"
+                  << "X: "
+                  << extract_numeric_value(*it_1++)
+                  << "\nY: "
+                  << extract_numeric_value(*it_1)
+                  << std::endl;
+    }
 
 
     return hpx::finalize();
@@ -286,18 +330,20 @@ int main(int argc, char* argv[])
           "enable progress output (default: false)")
         ("num_iterations,n", value<std::int64_t>()->default_value(3),
           "number of iterations (default: 10.0)")
-        ("factors,f", value<std::int64_t>()->default_value(10),
+        ("factors,f", value<std::int64_t>()->default_value(5),
          "number of factors (default: 10)")
         ("alpha,a", value<double>()->default_value(40),
           "alpha (default: 40)")
+        ("regularization,r", value<double>()->default_value(0.1),
+         "regularization (default: 0.1)")
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(30),
+        ("row_stop", value<std::int64_t>()->default_value(8),
           "row_stop (default: 569)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(100),
+        ("col_stop", value<std::int64_t>()->default_value(20),
           "col_stop (default: 30)")
     ;
 
