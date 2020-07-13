@@ -50,3 +50,52 @@ foreach(param ${args})
   add_phylanx_pseudo_dependencies(tests.performance tests.performance.dist_cannon_${param})
   add_phylanx_pseudo_dependencies(tests.performance.dist_cannon_${param} dist_cannon_${param}_test_exe)
 endforeach()
+
+foreach(param ${args})
+  set(dist_dot_${param}_PARAMETERS LOCALITIES ${param})
+  set(sources dist_dot.cpp)
+
+  source_group("Source Files" FILES ${sources})
+
+  # add executable
+  add_phylanx_executable(dist_dot_${param}_test
+    SOURCES ${sources}
+    ${dist_dot_${param}_FLAGS}
+    EXCLUDE_FROM_ALL
+    FOLDER "Tests/Performance/")
+
+  # add_phylanx_unit_test("performance" dist_dot_${param} ${dist_dot_${param}_PARAMETERS})
+  add_phylanx_pseudo_target(tests.performance.dist_dot_${param})
+  add_phylanx_pseudo_dependencies(tests.performance tests.performance.dist_dot_${param})
+  add_phylanx_pseudo_dependencies(tests.performance.dist_dot_${param} dist_dot_${param}_test_exe)
+endforeach()
+
+set(conv_args
+    2
+    4
+    6
+    8
+    10
+    12
+    14
+    16
+    )
+	
+foreach(param ${conv_args})
+  set(dist_conv1d_${param}_PARAMETERS LOCALITIES ${param})
+  set(sources dist_conv1d.cpp)
+
+  source_group("Source Files" FILES ${sources})
+
+  # add executable
+  add_phylanx_executable(dist_conv1d_${param}_test
+    SOURCES ${sources}
+    ${dist_conv1d_${param}_FLAGS}
+    EXCLUDE_FROM_ALL
+    FOLDER "Tests/Performance/")
+
+  add_phylanx_unit_test("performance" dist_conv1d_${param} ${dist_conv1d_${param}_PARAMETERS})
+  add_phylanx_pseudo_target(tests.performance.dist_conv1d_${param})
+  add_phylanx_pseudo_dependencies(tests.performance tests.performance.dist_conv1d_${param})
+  add_phylanx_pseudo_dependencies(tests.performance.dist_conv1d_${param} dist_conv1d_${param}_test_exe)
+endforeach()
