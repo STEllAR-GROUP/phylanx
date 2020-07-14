@@ -9,7 +9,7 @@
 #include <phylanx/plugins/algorithms/kmeans.hpp>
 #include <phylanx/util/random.hpp>
 
-#include <hpx/include/iostreams.hpp>
+#include <hpx/distributed/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>

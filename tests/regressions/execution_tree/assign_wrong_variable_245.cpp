@@ -8,7 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/include/iostreams.hpp>
+#include <hpx/distributed/iostream.hpp>
 #include <hpx/modules/testing.hpp>
 
 #include <sstream>

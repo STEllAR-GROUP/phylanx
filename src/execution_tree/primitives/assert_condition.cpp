@@ -7,7 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/assert_condition.hpp>
 
-#include <hpx/include/iostreams.hpp>
+#include <hpx/distributed/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

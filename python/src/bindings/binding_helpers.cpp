@@ -7,7 +7,7 @@
 
 #include <phylanx/phylanx.hpp>
 
-#include <hpx/include/iostreams.hpp>
+#include <hpx/distributed/iostream.hpp>
 
 #include <bindings/binding_helpers.hpp>
 #include <bindings/type_casters.hpp>

@@ -14,7 +14,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include <hpx/include/iostreams.hpp>
+#include <hpx/distributed/iostream.hpp>
 
 #include <cstdint>
 #include <vector>

@@ -1,4 +1,4 @@
-//  Copyright (c) 2019 Hartmut Kaiser
+//  Copyright (c) 2019-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -435,6 +435,18 @@ namespace phylanx { namespace execution_tree {
         else if (op2.has_annotation())
         {
             ann_ = op2.annotation();
+        }
+    }
+
+    annotation_wrapper::annotation_wrapper(primitive_arguments_type const& ops)
+    {
+        for (auto const& op : ops)
+        {
+            if (op.has_annotation())
+            {
+                ann_ = op.annotation();
+                break;
+            }
         }
     }
 

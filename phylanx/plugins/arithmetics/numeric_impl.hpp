@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2020 Hartmut Kaiser
 // Copyright (c) 2018 Shahrzad Shirzad
 // Copyright (c) 2018 Parsa Amini
 //
@@ -540,7 +540,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
-                return this_->handle_numeric_operands(std::move(ops));
+                annotation_wrapper wrap(ops);
+                return wrap.propagate(
+                    this_->handle_numeric_operands(std::move(ops)),
+                    this_->name_, this_->codename_);
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
