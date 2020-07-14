@@ -77,13 +77,13 @@ char const* const als_code = R"(
             define(p_i, constant_d(0.0, list(total_num_users))),
 
             set_seed(0),
-            define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
+            define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "column")),
             define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "column")),
 
             define(X, all_gather_d(X_local)),
             define(Y, all_gather_d(Y_local)),
 
-            define(I_f, identity(num_factors)),
+            define(I_f, identity_d(num_factors, nil, nil, nil, "row")),
             define(I_i, identity_d(total_num_items, nil, nil, nil, "column")),
             define(I_u, identity_d(total_num_users, nil, nil, nil, "column")),
 
@@ -91,13 +91,14 @@ char const* const als_code = R"(
             define(i, 0),
             define(u, 0),
 
-            define(XtX, dot(transpose(X), X) + regularization * I_f),
-            define(YtY, dot(transpose(Y), Y) + regularization * I_f),
+            define(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
+            define(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
 
-            define(A, constant(0.0, list(num_factors, num_factors))),
+            define(A, constant_d(0.0, list(num_factors, num_factors))),
             define(b, constant_d(0.0, list(num_factors))),
 
             define(b_u, constant_d(0.0, list(num_factors, total_num_items), nil, nil, nil, "row")),
+            define(b_i, constant_d(0.0, list(num_factors, total_num_users), nil, nil, nil, "row")),
 
 
             while(k < iterations,
@@ -105,20 +106,23 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", conf_u),
-                                    cout("Y: ", p_u)
+                                    cout("X: ", A),
+                                    cout("Y: ", X_local)
                             )
                     ),
 
-                    while(u < num_users,
+                    while(u < total_num_users,
                         block(
                             store(conf_u, slice_row(conf_column, u)),
                             store(c_u, diag_d(conf_u, 0, "column")),
                             store(p_u, __ne(conf_u, 0.0, true)),
-                          //  store(A, dot_d(dot_d(transpose(Y), c_u), Y) + YtY),
-                          //  store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
+                            store(A, dot_d(dot_d(transpose(Y_local), c_u), Y_local) + YtY),
+
+                            store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
 
                             //store(b, dot_d(b_u, p_u)),
+
+                            //store(slice_row(X_local, u), dot_d(inverse_d(A), b)),
 
                             //store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
@@ -126,10 +130,27 @@ char const* const als_code = R"(
                     ),
                     store(u, 0),
 
+                    store(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
+
+                    //while(i < total_num_items,
+                    //    block(
+                    //        store(conf_i, slice_column(conf_row, i)),
+                    //        store(c_i, diag_d(conf_i, 0, "column")),
+                    //        store(p_i, __ne(conf_i, 0.0, true)),
+                    //        store(A, dot_d(dot_d(transpose(X_local), c_i), X_local) + XtX),
+                    //        store(b_i, dot_d(transpose_d(X_local), (c_i + I_u))),
+                    //        store(b, dot_d(b_i, p_i)),
+                    //        store(slice_column(Y_local, i), dot_d(inverse_d(A), b)),
+                    //        store(i, i + 1)
+                    //    )
+                    //),
+                    //store(i, 0),
+                    //store(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
+
                     store(k, k + 1)
                 )
             ),
-            list(__ne(conf_u, 0.0, true), p_u)
+            list(X_local, b_u)
         )
     )
     __als
