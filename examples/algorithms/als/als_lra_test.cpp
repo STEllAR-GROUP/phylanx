@@ -60,33 +60,32 @@ char const* const als_code = R"(
         iterations, alpha, enable_output,
         block(
             define(num_users, shape(ratings_row, 0)),
-            define(total_num_items, shape(ratings_row, 1)),
-
-            define(total_num_users, shape(ratings_column, 0)),
+            define(total_num_items, shape_d(ratings_row, 1)),
+            define(total_num_users, shape_d(ratings_row, 0)),
             define(num_items, shape(ratings_column, 1)),
 
             define(conf_row, alpha * ratings_row),
             define(conf_column, alpha * ratings_column),
 
-            define(conf_u, constant(0.0, make_list(total_num_items))),
-            define(conf_i, constant(0.0, make_list(total_num_users))),
+            define(conf_u, constant_d(0.0, list(total_num_items))),
+            define(conf_i, constant_d(0.0, list(total_num_users))),
 
-            define(c_u, constant(0.0, make_list(total_num_items, total_num_items))),
-            define(c_i, constant(0.0, make_list(total_num_users, total_num_users))),
+            define(c_u, constant_d(0.0, list(total_num_items, total_num_items), nil, nil, nil, "column")),
+            define(c_i, constant_d(0.0, list(total_num_users, total_num_users), nil, nil, nil, "column")),
 
-            define(p_u, constant(0.0, make_list(total_num_items))),
-            define(p_i, constant(0.0, make_list(total_num_users))),
+            define(p_u, constant_d(0.0, list(total_num_items))),
+            define(p_i, constant_d(0.0, list(total_num_users))),
 
             set_seed(0),
             define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
-            define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "row")),
+            define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "column")),
 
             define(X, all_gather_d(X_local)),
             define(Y, all_gather_d(Y_local)),
 
             define(I_f, identity(num_factors)),
-            define(I_i, identity(total_num_items)),
-            define(I_u, identity(total_num_users)),
+            define(I_i, identity_d(total_num_items, nil, nil, nil, "column")),
+            define(I_u, identity_d(total_num_users, nil, nil, nil, "column")),
 
             define(k, 0),
             define(i, 0),
@@ -95,26 +94,32 @@ char const* const als_code = R"(
             define(XtX, dot(transpose(X), X) + regularization * I_f),
             define(YtY, dot(transpose(Y), Y) + regularization * I_f),
 
-            define(A, constant(0.0, make_list(num_factors, num_factors))),
-            define(b, constant(0.0, make_list(num_factors))),
+            define(A, constant(0.0, list(num_factors, num_factors))),
+            define(b, constant_d(0.0, list(num_factors))),
+
+            define(b_u, constant_d(0.0, list(num_factors, total_num_items), nil, nil, nil, "row")),
+
 
             while(k < iterations,
                 block(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", X),
-                                    cout("Y: ", Y)
+                                    cout("X: ", conf_u),
+                                    cout("Y: ", p_u)
                             )
                     ),
 
                     while(u < num_users,
                         block(
-                            store(conf_u, slice_row(conf_row, u)),
-                            store(c_u, diag(conf_u)),
-                            //store(p_u, __ne(conf_u, 0.0, true)),
-                            //store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
-                            //store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
+                            store(conf_u, slice_row(conf_column, u)),
+                            store(c_u, diag_d(conf_u, 0, "column")),
+                            store(p_u, __ne(conf_u, 0.0, true)),
+                          //  store(A, dot_d(dot_d(transpose(Y), c_u), Y) + YtY),
+                          //  store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
+
+                            //store(b, dot_d(b_u, p_u)),
+
                             //store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
@@ -124,30 +129,13 @@ char const* const als_code = R"(
                     store(k, k + 1)
                 )
             ),
-            list(conf_row, conf_u)
+            list(__ne(conf_u, 0.0, true), p_u)
         )
     )
     __als
 )";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-//std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(std::int64_t start,
-//    std::int64_t stop)
-//{
-//    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-//    std::uint32_t this_locality = hpx::get_locality_id();
-//
-//    std::int64_t dims = stop - start;
-//
-//    if (dims > num_localities)
-//    {
-//        dims = (dims + num_localities) / num_localities;
-//        start += this_locality * dims;
-//        stop = (std::min)(stop, start + dims);
-//    }
-//    return std::make_tuple(start, stop);
-//}
 
 std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(std::int64_t start,
     std::int64_t stop)
@@ -210,8 +198,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto regularization = vm["regularization"].as<double>();
     auto num_factors = vm["factors"].as<int64_t>();
     auto iterations = vm["num_iterations"].as<std::int64_t>();
-    bool enable_output = vm.count("enable_output") != 0;
-    //bool enable_output = 1;
+    //bool enable_output = vm.count("enable_output") != 0;
+    bool enable_output = 1;
 
     // calculate tiling parameters for this locality, read data
     primitive_argument_type ratings_row, ratings_column;
@@ -312,7 +300,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
                   << extract_numeric_value(*it_1)
                   << std::endl;
     }
-
 
     return hpx::finalize();
 }
