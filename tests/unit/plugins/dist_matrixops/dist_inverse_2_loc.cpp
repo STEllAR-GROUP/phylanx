@@ -300,6 +300,46 @@ void test_gauss_inverse_5()
     }
 }
 
+void test_gauss_inverse_6()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_ginv_operation("test_6", R"(
+            inverse_d(
+                annotate_d( [[12.6599, 1.67284, 0.326756, -4.83888, -3.80496],
+                    [1.67284, 16.8633, 0.989482, -7.83745, 0.823394],
+                    [0.326756, 0.989482, 19.3107, -8.99473, 5.67633]],
+                    "test_6_1",
+                    list("tile", list("columns", 0, 5), list("rows", 0, 3)))
+            )
+        )",
+            R"(
+            annotate_d([[0.10137884, 0.00065055, -0.00091661, 0.02714392, 0.04018139],
+                [0.00065055, 0.06957186, 0.00628831, 0.02340387, 0.00352821],
+                [-0.00091661, 0.00628831, 0.06639181, 0.01965894, -0.0195845]],
+                "test_6_1/1",
+                list("tile", list("columns", 0, 5), list("rows", 0, 3)))
+        )");
+    }
+    else
+    {
+        test_ginv_operation("test_6", R"(
+             inverse_d(
+                 annotate_d( [[-4.83888, -7.83745, -8.99473, 26.7443, -5.93636],
+                    [-3.80496, 0.823394, 5.67633, -5.93636, 13.7264]],
+                    "test_6_1",
+                    list("tile", list("columns", 0, 5), list("rows", 3, 5)))
+            )
+       )",
+           R"(
+            annotate_d([[0.02714392, 0.02340387, 0.01965894, 0.06120175, 0.02445914],
+               [0.04018139, 0.00352821, -0.0195845 , 0.02445914, 0.10245584]],
+               "test_6_1/1",
+                list("tile", list("columns", 0, 5), list("rows", 3, 5)))
+        )");
+    }
+}
+
 int hpx_main(int argc, char* argv[])
 {
       test_gauss_inverse_0();
@@ -307,6 +347,7 @@ int hpx_main(int argc, char* argv[])
       //test_gauss_inverse_3(5);
       test_gauss_inverse_4();
       test_gauss_inverse_5();
+      //test_gauss_inverse_6();
 
     hpx::finalize();
     return hpx::util::report_errors();

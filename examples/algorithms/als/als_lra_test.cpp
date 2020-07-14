@@ -59,10 +59,8 @@ char const* const als_code = R"(
     define(__als, ratings_row, ratings_column, regularization, num_factors,
         iterations, alpha, enable_output,
         block(
-            define(num_users, shape(ratings_row, 0)),
-            define(total_num_items, shape_d(ratings_row, 1)),
             define(total_num_users, shape_d(ratings_row, 0)),
-            define(num_items, shape(ratings_column, 1)),
+            define(total_num_items, shape_d(ratings_row, 1)),
 
             define(conf_row, alpha * ratings_row),
             define(conf_column, alpha * ratings_column),
@@ -107,7 +105,7 @@ char const* const als_code = R"(
                             block(
                                     cout("iteration ", k),
                                     cout("X: ", A),
-                                    cout("Y: ", X_local)
+                                    cout("Y: ", conf_row)
                             )
                     ),
 
@@ -115,42 +113,41 @@ char const* const als_code = R"(
                         block(
                             store(conf_u, slice_row(conf_column, u)),
                             store(c_u, diag_d(conf_u, 0, "column")),
-                            store(p_u, __ne(conf_u, 0.0, true)),
-                            store(A, dot_d(dot_d(transpose(Y_local), c_u), Y_local) + YtY),
-
+                            // store(p_u, __ne(conf_u, 0.0, true)),
+                            store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
                             store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
-
-                            //store(b, dot_d(b_u, p_u)),
-
-                            //store(slice_row(X_local, u), dot_d(inverse_d(A), b)),
-
-                            //store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
+                            store(b, dot_d(b_u, p_u)),
+                            //store(slice(X_local, list(u, u + 1, 1), nil), dot_d(inverse_d(A), b)),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
 
-                    store(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
+                    //store(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
 
-                    //while(i < total_num_items,
-                    //    block(
-                    //        store(conf_i, slice_column(conf_row, i)),
-                    //        store(c_i, diag_d(conf_i, 0, "column")),
-                    //        store(p_i, __ne(conf_i, 0.0, true)),
-                    //        store(A, dot_d(dot_d(transpose(X_local), c_i), X_local) + XtX),
-                    //        store(b_i, dot_d(transpose_d(X_local), (c_i + I_u))),
-                    //        store(b, dot_d(b_i, p_i)),
-                    //        store(slice_column(Y_local, i), dot_d(inverse_d(A), b)),
-                    //        store(i, i + 1)
-                    //    )
-                    //),
-                    //store(i, 0),
-                    //store(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
+                    // while(i < total_num_items,
+                    //     block(
+                    //         // store(conf_i, slice_column(conf_row, i)),
+                    //         // store(c_i, diag_d(conf_i, 0, "column")),
+                    //         // store(p_i, __ne(conf_i, 0.0, true)),
+                    //         // store(A, dot_d(dot_d(transpose_d(X_local), c_i), X_local) + XtX),
+                    //         // store(b_i, dot_d(transpose_d(X_local), (c_i + I_u))),
+                    //         // store(b, dot_d(b_i, p_i)),
+                    //         // store(slice(Y_local, list(i, i + 1, 1), nil), dot_d(inverse_d(A), b)),
+                    //         store(i, i + 1)
+                    //     )
+                    // ),
+                    // store(i, 0),
+                    // //store(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
 
                     store(k, k + 1)
                 )
             ),
-            list(X_local, b_u)
+            // define(X, all_gather_d(X_local)),
+            // define(Y, all_gather_d(Y_local)),
+            // list(X, Y)
+
+            list(inverse_d(A), A)
         )
     )
     __als
