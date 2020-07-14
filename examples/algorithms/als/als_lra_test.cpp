@@ -68,22 +68,22 @@ char const* const als_code = R"(
             define(conf_u, constant_d(0.0, list(total_num_items))),
             define(conf_i, constant_d(0.0, list(total_num_users))),
 
-            define(c_u, constant_d(0.0, list(total_num_items, total_num_items), nil, nil, nil, "column")),
-            define(c_i, constant_d(0.0, list(total_num_users, total_num_users), nil, nil, nil, "column")),
+            define(c_u, constant_d(0.0, list(total_num_items, total_num_items), nil, nil, nil, "row")),
+            define(c_i, constant_d(0.0, list(total_num_users, total_num_users), nil, nil, nil, "row")),
 
             define(p_u, constant_d(0.0, list(total_num_items))),
             define(p_i, constant_d(0.0, list(total_num_users))),
 
             set_seed(0),
-            define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "column")),
-            define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "column")),
+            define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
+            define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "row")),
 
             define(X, all_gather_d(X_local)),
             define(Y, all_gather_d(Y_local)),
 
-            define(I_f, identity_d(num_factors, nil, nil, nil, "row")),
-            define(I_i, identity_d(total_num_items, nil, nil, nil, "column")),
-            define(I_u, identity_d(total_num_users, nil, nil, nil, "column")),
+            define(I_f, identity(num_factors)),
+            define(I_i, identity_d(total_num_items, nil, nil, nil, "row")),
+            define(I_u, identity_d(total_num_users, nil, nil, nil, "row")),
 
             define(k, 0),
             define(i, 0),
@@ -92,11 +92,11 @@ char const* const als_code = R"(
             define(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
             define(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
 
-            define(A, constant_d(0.0, list(num_factors, num_factors))),
-            define(b, constant_d(0.0, list(num_factors))),
+            define(A, constant(0.0, list(num_factors, num_factors))),
+            define(b, constant(0.0, list(num_factors))),
 
-            define(b_u, constant_d(0.0, list(num_factors, total_num_items), nil, nil, nil, "row")),
-            define(b_i, constant_d(0.0, list(num_factors, total_num_users), nil, nil, nil, "row")),
+            define(b_u, constant(0.0, list(num_factors, total_num_items))),
+            define(b_i, constant(0.0, list(num_factors, total_num_users))),
 
 
             while(k < iterations,
@@ -105,19 +105,19 @@ char const* const als_code = R"(
                             block(
                                     cout("iteration ", k),
                                     cout("X: ", A),
-                                    cout("Y: ", conf_row)
+                                    cout("Y: ", b)
                             )
                     ),
 
                     while(u < total_num_users,
                         block(
                             store(conf_u, slice_row(conf_column, u)),
-                            store(c_u, diag_d(conf_u, 0, "column")),
-                            // store(p_u, __ne(conf_u, 0.0, true)),
+                            store(c_u, diag_d(conf_u, 0, "row")),
+                        //    // store(p_u, __ne(conf_u, 0.0, true)),
                             store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
                             store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
                             store(b, dot_d(b_u, p_u)),
-                            //store(slice(X_local, list(u, u + 1, 1), nil), dot_d(inverse_d(A), b)),
+                            // store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
@@ -147,7 +147,7 @@ char const* const als_code = R"(
             // define(Y, all_gather_d(Y_local)),
             // list(X, Y)
 
-            list(inverse_d(A), A)
+            list(dot(inverse(A), b), inverse(A))
         )
     )
     __als

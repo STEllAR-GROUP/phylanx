@@ -622,6 +622,64 @@ void test_dot_2d2d_5()
     }
 }
 
+void test_dot_2d2d_6()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test2d2d_6", R"(
+            dot_d(
+                annotate_d([[0, 2, 3], [1, 2, 3]], "test2d2d_6_1",
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))),
+                annotate_d([[1,1,1], [2,2,2], [3,3,3]], "test2d2d_6_2",
+                    list("tile", list("columns", 0, 3), list("rows", 0, 3)))
+            )
+        )",
+            "[[90, 54, 29], [91, 55, 30]]");
+    }
+    else
+    {
+        test_dot_operation("test2d2d_5", R"(
+            dot_d(
+                annotate_d([[4, 5, 6], [4, 5, 6]], "test2d2d_6_1",
+                    list("tile", list("columns", 3, 6), list("rows", 0, 2))),
+                annotate_d([[4,4,4],[5,5,0],[6,0,0]],
+                    "test2d2d_6_2",
+                    list("tile", list("columns", 0, 3), list("rows", 3, 6)))
+            )
+        )",
+            "[[90, 54, 29], [91, 55, 30]]");
+    }
+}
+
+void test_dot_2d2d_7()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_dot_operation("test2d2d_7", R"(
+            dot_d(
+                annotate_d([[0, 2, 3], [1, 2, 3]], "test2d2d_7_1",
+                    list("tile", list("columns", 0, 3), list("rows", 0, 2))),
+                annotate_d([[1], [2], [3], [4], [5], [6]], "test2d2d_7_2",
+                    list("tile", list("columns", 0, 1), list("rows", 0, 6)))
+            )
+        )",
+            "[[90, 54, 29], [91, 55, 30]]");
+    }
+    else
+    {
+        test_dot_operation("test2d2d_7", R"(
+            dot_d(
+                annotate_d([[4, 5, 6], [4, 5, 6]], "test2d2d_7_1",
+                    list("tile", list("columns", 3, 6), list("rows", 0, 2))),
+                annotate_d([[1, 1], [2, 2], [3, 3], [4, 4], [5, 0], [0, 0]],
+                    "test2d2d_7_2",
+                    list("tile", list("columns", 1, 3), list("rows", 0, 6)))
+            )
+        )",
+            "[[90, 54, 29], [91, 55, 30]]");
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -649,6 +707,8 @@ int hpx_main(int argc, char* argv[])
     test_dot_2d2d_3();
     test_dot_2d2d_4();
     test_dot_2d2d_5();
+    test_dot_2d2d_6();
+    test_dot_2d2d_7();
 
     hpx::finalize();
     return hpx::util::report_errors();
