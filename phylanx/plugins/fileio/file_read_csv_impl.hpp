@@ -16,7 +16,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <boost/spirit/include/qi_char.hpp>
 #include <boost/spirit/include/qi_list.hpp>
@@ -34,8 +33,6 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-
-#include <blaze/Math.h>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {

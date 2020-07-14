@@ -12,12 +12,10 @@
 
 #include <hpx/futures/future.hpp>
 
-#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -36,9 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        //std::tuple<std::vector<double>, std::size_t, std::size_t> read_helper(
-        //    std::ifstream&& infile, std::string const& filename) const;
-
         primitive_argument_type read(
             std::ifstream&& infile, std::string const& filename) const;
 

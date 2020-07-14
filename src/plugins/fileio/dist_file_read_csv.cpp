@@ -85,8 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Returns:
 
-            Returns a distributed array representing the contents of a the
-            given csv file.
+            Returns a distributed array representing the contents of the given
+            csv file.
             )")
     };
 

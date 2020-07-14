@@ -13,14 +13,19 @@
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
+#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
