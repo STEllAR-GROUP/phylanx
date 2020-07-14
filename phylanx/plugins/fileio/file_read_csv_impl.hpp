@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bool header_parsed = false;
         std::vector<double> matrix_array, current_line;
         std::size_t n_rows = 0, n_cols = 0;
-        std::size_t before_readln = 0, after_readln = 0;
+        std::size_t before_readln, after_readln;
 
         while (std::getline(infile, line))
         {
