@@ -10,11 +10,13 @@ set(example_programs
     als_csv_instrumented
     als_distributed_test
     als_lra_test
+    als_test_segfault
    )
 
 set(als_csv_distributed_PARAMETERS LOCALITIES 2)
 set(als_distributed_test_PARAMETERS LOCALITIES 2)
 set(als_lra_test_PARAMETERS LOCALITIES 2)
+set(als_test_segfault_PARAMETERS LOCALITIES 2)
 
 foreach(example_program ${example_programs})
 

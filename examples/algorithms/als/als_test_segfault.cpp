@@ -62,43 +62,31 @@ char const* const als_code = R"(
             define(total_num_users, shape_d(ratings_row, 0)),
             define(total_num_items, shape_d(ratings_row, 1)),
 
-            define(conf_row, alpha * ratings_row),
             define(conf_column, alpha * ratings_column),
 
             define(conf_u, constant_d(0.0, list(total_num_items))),
-            define(conf_i, constant_d(0.0, list(total_num_users))),
 
             define(c_u, constant_d(0.0, list(total_num_items, total_num_items), nil, nil, nil, "column")),
-            define(c_i, constant_d(0.0, list(total_num_users, total_num_users), nil, nil, nil, "column")),
 
             define(p_u, constant_d(0.0, list(total_num_items))),
-            define(p_i, constant_d(0.0, list(total_num_users))),
 
             set_seed(0),
             define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "column")),
             define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "column")),
 
-            define(X, all_gather_d(X_local)),
-            define(Y, all_gather_d(Y_local)),
 
             define(I_f, identity_d(num_factors, nil, nil, nil, "row")),
             define(I_i, identity_d(total_num_items, nil, nil, nil, "column")),
-            define(I_u, identity_d(total_num_users, nil, nil, nil, "column")),
 
             define(k, 0),
-            define(i, 0),
             define(u, 0),
 
-            define(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
             define(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
 
             define(A, constant_d(0.0, list(num_factors, num_factors))),
-            define(b, constant_d(0.0, list(num_factors))),
 
             define(A_col, constant_d(0.0, list(num_factors, num_factors), nil, nil, nil, "column")),
 
-
-            //define(b_i, constant_d(0.0, list(num_factors, total_num_users), nil, nil, nil, "row")),
 
 
             while(k < iterations,
@@ -115,47 +103,19 @@ char const* const als_code = R"(
                         block(
                             store(conf_u, slice_row(conf_column, u)),
                             store(c_u, diag_d(conf_u, 0, "column")),
-                            // store(p_u, __ne(conf_u, 0.0, true)),
                             store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
                             store(A_col, retile_d(A, "column")),
-
-                            
-                            //store(A_col, retile_d((dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY), "column")),
-
                             store(A_col, inverse_d(A_col)),
-                            //store(A, retile_d(inverse_d(A_col), "row")),
-
-                            
-                            store(b, dot_d(dot_d(transpose_d(Y_local), (c_u + I_i)), p_u)),
-                            //store(slice(X_local, list(u, u + 1, 1), nil), dot_d(inverse_d(A), b)),
+                            store(A, retile_d(inverse_d(A_col), "row")),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
 
-                    //store(XtX, dot_d(transpose_d(X_local), X_local) + regularization * I_f),
-
-                    // while(i < total_num_items,
-                    //     block(
-                    //         // store(conf_i, slice_column(conf_row, i)),
-                    //         // store(c_i, diag_d(conf_i, 0, "column")),
-                    //         // store(p_i, __ne(conf_i, 0.0, true)),
-                    //         // store(A, dot_d(dot_d(transpose_d(X_local), c_i), X_local) + XtX),
-                    //         // store(b_i, dot_d(transpose_d(X_local), (c_i + I_u))),
-                    //         // store(b, dot_d(b_i, p_i)),
-                    //         // store(slice(Y_local, list(i, i + 1, 1), nil), dot_d(inverse_d(A), b)),
-                    //         store(i, i + 1)
-                    //     )
-                    // ),
-                    // store(i, 0),
-                    // //store(YtY, dot_d(transpose_d(Y_local), Y_local) + regularization * I_f),
 
                     store(k, k + 1)
                 )
             ),
-            // define(X, all_gather_d(X_local)),
-            // define(Y, all_gather_d(Y_local)),
-            // list(X, Y)
 
             list(A, A_col)
         )
@@ -239,43 +199,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     std::tie(item_col_start, item_col_stop) = calculate_tiling_parameters(col_start, col_stop);
     ratings_column = read_r(filename, row_start, row_stop, item_col_start, item_col_stop);
 
-
-    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    std::cout << " total num_localities: " << num_localities << std::endl;
-
-    if (hpx::get_locality_id() == 0)
-    {
-        std::cout << " on loc 0: \n"
-                  << "there are " << num_localities << " localities \n"
-                  << "user row partition: \n"
-                  << " user_row_start: " << user_row_start
-                  << " user_row_stop: " << user_row_stop
-                  << " col_start: " << col_start
-                  << " col_stop: " << col_stop 
-                  << " item column partition: \n"
-                  << " row_start: " << row_start
-                  << " row_stop: " << row_stop
-                  << " item_col_start: " << item_col_start
-                  << " item_col_stop: " << item_col_stop
-                  << std::endl;
-    }
-    if (hpx::get_locality_id() == 1)
-    {
-        std::cout << " on loc 1: \n"
-                  << "there are " << num_localities << " localities "
-                  << "user row partition: \n"
-                  << " user_row_start: " << user_row_start
-                  << " user_row_stop: " << user_row_stop
-                  << " col_start: " << col_start
-                  << " col_stop: " << col_stop 
-                  << " item column partition: \n"
-                  << " row_start: " << row_start
-                  << " row_stop: " << row_stop
-                  << " item_col_start: " << item_col_start
-                  << " item_col_stop: " << item_col_stop
-                  << std::endl;
-    }
-
     // evaluate ALS using the read data
     auto const& code_als = compile("als", als_code, snippets);
     auto als = code_als.run();
@@ -308,7 +231,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
         auto result_r = extract_list_value(result);
         auto it_0 = result_r.begin();
         std::cout << " on loc 0: \n"
-                  << "there are " << num_localities << " localities \n"
                   << "X: "
                   << extract_numeric_value(*it_0++)
                   << "\nY: "
@@ -321,7 +243,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
         auto result_r_1 = extract_list_value(result);
         auto it_1 = result_r_1.begin();
         std::cout << " on loc 1: \n"
-                  << "there are " << num_localities << " localities \n"
                   << "X: "
                   << extract_numeric_value(*it_1++)
                   << "\nY: "
