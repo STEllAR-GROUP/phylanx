@@ -95,8 +95,10 @@ char const* const als_code = R"(
             define(A, constant_d(0.0, list(num_factors, num_factors))),
             define(b, constant_d(0.0, list(num_factors))),
 
-            define(b_u, constant_d(0.0, list(num_factors, total_num_items), nil, nil, nil, "row")),
-            define(b_i, constant_d(0.0, list(num_factors, total_num_users), nil, nil, nil, "row")),
+            define(A_col, constant_d(0.0, list(num_factors, num_factors), nil, nil, nil, "column")),
+
+
+            //define(b_i, constant_d(0.0, list(num_factors, total_num_users), nil, nil, nil, "row")),
 
 
             while(k < iterations,
@@ -104,8 +106,8 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", A),
-                                    cout("Y: ", conf_row)
+                                    cout("X: ", c_u),
+                                    cout("Y: ", c_u)
                             )
                     ),
 
@@ -114,9 +116,17 @@ char const* const als_code = R"(
                             store(conf_u, slice_row(conf_column, u)),
                             store(c_u, diag_d(conf_u, 0, "column")),
                             // store(p_u, __ne(conf_u, 0.0, true)),
-                            store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
-                            store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
-                            store(b, dot_d(b_u, p_u)),
+                            // store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
+                            // store(A_col, retile_d(A, "column")),
+
+                            
+                            store(A_col, retile_d((dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY), "column")),
+
+                            store(A_col, inverse_d(A_col)),
+                            //store(A, retile_d(inverse_d(A_col), "row")),
+
+                            
+                            store(b, dot_d(dot_d(transpose_d(Y_local), (c_u + I_i)), p_u)),
                             //store(slice(X_local, list(u, u + 1, 1), nil), dot_d(inverse_d(A), b)),
                             store(u, u + 1)
                         )
@@ -147,7 +157,7 @@ char const* const als_code = R"(
             // define(Y, all_gather_d(Y_local)),
             // list(X, Y)
 
-            list(inverse_d(A), A)
+            list(c_u, c_u)
         )
     )
     __als
