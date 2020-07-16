@@ -28,6 +28,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<slicing_operation>
     {
+
+        public:
+        enum slice_mode
+        {
+            local_mode,  // slice on distributed array (locally) or
+                         // on non-distributed array
+            dist_mode    // slice_d on distributed array
+        };
+
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
@@ -72,8 +81,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         bool slice_rows_;
         bool slice_columns_;
+        bool slice_rows_d_;
+        bool slice_columns_d_;
         bool slice_pages_;
         bool is_tuple_slice_;
+
+    private:
+        slice_mode mode_;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,
@@ -82,6 +96,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         return create_primitive_component(
             locality, "slice", std::move(operands), name, codename);
+    }
+
+    inline primitive create_dist_slicing_operation(hpx::id_type const& locality,
+        primitive_arguments_type&& operands,
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "slice_d", std::move(operands), name, codename);
     }
 }}}
 
