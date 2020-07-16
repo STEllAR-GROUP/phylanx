@@ -104,7 +104,7 @@ char const* const als_code = R"(
                             store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
                             store(A_col, retile_d(A, "column")),
                             store(A_col, inverse_d(A_col)),
-                        //    store(A, retile_d(A_col, "row")),
+                            store(A, retile_d(A_col, "row")),
                             store(u, u + 1)
                         )
                     ),
