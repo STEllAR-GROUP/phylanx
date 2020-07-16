@@ -1183,7 +1183,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    execution_tree::primitive_argument_type slice1d_extract2d(
+    execution_tree::primitive_argument_type dist_slice1d_extract2d(
         ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         execution_tree::localities_information&& arr_localities,
@@ -1261,7 +1261,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    execution_tree::primitive_argument_type slice2d_extract2d(
+    execution_tree::primitive_argument_type dist_slice2d_extract2d(
         ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
@@ -1427,7 +1427,7 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    execution_tree::primitive_argument_type slice1d_assign2d(
+    execution_tree::primitive_argument_type dist_slice1d_assign2d(
         ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value,

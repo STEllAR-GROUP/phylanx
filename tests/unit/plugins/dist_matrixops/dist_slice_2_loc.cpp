@@ -46,7 +46,7 @@ void test_slice_column_0()
     if (hpx::get_locality_id() == 0)
     {
         test_slice_d_operation("test_slice_column_2loc_0", R"(
-            slice_column(annotate_d([[1, 2, 3]], "array_0",
+            slice_column_d(annotate_d([[1, 2, 3]], "array_0",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 3), list("rows", 0, 1)))),
@@ -59,7 +59,7 @@ void test_slice_column_0()
     else
     {
         test_slice_d_operation("test_slice_column_2loc_0", R"(
-            slice_column(annotate_d([[4, 5, 6], [7, 8, 9]], "array_0",
+            slice_column_d(annotate_d([[4, 5, 6], [7, 8, 9]], "array_0",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 0, 3), list("rows", 1, 3)))),
