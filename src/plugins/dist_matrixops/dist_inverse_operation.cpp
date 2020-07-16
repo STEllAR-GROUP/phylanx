@@ -211,11 +211,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         invMatrix(current_row, col) =
                             invMatrix(current_row, col) / pivot;
                     }
+                    
                     if (current_row < numRows - 1)
                     {
+                        std::cout << "middle line 217 \n";
                         for (std::size_t nextRow = current_row + 1;
                              nextRow != numRows; nextRow++)
                         {
+                            std::cout << "middle line 221 \n";
                             // Find the locality that owns the pivot element
                             // then get the pivot
                             std::size_t ownid2 = findOwningLoc(
@@ -233,6 +236,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                             // Removing this barrier causes errors
                             if (numLocalities > 1)
                             {
+                                std::cout << "middle line 239 \n";
                                 hpx::lcos::barrier b5("barriere_" +
                                         lhs_localities.annotation_.name_,
                                     lhs_localities.locality_.num_localities_,
@@ -240,10 +244,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 b5.wait();
                             }
 
+                            
+
 
                             for (std::size_t nextCol = 0;
                                  nextCol != numCols; nextCol++)
                             {
+                                std::cout << "middle line 253 \n";
                                 (*lhs_data)(nextRow, nextCol) =
                                     (*lhs_data)(nextRow, nextCol) -
                                     (factor *
@@ -276,6 +283,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                                 localIndexOffset3 + 1)
                             .get();
                     double factor = pulledElement(0, 0);
+
 
                     // Removing this barrier causes errors
                     if (numLocalities > 1)
@@ -318,6 +326,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     tile_info.as_annotation(name_, codename_),
                     lhs_localities.annotation_, name_, codename_),
                 name_, codename_);
+
 
         return result;
     }

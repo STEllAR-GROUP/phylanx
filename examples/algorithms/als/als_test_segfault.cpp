@@ -87,15 +87,13 @@ char const* const als_code = R"(
 
             define(A_col, constant_d(0.0, list(num_factors, num_factors), nil, nil, nil, "column")),
 
-
-
             while(k < iterations,
                 block(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", X_local),
-                                    cout("Y: ", Y_local)
+                                    cout("X: ", A_col),
+                                    cout("Y: ", A)
                             )
                     ),
 
@@ -106,7 +104,7 @@ char const* const als_code = R"(
                             store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
                             store(A_col, retile_d(A, "column")),
                             store(A_col, inverse_d(A_col)),
-                            store(A, retile_d(inverse_d(A_col), "row")),
+                        //    store(A, retile_d(A_col, "row")),
                             store(u, u + 1)
                         )
                     ),
@@ -117,7 +115,7 @@ char const* const als_code = R"(
                 )
             ),
 
-            list(A, A_col)
+            list(A_col, A)
         )
     )
     __als
