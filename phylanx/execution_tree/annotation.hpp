@@ -1,4 +1,4 @@
-//  Copyright (c) 2019 Hartmut Kaiser
+//  Copyright (c) 2019-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -142,6 +142,7 @@ namespace phylanx { namespace execution_tree {
         explicit annotation_wrapper(primitive_argument_type const& op);
         annotation_wrapper(primitive_argument_type const& op1,
             primitive_argument_type const& op2);
+        explicit annotation_wrapper(primitive_arguments_type const& ops);
 
         primitive_argument_type propagate(primitive_argument_type&& val,
             std::string const& name, std::string const& codename);

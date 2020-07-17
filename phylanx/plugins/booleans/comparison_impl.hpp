@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //  Copyright (c) 2018 Shahrzad Shirzad
 //  Copyright (c) 2018 Tianyi Zhang
 //
@@ -9,6 +9,7 @@
 #define PHYLANX_PRIMITIVES_COMPARISON_IMPL_SEP_02_2018_0443PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
@@ -626,16 +627,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bool propagate_type = (operands.size() == 3 &&
             phylanx::execution_tree::extract_scalar_boolean_value(operands[2]));
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync,
             [this_ = std::move(this_), propagate_type](
-                    primitive_argument_type&& op1,
-                    primitive_argument_type&& op2)
+                    hpx::future<primitive_argument_type>&& lhs,
+                    hpx::future<primitive_argument_type>&& rhs)
             ->  primitive_argument_type
             {
+                auto&& op1 = lhs.get();
+                auto&& op2 = rhs.get();
+
+                annotation_wrapper wrap(op1, op2);
+
                 return primitive_argument_type(
-                    util::visit(visit_comparison{*this_, propagate_type},
-                        std::move(op1.variant()), std::move(op2.variant())));
-            }),
+                    wrap.propagate(util::visit(
+                        visit_comparison{*this_, propagate_type},
+                        std::move(op1.variant()), std::move(op2.variant())),
+                    this_->name_, this_->codename_));
+            },
             value_operand(operands[0], args, name_, codename_, ctx),
             value_operand(operands[1], args, name_, codename_, ctx));
     }
