@@ -158,7 +158,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define),
                 PHYLANX_MATCH_DATA(function),
                 PHYLANX_MATCH_DATA(lambda),
-                PHYLANX_MATCH_DATA(mod_operation),
                 PHYLANX_MATCH_DATA(variable),
                 PHYLANX_MATCH_DATA(variable_factory)
             };
