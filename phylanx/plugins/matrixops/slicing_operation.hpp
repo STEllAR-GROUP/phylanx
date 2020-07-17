@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         enum slice_mode
         {
             local_mode,//slice on distributed array (locally) or on non-d array
-            dist_mode  //slice_d on distributed array
+            dist_mode  //slice_d on distributed array (globally)
         };
 
     protected:

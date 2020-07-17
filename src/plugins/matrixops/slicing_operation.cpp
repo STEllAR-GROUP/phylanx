@@ -286,7 +286,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     }
                 }
                 
-                // dist_mode is aksed
+                // dist_mode is asked
                 
                 switch (args.size())
                 {
@@ -294,22 +294,22 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     {
                         if (this_->slice_rows_d_)
                         {
-                            return slice(args[0], args[1],
+                            return dist_slice(args[0], args[1],
                                 this_->name_, this_->codename_);
                         }
                         else if (this_->slice_columns_d_)
                         {
-                            return slice(args[0], {}, args[1],
+                            return dist_slice(args[0], {}, args[1],
                                 this_->name_, this_->codename_);
                         }
                         else
                         {
-                            return slice(args[0], args[1],
+                            return dist_slice(args[0], args[1],
                                 this_->name_, this_->codename_);
                         }
                     }
                 case 3:
-                        return slice(args[0], args[1], args[2],
+                        return dist_slice(args[0], args[1], args[2],
                             this_->name_, this_->codename_);
                 default:
                     break;
