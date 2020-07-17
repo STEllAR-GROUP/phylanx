@@ -76,7 +76,7 @@ void test_slice_column_1()
     if (hpx::get_locality_id() == 0)
     {
         test_slice_d_operation("test_slice_column_2loc_1", R"(
-            slice_column(annotate_d([[1, 2], [4, 5], [7, 8]], "array_1",
+            slice_column_d(annotate_d([[1, 2], [4, 5], [7, 8]], "array_1",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 2), list("rows", 0, 3)))),
@@ -89,7 +89,7 @@ void test_slice_column_1()
     else
     {
         test_slice_d_operation("test_slice_column_2loc_1", R"(
-            slice_column(annotate_d([[3], [6], [9]], "array_1",
+            slice_column_d(annotate_d([[3], [6], [9]], "array_1",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 2, 3), list("rows", 0, 3)))),
@@ -106,7 +106,7 @@ void test_slice_row_0()
     if (hpx::get_locality_id() == 0)
     {
         test_slice_d_operation("test_slice_row_2loc_0", R"(
-            slice_row(annotate_d([[1, 2], [4, 5], [7, 8]], "array_2",
+            slice_row_d(annotate_d([[1, 2], [4, 5], [7, 8]], "array_2",
                     list("tile", list("columns", 0, 2), list("rows", 0, 3))),
             1)
         )", R"(
@@ -117,7 +117,7 @@ void test_slice_row_0()
     else
     {
         test_slice_d_operation("test_slice_row_2loc_0", R"(
-            slice_row(annotate_d([[3], [6], [9]], "array_2",
+            slice_row_d(annotate_d([[3], [6], [9]], "array_2",
                     list("tile", list("columns", 2, 3), list("rows", 0, 3))),
             1)
         )", R"(
@@ -132,7 +132,7 @@ void test_slice_row_1()
     if (hpx::get_locality_id() == 0)
     {
         test_slice_d_operation("test_slice_row_2loc_1", R"(
-            slice_row(annotate_d([[1, 2, 3]], "array_3",
+            slice_row_d(annotate_d([[1, 2, 3]], "array_3",
                 list("args",
                     list("locality", 0, 2),
                     list("tile", list("columns", 0, 3), list("rows", 0, 1)))),
@@ -145,7 +145,7 @@ void test_slice_row_1()
     else
     {
         test_slice_d_operation("test_slice_row_2loc_1", R"(
-            slice_row(annotate_d([[4, 5, 6], [7, 8, 9]], "array_3",
+            slice_row_d(annotate_d([[4, 5, 6], [7, 8, 9]], "array_3",
                 list("args",
                     list("locality", 1, 2),
                     list("tile", list("columns", 0, 3), list("rows", 1, 3)))),
@@ -166,7 +166,7 @@ void test_slice_row_assign_2()
                 list("tile", list("columns", 0, 2), list("rows", 0, 3))))
             define(v, annotate_d([-4, -5], "value_0",
                 list("tile", list("columns", 0, 2))))
-            store(slice_row(a, 1), v)
+            store(slice_row_d(a, 1), v)
             a
         )", R"(
             annotate_d([[1, 2], [-4, -5], [7, 8]], "array_4/1",
@@ -180,7 +180,7 @@ void test_slice_row_assign_2()
                 list("tile", list("columns", 2, 3), list("rows", 0, 3))))
             define(v, annotate_d([-6], "value_0",
                 list("tile", list("columns", 2, 3))))
-            store(slice_row(a, 1), v)
+            store(slice_row_d(a, 1), v)
             a
         )", R"(
             annotate_d([[3], [-6], [9]], "array_4/1",
@@ -198,7 +198,7 @@ void test_slice_row_assign_3()
                 list("tile", list("columns", 0, 3), list("rows", 0, 1))))
             define(v, annotate_d([-9], "value_1",
                 list("tile", list("columns", 2, 3))))
-            store(slice_row(a, 2), v)
+            store(slice_row_d(a, 2), v)
             a
         )", R"(
             annotate_d([[1, 2, 3]], "array_5/1",
@@ -212,7 +212,7 @@ void test_slice_row_assign_3()
                 list("tile", list("columns", 0, 3), list("rows", 1, 3))))
             define(v, annotate_d([-7, -8], "value_1",
                 list("tile", list("columns", 0, 2))))
-            store(slice_row(a, 2), v)
+            store(slice_row_d(a, 2), v)
             a
         )", R"(
             annotate_d([[4, 5, 6], [-7, -8, -9]], "array_5/1",
@@ -284,8 +284,7 @@ void test_slice_row_assign_5()
         )");
     }
 }
-
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_slice_column_0();
@@ -293,6 +292,7 @@ int hpx_main(int argc, char* argv[])
 
     test_slice_row_0();
     test_slice_row_1();
+
     test_slice_row_assign_2();
     test_slice_row_assign_3();
     test_slice_row_assign_4();

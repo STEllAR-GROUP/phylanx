@@ -101,6 +101,13 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
             docstr
+        },
+
+        match_pattern_type{"slice_d",
+            std::vector<std::string>{"slice_d(_1, __2)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>,
+            docstr
         }
 
     };
@@ -113,7 +120,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         {
             slicing_operation::slice_mode result
                 = slicing_operation::local_mode;
-            if (name.find("slice_d") != std::string::npos)
+            if (name.find("_d") != std::string::npos)
             {
                 result = slicing_operation::dist_mode;
             }
@@ -278,35 +285,35 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                         break;
                     }
                 }
-                else // dist_mode
-                {
-                    switch (args.size())
-                    {
-
-                    case 2:
-                        {
-                            if (this_->slice_rows_d_)
-                            {
-                                return slice(args[0], args[1],
-                                    this_->name_, this_->codename_);
-                            }
-                            else if (this_->slice_columns_d_)
-                            {
-                                return slice(args[0], {}, args[1],
-                                    this_->name_, this_->codename_);
-                            }
-                            else
-                            {
-                                return slice(args[0], args[1],
-                                    this_->name_, this_->codename_);
-                            }
-                        }
-
-                    default:
-                        break;
-                    }
-                }
                 
+                // dist_mode is aksed
+                
+                switch (args.size())
+                {
+                case 2:
+                    {
+                        if (this_->slice_rows_d_)
+                        {
+                            return slice(args[0], args[1],
+                                this_->name_, this_->codename_);
+                        }
+                        else if (this_->slice_columns_d_)
+                        {
+                            return slice(args[0], {}, args[1],
+                                this_->name_, this_->codename_);
+                        }
+                        else
+                        {
+                            return slice(args[0], args[1],
+                                this_->name_, this_->codename_);
+                        }
+                    }
+                case 3:
+                        return slice(args[0], args[1], args[2],
+                            this_->name_, this_->codename_);
+                default:
+                    break;
+                }
 
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
