@@ -54,12 +54,6 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
-    PHYLANX_EXPORT primitive_argument_type dist_slice(
-        primitive_argument_type&& data,
-        primitive_argument_type const& indices, primitive_argument_type&& value,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
     PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, primitive_argument_type&& value,
