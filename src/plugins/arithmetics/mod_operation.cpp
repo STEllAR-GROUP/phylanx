@@ -6,8 +6,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
-#include <phylanx/execution_tree/primitives/mod_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/arithmetics/mod_operation.hpp>
 #include <phylanx/util/assign.hpp>
 
 #include <cstddef>

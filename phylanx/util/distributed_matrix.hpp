@@ -13,7 +13,7 @@
 #include <hpx/assert.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/preprocessor/cat.hpp>
-#include <hpx/runtime/actions/component_action.hpp>
+#include <hpx/actions_base/component_action.hpp>
 #include <hpx/runtime/basename_registration_fwd.hpp>
 #include <hpx/runtime/components/component_factory.hpp>
 #include <hpx/runtime/components/new.hpp>
