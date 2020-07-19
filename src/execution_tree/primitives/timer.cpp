@@ -43,8 +43,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
             Args:
 
-                arg : the operation to measure the execution time for
-                done : a function that will be called with the measured time
+                arg (expression) : the operation to measure the execution time for
+                done (function) : a function that will be called with the measured time
 
             Returns:
 
@@ -81,47 +81,47 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-                [this_ = std::move(this_), ctx, func = operands[0], args](
-                        hpx::future<primitive_argument_type>&& l) mutable
-                    -> primitive_argument_type
+            [this_ = std::move(this_), ctx, func = operands[0], args](
+                    hpx::future<primitive_argument_type>&& l) mutable
+                -> primitive_argument_type
+            {
+                hpx::util::high_resolution_timer t;
+
+                // execute body
+                primitive const* p = util::get_if<primitive>(&func);
+                if (p == nullptr)
                 {
-                    hpx::util::high_resolution_timer t;
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "timer::eval",
+                        this_->generate_error_message(
+                            "the first argument to timer must be an "
+                            "invocable object"));
+                }
 
-                    // execute body
-                    primitive const* p = util::get_if<primitive>(&func);
-                    if (p == nullptr)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "timer::eval",
-                            this_->generate_error_message(
-                                "the first argument to timer must be an "
-                                "invocable object"));
-                    }
+                primitive_argument_type result = p->eval(hpx::launch::sync,
+                    primitive_argument_type{}, ctx);
 
-                    primitive_argument_type result = p->eval(hpx::launch::sync,
-                        primitive_argument_type{}, ctx);
+                double elapsed = t.elapsed();
 
-                    double elapsed = t.elapsed();
+                // report timings
+                auto&& arg = l.get();
 
-                    // report timings
-                    auto&& arg = l.get();
+                primitive const* r = util::get_if<primitive>(&arg);
+                if (p == nullptr)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "timer::eval",
+                        this_->generate_error_message(
+                            "the second argument to timer must be an "
+                            "invocable object"));
+                }
 
-                    primitive const* r = util::get_if<primitive>(&arg);
-                    if (p == nullptr)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "timer::eval",
-                            this_->generate_error_message(
-                                "the second argument to timer must be an "
-                                "invocable object"));
-                    }
+                r->eval(hpx::launch::sync, primitive_argument_type{elapsed},
+                    std::move(ctx));
 
-                    r->eval(hpx::launch::sync, primitive_argument_type{elapsed},
-                        std::move(ctx));
-
-                    // return overall result
-                    return result;
-                },
+                // return overall result
+                return result;
+            },
             value_operand(operands[1], args, name_, codename_,
                 add_mode(ctx, eval_dont_evaluate_lambdas)));
     }

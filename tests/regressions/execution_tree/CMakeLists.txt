@@ -11,6 +11,7 @@ set(tests
     817_cout_nil
     817_lambda_nil
     1198_inaccessible_variable
+    1213_timer_problem
     allow_empty_blocks_278
     assign_variable_twice_491
     assign_wrong_variable_245
@@ -45,6 +46,7 @@ set(out_of_scope_variable_232_FLAGS DEPENDENCIES HPX::iostreams_component)
 set(external_functions_337_FLAGS DEPENDENCIES HPX::iostreams_component)
 
 set(random_d_1139_PARAMETERS LOCALITIES 2)
+set(1213_timer_problem_PARAMETERS LOCALITIES 2)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
