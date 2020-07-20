@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice_extract",
             util::generate_error_message(
                 "distributed target ir::node_data object has an unsupported "
-                "number of dimensions",
+                "number of dimensions (locally)",
                 name, codename));
     }
 
@@ -102,7 +102,7 @@ namespace phylanx { namespace execution_tree
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::slice_extract",
+            "phylanx::execution_tree::dist_slice_extract",
             util::generate_error_message(
                 "distributed target ir::node_data object has an unsupported "
                 "number of dimensions",

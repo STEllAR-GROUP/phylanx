@@ -1203,46 +1203,24 @@ namespace phylanx { namespace execution_tree
             extract_scalar_nonneg_integer_value_strict(indices, name, codename);
 
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
+
         tiling_information_2d tile_info(
             arr_localities.tiles_[loc_id], name, codename);
 
         std::int64_t row_start = tile_info.spans_[0].start_;
         std::int64_t row_stop = tile_info.spans_[0].stop_;
-
         std::int64_t col_start = tile_info.spans_[1].start_;
         std::int64_t col_stop = tile_info.spans_[1].stop_;
 
-        if (row_index > row_stop - row_start)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
-                util::generate_error_message(
-                    "the index is larger than the local matrix dimension",
-                    name, codename));
-        }
-
         // updating the annotation_ part of localities annotation
-        arr_localities.annotation_.name_ += "_slicedLocally";
+        arr_localities.annotation_.name_ += "_slicedLoc";
         ++arr_localities.annotation_.generation_;
 
         auto locality_ann = arr_localities.locality_.as_annotation();
 
-        //if (row_index < row_start || row_index > row_stop)
-        //{
-        //    tiling_information_1d des_tile_info = tiling_information_1d(
-        //        tiling_information_1d::tile1d_type::rows, tiling_span(0, 0));
-        //    auto attached_annotation =
-        //        std::make_shared<annotation>(localities_annotation(locality_ann,
-        //            des_tile_info.as_annotation(name, codename),
-        //            arr_localities.annotation_, name, codename));
-//
-        //    // return an empty array
-        //    return primitive_argument_type(
-        //        blaze::DynamicVector<double>(0), attached_annotation);
-        //}
 
         auto m = data.matrix();
-        auto row = blaze::trans(blaze::row(m, row_index));
+        auto row = blaze::trans(blaze::row(m, row_index + row_start));
 
         tiling_information_1d des_tile_info =
             tiling_information_1d(tiling_information_1d::tile1d_type::rows,
@@ -1269,9 +1247,9 @@ namespace phylanx { namespace execution_tree
         if (!is_integer_operand_strict(indices))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
+                "phylanx::execution_tree::dist_slice1d_extract2d",
                 util::generate_error_message(
-                    "only integer indexing for slice_row is suppoted for "
+                    "only integer indexing for slice_row_d is suppoted for "
                     "distributed arrays extracting a 1d slice from a matrix",
                     name, codename));
         }
@@ -1516,7 +1494,7 @@ namespace phylanx { namespace execution_tree
         if (val_ndim > 1)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "phylanx::execution_tree::slice1d_assign2d",
+                "phylanx::execution_tree::dist_slice1d_assign2d",
                 util::generate_error_message("cannot assign a non vector value "
                                              "to a 1d slice of a matrix",
                     name, codename));
@@ -1553,7 +1531,7 @@ namespace phylanx { namespace execution_tree
         if (!is_integer_operand_strict(indices))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
+                "phylanx::execution_tree::dist_slice1d_assign2d",
                 util::generate_error_message(
                     "only integer indexing for slice_row is suppoted for "
                     "distributed arrays assigning a 1d slice to a matrix",
@@ -1564,7 +1542,7 @@ namespace phylanx { namespace execution_tree
         if (val_ndim == 1 && columns != val_localities.size(name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
+                "phylanx::execution_tree::dist_slice1d_assign2d",
                 util::generate_error_message(
                     "cannot assign a vector to a 1d slice of a matrix when "
                     "the slice and the vector have different sizes",

@@ -317,11 +317,11 @@ int hpx_main(int argc, char* argv[])
 //    test_slice_column_1();
 //
 //    test_slice_row_0();
-    test_slice_row_1();
+//    test_slice_row_1();
 
 //    test_slice_row_2();
     
-//    test_slice_row_assign_2();
+    test_slice_row_assign_2();
 //    test_slice_row_assign_3();
 //    test_slice_row_assign_4();
 //    test_slice_row_assign_5();
