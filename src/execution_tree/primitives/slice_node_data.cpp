@@ -60,6 +60,31 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
+    execution_tree::primitive_argument_type slice_extract(
+        ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        switch (data.num_dimensions())
+        {
+        case 2:
+            return slice1d_extract2d(
+                data, indices, std::move(arr_localities), name, codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_extract",
+            util::generate_error_message(
+                "distributed target ir::node_data object has an unsupported "
+                "number of dimensions",
+                name, codename));
+    }
+
+    template <typename T>
     execution_tree::primitive_argument_type dist_slice_extract(
         ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
