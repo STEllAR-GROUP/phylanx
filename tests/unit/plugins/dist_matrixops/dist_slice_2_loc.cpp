@@ -157,7 +157,33 @@ void test_slice_row_1()
     }
 }
 
-void test_slice_row_2()
+void test_slice_row_local_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_slice_d_operation("test_slice_row_2loc_locally_1", R"(
+            slice_row(annotate_d([[1, 2, 3]], "array_local_1",
+                    list("tile", list("columns", 0, 3), list("rows", 0, 1))),
+            0)
+        )", R"(
+            annotate_d([1, 2, 3], "array_local_1_slicedLocally/1",
+                list("tile", list("columns", 0, 3)))
+        )");
+    }
+    else
+    {
+        test_slice_d_operation("test_slice_row_2loc_locally_1", R"(
+            slice_row(annotate_d([[4, 5, 6], [7, 8, 9]], "array_local_1",
+                    list("tile", list("columns", 0, 3), list("rows", 1, 3))),
+            0)
+        )", R"(
+            annotate_d([4, 5, 6], "array_local_1_slicedLocally/1",
+                list("tile", list("columns", 0, 3)))
+        )");
+    }
+}
+
+void test_slice_row_local_2()
 {
     if (hpx::get_locality_id() == 0)
     {
@@ -167,7 +193,7 @@ void test_slice_row_2()
             1)
         )", R"(
             annotate_d([4, 5], "array_local_0_slicedLocally/1",
-                list("tile", list("rows", 0, 2)))
+                list("tile", list("columns", 0, 2)))
         )");
     }
     else
@@ -178,7 +204,7 @@ void test_slice_row_2()
             1)
         )", R"(
             annotate_d([6], "array_local_0_slicedLocally/1",
-                list("tile", list("rows", 2, 3)))
+                list("tile", list("columns", 0, 1)))
         )");
     }
 }
@@ -319,9 +345,10 @@ int hpx_main(int argc, char* argv[])
 //    test_slice_row_0();
 //    test_slice_row_1();
 
-//    test_slice_row_2();
-    
-    test_slice_row_assign_2();
+//    test_slice_row_local_1();
+    test_slice_row_local_2();
+
+//    test_slice_row_assign_2();
 //    test_slice_row_assign_3();
 //    test_slice_row_assign_4();
 //    test_slice_row_assign_5();

@@ -1212,19 +1212,59 @@ namespace phylanx { namespace execution_tree
         std::int64_t col_start = tile_info.spans_[1].start_;
         std::int64_t col_stop = tile_info.spans_[1].stop_;
 
+        if (row_index < 0 || row_index > row_stop - row_start - 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "indexing for slice_row is not suppoted for "
+                    "distributed arrays extracting a 1d slice from a matrix",
+                    name, codename));
+        }
+
         // updating the annotation_ part of localities annotation
-        arr_localities.annotation_.name_ += "_slicedLoc";
+        arr_localities.annotation_.name_ += "_slicedLocally";
         ++arr_localities.annotation_.generation_;
 
         auto locality_ann = arr_localities.locality_.as_annotation();
 
 
         auto m = data.matrix();
-        auto row = blaze::trans(blaze::row(m, row_index + row_start));
+        auto row = blaze::trans(blaze::row(m, row_index));
 
-        tiling_information_1d des_tile_info =
-            tiling_information_1d(tiling_information_1d::tile1d_type::rows,
-                tiling_span(col_start, col_stop));
+        // row and column dimensions of the whole array
+        std::size_t rows_dim, cols_dim;
+        rows_dim = arr_localities.rows(name, codename);
+        cols_dim = arr_localities.columns(name, codename);
+
+        // check is row_tiled or column_tiled
+        if (m.columns() == cols_dim)
+        {
+            // row-tiling
+            tiling_information_1d des_tile_info =
+                tiling_information_1d(tiling_information_1d::tile1d_type::
+                    columns, tiling_span(col_start, col_stop));
+
+        }
+        else if(m.rows() == rows_dim)
+        {
+            // column-tiling
+            tiling_information_1d des_tile_info =
+                tiling_information_1d(tiling_information_1d::tile1d_type::
+                    columns, tiling_span(0, col_stop - col_start));
+
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "invalid tiling type. the tiling type can either"
+                    "be `row` or `column`",
+                    name, codename));
+        }
+        
+
 
         auto attached_annotation =
             std::make_shared<annotation>(localities_annotation(locality_ann,
@@ -1234,6 +1274,7 @@ namespace phylanx { namespace execution_tree
         // return the row slice
         return primitive_argument_type(
             ir::node_data<T>(row), attached_annotation);
+
     }
 
     ///////////////////////////////////////////////////////////////////////////

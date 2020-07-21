@@ -223,6 +223,24 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename);
 
     template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<double>(ir::node_data<double> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
+    slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
+        execution_tree::primitive_argument_type const& indices,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT execution_tree::primitive_argument_type
     dist_slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
         execution_tree::primitive_argument_type const& indices,
         execution_tree::localities_information&& arr_localities,
