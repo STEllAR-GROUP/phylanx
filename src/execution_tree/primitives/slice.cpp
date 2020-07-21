@@ -30,37 +30,6 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& indices, std::string const& name,
         std::string const& codename)
     {
-        //if (data.has_annotation())
-        //{
-        //    localities_information arr_localities =
-        //        extract_localities_information(data, name, codename);
-//
-        //    if (is_integer_operand_strict(data))
-        //    {
-        //        return slice_extract(
-        //            extract_integer_value_strict(data, name, codename), indices,
-        //            std::move(arr_localities), name, codename);
-        //    }
-        //    if (is_numeric_operand_strict(data))
-        //    {
-        //        return slice_extract(
-        //            extract_numeric_value_strict(data, name, codename), indices,
-        //            std::move(arr_localities), name, codename);
-        //    }
-        //    if (is_boolean_operand_strict(data))
-        //    {
-        //        return slice_extract(
-        //            extract_boolean_value_strict(data, name, codename), indices,
-        //            std::move(arr_localities), name, codename);
-        //    }
-        //    HPX_THROW_EXCEPTION(hpx::invalid_status,
-        //        "phylanx::execution_tree::slice",
-        //        util::generate_error_message("distributed target object does "
-        //                                     "not hold a numeric type and as "
-        //                                     "such does not support slicing",
-        //            name, codename));
-        //}
-
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
@@ -135,36 +104,6 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& columns, std::string const& name,
         std::string const& codename)
     {
-        //if (data.has_annotation())
-        //{
-        //    localities_information arr_localities =
-        //        extract_localities_information(data, name, codename);   //
-        //    if (is_integer_operand_strict(data))
-        //    {
-        //        return slice_extract(
-        //            extract_integer_value_strict(data, name, codename), rows,
-        //            columns, std::move(arr_localities), name, codename);
-        //    }
-        //    if (is_numeric_operand_strict(data))
-        //    {
-        //        return slice_extract(
-        //            extract_numeric_value_strict(data, name, codename), rows,
-        //            columns, std::move(arr_localities), name, codename);
-        //    }
-        //    if (is_boolean_operand_strict(data))
-        //    {
-        //        return slice_extract(
-        //            extract_boolean_value_strict(data, name, codename), rows,
-        //            columns, std::move(arr_localities), name, codename);
-        //    }   //
-        //    HPX_THROW_EXCEPTION(hpx::invalid_status,
-        //        "phylanx::execution_tree::slice",
-        //        util::generate_error_message(
-        //            "target object does not hold a numeric data type and "
-        //            "as such does not support slicing",
-        //            name, codename));
-        //}
-
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
@@ -430,8 +369,6 @@ namespace phylanx { namespace execution_tree
                 "target object does not hold a numeric, range, or dictionary "
                 "type and as such does not support slicing", name, codename));
     }
-
-   
 
     primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& rows,
