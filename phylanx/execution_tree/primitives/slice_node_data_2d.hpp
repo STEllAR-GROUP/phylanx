@@ -1181,6 +1181,110 @@ namespace phylanx { namespace execution_tree
             detail::slice_identity<T>{}, name, codename);
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    template <typename T>
+    execution_tree::primitive_argument_type slice1d_extract2d_axis1(
+        ir::node_data<T>&& row,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
+
+        tiling_information_2d tile_info(
+            arr_localities.tiles_[loc_id], name, codename);
+
+        //std::int64_t row_start = tile_info.spans_[0].start_;
+        //std::int64_t row_stop = tile_info.spans_[0].stop_;
+        std::int64_t col_start = tile_info.spans_[1].start_;
+        std::int64_t col_stop = tile_info.spans_[1].stop_;
+
+        // updating the annotation_ part of localities annotation
+        arr_localities.annotation_.name_ += "_slicedLocally";
+        ++arr_localities.annotation_.generation_;
+
+        auto locality_ann = arr_localities.locality_.as_annotation();
+
+        tiling_information_1d des_tile_info =
+            tiling_information_1d(tiling_information_1d::tile1d_type::
+                columns, tiling_span(0, col_stop - col_start));
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                des_tile_info.as_annotation(name, codename),
+                arr_localities.annotation_, name, codename));
+
+        return primitive_argument_type(
+            ir::node_data<T>(row), attached_annotation);
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    execution_tree::primitive_argument_type slice1d_extract2d_axis0(
+        ir::node_data<T>&& row,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+        std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
+
+        tiling_information_2d tile_info(
+            arr_localities.tiles_[loc_id], name, codename);
+
+        //std::int64_t row_start = tile_info.spans_[0].start_;
+        //std::int64_t row_stop = tile_info.spans_[0].stop_;
+        std::int64_t col_start = tile_info.spans_[1].start_;
+        std::int64_t col_stop = tile_info.spans_[1].stop_;
+
+        // updating the annotation_ part of localities annotation
+        arr_localities.annotation_.name_ += "_slicedLocally";
+        ++arr_localities.annotation_.generation_;
+
+        auto locality_ann = arr_localities.locality_.as_annotation();
+
+        tiling_information_1d des_tile_info =
+            tiling_information_1d(tiling_information_1d::tile1d_type::
+                columns, tiling_span(col_start, col_stop));
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                des_tile_info.as_annotation(name, codename),
+                arr_localities.annotation_, name, codename));
+
+        return primitive_argument_type(
+            ir::node_data<T>(row), attached_annotation);
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type slice1d_extract2d_helper(
+        ir::node_data<T>&& row,
+        execution_tree::localities_information&& arr_localities,
+        std::int64_t axis, std::string const& name,
+        std::string const& codename)
+    {
+
+        switch (axis)
+        {
+        case 0:
+            return slice1d_extract2d_axis0<T>(std::move(row),
+                std::move(arr_localities), name, codename);
+
+        case 1:
+            return slice1d_extract2d_axis1<T>(std::move(row),
+                std::move(arr_localities), name, codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "axis is out of bounds of dimension 2",
+                    name, codename));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type slice1d_extract2d(
@@ -1222,11 +1326,11 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        // updating the annotation_ part of localities annotation
-        arr_localities.annotation_.name_ += "_slicedLocally";
-        ++arr_localities.annotation_.generation_;
-
-        auto locality_ann = arr_localities.locality_.as_annotation();
+//        // updating the annotation_ part of localities annotation
+//        arr_localities.annotation_.name_ += "_slicedLocally";
+//        ++arr_localities.annotation_.generation_;
+//
+//        auto locality_ann = arr_localities.locality_.as_annotation();
 
 
         auto m = data.matrix();
@@ -1237,21 +1341,25 @@ namespace phylanx { namespace execution_tree
         rows_dim = arr_localities.rows(name, codename);
         cols_dim = arr_localities.columns(name, codename);
 
+        std::int64_t axis;
+
         // check is row_tiled or column_tiled
         if (m.columns() == cols_dim)
         {
+            aix = 0;
             // row-tiling
-            tiling_information_1d des_tile_info =
-                tiling_information_1d(tiling_information_1d::tile1d_type::
-                    columns, tiling_span(col_start, col_stop));
+            //tiling_information_1d des_tile_info =
+            //    tiling_information_1d(tiling_information_1d::tile1d_type::
+            //        columns, tiling_span(col_start, col_stop));
 
         }
         else if(m.rows() == rows_dim)
         {
+            axis = 1;
             // column-tiling
-            tiling_information_1d des_tile_info =
-                tiling_information_1d(tiling_information_1d::tile1d_type::
-                    columns, tiling_span(0, col_stop - col_start));
+            //tiling_information_1d des_tile_info =
+            //    tiling_information_1d(tiling_information_1d::tile1d_type::
+            //        columns, tiling_span(0, col_stop - col_start));
 
         }
         else
@@ -1266,14 +1374,16 @@ namespace phylanx { namespace execution_tree
         
 
 
-        auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(locality_ann,
-                des_tile_info.as_annotation(name, codename),
-                arr_localities.annotation_, name, codename));
-
-        // return the row slice
-        return primitive_argument_type(
-            ir::node_data<T>(row), attached_annotation);
+//        auto attached_annotation =
+//            std::make_shared<annotation>(localities_annotation(locality_ann,
+//                des_tile_info.as_annotation(name, codename),
+//                arr_localities.annotation_, name, codename));
+//
+//        // return the row slice
+//        return primitive_argument_type(
+//            ir::node_data<T>(row), attached_annotation);
+        return slice1d_extract2d_helper<T>(std::move(row),
+            std::move(arr_localities), axis, name, codename);
 
     }
 
