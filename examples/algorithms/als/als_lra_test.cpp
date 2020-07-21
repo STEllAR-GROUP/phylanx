@@ -62,11 +62,14 @@ char const* const als_code = R"(
             define(total_num_users, shape_d(ratings_row, 0)),
             define(total_num_items, shape_d(ratings_row, 1)),
 
+            define(num_users, shape(ratings_row, 0)),
+            define(num_items, shape(ratings_column, 1)),
+
             define(conf_row, alpha * ratings_row),
             define(conf_column, alpha * ratings_column),
 
-            define(conf_u, constant_d(0.0, list(total_num_items))),
-            define(conf_i, constant_d(0.0, list(total_num_users))),
+            define(conf_u, constant(0.0, list(total_num_items))),
+            define(conf_i, constant(0.0, list(total_num_users))),
 
             define(c_u, constant_d(0.0, list(total_num_items, total_num_items), nil, nil, nil, "row")),
             define(c_i, constant_d(0.0, list(total_num_users, total_num_users), nil, nil, nil, "row")),
@@ -104,19 +107,19 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", A),
-                                    cout("Y: ", b)
+                                    cout("X: ", conf_row),
+                                    cout("Y: ", conf_u)
                             )
                     ),
 
-                    while(u < total_num_users,
+                    while(u < num_users,
                         block(
-                            store(conf_u, slice_row(conf_column, u)),
-                            store(c_u, diag_d(conf_u, 0, "row")),
+                            store(conf_u, slice_row(conf_row, u)),
+                        //    store(c_u, diag_d(conf_u, 0, "row")),
                         //    // store(p_u, __ne(conf_u, 0.0, true)),
-                            store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
-                            store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
-                            store(b, dot_d(b_u, p_u)),
+                        //    store(A, dot_d(dot_d(transpose_d(Y_local), c_u), Y_local) + YtY),
+                        //    store(b_u, dot_d(transpose_d(Y_local), (c_u + I_i))),
+                        //    store(b, dot_d(b_u, p_u)),
                             // store(slice(X_local, list(u, u + 1, 1), nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
@@ -147,7 +150,7 @@ char const* const als_code = R"(
             // define(Y, all_gather_d(Y_local)),
             // list(X, Y)
 
-            list(dot(inverse(A), b), inverse(A))
+            list(conf_row, conf_u)
         )
     )
     __als
@@ -233,38 +236,38 @@ int hpx_main(hpx::program_options::variables_map& vm)
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     std::cout << " total num_localities: " << num_localities << std::endl;
 
-    if (hpx::get_locality_id() == 0)
-    {
-        std::cout << " on loc 0: \n"
-                  << "there are " << num_localities << " localities \n"
-                  << "user row partition: \n"
-                  << " user_row_start: " << user_row_start
-                  << " user_row_stop: " << user_row_stop
-                  << " col_start: " << col_start
-                  << " col_stop: " << col_stop 
-                  << " item column partition: \n"
-                  << " row_start: " << row_start
-                  << " row_stop: " << row_stop
-                  << " item_col_start: " << item_col_start
-                  << " item_col_stop: " << item_col_stop
-                  << std::endl;
-    }
-    if (hpx::get_locality_id() == 1)
-    {
-        std::cout << " on loc 1: \n"
-                  << "there are " << num_localities << " localities "
-                  << "user row partition: \n"
-                  << " user_row_start: " << user_row_start
-                  << " user_row_stop: " << user_row_stop
-                  << " col_start: " << col_start
-                  << " col_stop: " << col_stop 
-                  << " item column partition: \n"
-                  << " row_start: " << row_start
-                  << " row_stop: " << row_stop
-                  << " item_col_start: " << item_col_start
-                  << " item_col_stop: " << item_col_stop
-                  << std::endl;
-    }
+//    if (hpx::get_locality_id() == 0)
+//    {
+//        std::cout << " on loc 0: \n"
+//                  << "there are " << num_localities << " localities \n"
+//                  << "user row partition: \n"
+//                  << " user_row_start: " << user_row_start
+//                  << " user_row_stop: " << user_row_stop
+//                  << " col_start: " << col_start
+//                  << " col_stop: " << col_stop 
+//                  << " item column partition: \n"
+//                  << " row_start: " << row_start
+//                  << " row_stop: " << row_stop
+//                  << " item_col_start: " << item_col_start
+//                  << " item_col_stop: " << item_col_stop
+//                  << std::endl;
+//    }
+//    if (hpx::get_locality_id() == 1)
+//    {
+//        std::cout << " on loc 1: \n"
+//                  << "there are " << num_localities << " localities "
+//                  << "user row partition: \n"
+//                  << " user_row_start: " << user_row_start
+//                  << " user_row_stop: " << user_row_stop
+//                  << " col_start: " << col_start
+//                  << " col_stop: " << col_stop 
+//                  << " item column partition: \n"
+//                  << " row_start: " << row_start
+//                  << " row_stop: " << row_stop
+//                  << " item_col_start: " << item_col_start
+//                  << " item_col_stop: " << item_col_stop
+//                  << std::endl;
+//    }
 
     // evaluate ALS using the read data
     auto const& code_als = compile("als", als_code, snippets);
