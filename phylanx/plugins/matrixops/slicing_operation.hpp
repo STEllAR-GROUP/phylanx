@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         enum slice_mode
         {
             local_mode,//slice on distributed array (locally) or on non-d array
-            dist_mode  //slice_d on distributed array (globally)
+            dist_mode  //slice on distributed array (globally)
         };
 
     protected:
@@ -97,13 +97,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             locality, "slice", std::move(operands), name, codename);
     }
 
-    inline primitive create_dist_slicing_operation(hpx::id_type const& locality,
-        primitive_arguments_type&& operands,
-        std::string const& name = "", std::string const& codename = "")
-    {
-        return create_primitive_component(
-            locality, "slice_d", std::move(operands), name, codename);
-    }
 }}}
 
 #endif //PHYLANX_SLICING_OPERATION_1153_10242017_HPP

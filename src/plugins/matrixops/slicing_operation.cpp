@@ -103,13 +103,6 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             docstr
         },
 
-        match_pattern_type{"slice_d",
-            std::vector<std::string>{"slice_d(_1, __2)"},
-            &create_slicing_operation,
-            &create_primitive<slicing_operation>,
-            docstr
-        }
-
     };
 
     ///////////////////////////////////////////////////////////////////////////
