@@ -2822,6 +2822,23 @@ tile (a, reps)
             reps.
 
 
+timer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+timer (arg, done)
+            This primitive allows to measure the execution time of the embedded
+            expression 'arg' and reports it to the supplied reporting function
+            'done'.
+
+            Args:
+
+                arg (expression) : the operation to measure the execution time for
+                done (function) : a function that will be called with the measured time
+
+            Returns:
+
+            whatever the evaluation of 'arg' returns
+
+
 transpose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 transpose (arg, axes)
