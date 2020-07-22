@@ -174,7 +174,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || ((operands.size() > 4 )))
+        if (operands.empty() || operands.size() > 4 )
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -291,7 +291,6 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     {
                     case 2:
                         {
-                            
                             if (this_->slice_rows_d_)
                             {
                                 return dist_slice(args[0], args[1],
