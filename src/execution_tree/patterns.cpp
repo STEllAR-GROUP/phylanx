@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License}, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -129,14 +129,16 @@ namespace phylanx { namespace execution_tree
 
         pattern_list get_all_known_patterns()
         {
-            pattern_list patterns = {// debugging support
-                PHYLANX_MATCH_DATA(find_all_localities),
+            pattern_list patterns = {
+                // debugging support
+                PHYLANX_MATCH_DATA(assert_condition),
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
                 PHYLANX_MATCH_DATA(enable_tracing),
+                PHYLANX_MATCH_DATA(find_all_localities),
                 PHYLANX_MATCH_DATA(format_string),
                 PHYLANX_MATCH_DATA(string_output),
-                PHYLANX_MATCH_DATA(assert_condition),
+                PHYLANX_MATCH_DATA(timer),
 
                 // special purpose primitives
                 PHYLANX_MATCH_DATA_VERBATIM(
