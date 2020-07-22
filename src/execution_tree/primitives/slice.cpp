@@ -280,16 +280,6 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-//        if (data.has_annotation() || value.has_annotation())
-//        {
-//            HPX_THROW_EXCEPTION(hpx::invalid_status,
-//                "phylanx::execution_tree::slice",
-//                util::generate_error_message(
-//                    "cannot remote assign value to data when only one of them "
-//                    "is distributed",
-//                    name, codename));
-//        }
-
         if (data.has_annotation())
         {
             localities_information arr_localities =

@@ -1617,8 +1617,6 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
 
-        std::size_t columns = arr_localities.columns(name, codename);
-
         std::int64_t row_start = tile_info.spans_[0].start_;
         std::int64_t row_stop = tile_info.spans_[0].stop_;
         std::int64_t index_range = row_stop - row_start - 1;
