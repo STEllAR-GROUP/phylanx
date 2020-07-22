@@ -74,6 +74,15 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>");
 
     template <typename T>
+    PHYLANX_EXPORT execution_tree::primitive_argument_type dist_slice_assign(
+        ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<T>&& value,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_assign(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,

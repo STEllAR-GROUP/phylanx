@@ -527,6 +527,137 @@ void test_slice_row_assign_5()
     }
 }
 
+void test_slice_row_assign_local_2()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_2", R"(
+            define(a, annotate_d([[1, 2], [4, 5], [7, 8]], "array_local_4",
+                list("tile", list("columns", 0, 2), list("rows", 0, 3))))
+            define(v, [-1, -2])
+            store(slice_row(a, 0), v)
+            a
+        )", R"(
+            annotate_d([[-1, -2], [4, 5], [7, 8]], "array_local_4/1",
+                list("tile", list("rows", 0, 3), list("columns", 0, 2)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_2", R"(
+            define(a, annotate_d([[3], [6], [9]], "array_local_4",
+                list("tile", list("columns", 2, 3), list("rows", 0, 3))))
+            define(v, [-3])
+            store(slice_row(a, 0), v)
+            a
+        )", R"(
+            annotate_d([[-3], [6], [9]], "array_local_4/1",
+                list("tile", list("rows", 0, 3), list("columns", 2, 3)))
+        )");
+    }
+    else
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_2", R"(
+            define(a, annotate_d([[10, 11, 12]], "array_local_4",
+                list("tile", list("columns", 0, 3), list("rows", 3, 4))))
+            define(v, [-10, -11, -12])
+            store(slice_row(a, 0), v)
+            a
+        )", R"(
+            annotate_d([[-10, -11, -12]], "array_local_4/1",
+                list("tile", list("rows", 3, 4), list("columns", 0, 3)))
+        )");
+    }
+}
+
+void test_slice_row_assign_local_3()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_3", R"(
+            define(a, annotate_d([[1, 2], [5, 6]], "array_local_5",
+                list("tile", list("columns", 0, 2), list("rows", 0, 2))))
+            define(v, [-5, -6])
+            store(slice_row(a, 1), v)
+            a
+        )", R"(
+            annotate_d([[1, 2], [-5, -6]], "array_local_5/1",
+                list("tile", list("rows", 0, 2), list("columns", 0, 2)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_3", R"(
+            define(a, annotate_d([[-1, -2], [-5, -6]], "array_local_5",
+                list("tile", list("columns", 0, 2), list("rows", 2, 4))))
+            define(v, [5, 6])
+            store(slice_row(a, 1), v)
+            a
+        )", R"(
+            annotate_d([[-1, -2], [5, 6]], "array_local_5/1",
+                list("tile", list("rows", 2, 4), list("columns", 0, 2)))
+        )");
+    }
+    else
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_3", R"(
+            define(a, annotate_d([[3, 4], [7, 8], [-3, -4], [-7, -8]],
+                "array_local_5",
+                list("tile", list("columns", 2, 4), list("rows", 0, 4))))
+            define(v, [10, 11])
+            store(slice_row(a, 1), v)
+            a
+        )", R"(
+            annotate_d([[3, 4], [10, 11], [-3, -4], [-7, -8]],
+                "array_local_5/1",
+                list("tile", list("rows", 0, 4), list("columns", 2, 4)))
+        )");
+    }
+}
+
+void test_slice_row_assign_local_4()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_4", R"(
+            define(a, annotate_d([[1, 2], [4, 5]], "array_local_6",
+                list("tile", list("columns", 0, 2), list("rows", 0, 2))))
+            define(v, [-1, -2])
+            store(slice_row(a, 0), v)
+            a
+        )", R"(
+            annotate_d([[-1, -2], [4, 5]], "array_local_6/1",
+                list("tile", list("rows", 0, 2), list("columns", 0, 2)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_4", R"(
+            define(a, annotate_d([[7, 8], [10, 11]], "array_local_6",
+                list("tile", list("columns", 0, 2), list("rows", 2, 4))))
+            define(v, [-7, -8])
+            store(slice_row(a, 0), v)
+            a
+        )", R"(
+            annotate_d([[-7, -8], [10, 11]], "array_local_6/1",
+                list("tile", list("rows", 2, 4), list("columns", 0, 2)))
+        )");
+    }
+    else
+    {
+        test_slice_d_operation("test_slice_row_3loc_local_4", R"(
+            define(a, annotate_d([[3], [6], [9], [12]], "array_local_6",
+                list("tile", list("columns", 2, 3), list("rows", 0, 4))))
+            define(v, [-3])
+            store(slice_row(a, 0), v)
+            a
+        )", R"(
+            annotate_d([[-3], [6], [9], [12]], "array_local_6/1",
+                list("tile", list("rows", 0, 4), list("columns", 2, 3)))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
@@ -546,6 +677,10 @@ int hpx_main(int argc, char* argv[])
     test_slice_row_assign_3();
     test_slice_row_assign_4();
     test_slice_row_assign_5();
+
+    test_slice_row_assign_local_2();
+    test_slice_row_assign_local_3();
+    test_slice_row_assign_local_4();
 
 
     hpx::finalize();
