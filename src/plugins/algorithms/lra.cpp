@@ -8,7 +8,7 @@
 #include <phylanx/util/detail/add_simd.hpp>
 #include <phylanx/util/detail/div_simd.hpp>
 
-#include <hpx/distributed/iostream.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>

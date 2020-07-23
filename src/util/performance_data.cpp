@@ -15,19 +15,19 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/performance_counters.hpp>
 #include <hpx/include/runtime.hpp>
+#include <hpx/include/util.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <memory>
-#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace util
-{
+namespace phylanx { namespace util {
     ///////////////////////////////////////////////////////////////////////////
     std::string enable_measurements(std::string const& primitive_instance)
     {
@@ -55,13 +55,16 @@ namespace phylanx { namespace util
     {
         if (primitive_instances.empty())
         {
-            return enable_measurements(
-                hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*"));
+            // find all local primitives only
+            return enable_measurements(hpx::agas::find_symbols(
+                hpx::launch::sync,
+                hpx::util::format("/phylanx${}/*$*", hpx::get_locality_id())));
         }
 
         using phylanx::execution_tree::primitives::primitive_component;
 
-        std::vector<hpx::future<std::shared_ptr<primitive_component>>> primitives;
+        std::vector<hpx::future<std::shared_ptr<primitive_component>>>
+            primitives;
         primitives.reserve(primitive_instances.size());
 
         for (auto const& entry : primitive_instances)
@@ -69,8 +72,7 @@ namespace phylanx { namespace util
             hpx::future<hpx::id_type> f = hpx::agas::resolve_name(entry);
             primitives.emplace_back(f.then(
                 [](hpx::future<hpx::id_type>&& f)
-                ->  hpx::future<std::shared_ptr<primitive_component>>
-                {
+                    -> hpx::future<std::shared_ptr<primitive_component>> {
                     return hpx::get_ptr<primitive_component>(f.get());
                 }));
         }
@@ -93,7 +95,8 @@ namespace phylanx { namespace util
         std::vector<std::string> result;
         result.reserve(primitive_instances.size());
 
-        std::vector<hpx::future<std::shared_ptr<primitive_component>>> primitives;
+        std::vector<hpx::future<std::shared_ptr<primitive_component>>>
+            primitives;
         primitives.reserve(primitive_instances.size());
 
         for (auto const& entry : primitive_instances)
@@ -115,8 +118,8 @@ namespace phylanx { namespace util
 
     std::vector<std::string> enable_measurements()
     {
-        return enable_measurements(
-            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*"));
+        return enable_measurements(hpx::agas::find_symbols(hpx::launch::sync,
+            hpx::util::format("/phylanx${}/*$*", hpx::get_locality_id())));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -208,8 +211,10 @@ namespace phylanx { namespace util
         std::map<std::string, std::pair<std::int64_t, std::int64_t>> tag_ranges;
 
         // Iterate and collect the result from the futures
-        constexpr std::int64_t maxval = (std::numeric_limits<std::int64_t>::max)();
-        constexpr std::int64_t minval = (std::numeric_limits<std::int64_t>::min)();
+        constexpr std::int64_t maxval =
+            (std::numeric_limits<std::int64_t>::max)();
+        constexpr std::int64_t minval =
+            (std::numeric_limits<std::int64_t>::min)();
 
         for (auto const& name : primitive_instances)
         {
@@ -269,8 +274,7 @@ namespace phylanx { namespace util
         hpx::naming::id_type const& locality_id)
     {
         std::vector<std::string> const counter_names{
-            "count/eval", "time/eval", "eval_direct"
-        };
+            "count/eval", "time/eval", "eval_direct"};
 
         return retrieve_counter_data(
             primitive_instances, counter_names, locality_id);
@@ -279,8 +283,8 @@ namespace phylanx { namespace util
     std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         hpx::naming::id_type const& locality_id)
     {
-        auto entries =
-            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx*/*$*");
+        auto entries = hpx::agas::find_symbols(hpx::launch::sync,
+            hpx::util::format("/phylanx${}/*$*", hpx::get_locality_id()));
 
         std::vector<std::string> primitive_instances;
         primitive_instances.reserve(entries.size());
@@ -292,4 +296,4 @@ namespace phylanx { namespace util
 
         return retrieve_counter_data(primitive_instances, locality_id);
     }
-}}
+}}    // namespace phylanx::util
