@@ -34,6 +34,7 @@ char const* const als_code = R"(
         block(
             define(num_users, shape(ratings, 0)),
             define(num_items, shape(ratings, 1)),
+            define(comp_r, __ne(ratings,0.0,true)),
             define(conf, alpha * ratings),
 
             define(conf_u, constant(0.0, make_list(num_items))),
@@ -44,7 +45,7 @@ char const* const als_code = R"(
             define(p_u, constant(0.0, make_list(num_items))),
             define(p_i, constant(0.0, make_list(num_users))),
 
-            set_seed(0),
+            //set_seed(0),
             define(X, random(make_list(num_users, num_factors))),
             define(Y, random(make_list(num_items, num_factors))),
             define(I_f, identity(num_factors)),
@@ -64,8 +65,8 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ",k),
-                                    cout("X: ", X),
-                                    cout("Y: ", Y)
+                                    cout("X: ", ratings),
+                                    cout("Y: ", dot(X, transpose(Y)))
                             )
                     ),
                     
@@ -77,35 +78,33 @@ char const* const als_code = R"(
                             store(p_u, __ne(conf_u,0.0,true)),
                             store(A, dot(dot(transpose(Y), c_u), Y)+ YtY),
                             store(b, dot(dot(transpose(Y), (c_u + I_i)), p_u)),
-                            //store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
                             store(slice_row(X, u), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
 
-                    //store(XtX, dot(transpose(X), X) + regularization * I_f),
+                    store(XtX, dot(transpose(X), X) + regularization * I_f),
 
-                    //while(i < num_items,
-                    //    block(
-                    //        store(conf_i, slice_column(conf, i)),
-                    //        store(c_i, diag(conf_i)),
-                    //        store(p_i, __ne(conf_i, 0.0, true)),
-                    //        store(A, dot(dot(transpose(X), c_i),X) + XtX),
-                    //        store(b, dot(dot(transpose(X), (c_i + I_u)), p_i)),
-                    //        //store(slice(Y, list(i, i + 1, 1),nil), dot(inverse(A), b)),
-                    //        store(slice_row(Y, i), dot(inverse(A), b)),
-                    //        store(i, i + 1)
-                    //    )
-                    //),
-                    //store(i, 0),
-//
-                    //store(YtY, dot(transpose(Y), Y) + regularization * I_f),
+                    while(i < num_items,
+                        block(
+                            store(conf_i, slice_column(conf, i)),
+                            store(c_i, diag(conf_i)),
+                            store(p_i, __ne(conf_i, 0.0, true)),
+                            store(A, dot(dot(transpose(X), c_i),X) + XtX),
+                            store(b, dot(dot(transpose(X), (c_i + I_u)), p_i)),
+                            store(slice_row(Y, i), dot(inverse(A), b)),
+                            store(i, i + 1)
+                        )
+                    ),
+                    store(i, 0),
+
+                    store(YtY, dot(transpose(Y), Y) + regularization * I_f),
 
                     store(k, k + 1)
                 )
             ),
-            list(X, Y)
+            list(comp_r, dot(X, transpose(Y)))
         )
     )
     __als
@@ -131,8 +130,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto alpha = vm["alpha"].as<double>();
     auto filepath = vm["data_csv"].as<std::string>();
 
-    //bool enable_output = vm.count("enable_output") != 0;
-    bool enable_output = 1;
+    bool enable_output = vm.count("enable_output") != 0;
+    //bool enable_output = 1;
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -156,9 +155,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     auto result_r = phylanx::execution_tree::extract_list_value(result);
     auto it = result_r.begin();
-    std::cout << "X: \n"
+    std::cout << "True rating: \n"
               << phylanx::execution_tree::extract_numeric_value(*it++)
-              << "\nY: \n"
+              << "\nOur rating: \n"
               << phylanx::execution_tree::extract_numeric_value(*it)
               << std::endl;
 
@@ -172,25 +171,25 @@ int main(int argc, char* argv[])
     desc.add_options()
             ("enable_output,e", "enable progress output (default: false)")
             ("iterations,i",
-             hpx::program_options::value<std::int64_t>()->default_value(2),
+             hpx::program_options::value<std::int64_t>()->default_value(5),
              "number of iterations (default: 10.0)")
             ("factors,f",
-             hpx::program_options::value<std::int64_t>()->default_value(3),
+             hpx::program_options::value<std::int64_t>()->default_value(20),
              "number of factors (default: 10)")
             ("alpha,a",
              hpx::program_options::value<double>()->default_value(40),
              "alpha (default: 40)")
             ("regularization,r",
-             hpx::program_options::value<double>()->default_value(0.1),
+             hpx::program_options::value<double>()->default_value(0.05),
              "regularization (default: 0.1)")
             ("data_csv",
              hpx::program_options::value<std::string>(),
              "file name for reading data")
             ("row_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(2),
+             hpx::program_options::value<std::int64_t>()->default_value(100),
              "row_stop (default: 10)")
             ("col_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(2),
+             hpx::program_options::value<std::int64_t>()->default_value(200),
              "col_stop (default: 100)")
             ;
     return hpx::init(desc, argc, argv);

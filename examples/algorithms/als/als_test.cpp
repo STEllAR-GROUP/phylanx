@@ -57,6 +57,9 @@ char const* const als_code = R"(
             define(conf_row, alpha * ratings_row),
             define(conf_column, alpha * ratings_column),
 
+            define(comp_r_0, __ne(ratings_row,0.0,true)),
+            define(comp_r, all_gather_d(comp_r_0)),
+
             define(conf_u, constant(0.0, list(total_num_items))),
             define(conf_i, constant(0.0, list(total_num_users))),
 
@@ -66,7 +69,6 @@ char const* const als_code = R"(
             define(p_u, constant(0.0, list(total_num_items))),
             define(p_i, constant(0.0, list(total_num_users))),
 
-            set_seed(0),
             define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
             define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "row")),
 
@@ -93,8 +95,8 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", X_local),
-                                    cout("Y: ", X)
+                                    cout("X: ", ratings_row),
+                                    cout("Y: ", dot(X, transpose(Y)))
                             )
                     ),
 
@@ -112,28 +114,28 @@ char const* const als_code = R"(
                     store(u, 0),
 
                     store(X, all_gather_d(X_local)),
-                    //store(XtX, dot(transpose(X), X) + regularization * I_f),
-//
-                    //while(i < num_items,
-                    //    block(
-                    //        store(conf_i, slice_column(conf_column, i)),
-                    //        store(c_i, diag(conf_i)),
-                    //        store(p_i, __ne(conf_i, 0.0, true)),
-                    //        store(A, dot(dot(transpose(X), c_i), X) + XtX),
-                    //        store(b, dot(dot(transpose(X), (c_i + I_u)), p_i)),
-                    //        store(slice_row(Y_local, i), dot(inverse(A), b)),
-                    //        store(i, i + 1)
-                    //    )
-                    //),
-                    //store(i, 0),
-//
-                    //store(Y, all_gather_d(Y_local)),
-                    //store(YtY, dot(transpose(Y), Y) + regularization * I_f),
+                    store(XtX, dot(transpose(X), X) + regularization * I_f),
+
+                    while(i < num_items,
+                        block(
+                            store(conf_i, slice_column(conf_column, i)),
+                            store(c_i, diag(conf_i)),
+                            store(p_i, __ne(conf_i, 0.0, true)),
+                            store(A, dot(dot(transpose(X), c_i), X) + XtX),
+                            store(b, dot(dot(transpose(X), (c_i + I_u)), p_i)),
+                            store(slice_row(Y_local, i), dot(inverse(A), b)),
+                            store(i, i + 1)
+                        )
+                    ),
+                    store(i, 0),
+
+                    store(Y, all_gather_d(Y_local)),
+                    store(YtY, dot(transpose(Y), Y) + regularization * I_f),
 
                     store(k, k + 1)
                 )
             ),
-            list(X, Y)
+            list(comp_r, dot(X, transpose(Y)))
         )
     )
     __als
@@ -202,8 +204,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto regularization = vm["regularization"].as<double>();
     auto num_factors = vm["factors"].as<int64_t>();
     auto iterations = vm["num_iterations"].as<std::int64_t>();
-    //bool enable_output = vm.count("enable_output") != 0;
-    bool enable_output = 1;
+    bool enable_output = vm.count("enable_output") != 0;
+    //bool enable_output = 1;
 
     // calculate tiling parameters for this locality, read data
     primitive_argument_type ratings_row, ratings_column;
@@ -272,38 +274,12 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto result_r = extract_list_value(result);
     auto it = result_r.begin();
 
-    std::cout << "X: \n"
+    std::cout << "True rating: \n"
               << extract_numeric_value(*it++)
-              << "\nY: \n"
+              << "\nOur rating: \n"
               << extract_numeric_value(*it)
               << std::endl;
     std::cout << "Calculated in: " << time_diff << " seconds" << std::endl;
-
-//    if (hpx::get_locality_id() == 0)
-//    {
-//        auto result_r = extract_list_value(result);
-//        auto it_0 = result_r.begin();
-//        std::cout << " on loc 0: \n"
-//                  << "there are " << num_localities << " localities \n"
-//                  << "X: "
-//                  << extract_numeric_value(*it_0++)
-//                  << "\nY: "
-//                  << extract_numeric_value(*it_0)
-//                  << std::endl;
-//    }
-//    if (hpx::get_locality_id() == 1)
-//    {
-//
-//        auto result_r_1 = extract_list_value(result);
-//        auto it_1 = result_r_1.begin();
-//        std::cout << " on loc 1: \n"
-//                  << "there are " << num_localities << " localities \n"
-//                  << "X: "
-//                  << extract_numeric_value(*it_1++)
-//                  << "\nY: "
-//                  << extract_numeric_value(*it_1)
-//                  << std::endl;
-//    }
 
     return hpx::finalize();
 }
@@ -319,22 +295,22 @@ int main(int argc, char* argv[])
     desc.add_options()
         ("enable_output,e",
           "enable progress output (default: false)")
-        ("num_iterations,n", value<std::int64_t>()->default_value(2),
+        ("num_iterations,n", value<std::int64_t>()->default_value(5),
           "number of iterations (default: 10.0)")
-        ("factors,f", value<std::int64_t>()->default_value(3),
+        ("factors,f", value<std::int64_t>()->default_value(20),
          "number of factors (default: 10)")
         ("alpha,a", value<double>()->default_value(40),
           "alpha (default: 40)")
-        ("regularization,r", value<double>()->default_value(0.1),
+        ("regularization,r", value<double>()->default_value(0.02),
          "regularization (default: 0.1)")
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(2),
+        ("row_stop", value<std::int64_t>()->default_value(100),
           "row_stop (default: 569)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(2),
+        ("col_stop", value<std::int64_t>()->default_value(200),
           "col_stop (default: 30)")
     ;
 
