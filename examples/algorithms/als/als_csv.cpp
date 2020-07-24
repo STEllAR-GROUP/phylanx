@@ -54,8 +54,8 @@ char const* const als_code = R"(
             define(i, 0),
             define(u, 0),
 
-            define(XtX, constant(0.0, make_list(num_factors, num_factors))),
-            define(YtY, constant(0.0, make_list(num_factors, num_factors))),
+            define(XtX, dot(transpose(X), X) + regularization * I_f),
+            define(YtY, dot(transpose(Y), Y) + regularization * I_f),
             define(A, constant(0.0, make_list(num_factors, num_factors))),
             define(b, constant(0.0, make_list(num_factors))),
 
@@ -64,12 +64,11 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ",k),
-                                    cout("X: ",X),
-                                    cout("Y: ",Y)
+                                    cout("X: ", X),
+                                    cout("Y: ", Y)
                             )
                     ),
-                    store(YtY, dot(transpose(Y), Y) + regularization * I_f),
-                    store(XtX, dot(transpose(X), X) + regularization * I_f),
+                    
 
                     while(u < num_users,
                         block(
@@ -77,24 +76,32 @@ char const* const als_code = R"(
                             store(c_u, diag(conf_u)),
                             store(p_u, __ne(conf_u,0.0,true)),
                             store(A, dot(dot(transpose(Y), c_u), Y)+ YtY),
-                            store(b, dot(dot(transpose(Y), (c_u + I_i)), transpose(p_u))),
-                            store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
+                            store(b, dot(dot(transpose(Y), (c_u + I_i)), p_u)),
+                            //store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
+                            store(slice_row(X, u), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
                     store(u, 0),
-                    while(i < num_items,
-                        block(
-                            store(conf_i, slice_column(conf, i)),
-                            store(c_i, diag(conf_i)),
-                            store(p_i, __ne(conf_i, 0.0, true)),
-                            store(A, dot(dot(transpose(X), c_i),X) + XtX),
-                            store(b, dot(dot(transpose(X), (c_i + I_u)), transpose(p_i))),
-                            store(slice(Y, list(i, i + 1, 1),nil), dot(inverse(A), b)),
-                            store(i, i + 1)
-                        )
-                    ),
-                    store(i, 0),
+
+                    //store(XtX, dot(transpose(X), X) + regularization * I_f),
+
+                    //while(i < num_items,
+                    //    block(
+                    //        store(conf_i, slice_column(conf, i)),
+                    //        store(c_i, diag(conf_i)),
+                    //        store(p_i, __ne(conf_i, 0.0, true)),
+                    //        store(A, dot(dot(transpose(X), c_i),X) + XtX),
+                    //        store(b, dot(dot(transpose(X), (c_i + I_u)), p_i)),
+                    //        //store(slice(Y, list(i, i + 1, 1),nil), dot(inverse(A), b)),
+                    //        store(slice_row(Y, i), dot(inverse(A), b)),
+                    //        store(i, i + 1)
+                    //    )
+                    //),
+                    //store(i, 0),
+//
+                    //store(YtY, dot(transpose(Y), Y) + regularization * I_f),
+
                     store(k, k + 1)
                 )
             ),
@@ -124,7 +131,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto alpha = vm["alpha"].as<double>();
     auto filepath = vm["data_csv"].as<std::string>();
 
-    bool enable_output = vm.count("enable_output") != 0;
+    //bool enable_output = vm.count("enable_output") != 0;
+    bool enable_output = 1;
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -164,10 +172,10 @@ int main(int argc, char* argv[])
     desc.add_options()
             ("enable_output,e", "enable progress output (default: false)")
             ("iterations,i",
-             hpx::program_options::value<std::int64_t>()->default_value(3),
+             hpx::program_options::value<std::int64_t>()->default_value(2),
              "number of iterations (default: 10.0)")
             ("factors,f",
-             hpx::program_options::value<std::int64_t>()->default_value(10),
+             hpx::program_options::value<std::int64_t>()->default_value(3),
              "number of factors (default: 10)")
             ("alpha,a",
              hpx::program_options::value<double>()->default_value(40),
@@ -179,10 +187,10 @@ int main(int argc, char* argv[])
              hpx::program_options::value<std::string>(),
              "file name for reading data")
             ("row_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(10),
+             hpx::program_options::value<std::int64_t>()->default_value(2),
              "row_stop (default: 10)")
             ("col_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(100),
+             hpx::program_options::value<std::int64_t>()->default_value(2),
              "col_stop (default: 100)")
             ;
     return hpx::init(desc, argc, argv);
