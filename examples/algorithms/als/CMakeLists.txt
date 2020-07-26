@@ -8,6 +8,7 @@ set(example_programs
     als_csv
     als_csv_instrumented
     als_test
+    als_Y
    )
 
 foreach(example_program ${example_programs})

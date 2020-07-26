@@ -69,7 +69,6 @@ char const* const als_code = R"(
             define(p_u, constant(0.0, list(total_num_items))),
             define(p_i, constant(0.0, list(total_num_users))),
 
-            set_seed(0),
             define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
             define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "row")),
 
@@ -136,8 +135,7 @@ char const* const als_code = R"(
                     store(k, k + 1)
                 )
             ),
-            //list(comp_r, dot(X, transpose(Y)))
-            list(Y, dot(X, transpose(Y)))
+            list(comp_r, dot(X, transpose(Y)))
         )
     )
     __als
@@ -303,7 +301,7 @@ int main(int argc, char* argv[])
           "enable progress output (default: false)")
         ("num_iterations,n", value<std::int64_t>()->default_value(5),
           "number of iterations (default: 10.0)")
-        ("factors,f", value<std::int64_t>()->default_value(3),
+        ("factors,f", value<std::int64_t>()->default_value(10),
          "number of factors (default: 10)")
         ("alpha,a", value<double>()->default_value(40),
           "alpha (default: 40)")
@@ -312,11 +310,11 @@ int main(int argc, char* argv[])
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(2),
+        ("row_stop", value<std::int64_t>()->default_value(200),
           "row_stop (default: 569)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(2),
+        ("col_stop", value<std::int64_t>()->default_value(400),
           "col_stop (default: 30)")
     ;
 
