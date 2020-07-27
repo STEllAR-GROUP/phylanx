@@ -45,7 +45,7 @@ char const* const als_code = R"(
     //
     // Alternating Least squares algorithm
     //
-    define(__als, ratings_row, ratings_column, regularization, num_factors,
+    define(__als, Y_nond, ratings_row, ratings_column, regularization, num_factors,
         iterations, alpha, enable_output,
         block(
             define(total_num_users, shape_d(ratings_row, 0)),
@@ -210,6 +210,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // calculate tiling parameters for this locality, read data
     primitive_argument_type ratings_row, ratings_column;
     std::int64_t user_row_start, user_row_stop, item_col_start, item_col_stop;
+
+    double Y_random[4][3] = {{-0.549746, -1.40287, 1.58275}, {-1.04515, 0.257594, -1.95939},
+        {-1.50781, -0.315292, 0.858179}, {0.071343, -2.29231, -1.41555}};
 
     std::tie(user_row_start, user_row_stop) = calculate_tiling_parameters(row_start, row_stop);
     ratings_row = read_r(filename, user_row_start, user_row_stop, col_start, col_stop);

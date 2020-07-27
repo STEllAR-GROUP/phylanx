@@ -17,7 +17,10 @@
 #include <tuple>
 
 #include <blaze/Math.h>
+
 #include <hpx/program_options.hpp>
+#include "hpx/hpx_main.hpp"
+#include <hpx/threading_base/annotated_function.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +48,7 @@ char const* const als_code = R"(
     //
     // Alternating Least squares algorithm
     //
-    define(__als, ratings_row, ratings_column, regularization, num_factors,
+    define(als_d, ratings_row, ratings_column, regularization, num_factors,
         iterations, alpha, enable_output,
         block(
             define(total_num_users, shape_d(ratings_row, 0)),
@@ -69,7 +72,9 @@ char const* const als_code = R"(
             define(p_u, constant(0.0, list(total_num_items))),
             define(p_i, constant(0.0, list(total_num_users))),
 
-            set_seed(0),
+            //define(X_local, constant_d(1.1, list(total_num_users, num_factors), nil, nil, nil, "row")),
+            //define(Y_local, constant_d(1.2, list(total_num_items, num_factors), nil, nil, nil, "row")),
+
             define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
             define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "row")),
 
@@ -96,8 +101,8 @@ char const* const als_code = R"(
                     if(enable_output,
                             block(
                                     cout("iteration ", k),
-                                    cout("X: ", ratings_row),
-                                    cout("Y: ", dot(X, transpose(Y)))
+                                    cout("X: ", X_local),
+                                    cout("Y: ", Y_local)
                             )
                     ),
 
@@ -137,10 +142,10 @@ char const* const als_code = R"(
                 )
             ),
             //list(comp_r, dot(X, transpose(Y)))
-            list(Y, dot(X, transpose(Y)))
+            list(X, Y, comp_r, dot(X, transpose(Y)))
         )
     )
-    __als
+    als_d
 )";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,15 +262,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
     //}
 
     // evaluate ALS using the read data
-    auto const& code_als = compile("als", als_code, snippets);
-    auto als = code_als.run();
+    auto const& code_als = compile("als_d", als_code, snippets);
+    auto als_d = code_als.run();
 
     // time the execution
     hpx::evaluate_active_counters(true, "start");
     hpx::util::high_resolution_timer t;
 
     auto result =
-        als(std::move(ratings_row), std::move(ratings_column), regularization,
+        als_d(std::move(ratings_row), std::move(ratings_column), regularization,
             num_factors, iterations, alpha, enable_output);
 
     auto time_diff = t.elapsed();
@@ -275,13 +280,29 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto result_r = extract_list_value(result);
     auto it = result_r.begin();
 
-    std::cout << "True rating: \n"
-              << extract_numeric_value(*it++)
-              << "\nOur rating in loc "
-              << hpx::get_locality_id() 
-              << "\n"
-              << extract_numeric_value(*it)
-              << "\nCalculated time: "
+    //std::cout << "X in loc "
+    //          << hpx::get_locality_id() 
+    //          << "\n"
+    //          << phylanx::execution_tree::extract_numeric_value(*it++)
+    //          << "\n Y in loc "
+    //          << hpx::get_locality_id() 
+    //          << "\n"
+    //          << phylanx::execution_tree::extract_numeric_value(*it++)
+    //          << "\n True rating in loc "
+    //          << hpx::get_locality_id() 
+    //          << "\n"
+    //          << extract_numeric_value(*it++)
+    //          << "\n Our rating in loc "
+    //          << hpx::get_locality_id() 
+    //          << "\n"
+    //          << extract_numeric_value(*it)
+    //          << "\n Calculated time: "
+    //          << time_diff
+    //          << " seconds in loc "
+    //          << hpx::get_locality_id()
+    //          << std::endl;
+
+    std::cout << "\n Calculated time: "
               << time_diff
               << " seconds in loc "
               << hpx::get_locality_id()
@@ -301,22 +322,22 @@ int main(int argc, char* argv[])
     desc.add_options()
         ("enable_output,e",
           "enable progress output (default: false)")
-        ("num_iterations,n", value<std::int64_t>()->default_value(5),
+        ("num_iterations,n", value<std::int64_t>()->default_value(3),
           "number of iterations (default: 10.0)")
-        ("factors,f", value<std::int64_t>()->default_value(3),
+        ("factors,f", value<std::int64_t>()->default_value(10),
          "number of factors (default: 10)")
         ("alpha,a", value<double>()->default_value(40),
           "alpha (default: 40)")
-        ("regularization,r", value<double>()->default_value(0.01),
+        ("regularization,r", value<double>()->default_value(0.1),
          "regularization (default: 0.1)")
         ("data_csv", value<std::string>(), "file name for reading data")
         ("row_start", value<std::int64_t>()->default_value(0),
           "row_start (default: 0)")
-        ("row_stop", value<std::int64_t>()->default_value(2),
+        ("row_stop", value<std::int64_t>()->default_value(20),
           "row_stop (default: 569)")
         ("col_start", value<std::int64_t>()->default_value(0),
           "col_start (default: 0)")
-        ("col_stop", value<std::int64_t>()->default_value(2),
+        ("col_stop", value<std::int64_t>()->default_value(40),
           "col_stop (default: 30)")
     ;
 

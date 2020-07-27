@@ -45,9 +45,8 @@ char const* const als_code = R"(
             define(p_u, constant(0.0, make_list(num_items))),
             define(p_i, constant(0.0, make_list(num_users))),
 
-            set_seed(0),
+
             define(X, random(make_list(num_users, num_factors))),
-            set_seed(1),
             define(Y, random(make_list(num_items, num_factors))),
             define(I_f, identity(num_factors)),
             define(I_i, identity(num_items)),
@@ -106,7 +105,7 @@ char const* const als_code = R"(
                 )
             ),
             //list(comp_r, dot(X, transpose(Y)))
-            list(X, Y)
+            list(X, Y, comp_r, dot(X, transpose(Y)))
         )
     )
     __als
@@ -132,8 +131,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto alpha = vm["alpha"].as<double>();
     auto filepath = vm["data_csv"].as<std::string>();
 
-    //bool enable_output = vm.count("enable_output") != 0;
-    bool enable_output = 1;
+    bool enable_output = vm.count("enable_output") != 0;
+    //bool enable_output = 1;
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -157,17 +156,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     auto result_r = phylanx::execution_tree::extract_list_value(result);
     auto it = result_r.begin();
-    std::cout << "True rating: \n"
+    std::cout << "X: \n"
               << phylanx::execution_tree::extract_numeric_value(*it++)
-              << "\nOur rating: \n"
+              << "\n Y: \n"
+              << phylanx::execution_tree::extract_numeric_value(*it++)
+              << "\n True rating: \n"
+              << phylanx::execution_tree::extract_numeric_value(*it++)
+              << "\n Our rating: \n"
               << phylanx::execution_tree::extract_numeric_value(*it)
               << std::endl;
-
-    //std::cout << "True rating: \n"
-    //          << phylanx::execution_tree::extract_numeric_value(*it++)
-    //          << "\nOur rating: \n"
-    //          << phylanx::execution_tree::extract_numeric_value(*it)
-    //          << std::endl;
 
     return hpx::finalize();
 }
@@ -182,7 +179,7 @@ int main(int argc, char* argv[])
              hpx::program_options::value<std::int64_t>()->default_value(5),
              "number of iterations (default: 10.0)")
             ("factors,f",
-             hpx::program_options::value<std::int64_t>()->default_value(3),
+             hpx::program_options::value<std::int64_t>()->default_value(10),
              "number of factors (default: 10)")
             ("alpha,a",
              hpx::program_options::value<double>()->default_value(40),
@@ -194,10 +191,10 @@ int main(int argc, char* argv[])
              hpx::program_options::value<std::string>(),
              "file name for reading data")
             ("row_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(2),
+             hpx::program_options::value<std::int64_t>()->default_value(200),
              "row_stop (default: 10)")
             ("col_stop",
-             hpx::program_options::value<std::int64_t>()->default_value(2),
+             hpx::program_options::value<std::int64_t>()->default_value(400),
              "col_stop (default: 100)")
             ;
     return hpx::init(desc, argc, argv);
