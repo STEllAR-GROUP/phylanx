@@ -55,6 +55,8 @@ class CopyBuildExt(build_ext):
         print("copying {} -> {}".format(source_path, extdir))
         shutil.copyfile(source_path, os.path.join(extdir, filename))
 
+with open(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))+'/README.md') as f:
+    README = f.read()
 
 setup_args = {
     'name': 'phylanx',
@@ -63,7 +65,8 @@ setup_args = {
     'author_email': 'phylanx@stellar-group.org',
     'url': 'phylanx.stellar-group.org',
     'description': 'A Python wrapper for the Phylanx execution engine',
-    'long_description': '',
+    'long_description': README,
+    'long_description_content_type':'text/markdown',
     'packages': ['phylanx', 'phylanx.ast', 'phylanx.execution_tree',
                  'phylanx.core', 'phylanx.util', 'phylanx.plugins'],
     'package_dir': {'': '@PYTHON_PACKAGE_BASE_DIR@'},
@@ -72,6 +75,7 @@ setup_args = {
                       '@PYTHON_PACKAGE_BASE_DIR@',
                       '@PYTHON_BINARY_BASE_DIR@')
     ],
+    'install_requires': ['numpy'],
     'cmdclass': {
         'build_ext': CopyBuildExt
     },
