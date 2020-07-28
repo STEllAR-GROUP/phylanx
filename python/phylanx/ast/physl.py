@@ -915,7 +915,7 @@ class PhySL:
 
     def _Constant(self, node):
         """A constant value."""
-        return node.value
+        return self._apply_rule(node.value)
 
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
