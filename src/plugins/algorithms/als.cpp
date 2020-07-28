@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/algorithms/als.hpp>
 
-#include <hpx/distributed/iostream.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>

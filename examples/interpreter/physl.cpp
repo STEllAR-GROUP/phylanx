@@ -9,7 +9,7 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/distributed/iostream.hpp>
+#include <hpx/iostream.hpp>
 
 #include <fstream>
 #include <iostream>
