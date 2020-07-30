@@ -19,8 +19,6 @@
 #include <blaze/Math.h>
 
 #include <hpx/program_options.hpp>
-#include "hpx/hpx_main.hpp"
-#include <hpx/threading_base/annotated_function.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +79,7 @@ char const* const als_code = R"(
             define(X, all_gather_d(X_local)),
             define(Y, all_gather_d(Y_local)),
 
+
             define(I_f, identity(num_factors)),
             define(I_i, identity(total_num_items)),
             define(I_u, identity(total_num_users)),
@@ -119,17 +118,29 @@ char const* const als_code = R"(
                     ),
                     store(u, 0),
 
-                    store(X, all_gather_d(X_local)),
+                    //store(X, all_gather_d(X_local)),
+                    timer(
+                        store(X, all_gather_d(X_local)),
+                        lambda(time, cout("time of all_gather_d for X_local is: ", time))
+                    ),
                     store(XtX, dot(transpose(X), X) + regularization * I_f),
 
                     while(i < num_items,
                         block(
                             store(conf_i, slice_column(conf_column, i)),
-                            store(c_i, diag(conf_i)),
+                            //store(c_i, diag(conf_i)),
+                            timer(
+                                store(c_i, diag(conf_i)),
+                                lambda(time, cout("time of diag for c_i is: ", time))
+                            ),
                             store(p_i, __ne(conf_i, 0.0, true)),
                             store(A, dot(dot(transpose(X), c_i), X) + XtX),
                             store(b, dot(dot(transpose(X), (c_i + I_u)), p_i)),
-                            store(slice_row(Y_local, i), dot(inverse(A), b)),
+                            //store(slice_row(Y_local, i), dot(inverse(A), b)),
+                            timer(
+                                store(slice_row(Y_local, i), dot(inverse(A), b)),
+                                lambda(time, cout("time of slice_assign for Y_local is: ", time))
+                            ),
                             store(i, i + 1)
                         )
                     ),
