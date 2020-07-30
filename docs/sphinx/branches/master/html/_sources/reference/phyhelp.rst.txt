@@ -855,7 +855,8 @@ constant (value, shape, dtype)
 
 constant_d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-constant_d (value, shape, tile_index, numtiles, name, tiling_type, dtype)
+constant_d (value, shape, tile_index, numtiles, name, tiling_type, intersection,)
+            dtype
             Args:
 
                 value (float): fill value
@@ -871,8 +872,14 @@ constant_d (value, shape, tile_index, numtiles, name, tiling_type, dtype)
                     globally unique name will be generated.
                 tiling_type (string, optional): defaults to `sym` which is a
                     balanced way of tiling among all the numtiles localities.
-                    Other options are `row` or `column` tiling. For a vector
-                    all these three tiling_type are the same.
+                    Other options are `page`, `row` or `column` tiling. For a
+                    vector all these three tiling_type are the same.
+                intersection (int or a tuple of ints, optional): the size of
+                    overlapped part on each dimension. If an integer is given,
+                    that would be the intersection length on all dimensions
+                    that are tiled. The middle parts get to have two
+                    intersections, one with the tile before it and one with the
+                    tile after it.
                 dtype (string, optional): the data-type of the returned array,
                     defaults to 'float'.
 
@@ -1300,15 +1307,56 @@ file_read (fname)
 
 file_read_csv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-file_read_csv (fname)
+file_read_csv (filename, mode3d, page_nrows)
             Args:
 
-                fname (string) : file name
+                filename (string) : file name
+                mode3d (bool, optional) : If sets to true, the result will be a
+                    3d array. Each page_nrows rows of the data is stored in a
+                    new page of the result.
+                page_nrows (int, optional) : it is used only whenmode3d is true.
+                    It determines the number of rows in each page of the
+                    resulted array.
 
             Returns:
 
-            Returns a matrix representation of the contents of a
+            Returns an array representation of the contents of a
             csv file.
+
+
+file_read_csv_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+file_read_csv_d (filename, tiling_type, intersection, name, numtiles)
+            Args:
+
+                filename (string) : file name including its path.
+                mode3d (bool, optional) : If sets to true, the result will be a
+                    3d array. Each page_nrows rows of the data is stored in a
+                    new page of the result.
+                page_nrows (int, optional) : it is used only whenmode3d is true.
+                    It determines the number of rows in each page of the
+                    resulted array.
+                tiling_type (string, optional): defaults to `sym` which is a
+                    balanced way of tiling among all the numtiles localities.
+                    Other options are `page`, `row` or `column` tiling. For a
+                    vector all these three tiling_type are the same.
+                intersection (int or a tuple of ints, optional): the size of
+                    overlapped part on each dimension. If an integer is given,
+                    that would be the intersection length on all dimensions
+                    that are tiled. The middle parts get to have two
+                    intersections, one with the tile before it and one with the
+                    tile after it.
+                name (string, optional): the array given name. If not given, a
+                    globally unique name will be generated.
+                numtiles (int, optional): number of tiles of the returned array.
+                    if not given it sets to the number of localities in the
+                    application.
+
+            Returns:
+
+            Returns a distributed array representing the contents of the given
+            csv file.
+            
 
 
 file_write
@@ -2398,8 +2446,9 @@ retile_d (a, tiling_type, intersection, numtiles, new_tiling)
                 intersection (int or tuple of ints, optional): the size of
                     overlapped part on each dimension. If an integer is given,
                     that would be the intersection length on all dimensions
-                    that are tiled. If the given intersection is odd, the extra
-                    overlapped vector will be at the end of the part.
+                    that are tiled. The middle parts get to have two
+                    intersections, one with the tile before it and one with the
+                    tile after it.
                     In the `user` mode, `intersection` cannot be used.
                 numtiles (int, optional): number of tiles of the returned array
                     If not given it sets to the number of localities in the

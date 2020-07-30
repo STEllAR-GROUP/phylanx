@@ -175,6 +175,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#eye">eye</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-read">file_read</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-read-csv">file_read_csv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-read-csv-d">file_read_csv_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-write">file_write</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-write-csv">file_write_csv</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filter">filter</a></li>
@@ -1308,7 +1309,8 @@ dtype (string, optional): the data-type of the returned array,</p>
 <div class="section" id="constant-d">
 <h2>constant_d<a class="headerlink" href="#constant-d" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>constant_d (value, shape, tile_index, numtiles, name, tiling_type, dtype)</dt><dd><p>Args:</p>
+<dt>constant_d (value, shape, tile_index, numtiles, name, tiling_type, intersection,)</dt><dd><p>dtype
+Args:</p>
 <blockquote>
 <div><p>value (float): fill value
 shape (int or list of ints): overall shape of the array. It</p>
@@ -1325,8 +1327,14 @@ application.</p>
 <dt>name (string, optional): the array given name. If not given, a</dt><dd><p>globally unique name will be generated.</p>
 </dd>
 <dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
-Other options are <cite>row</cite> or <cite>column</cite> tiling. For a vector
-all these three tiling_type are the same.</p>
+Other options are <cite>page</cite>, <cite>row</cite> or <cite>column</cite> tiling. For a
+vector all these three tiling_type are the same.</p>
+</dd>
+<dt>intersection (int or a tuple of ints, optional): the size of</dt><dd><p>overlapped part on each dimension. If an integer is given,
+that would be the intersection length on all dimensions
+that are tiled. The middle parts get to have two
+intersections, one with the tile before it and one with the
+tile after it.</p>
 </dd>
 <dt>dtype (string, optional): the data-type of the returned array,</dt><dd><p>defaults to ‘float’.</p>
 </dd>
@@ -1806,12 +1814,60 @@ elsewhere.</p>
 <div class="section" id="file-read-csv">
 <h2>file_read_csv<a class="headerlink" href="#file-read-csv" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>file_read_csv (fname)</dt><dd><p>Args:</p>
+<dt>file_read_csv (filename, mode3d, page_nrows)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>fname (string) : file name</p>
+<div><p>filename (string) : file name
+mode3d (bool, optional) : If sets to true, the result will be a</p>
+<blockquote>
+<div><p>3d array. Each page_nrows rows of the data is stored in a
+new page of the result.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>page_nrows (int, optional)<span class="classifier">it is used only whenmode3d is true.</span></dt><dd><p>It determines the number of rows in each page of the
+resulted array.</p>
+</dd>
+</dl>
 </div></blockquote>
 <p>Returns:</p>
-<p>Returns a matrix representation of the contents of a
+<p>Returns an array representation of the contents of a
+csv file.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="file-read-csv-d">
+<h2>file_read_csv_d<a class="headerlink" href="#file-read-csv-d" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>file_read_csv_d (filename, tiling_type, intersection, name, numtiles)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>filename (string) : file name including its path.
+mode3d (bool, optional) : If sets to true, the result will be a</p>
+<blockquote>
+<div><p>3d array. Each page_nrows rows of the data is stored in a
+new page of the result.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>page_nrows (int, optional)<span class="classifier">it is used only whenmode3d is true.</span></dt><dd><p>It determines the number of rows in each page of the
+resulted array.</p>
+</dd>
+<dt>tiling_type (string, optional): defaults to <cite>sym</cite> which is a</dt><dd><p>balanced way of tiling among all the numtiles localities.
+Other options are <cite>page</cite>, <cite>row</cite> or <cite>column</cite> tiling. For a
+vector all these three tiling_type are the same.</p>
+</dd>
+<dt>intersection (int or a tuple of ints, optional): the size of</dt><dd><p>overlapped part on each dimension. If an integer is given,
+that would be the intersection length on all dimensions
+that are tiled. The middle parts get to have two
+intersections, one with the tile before it and one with the
+tile after it.</p>
+</dd>
+<dt>name (string, optional): the array given name. If not given, a</dt><dd><p>globally unique name will be generated.</p>
+</dd>
+<dt>numtiles (int, optional): number of tiles of the returned array.</dt><dd><p>if not given it sets to the number of localities in the
+application.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>Returns a distributed array representing the contents of the given
 csv file.</p>
 </dd>
 </dl>
@@ -2994,8 +3050,9 @@ new_tiling, tiles are specified with their spans.</p>
 <dl>
 <dt>intersection (int or tuple of ints, optional): the size of</dt><dd><p>overlapped part on each dimension. If an integer is given,
 that would be the intersection length on all dimensions
-that are tiled. If the given intersection is odd, the extra
-overlapped vector will be at the end of the part.
+that are tiled. The middle parts get to have two
+intersections, one with the tile before it and one with the
+tile after it.
 In the <cite>user</cite> mode, <cite>intersection</cite> cannot be used.</p>
 </dd>
 <dt>numtiles (int, optional): number of tiles of the returned array</dt><dd><p>If not given it sets to the number of localities in the
