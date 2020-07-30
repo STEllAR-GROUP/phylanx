@@ -2565,6 +2565,25 @@ slice_column (v, ind)
     
 
 
+slice_column_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+slice_column_d (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
 slice_page
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 slice_page (v, ind)
@@ -2587,6 +2606,25 @@ slice_page (v, ind)
 slice_row
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 slice_row (v, ind)
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    
+
+
+slice_row_d
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+slice_row_d (v, ind)
         Args:
 
             v (list) : a list to take a slice from
