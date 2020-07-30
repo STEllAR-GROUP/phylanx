@@ -4,9 +4,12 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    dist_read_csv_2_loc
     file_primitives
     file_csv_primitives
    )
+
+set(dist_read_csv_2_loc_PARAMETERS LOCALITIES 2)
 
 if(PHYLANX_WITH_HIGHFIVE)
   set(tests ${tests}

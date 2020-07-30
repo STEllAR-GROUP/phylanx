@@ -169,10 +169,10 @@ void test_retile_6loc_1d_1()
                 "sym", 1, 6
             )
         )", R"(
-            annotate_d([5, 6, 7, 8, 9], "tiled_array_1d_1_retiled/1",
+            annotate_d([4, 5, 6, 7, 8, 9], "tiled_array_1d_1_retiled/1",
                 list("args",
                     list("locality", 1, 6),
-                    list("tile", list("columns", 4, 9))))
+                    list("tile", list("columns", 3, 9))))
         )");
     }
     else if (hpx::get_locality_id() == 2)
@@ -185,10 +185,10 @@ void test_retile_6loc_1d_1()
                 "sym", 1, 6
             )
         )", R"(
-            annotate_d([9, 10, 11, 12], "tiled_array_1d_1_retiled/1",
+            annotate_d([8, 9, 10, 11, 12], "tiled_array_1d_1_retiled/1",
                 list("args",
                     list("locality", 2, 6),
-                    list("tile", list("columns", 8, 12))))
+                    list("tile", list("columns", 7, 12))))
         )");
     }
     else if (hpx::get_locality_id() == 3)
@@ -201,10 +201,10 @@ void test_retile_6loc_1d_1()
                 "sym", 1, 6
             )
         )", R"(
-            annotate_d([12, 13, 14, 15], "tiled_array_1d_1_retiled/1",
+            annotate_d([11, 12, 13, 14, 15], "tiled_array_1d_1_retiled/1",
                 list("args",
                     list("locality", 3, 6),
-                    list("tile", list("columns", 11, 15))))
+                    list("tile", list("columns", 10, 15))))
         )");
     }
     else if (hpx::get_locality_id() == 4)
@@ -217,10 +217,10 @@ void test_retile_6loc_1d_1()
                 "sym", 1, 6
             )
         )", R"(
-            annotate_d([15, 16, 17, 18], "tiled_array_1d_1_retiled/1",
+            annotate_d([14, 15, 16, 17, 18], "tiled_array_1d_1_retiled/1",
                 list("args",
                     list("locality", 4, 6),
-                    list("tile", list("columns", 14, 18))))
+                    list("tile", list("columns", 13, 18))))
         )");
     }
     else if (hpx::get_locality_id() == 5)
@@ -468,8 +468,8 @@ void test_retile_6loc_2d_2()
                 "column", 1
             )
         )", R"(
-            annotate_d([[2, 3], [-2, -3]], "tiled_array_2d_2_retiled/1",
-                list("tile", list("rows", 0, 2), list("columns", 1, 3)))
+            annotate_d([[1, 2, 3], [-1, -2, -3]], "tiled_array_2d_2_retiled/1",
+                list("tile", list("rows", 0, 2), list("columns", 0, 3)))
         )");
     }
     else if (hpx::get_locality_id() == 2)
@@ -482,8 +482,8 @@ void test_retile_6loc_2d_2()
                 "column", 1
             )
         )", R"(
-            annotate_d([[3, 4], [-3, -4]], "tiled_array_2d_2_retiled/1",
-                list("tile", list("rows", 0, 2), list("columns", 2, 4)))
+            annotate_d([[2, 3, 4], [-2, -3, -4]], "tiled_array_2d_2_retiled/1",
+                list("tile", list("rows", 0, 2), list("columns", 1, 4)))
         )");
     }
     else if (hpx::get_locality_id() == 3)
@@ -496,8 +496,8 @@ void test_retile_6loc_2d_2()
                 "column", 1
             )
         )", R"(
-            annotate_d([[4, 5], [-4, -5]], "tiled_array_2d_2_retiled/1",
-                list("tile", list("rows", 0, 2), list("columns", 3, 5)))
+            annotate_d([[3, 4, 5], [-3, -4, -5]], "tiled_array_2d_2_retiled/1",
+                list("tile", list("rows", 0, 2), list("columns", 2, 5)))
         )");
     }
     else if (hpx::get_locality_id() == 4)
@@ -510,8 +510,8 @@ void test_retile_6loc_2d_2()
                 "column", 1
             )
         )", R"(
-            annotate_d([[5, 6], [-5, -6]], "tiled_array_2d_2_retiled/1",
-                list("tile", list("rows", 0, 2), list("columns", 4, 6)))
+            annotate_d([[4, 5, 6], [-4, -5, -6]], "tiled_array_2d_2_retiled/1",
+                list("tile", list("rows", 0, 2), list("columns", 3, 6)))
         )");
     }
     else

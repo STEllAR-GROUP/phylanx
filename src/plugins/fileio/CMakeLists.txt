@@ -4,13 +4,16 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(headers
+   "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/dist_file_read_csv.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/fileio.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read_csv.hpp"
+   "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read_csv_impl.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_write.hpp"
    "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_write_csv.hpp"
   )
 set(sources
+   "dist_file_read_csv.cpp"
    "fileio.cpp"
    "file_read.cpp"
    "file_read_csv.cpp"

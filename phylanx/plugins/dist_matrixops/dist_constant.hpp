@@ -16,6 +16,7 @@
 
 #include <hpx/futures/future.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -50,26 +51,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type constant1d_helper(
             execution_tree::primitive_argument_type&& value,
             std::size_t const& dim, std::uint32_t const& tile_idx,
-            std::uint32_t const& numtiles, std::string&& given_name) const;
+            std::uint32_t const& numtiles, std::string&& given_name,
+            std::size_t intersection) const;
 
         execution_tree::primitive_argument_type constant1d(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-            std::string&& given_name, execution_tree::node_data_type dtype) const;
+            std::string&& given_name, std::size_t intersection,
+            execution_tree::node_data_type dtype) const;
 
         template <typename T>
         execution_tree::primitive_argument_type constant2d_helper(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-            std::string&& given_name, std::string const& tiling_type) const;
+            std::string&& given_name, std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                intersections) const;
 
         execution_tree::primitive_argument_type constant2d(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                intersections,
             execution_tree::node_data_type dtype) const;
 
         template <typename T>
@@ -77,15 +84,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-            std::string&& given_name, std::string const& tiling_type) const;
+            std::string&& given_name, std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                intersections) const;
 
         execution_tree::primitive_argument_type constant3d(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                intersections,
             execution_tree::node_data_type dtype) const;
-
     };
 
     inline execution_tree::primitive
