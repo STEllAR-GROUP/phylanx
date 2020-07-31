@@ -11,7 +11,7 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <cstddef>

@@ -10,7 +10,7 @@
 
 #include <phylanx/config.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/actions_base/component_action.hpp>

@@ -19,7 +19,7 @@
 #include <phylanx/plugins/dist_matrixops/dist_cannon_product.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

@@ -10,7 +10,7 @@
 #include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/ir/ranges.hpp>
 
-#include <hpx/futures/future.hpp>
+#include <hpx/lcos/future.hpp>
 
 #include <cstdint>
 #include <string>

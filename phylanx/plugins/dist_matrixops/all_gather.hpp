@@ -15,12 +15,12 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/modules/collectives.hpp>
+#include <hpx/collectives.hpp>
 
 #include <array>
 #include <cstddef>

@@ -21,7 +21,7 @@
 #include <phylanx/util/distributed_vector.hpp>
 #include <phylanx/util/index_calculation_helper.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

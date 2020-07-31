@@ -8,9 +8,9 @@
 #include <phylanx/execution_tree/tiling_annotations.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/errors/throw_exception.hpp>
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 
 #include <array>
 #include <cstddef>

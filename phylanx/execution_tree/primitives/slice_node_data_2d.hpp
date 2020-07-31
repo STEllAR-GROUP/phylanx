@@ -19,7 +19,7 @@
 #include <phylanx/util/index_calculation_helper.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

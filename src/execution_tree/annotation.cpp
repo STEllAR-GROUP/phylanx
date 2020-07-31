@@ -13,7 +13,7 @@
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/errors/throw_exception.hpp>
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 #include <hpx/serialization/serialize.hpp>
 
 #include <cctype>

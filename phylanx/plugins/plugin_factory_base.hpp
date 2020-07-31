@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/plugin_base.hpp>
 
-#include <hpx/modules/plugin.hpp>
+#include <hpx/plugin.hpp>
 #include <hpx/plugins/plugin_factory_base.hpp>
 #include <hpx/type_support/pack.hpp>
 

@@ -14,7 +14,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/assertion.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
 #include <cmath>

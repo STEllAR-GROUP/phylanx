@@ -18,8 +18,8 @@
 #include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/tensor_iterators.hpp>
 
-#include <hpx/assert.hpp>
-#include <hpx/modules/collectives.hpp>
+#include <hpx/assertion.hpp>
+#include <hpx/collectives.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

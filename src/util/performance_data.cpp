@@ -9,7 +9,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/util/performance_data.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/include/agas.hpp>
 #include <hpx/include/future.hpp>
 #include <hpx/include/lcos.hpp>

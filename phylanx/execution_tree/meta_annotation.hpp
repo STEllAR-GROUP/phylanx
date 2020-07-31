@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/annotation.hpp>
 
-#include <hpx/futures/future.hpp>
+#include <hpx/lcos/future.hpp>
 
 #include <string>
 

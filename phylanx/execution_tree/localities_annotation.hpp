@@ -14,7 +14,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
-#include <hpx/futures/future.hpp>
+#include <hpx/lcos/future.hpp>
 
 #include <array>
 #include <cstddef>

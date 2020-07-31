@@ -9,10 +9,10 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
-#include <hpx/assert.hpp>
-#include <hpx/exception.hpp>
+#include <hpx/assertion.hpp>
+#include <hpx/errors/exception.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/async_base/launch_policy.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 #include <hpx/serialization/serialization_fwd.hpp>
 
 #if !defined(PHYLANX_HAVE_CXX17_SHARED_PTR_ARRAY)

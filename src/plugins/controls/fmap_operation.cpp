@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/controls/fmap_operation.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

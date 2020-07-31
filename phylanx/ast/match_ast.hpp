@@ -13,10 +13,10 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/assert.hpp>
-#include <hpx/modules/datastructures.hpp>
-#include <hpx/modules/functional.hpp>
-#include <hpx/modules/type_support.hpp>
+#include <hpx/assertion.hpp>
+#include <hpx/datastructures.hpp>
+#include <hpx/functional.hpp>
+#include <hpx/type_support.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -179,7 +179,7 @@ namespace phylanx { namespace ast
 
             template <typename Ast1, typename Ast2, std::size_t... Is>
             inline bool call(Ast1 const& ast1, Ast2 const& ast2,
-                hpx::util::pack_c<std::size_t, Is...>) const
+                hpx::util::detail::pack_c<std::size_t, Is...>) const
             {
                 return match_ast(ast1, ast2, f_, hpx::util::get<Is>(t_)...);
             }
@@ -188,7 +188,7 @@ namespace phylanx { namespace ast
             bool operator()(Ast1 const& ast1, Ast2 const& ast2) const
             {
                 return call(ast1, ast2,
-                    typename hpx::util::make_index_pack<
+                    typename hpx::util::detail::make_index_pack<
                             sizeof...(Ts)
                          >::type());
             }

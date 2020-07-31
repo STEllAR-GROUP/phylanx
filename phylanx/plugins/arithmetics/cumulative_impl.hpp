@@ -11,7 +11,7 @@
 #include <phylanx/plugins/arithmetics/cumulative.hpp>
 
 #include <hpx/datastructures/optional.hpp>
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/parallel_scan.hpp>

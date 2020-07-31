@@ -11,7 +11,7 @@
 #include <phylanx/execution_tree/compiler_component.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 #include <hpx/include/naming.hpp>
 
 #include <algorithm>

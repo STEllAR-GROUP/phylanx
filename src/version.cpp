@@ -7,7 +7,7 @@
 #include <phylanx/config/user_main_config.hpp>
 #include <phylanx/version.hpp>
 
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 #include <hpx/preprocessor/expand.hpp>
 #include <hpx/preprocessor/stringize.hpp>
 

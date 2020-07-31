@@ -21,7 +21,7 @@
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/index_calculation_helper.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

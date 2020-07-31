@@ -9,7 +9,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/solvers/decomposition.hpp>
 
-#include <hpx/assert.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

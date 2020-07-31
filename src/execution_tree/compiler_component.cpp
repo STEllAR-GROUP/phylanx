@@ -13,7 +13,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 
 #include <hpx/async.hpp>
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 #include <hpx/include/agas.hpp>
 #include <hpx/include/components.hpp>
 

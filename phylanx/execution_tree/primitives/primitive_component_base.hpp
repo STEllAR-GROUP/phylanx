@@ -13,7 +13,7 @@
 #include <hpx/allocator_support/internal_allocator.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/async_base/launch_policy.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
 
 #include <cstddef>

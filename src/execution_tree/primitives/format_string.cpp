@@ -12,7 +12,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
-#include <hpx/modules/format.hpp>
+#include <hpx/format.hpp>
 
 #include <boost/utility/string_ref.hpp>
 
