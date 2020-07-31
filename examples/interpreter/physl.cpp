@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018-2019 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #include <phylanx/phylanx.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
-#include <hpx/hpx_main.hpp>
+#include <hpx/hpx_init.hpp>
 #include <hpx/iostream.hpp>
 
 #include <fstream>
@@ -667,7 +667,7 @@ void interpreter(po::variables_map const& vm)
     }
 }
 
-int main(int argc, char* argv[])
+int hpx_main(int argc, char* argv[])
 {
     po::variables_map vm;
     int const cmdline_result = handle_command_line(argc, argv, vm);
@@ -679,7 +679,7 @@ int main(int argc, char* argv[])
     if (vm.count("docs") != 0)
     {
         phylanx::execution_tree::show_patterns();
-        return 0;
+        return hpx::finalize();
     }
 
     try
@@ -689,8 +689,18 @@ int main(int argc, char* argv[])
     catch (std::exception const& e)
     {
         hpx::cerr << "physl: exception caught:\n" << e.what() << "\n";
+        hpx::finalize();
         return -1;
     }
 
-    return 0;
+    return hpx::finalize();
+}
+
+int main(int argc, char* argv[])
+{
+    // making sure hpx_main is executed on all localities
+    hpx::init_params params;
+    params.cfg = {"hpx.run_hpx_main!=1", "hpx.commandline.allow_unknown!=1"};
+
+    return hpx::init(argc, argv, params);
 }

@@ -113,10 +113,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         std::size_t lhs_tile_row_size = lhs_tile_row.size();
         std::size_t rhs_tile_col_size = rhs_tile_col.size();
-        if (lhs_tile_row_size < 2 || rhs_tile_col_size < 2)
+        if (lhs_num_localities != 1 &&
+            (lhs_tile_row_size < 2 || rhs_tile_col_size < 2))
         {
-            // This is debateable, maybe we should allow single tile
-            // rows or columns
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_cannon_product::product",
                 generate_error_message(
