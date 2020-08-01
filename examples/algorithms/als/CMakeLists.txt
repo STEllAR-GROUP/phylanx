@@ -7,6 +7,7 @@ set(example_programs
     als
     als_csv
     als_csv_instrumented
+    als_csv_distributed
    )
 
 foreach(example_program ${example_programs})
