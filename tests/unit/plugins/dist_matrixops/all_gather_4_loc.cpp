@@ -233,7 +233,7 @@ int hpx_main(int argc, char* argv[])
     test_all_gather_2d_0();
     test_all_gather_2d_1();
     test_all_gather_2d_2();
-    test_all_gather_2d_3();
+//    test_all_gather_2d_3();
 
     hpx::finalize();
     return hpx::util::report_errors();

@@ -232,15 +232,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::size_t rows_dim, cols_dim;
         rows_dim = locs.rows(name_, codename_);
         cols_dim = locs.columns(name_, codename_);
+        bool tiled_col, tiled_row;
+        tiled_col = locs.is_column_tiled(name_, codename_);
+        tiled_row = locs.is_row_tiled(name_, codename_);
 
         // check the tiling type is column-tiling or row-tiling
         std::int64_t axis; // along with the array will be joined
-        if (m.rows() == rows_dim)
+        if (tiled_col)
         {
             // column-tiling
             axis = 1;
         }
-        else if (m.columns() == cols_dim)
+        else if (tiled_row)
         {
             // row-tiling
             axis = 0;

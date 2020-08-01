@@ -6,6 +6,7 @@
 set(tests
     all_gather_2_loc
     all_gather_4_loc
+    all_gather_8_loc
     dist_argmax_3_loc
     dist_argmin_2_loc
     dist_cannon_product_4_loc
@@ -40,6 +41,7 @@ set(tests
 
 set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
 set(all_gather_4_loc_PARAMETERS LOCALITIES 4)
+set(all_gather_8_loc_PARAMETERS LOCALITIES 8)
 set(dist_argmax_3_loc_PARAMETERS LOCALITIES 3)
 set(dist_argmin_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_cannon_product_4_loc_PARAMETERS LOCALITIES 4)

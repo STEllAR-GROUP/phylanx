@@ -9,12 +9,13 @@
 #include <phylanx/phylanx.hpp>
 #include <hpx/hpx_init.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <tuple>
 
 #include <blaze/Math.h>
 
@@ -58,9 +59,6 @@ char const* const als_code = R"(
             define(conf_row, alpha * ratings_row),
             define(conf_column, alpha * ratings_column),
 
-            //define(comp_r_0, __ne(ratings_row,0.0,true)),
-            //define(comp_r, all_gather_d(comp_r_0)),
-
             define(conf_u, constant(0.0, list(total_num_items))),
             define(conf_i, constant(0.0, list(total_num_users))),
 
@@ -70,11 +68,10 @@ char const* const als_code = R"(
             define(p_u, constant(0.0, list(total_num_items))),
             define(p_i, constant(0.0, list(total_num_users))),
 
-            //define(X_local, constant_d(1.1, list(total_num_users, num_factors), nil, nil, nil, "row")),
-            //define(Y_local, constant_d(1.2, list(total_num_items, num_factors), nil, nil, nil, "row")),
-
-            define(X_local, random_d(list(total_num_users, num_factors), nil, nil, nil, "row")),
-            define(Y_local, random_d(list(total_num_items, num_factors), nil, nil, nil, "row")),
+            define(X_local, random_d(list(total_num_users, num_factors),
+                nil, nil, nil, "row")),
+            define(Y_local, random_d(list(total_num_items, num_factors),
+                nil, nil, nil, "row")),
 
             define(X, all_gather_d(X_local)),
             define(Y, all_gather_d(Y_local)),
@@ -138,7 +135,6 @@ char const* const als_code = R"(
                     store(k, k + 1)
                 )
             ),
-            //list(X, Y, comp_r, dot(X, transpose(Y)))
             list(X, Y)
         )
     )
@@ -147,8 +143,8 @@ char const* const als_code = R"(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(std::int64_t start,
-    std::int64_t stop)
+std::tuple<std::int64_t, std::int64_t> calculate_tiling_parameters(
+    std::int64_t start, std::int64_t stop)
 {
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     std::uint32_t this_locality = hpx::get_locality_id();
@@ -215,23 +211,16 @@ int hpx_main(hpx::program_options::variables_map& vm)
     primitive_argument_type ratings_row, ratings_column;
     std::int64_t user_row_start, user_row_stop, item_col_start, item_col_stop;
 
-    std::tie(user_row_start, user_row_stop) = calculate_tiling_parameters(row_start, row_stop);
-    ratings_row = read_r(filename, user_row_start, user_row_stop, col_start, col_stop);
+    std::tie(user_row_start, user_row_stop) =
+        calculate_tiling_parameters(row_start, row_stop);
+    ratings_row =
+        read_r(filename, user_row_start, user_row_stop, col_start, col_stop);
 
-    std::tie(item_col_start, item_col_stop) = calculate_tiling_parameters(col_start, col_stop);
-    ratings_column = read_r(filename, row_start, row_stop, item_col_start, item_col_stop);
+    std::tie(item_col_start, item_col_stop) =
+        calculate_tiling_parameters(col_start, col_stop);
+    ratings_column =
+        read_r(filename, row_start, row_stop, item_col_start, item_col_stop);
 
-    std::cout << "\n In loc "
-              << hpx::get_locality_id()
-              << " user_row_start is: "
-              << user_row_start
-              << " user_row_stop is: "
-              << user_row_stop
-              << " item_col_start is: "
-              << item_col_start
-              << " user_row_start is: "
-              << item_col_stop
-              << std::endl;
     // evaluate ALS using the read data
     auto const& code_als = compile("als_d", als_code, snippets);
     auto als_d = code_als.run();
@@ -256,6 +245,12 @@ int hpx_main(hpx::program_options::variables_map& vm)
               << time_diff
               << " seconds in loc "
               << hpx::get_locality_id()
+              << std::endl;
+
+    std::cout << "X: \n"
+              << phylanx::execution_tree::extract_numeric_value(*it++)
+              << "\nY: \n"
+              << phylanx::execution_tree::extract_numeric_value(*it)
               << std::endl;
 
     return hpx::finalize();
