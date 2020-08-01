@@ -32,6 +32,7 @@ set(tests
     dist_shape_2_loc
     dist_slice_2_loc
     dist_slice_3_loc
+    dist_slice_8_loc
     dist_transpose_operation
     retile_2_loc
     retile_3_loc
@@ -66,6 +67,7 @@ set(dist_random_5_loc_PARAMETERS LOCALITIES 5)
 set(dist_shape_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_slice_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_slice_3_loc_PARAMETERS LOCALITIES 3)
+set(dist_slice_8_loc_PARAMETERS LOCALITIES 8)
 set(retile_2_loc_PARAMETERS LOCALITIES 2)
 set(retile_3_loc_PARAMETERS LOCALITIES 3)
 set(retile_6_loc_PARAMETERS LOCALITIES 6)
