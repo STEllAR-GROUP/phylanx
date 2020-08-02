@@ -69,149 +69,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        execution_tree::primitive_argument_type concatenate2d_axis0(
-            execution_tree::primitive_arguments_type&& args,
-            std::string const& name, std::string const& codename)
-        {
-            std::size_t args_size = args.size();
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
-                extract_numeric_value_dimensions(args[0], name, codename);
-            std::size_t total_rows = 0;
-            for (std::size_t i = 0; i != args_size; ++i)
-            {
-                if (extract_numeric_value_dimension(args[i],
-                    name, codename) != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_matrixops::primitives::all_gather::"
-                        "detail::concatenate2d_axis0",
-                        util::generate_error_message(
-                            "all the input arrays must have "
-                            "the same number of dimensions", name, codename));
-                }
-
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
-                    extract_numeric_value_dimensions(args[i], name, codename);
-
-                if (i != 0 && prevdim[1] != dim[1])
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_matrixops::primitives::"
-                        "all_gather::detail::concatenate2d_axis0",
-                        util::generate_error_message(
-                            "all the input array dimensions except for "
-                            "the concatenation axis must match exactly ",
-                            name, codename));
-                }
-
-                total_rows += dim[0];
-                prevdim = dim;
-            }
-            blaze::DynamicMatrix<T> result(total_rows, prevdim[1]);
-            std::size_t step = 0;
-            for (auto&& arg : args)
-            {
-                auto&& val =
-                    execution_tree::extract_node_data<T>(std::move(arg));
-                std::size_t num_rows = val.dimension(0);
-                auto m = val.matrix();
-                blaze::submatrix(
-                    result, step, 0, num_rows, prevdim[1]) = m;
-                step += num_rows;
-
-            }
-            return execution_tree::primitive_argument_type{
-                ir::node_data<T>{std::move(result)}};
-        }
-
-        template <typename T>
-        execution_tree::primitive_argument_type concatenate2d_axis1(
-            execution_tree::primitive_arguments_type&& args,
-            std::string const& name, std::string const& codename)
-        {
-            std::size_t args_size = args.size();
-
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
-                extract_numeric_value_dimensions(args[0], name, codename);
-
-            std::size_t total_cols = 0;
-            for (std::size_t i = 0; i != args_size; ++i)
-            {
-                if (extract_numeric_value_dimension(args[i],
-                    name, codename) != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_matrixops::primitives::"
-                        "all_gather::detail::concatenate2d_axis1",
-                        util::generate_error_message(
-                            "all the input arrays must have "
-                            "the same number of dimensions", name, codename));
-                }
-
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
-                    extract_numeric_value_dimensions(args[i], name, codename);
-
-                if (i != 0 && prevdim[0] != dim[0])
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dist_matrixops::primitives::"
-                        "all_gather::detail::concatenate2d_axis1",
-                        util::generate_error_message(
-                            "all the input array dimensions except for"
-                            "the concatenation axis must match exactly",
-                            name, codename));
-                }
-
-                total_cols += dim[1];
-                prevdim = dim;
-            }
-
-            blaze::DynamicMatrix<T> result(prevdim[0], total_cols);
-
-            std::size_t step = 0;
-            for (auto&& arg : args)
-            {
-                auto&& val =
-                    execution_tree::extract_node_data<T>(std::move(arg));
-                std::size_t num_cols = val.dimension(1);
-                auto m = val.matrix();
-                blaze::submatrix(
-                    result, 0, step, prevdim[0], num_cols) = m;
-                step += num_cols;
-            }
-
-            return execution_tree::primitive_argument_type{
-                ir::node_data<T>{std::move(result)}};
-        }
-
-        template <typename T>
-        execution_tree::primitive_argument_type concatenate2d(
-            execution_tree::primitive_arguments_type&& args, std::int64_t axis,
-            std::string const& name, std::string const& codename)
-        {
-            switch (axis)
-            {
-            case 0:
-                return detail::concatenate2d_axis0<T>(
-                    std::move(args), name, codename);
-            case 1:
-                return detail::concatenate2d_axis1<T>(
-                    std::move(args), name, codename);
-            default:
-                break;
-            }
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_matrixops::primitives::"
-                "all_gather::detail::concatenate2d",
-                util::generate_error_message(
-                    "axis is out of bounds of dimension", name, codename));
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type all_gather::all_gather2d(
         ir::node_data<T>&& arr,
@@ -232,6 +89,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::size_t rows_dim, cols_dim;
         rows_dim = locs.rows(name_, codename_);
         cols_dim = locs.columns(name_, codename_);
+
+        blaze::DynamicMatrix<T> result(rows_dim, cols_dim);
+
         bool tiled_col, tiled_row;
         tiled_col = locs.is_column_tiled(name_, codename_);
         tiled_row = locs.is_row_tiled(name_, codename_);
@@ -241,12 +101,32 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         if (tiled_col)
         {
             // column-tiling
-            axis = 1;
+            std::size_t step = 0;
+            for (auto&& arg : p)
+            {
+                auto&& val = ir::node_data<T>{std::move(arg)};
+                std::size_t num_rows = val.dimension(0);
+                std::size_t num_cols = val.dimension(1);
+                auto m = val.matrix();
+                blaze::submatrix(
+                    result, 0, step, num_rows, num_cols) = m;
+                step += num_cols;
+            }
         }
         else if (tiled_row)
         {
             // row-tiling
-            axis = 0;
+            std::size_t step = 0;
+            for (auto&& arg : p)
+            {
+                auto&& val = ir::node_data<T>{std::move(arg)};
+                std::size_t num_rows = val.dimension(0);
+                std::size_t num_cols = val.dimension(1);
+                auto n = val.matrix();
+                blaze::submatrix(
+                    result, step, 0, num_rows, num_cols) = n;
+                step += num_rows;
+            }
         }
         else
         {
@@ -257,15 +137,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     "be `row` or `column`"));
         }
 
-        primitive_arguments_type ops;
-        ops.reserve(p.size());
-        for (auto && op : p)
-        {
-            ops.push_back(
-                primitive_argument_type{ir::node_data<T>{std::move(op)}});
-        }
-
-        return detail::concatenate2d<T>(std::move(ops), axis, name_, codename_);
+        return execution_tree::primitive_argument_type{
+                ir::node_data<T>{std::move(result)}};
     }
 
     ///////////////////////////////////////////////////////////////////////////
