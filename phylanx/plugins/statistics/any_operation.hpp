@@ -1,4 +1,5 @@
 //  Copyright (c) 2018 Shahrzad Shirzad
+//  Copyright (c) 2018-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,26 +9,21 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/plugins/common/statistics_operations.hpp>
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_any_op;
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
+    ///////////////////////////////////////////////////////////////////////////
     class any_operation
-      : public statistics<detail::statistics_any_op, any_operation>
+      : public statistics_base<common::statistics_any_op, any_operation>
     {
         using base_type =
-            statistics<detail::statistics_any_op, any_operation>;
+            statistics_base<common::statistics_any_op, any_operation>;
 
     public:
         static match_pattern_type const match_data;
@@ -45,6 +41,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "any", std::move(operands), name, codename);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 #endif

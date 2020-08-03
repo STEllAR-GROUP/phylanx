@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/statistics/max_operation.hpp>
-#include <phylanx/plugins/statistics/statistics_base_impl.hpp>
+#include <phylanx/plugins/dist_statistics/dist_statistics_base_impl.hpp>
+#include <phylanx/plugins/dist_statistics/max_d_operation.hpp>
 
 #include <string>
 #include <type_traits>
@@ -17,15 +17,11 @@
 namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const max_operation::match_data =
-    {
-        match_pattern_type{
-            "amax",
-            std::vector<std::string>{
-                "amax(_1)", "amax(_1, _2)", "amax(_1, _2, _3)",
-                "amax(_1, _2, _3, _4)"
-            },
-            &create_amax_operation, &create_primitive<max_operation>, R"(
+    match_pattern_type const max_d_operation::match_data = {
+        match_pattern_type{"amax_d",
+            std::vector<std::string>{"amax_d(_1)", "amax_d(_1, _2)",
+                "amax_d(_1, _2, _3)", "amax_d(_1, _2, _3, _4)"},
+            &create_amax_d_operation, &create_primitive<max_d_operation>, R"(
             a, axis, keepdims, initial
             Args:
 
@@ -41,14 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             Returns:
 
             Returns the maximum of an array or maximum along an axis.)",
-            true
-        }
-    };
+            true}};
 
     ///////////////////////////////////////////////////////////////////////////
-    max_operation::max_operation(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    max_d_operation::max_d_operation(primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : base_type(std::move(operands), name, codename)
     {
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives

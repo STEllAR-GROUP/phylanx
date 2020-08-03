@@ -4,13 +4,13 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_STATISTICS_MAX_OPERATION)
-#define PHYLANX_STATISTICS_MAX_OPERATION
+#if !defined(PHYLANX_STATISTICS_MAX_D_OPERATION)
+#define PHYLANX_STATISTICS_MAX_D_OPERATION
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/plugins/common/statistics_operations.hpp>
-#include <phylanx/plugins/statistics/statistics_base.hpp>
+#include <phylanx/plugins/dist_statistics/dist_statistics_base.hpp>
 
 #include <string>
 #include <utility>
@@ -26,27 +26,27 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     /// \param keep_dims Optional. If true the max value has to have the same
     ///                  number of dimensions as a. Otherwise, the axes with
     ///                  size one will be reduced.
-    class max_operation
-      : public statistics_base<common::statistics_max_op, max_operation>
+    class max_d_operation
+      : public dist_statistics_base<common::statistics_max_op, max_d_operation>
     {
         using base_type =
-            statistics_base<common::statistics_max_op, max_operation>;
+            dist_statistics_base<common::statistics_max_op, max_d_operation>;
 
     public:
         static match_pattern_type const match_data;
 
-        max_operation() = default;
+        max_d_operation() = default;
 
-        max_operation(primitive_arguments_type&& operands,
+        max_d_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
     };
 
-    inline primitive create_amax_operation(hpx::id_type const& locality,
+    inline primitive create_amax_d_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands, std::string const& name = "",
         std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "amax", std::move(operands), name, codename);
+            locality, "amax_d", std::move(operands), name, codename);
     }
 }}}    // namespace phylanx::execution_tree::primitives
 

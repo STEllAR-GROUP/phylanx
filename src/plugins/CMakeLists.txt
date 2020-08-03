@@ -11,6 +11,7 @@ set(subdirs
     controls
     dist_keras_support
     dist_matrixops
+    dist_statistics
     fileio
     keras_support
     listops

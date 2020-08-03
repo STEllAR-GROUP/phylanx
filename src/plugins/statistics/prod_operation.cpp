@@ -8,10 +8,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/prod_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/blaze_traits.hpp>
 
-#include <cstddef>
-#include <functional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -21,45 +18,7 @@
 #include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_prod_op
-        {
-            using result_type = T;
-
-            statistics_prod_op(std::string const& name,
-                std::string const& codename)
-            {}
-
-            static constexpr T initial()
-            {
-                return T(1);
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial) const
-            {
-                return s * initial;
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, T initial) const
-            {
-                return blaze::prod(v) * initial;
-            }
-
-            static T finalize(T value, std::size_t size)
-            {
-                return value;
-            }
-        };
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const prod_operation::match_data =
@@ -92,4 +51,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : base_type(std::move(operands), name, codename)
     {
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
