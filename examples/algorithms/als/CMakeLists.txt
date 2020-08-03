@@ -6,8 +6,11 @@
 set(example_programs
     als
     als_csv
+    als_csv_distributed
     als_csv_instrumented
    )
+
+set(als_csv_distributed_PARAMETERS LOCALITIES 2)
 
 foreach(example_program ${example_programs})
 

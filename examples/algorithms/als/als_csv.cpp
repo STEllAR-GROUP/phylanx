@@ -69,7 +69,6 @@ char const* const als_code = R"(
                             )
                     ),
                     store(YtY, dot(transpose(Y), Y) + regularization * I_f),
-                    store(XtX, dot(transpose(X), X) + regularization * I_f),
 
                     while(u < num_users,
                         block(
@@ -83,6 +82,9 @@ char const* const als_code = R"(
                         )
                     ),
                     store(u, 0),
+
+                    store(XtX, dot(transpose(X), X) + regularization * I_f),
+
                     while(i < num_items,
                         block(
                             store(conf_i, slice_column(conf, i)),

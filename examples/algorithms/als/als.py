@@ -12,7 +12,7 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
 
     conf = alpha * ratings
     conf_u = np.zeros((num_items, 1))
-    conf_i = np.zeros((num_items, 1))
+    conf_i = np.zeros((num_users, 1))
 
     c_u = np.zeros((num_items, num_items))
     c_i = np.zeros((num_users, num_users))
@@ -45,7 +45,6 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
             print("X: ", X)
             print("Y: ", Y)
         YtY = np.dot(np.transpose(Y), Y) + regularization * I_f
-        XtX = np.dot(np.transpose(X), X) + regularization * I_f
         while u < num_users:
             conf_u = conf[u, :]
             c_u = np.diag(conf_u)
@@ -55,6 +54,7 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
             b = np.dot(np.dot(np.transpose(Y), c_u + I_i), np.transpose(p_u))
             X[u, :] = np.dot(np.linalg.inv(A), b)
             u = u + 1
+        XtX = np.dot(np.transpose(X), X) + regularization * I_f
         while i < num_items:
             conf_i = conf[:, i]
             c_i = np.diag(conf_i)
