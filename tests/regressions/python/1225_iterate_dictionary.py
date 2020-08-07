@@ -8,6 +8,11 @@
 from phylanx import Phylanx
 
 
+# fool flake8
+def append(a, b):
+    return a
+
+
 @Phylanx
 def foo():
     a = {"a": 1, "b": 2, "c": 3}
@@ -16,7 +21,6 @@ def foo():
         b = append(b, k)
     return b
 
+
 result = foo()
-assert result == [['a', 1], ['b', 2], ['c', 3]], result
-
-
+assert sorted(result) == ['a', 'b', 'c'], result
