@@ -147,14 +147,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(value), this_->name_, this_->codename_);
                     for (auto&& e : std::move(dict))
                     {
-                        primitive_arguments_type elem;
-                        elem.emplace_back(std::move(e.first.get()));
-                        elem.emplace_back(std::move(e.second.get()));
-
-                        ir::range r(std::move(elem));
-
                         auto result = p->eval(hpx::launch::sync,
-                            primitive_argument_type{std::move(r)}, ctx);
+                            primitive_argument_type{std::move(e.first.get())}, ctx);
 
                         if (is_boolean_operand_strict(result))
                         {
