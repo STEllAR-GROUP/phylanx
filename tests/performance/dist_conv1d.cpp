@@ -22,10 +22,13 @@ char const* const conv1d_code = R"(block(
     define(conv,
         block(
             define(array,
-                random_d(list(20868, 80, 3), nil, nil, "", "page")),
+                random_d(list(10434, 80, 3), nil, nil, "", "page")),
             define(kernel,
                 random(list(10, 3, 100))),
-            conv1d_d(array, kernel)
+            timer(
+                conv1d_d(array, kernel),
+                lambda(time, cout("locality", find_here(), ":", time))
+            )
         )
     ),
     conv
@@ -46,15 +49,7 @@ int hpx_main(int argc, char* argv[])
         << hpx::get_num_localities(hpx::launch::sync)
         << " localities:\n";
 
-
-    hpx::util::high_resolution_timer t;
-
     auto result = conv();
-    auto elapsed = t.elapsed();
-
-    std::cout << "Result of conv1d_d for the given inputs is calculated in: "
-        << elapsed << " seconds" << std::endl;
-
 
     return hpx::finalize();
 }

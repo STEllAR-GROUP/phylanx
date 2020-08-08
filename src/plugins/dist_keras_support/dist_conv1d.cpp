@@ -177,8 +177,8 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             res_col_start, res_col_stop;
         primitive_argument_type local_result;
 
-        if (numtiles > 1 && numtiles_k == 1)
-        {
+        //if (numtiles > 1 && numtiles_k == 1)
+        //{
             std::size_t filter_length = kernel.tensor().pages();
 
             // parallelization mode is data, spatial or a combination of both
@@ -275,12 +275,12 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             // construct new tiling annotation
             local_result.set_annotation(attached_annotation);
             return local_result;
-        }
+        //}
 
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "dist_conv1d::conv1d_all_paddings",
-            generate_error_message("at this point only data and spatial "
-                                   "parallelizans are supported"));
+        //HPX_THROW_EXCEPTION(hpx::bad_parameter,
+        //    "dist_conv1d::conv1d_all_paddings",
+        //    generate_error_message("at this point only data and spatial "
+        //                           "parallelizans are supported"));
     }
 
     execution_tree::primitive_argument_type dist_conv1d::conv1d_all_paddings(
