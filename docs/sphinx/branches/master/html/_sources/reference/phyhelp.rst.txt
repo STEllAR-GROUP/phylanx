@@ -143,12 +143,13 @@ __len
 __len (a)
             Args:
 
-                a (object): an array of arbitrary dimensions
+                a (object) : a list, dictionary, string or an array of arbitrary
+                            dimensions
 
             Returns:
 
             This returns the number of elements of the given array along its
-            outermost (leftmost) dimension.
+            outermost(leftmost) dimension.
 
 
 __lt
@@ -1879,18 +1880,6 @@ lambda (args, body)
             Returns:
 
             A function object with the arguments and body specified.
-
-
-len
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-len (li)
-            Args:
-
-                li (object) : a list, vector, or matrix
-
-            Returns:
-
-            The size of the given object.
 
 
 linearmatrix
