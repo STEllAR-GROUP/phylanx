@@ -29,7 +29,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         enum shape_mode
         {
             local_mode,
-            len_mode,
             dist_mode    // shape_d
         };
 
