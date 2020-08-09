@@ -30,7 +30,6 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
     I_i = np.identity(num_items)
     I_u = np.identity(num_users)
 
-    np.random.seed(0)
     X = np.random.rand(num_users, num_factors)
     Y = np.random.rand(num_items, num_factors)
 
@@ -102,11 +101,11 @@ if __name__ == '__main__':
                         help='file name for reading data')
     args = parser.parse_args()
 
-    t0 = time.perf_counter()
-
     data_csv = genfromtxt(args.data_csv, delimiter=',')
     ratings = slice_array(data_csv, args.row_start, args.row_stop,
                           args.col_start, args.col_stop)
+
+    t0 = time.perf_counter()
 
     result = ALS(ratings, args.regularization, args.num_factors,
                  args.iterations, args.alpha, args.enable_output)
