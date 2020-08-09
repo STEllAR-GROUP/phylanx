@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "len", std::move(operands), name, codename);
+            locality, "__len", std::move(operands), name, codename);
     }
 }}}
 

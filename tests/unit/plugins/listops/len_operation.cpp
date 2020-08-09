@@ -34,17 +34,17 @@ void test_len_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_len_operation("len( list() )", "0");
-    test_len_operation("len( list(1, 2) )", "2");
-    test_len_operation("len( list(1, 2, 3) )", "3");
+    test_len_operation("__len( list() )", "0");
+    test_len_operation("__len( list(1, 2) )", "2");
+    test_len_operation("__len( list(1, 2, 3) )", "3");
     test_len_operation(
-        "len( \"Question of Life, Universe, and Everything\" )", "42");
+        "__len( \"Question of Life, Universe, and Everything\" )", "42");
 
-    test_len_operation("len([1,2,3])", "3");
-    test_len_operation("len([[1,2,3],[4,5,6]])", "2");
+    test_len_operation("__len([1,2,3])", "3");
+    test_len_operation("__len([[1,2,3],[4,5,6]])", "2");
 
-    test_len_operation("len([[[1,2,3],[4,5,6]],[[1,2,3],[4,5,6]]])", "2");
-    test_len_operation("len([[[[1,2,3],[4,5,6]]],[[[1,2,3],[4,5,6]]]])", "2");
+    test_len_operation("__len([[[1,2,3],[4,5,6]],[[1,2,3],[4,5,6]]])", "2");
+    test_len_operation("__len([[[[1,2,3],[4,5,6]]],[[[1,2,3],[4,5,6]]]])", "2");
 
     return hpx::util::report_errors();
 }
