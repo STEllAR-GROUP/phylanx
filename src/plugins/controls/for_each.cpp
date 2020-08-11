@@ -96,13 +96,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         ctx.remove_mode(eval_dont_wrap_functions);
 
+        auto op0 = value_operand(operands_[0], args, name_, codename_,
+            add_mode(ctx, eval_dont_evaluate_lambdas));
+        auto op1 = value_operand(operands_[1], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            [this_ = std::move(this_), ctx](
-                    hpx::future<primitive_argument_type>&& f,
-                    hpx::future<ir::range>&& list) mutable
-            -> primitive_argument_type
-            {
+        return hpx::dataflow(
+            hpx::launch::sync,
+            [this_ = std::move(this_), ctx = std::move(ctx)](
+                hpx::future<primitive_argument_type>&& f,
+                hpx::future<primitive_argument_type>&& fval) mutable
+            -> primitive_argument_type {
                 auto && bound_func = f.get();
 
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -118,20 +122,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // evaluate function for each of the elements from the given
                 // range
-                for (auto && e : list.get())
+                auto&& value = fval.get();
+
+                if (is_list_operand_strict(value))
                 {
-                    auto r = p->eval(hpx::launch::sync, std::move(e), ctx);
-                    if (extract_boolean_value(
-                            r, this_->name_, this_->codename_))
+                    auto&& list = extract_list_value_strict(
+                        std::move(value), this_->name_, this_->codename_);
+                    for (auto&& e : std::move(list))
                     {
-                        break;      // stop, if requested
+                        auto r = p->eval(hpx::launch::sync, std::move(e), ctx);
+                        if (is_boolean_operand_strict(r))
+                        {
+                            if (extract_boolean_value(
+                                std::move(r), this_->name_, this_->codename_))
+                            {
+                                break;    // stop, if requested
+                            }
+                        }
+                    }
+                }
+                else if (is_dictionary_operand_strict(value))
+                {
+                    auto&& dict = extract_dictionary_value_strict(
+                        std::move(value), this_->name_, this_->codename_);
+                    for (auto&& e : std::move(dict))
+                    {
+                        auto result = p->eval(hpx::launch::sync,
+                            primitive_argument_type{std::move(e.first.get())}, ctx);
+
+                        if (is_boolean_operand_strict(result))
+                        {
+                            if (extract_boolean_value(std::move(result),
+                                this_->name_, this_->codename_))
+                            {
+                                break;    // stop, if requested
+                            }
+                        }
                     }
                 }
 
                 return primitive_argument_type{};
             },
-            value_operand(operands_[0], args, name_, codename_,
-                add_mode(ctx, eval_dont_evaluate_lambdas)),
-            list_operand(operands_[1], args, name_, codename_, ctx));
+            std::move(op0), std::move(op1));
     }
 }}}

@@ -53,6 +53,7 @@ set(tests
     1104_no_arg_lambda
     1170_no_error
     1224_dictionary_len
+    1225_iterate_dictionary
     array_len_494
     array_shape_486
     array_subscript_403
