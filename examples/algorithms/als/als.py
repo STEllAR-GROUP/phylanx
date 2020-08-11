@@ -30,6 +30,7 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
     I_i = np.identity(num_items)
     I_u = np.identity(num_users)
 
+    np.random.seed(0)
     X = np.random.rand(num_users, num_factors)
     Y = np.random.rand(num_items, num_factors)
 
