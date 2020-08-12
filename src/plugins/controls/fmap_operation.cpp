@@ -648,7 +648,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // the first argument must be an invokable
-        if (util::get_if<primitive>(&operands_[0]) == nullptr)
+        if (util::get_if<primitive>(&operands[0]) == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "fmap_operation::eval",

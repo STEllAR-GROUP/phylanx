@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Parsa Amini
-// Copyright (c) 2018-2010 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 // Copyright (c) 2020 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0.0. (See accompanying
@@ -66,7 +66,7 @@ char const* const kmeans_code = R"(
         ), result
     ))
 
-    define(kmeans, points, iterations, initial_centroids, enable_output,
+    define(__kmeans, points, iterations, initial_centroids, enable_output,
         block(
             define(centroids, initial_centroids),
             define(num_centroids, shape(centroids, 0)),

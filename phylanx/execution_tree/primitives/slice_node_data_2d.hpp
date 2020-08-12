@@ -1183,7 +1183,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    execution_tree::primitive_argument_type slice1d_extract2d(
+    execution_tree::primitive_argument_type dist_slice1d_extract2d(
         ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         execution_tree::localities_information&& arr_localities,
@@ -1228,7 +1228,7 @@ namespace phylanx { namespace execution_tree
 
             // return an empty array
             return primitive_argument_type(
-                blaze::DynamicVector<std::uint8_t>(0), attached_annotation);
+                blaze::DynamicVector<double>(0), attached_annotation);
         }
 
         auto m = data.matrix();
@@ -1261,7 +1261,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    execution_tree::primitive_argument_type slice2d_extract2d(
+    execution_tree::primitive_argument_type dist_slice2d_extract2d(
         ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
@@ -1307,7 +1307,7 @@ namespace phylanx { namespace execution_tree
 
             // return an empty array
             return primitive_argument_type(
-                blaze::DynamicVector<std::uint8_t>(0), attached_annotation);
+                blaze::DynamicVector<double>(0), attached_annotation);
         }
 
         auto m = data.matrix();
@@ -1427,7 +1427,7 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
-    execution_tree::primitive_argument_type slice1d_assign2d(
+    execution_tree::primitive_argument_type dist_slice1d_assign2d(
         ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value,
@@ -1439,7 +1439,7 @@ namespace phylanx { namespace execution_tree
         if (val_ndim > 1)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "phylanx::execution_tree::slice1d_assign2d",
+                "phylanx::execution_tree::dist_slice1d_assign2d",
                 util::generate_error_message("cannot assign a non vector value "
                                              "to a 1d slice of a matrix",
                     name, codename));
@@ -1476,18 +1476,18 @@ namespace phylanx { namespace execution_tree
         if (!is_integer_operand_strict(indices))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
+                "phylanx::execution_tree::dist_slice1d_extract2d",
                 util::generate_error_message(
                     "only integer indexing for slice_row is suppoted for "
                     "distributed arrays assigning a 1d slice to a matrix",
                     name, codename));
         }
 
-        std::size_t columns = arr_localities.columns();
-        if (val_ndim == 1 && columns != val_localities.size())
+        std::size_t columns = arr_localities.columns(name, codename);
+        if (val_ndim == 1 && columns != val_localities.size(name, codename))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice1d_extract2d",
+                "phylanx::execution_tree::dist_slice1d_extract2d",
                 util::generate_error_message(
                     "cannot assign a vector to a 1d slice of a matrix when "
                     "the slice and the vector have different sizes",
@@ -1572,6 +1572,66 @@ namespace phylanx { namespace execution_tree
                 val_num_localities, val_loc_id);
             b.wait();
         }
+
+        return primitive_argument_type(result, attached_annotation);
+    }
+
+
+    template <typename T>
+    execution_tree::primitive_argument_type dist_slice1d_assign2d(
+        ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<T>&& value,
+        execution_tree::localities_information&& arr_localities,
+        std::string const& name, std::string const& codename)
+    {
+
+        std::uint32_t const loc_id = arr_localities.locality_.locality_id_;
+        tiling_information_2d tile_info(
+            arr_localities.tiles_[loc_id], name, codename);
+
+        ++arr_localities.annotation_.generation_;
+
+        auto locality_ann = arr_localities.locality_.as_annotation();
+        std::int64_t row_index =
+            extract_scalar_nonneg_integer_value_strict(indices, name, codename);
+
+        auto attached_annotation =
+            std::make_shared<annotation>(localities_annotation(locality_ann,
+                tile_info.as_annotation(name, codename),
+                arr_localities.annotation_, name, codename));
+
+        auto v = value.vector();
+
+        // data is always ref, since we don't have store to rvalues
+        auto m = data.matrix();
+        blaze::DynamicMatrix<T> result = std::move(m);
+
+        if (!is_integer_operand_strict(indices))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::dist_slice1d_extract2d",
+                util::generate_error_message(
+                    "indexing for slice_row is suppoted for "
+                    "distributed arrays assigning a 1d slice to a matrix",
+                    name, codename));
+        }
+
+        std::int64_t row_start = tile_info.spans_[0].start_;
+        std::int64_t row_stop = tile_info.spans_[0].stop_;
+        std::int64_t index_range = row_stop - row_start - 1;
+
+        if (row_index > index_range)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice1d_extract2d",
+                util::generate_error_message(
+                    "indexing is out of dimensions",
+                    name, codename));
+        }
+
+        // assignment can be done locally
+        blaze::row(result, row_index) = blaze::trans(v);
 
         return primitive_argument_type(result, attached_annotation);
     }

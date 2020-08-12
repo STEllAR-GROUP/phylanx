@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/modules/testing.hpp>
 
@@ -37,7 +38,7 @@ void test_random_d_operation(std::string const& name, std::string const& code,
         compile_and_run(name, expected_str);
 
     // comparing annotations
-    HPX_TEST_EQ(*(result.annotation()),*(comparison.annotation()));
+    HPX_TEST_EQ(hpx::cout, *(result.annotation()),*(comparison.annotation()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,12 +173,73 @@ void test_random_5loc_2d_1()
     }
 }
 
+void test_random_5loc_3d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_random_d_operation("test_random_5loc3d_0", R"(
+            random_d(list(6, 1, 8), 0, 5, "rand618", "page")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "rand618",
+                list("tile", list("pages", 0, 2),
+                    list("columns", 0, 8), list("rows", 0, 1)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_random_d_operation("test_random_5loc3d_0", R"(
+            random_d(list(6, 1, 8), 1, 5, "rand618", "page")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "rand618",
+                list("tile", list("pages", 2, 3),
+                    list("columns", 0, 8), list("rows", 0, 1)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_random_d_operation("test_random_5loc3d_0", R"(
+            random_d(list(6, 1, 8), 2, 5, "rand618", "page")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "rand618",
+                list("tile", list("pages", 3, 4),
+                    list("columns", 0, 8), list("rows", 0, 1)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_random_d_operation("test_random_5loc3d_0", R"(
+            random_d(list(6, 1, 8), 3, 5, "rand618", "page")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "rand618",
+                list("tile", list("pages", 4, 5),
+                    list("columns", 0, 8), list("rows", 0, 1)))
+        )");
+    }
+    else if (hpx::get_locality_id() == 4)
+    {
+        test_random_d_operation("test_random_5loc3d_0", R"(
+            random_d(list(6, 1, 8), 4, 5, "rand618", "page")
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "rand618",
+                list("tile", list("pages", 5, 6),
+                    list("columns", 0, 8), list("rows", 0, 1)))
+        )");
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     // only annotations are compared
     test_random_5loc_2d_0();
     test_random_5loc_2d_1();
+    test_random_5loc_3d_0();
 
     hpx::finalize();
     return hpx::util::report_errors();

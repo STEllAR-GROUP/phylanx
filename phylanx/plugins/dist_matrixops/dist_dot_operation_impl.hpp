@@ -51,26 +51,6 @@ REGISTER_DISTRIBUTED_MATRIX_DECLARATION(double);
 REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_int64_t);
 REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_uint8_t);
 
-HPX_REGISTER_ALLREDUCE_DECLARATION(double);
-HPX_REGISTER_ALLREDUCE_DECLARATION(std_int64_t);
-HPX_REGISTER_ALLREDUCE_DECLARATION(std_uint8_t);
-
-using blaze_vector_double = blaze::DynamicVector<double>;
-using blaze_vector_std_int64_t = blaze::DynamicVector<std::int64_t>;
-using blaze_vector_std_uint8_t = blaze::DynamicVector<std::uint8_t>;
-
-using blaze_matrix_double = blaze::DynamicMatrix<double>;
-using blaze_matrix_std_int64_t = blaze::DynamicMatrix<std::int64_t>;
-using blaze_matrix_std_uint8_t = blaze::DynamicMatrix<std::uint8_t>;
-
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_double);
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_int64_t);
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_vector_std_uint8_t);
-
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_matrix_double);
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_matrix_std_int64_t);
-HPX_REGISTER_ALLREDUCE_DECLARATION(blaze_matrix_std_uint8_t);
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
     ////////////////////////////////////////////////////////////////////////////
@@ -112,8 +92,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 1 ||
-            rhs_localities.num_dimensions() < 1)
+        if (lhs_localities.num_dimensions() > 1 ||
+            rhs_localities.num_dimensions() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d1d",
@@ -121,7 +101,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operands have incompatible dimensionalities"));
         }
 
-        if (lhs_localities.size() != rhs_localities.size())
+        if (lhs_localities.size(name_, codename_) !=
+            rhs_localities.size(name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d1d",
@@ -224,8 +205,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 1 ||
-            rhs_localities.num_dimensions() < 2)
+        std::size_t rhs_ndim = rhs_localities.num_dimensions();
+        if (lhs_localities.num_dimensions() > 1 ||
+            (rhs_ndim != 2 && rhs_ndim != 0))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot1d2d",
@@ -233,7 +215,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operands have incompatible dimensionalities"));
         }
 
-        if (lhs_localities.size() != rhs_localities.rows())
+        if (lhs_localities.size(name_, codename_) !=
+            rhs_localities.rows(name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot1d2d",
@@ -259,7 +242,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // go over all tiles of rhs matrix, the result size is determined by
         // the number of columns of the entire RHS
-        blaze::DynamicVector<T> dot_result(rhs_localities.columns(), T{0});
+        blaze::DynamicVector<T> dot_result(
+            rhs_localities.columns(name_, codename_), T{0});
 
         std::uint32_t loc = 0;
         std::size_t rhs_span_index = 0;
@@ -419,8 +403,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 2 ||
-            rhs_localities.num_dimensions() < 1)
+        std::size_t lhs_ndim = lhs_localities.num_dimensions();
+        if ((lhs_ndim != 2 && lhs_ndim != 0) ||
+            rhs_localities.num_dimensions() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d1d",
@@ -428,7 +413,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operands have incompatible dimensionalities"));
         }
 
-        if (lhs_localities.columns() != rhs_localities.size())
+        if (lhs_localities.columns(name_, codename_) !=
+            rhs_localities.size(name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d1d",
@@ -510,7 +496,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type result;
         if (lhs_localities.locality_.num_localities_ > 1)
         {
-            if (lhs.dimension(1) == lhs_localities.columns())
+            if (lhs.dimension(1) == lhs_localities.columns(name_, codename_))
             {
                 // If the lhs number of columns is equal to the overall number
                 // of columns we don't have to all_reduce the result. Instead,
@@ -572,8 +558,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::localities_information&& lhs_localities,
         execution_tree::localities_information const& rhs_localities) const
     {
-        if (lhs_localities.num_dimensions() < 2 ||
-            rhs_localities.num_dimensions() < 2)
+        std::size_t lhs_ndim = lhs_localities.num_dimensions();
+        std::size_t rhs_ndim = rhs_localities.num_dimensions();
+        if ((lhs_ndim != 2 && lhs_ndim != 0) ||
+            (rhs_ndim != 2 && rhs_ndim != 0))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d2d_par",
@@ -581,7 +569,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     "the operands have incompatible dimensionalities"));
         }
 
-        if (lhs_localities.columns() != rhs_localities.rows())
+        if (lhs_localities.columns(name_, codename_) !=
+            rhs_localities.rows(name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_dot_operation::dot2d2d_par",
@@ -607,7 +596,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // it could also be the reverse if the LHS tiles were retrieved
         // instead of the RHS
         blaze::DynamicMatrix<T> result_matrix(
-            lhs.dimension(0), rhs_localities.columns(), T{0});
+            lhs.dimension(0), rhs_localities.columns(name_, codename_), T{0});
 
         std::uint32_t loc = 0;
         std::size_t lhs_span_index = 1;
@@ -676,7 +665,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type result;
         if (lhs_localities.locality_.num_localities_ > 1)
         {
-            if (lhs.dimension(1) == lhs_localities.columns())
+            if (lhs.dimension(1) == lhs_localities.columns(name_, codename_))
             {
                 // If the lhs number of columns is equal to the overall
                 // number of columns we don't have to all_reduce the
@@ -689,7 +678,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     ir::range("rows", lhs_localities.get_span(0).start_,
                         lhs_localities.get_span(0).stop_),
                     ir::range("columns", static_cast<std::int64_t>(0),
-                        static_cast<std::int64_t>(rhs_localities.columns())))};
+                        static_cast<std::int64_t>(
+                            rhs_localities.columns(name_, codename_))))};
                 // Generate new tiling annotation for the result vector
                 execution_tree::tiling_information_2d tile_info(
                     ann, name_, codename_);

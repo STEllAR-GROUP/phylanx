@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/modules/testing.hpp>
 
@@ -36,7 +37,7 @@ void test_constant_d_operation(std::string const& name, std::string const& code,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    HPX_TEST_EQ(result, comparison);
+    HPX_TEST_EQ(hpx::cout, result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,10 +198,223 @@ void test_constant_6loc_2d_1()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void test_constant_6loc_3d_0()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_6loc3d_0", R"(
+            constant_d(42, list(2, 5, 7))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0], [42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0]],[[42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0], [42.0, 42.0, 42.0]]],
+                "full_array_3",
+                list("args",
+                    list("locality", 0, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_constant_d_operation("test_constant_6loc3d_0", R"(
+            constant_d(42, list(2, 5, 7))
+        )", R"(
+            annotate_d([[[42.0, 42.0], [42.0, 42.0],
+                         [42.0, 42.0]],[[42.0, 42.0],
+                         [42.0, 42.0], [42.0, 42.0]]],
+                "full_array_3",
+                list("args",
+                    list("locality", 1, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 3, 5), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_constant_d_operation("test_constant_6loc3d_0", R"(
+            constant_d(42, list(2, 5, 7))
+        )", R"(
+            annotate_d([[[42.0, 42.0], [42.0, 42.0],
+                         [42.0, 42.0]],[[42.0, 42.0],
+                         [42.0, 42.0], [42.0, 42.0]]],
+                "full_array_3",
+                list("args",
+                    list("locality", 2, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 5, 7), list("rows", 0, 3))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_constant_d_operation("test_constant_6loc3d_0", R"(
+            constant_d(42, list(2, 5, 7))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0], [42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0], [42.0, 42.0, 42.0]]],
+                "full_array_3",
+                list("args",
+                    list("locality", 3, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 3), list("rows", 3, 5))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 4)
+    {
+        test_constant_d_operation("test_constant_6loc3d_0", R"(
+            constant_d(42, list(2, 5, 7))
+        )", R"(
+            annotate_d([[[42.0, 42.0], [42.0, 42.0]],
+                        [[42.0, 42.0], [42.0, 42.0]]],
+                "full_array_3",
+                list("args",
+                    list("locality", 4, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 3, 5), list("rows", 3, 5))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 5)
+    {
+        test_constant_d_operation("test_constant_6loc3d_0", R"(
+            constant_d(42, list(2, 5, 7))
+        )", R"(
+            annotate_d([[[42.0, 42.0], [42.0, 42.0]],
+                        [[42.0, 42.0], [42.0, 42.0]]],
+                "full_array_3",
+                list("args",
+                    list("locality", 5, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 5, 7), list("rows", 3, 5))))
+        )");
+    }
+}
+
+void test_constant_6loc_3d_1()
+{
+    if (hpx::get_locality_id() == 0)
+    {
+        test_constant_d_operation("test_constant_6loc3d_1", R"(
+            constant_d(42, list(2, 5, 7), nil, nil, "", "sym", list(0, 1, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "full_array_4",
+                list("args",
+                    list("locality", 0, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 5), list("rows", 0, 4))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 1)
+    {
+        test_constant_d_operation("test_constant_6loc3d_1", R"(
+            constant_d(42, list(2, 5, 7), nil, nil, "", "sym", list(0, 1, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "full_array_4",
+                list("args",
+                    list("locality", 1, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 1, 7), list("rows", 0, 4))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 2)
+    {
+        test_constant_d_operation("test_constant_6loc3d_1", R"(
+            constant_d(42, list(2, 5, 7), nil, nil, "", "sym", list(0, 1, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0]]],
+                "full_array_4",
+                list("args",
+                    list("locality", 2, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 3, 7), list("rows", 0, 4))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 3)
+    {
+        test_constant_d_operation("test_constant_6loc3d_1", R"(
+            constant_d(42, list(2, 5, 7), nil, nil, "", "sym", list(0, 1, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "full_array_4",
+                list("args",
+                    list("locality", 3, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 0, 5), list("rows", 2, 5))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 4)
+    {
+        test_constant_d_operation("test_constant_6loc3d_1", R"(
+            constant_d(42, list(2, 5, 7), nil, nil, "", "sym", list(0, 1, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0, 42.0, 42.0]]],
+                "full_array_4",
+                list("args",
+                    list("locality", 4, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 1, 7), list("rows", 2, 5))))
+        )");
+    }
+    else if (hpx::get_locality_id() == 5)
+    {
+        test_constant_d_operation("test_constant_6loc3d_1", R"(
+            constant_d(42, list(2, 5, 7), nil, nil, "", "sym", list(0, 1, 2))
+        )", R"(
+            annotate_d([[[42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0]],
+                        [[42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0],
+                         [42.0, 42.0, 42.0, 42.0]]],
+                "full_array_4",
+                list("args",
+                    list("locality", 5, 6),
+                    list("tile", list("pages", 0, 2),
+                        list("columns", 3, 7), list("rows", 2, 5))))
+        )");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int hpx_main(int argc, char* argv[])
 {
     test_constant_6loc_2d_0();
     test_constant_6loc_2d_1();
+
+    test_constant_6loc_3d_0();
+    test_constant_6loc_3d_1();
 
     hpx::finalize();
     return hpx::util::report_errors();

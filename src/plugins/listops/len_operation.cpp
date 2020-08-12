@@ -30,18 +30,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const len_operation::match_data =
     {
-        hpx::util::make_tuple("len",
-            std::vector<std::string>{"len(_1)"},
+        hpx::util::make_tuple("__len",
+            std::vector<std::string>{"__len(_1)"},
             &create_len_operation, &create_primitive<len_operation>,
-            R"(li
+            R"(a
             Args:
 
-                li (object) : a list, vector, or matrix
+                a (object) : a list, dictionary, string or an array of arbitrary
+                            dimensions
 
             Returns:
 
-            The size of the given object.)"
-            )
+            This returns the number of elements of the given array along its
+            outermost(leftmost) dimension.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -71,15 +72,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (is_list_operand_strict(arg))
             {
-                auto&& val = extract_list_value_strict(std::move(arg));
+                std::size_t size = extract_list_value_size(
+                    std::move(arg), this_->name_, this_->codename_);
                 return primitive_argument_type{ir::node_data<std::int64_t>{
-                    static_cast<std::int64_t>(val.size())}};
+                    static_cast<std::int64_t>(size)}};
             }
             else if (is_string_operand(arg))
             {
-                auto val = extract_string_value(std::move(arg));
+                auto val = extract_string_value(
+                    std::move(arg), this_->name_, this_->codename_);
                 return primitive_argument_type{ir::node_data<std::int64_t>{
                     static_cast<std::int64_t>(val.size())}};
+            }
+            else if (is_dictionary_operand(arg))
+            {
+                std::size_t size = extract_dictionary_value_size(
+                    std::move(arg), this_->name_, this_->codename_);
+                return primitive_argument_type{ ir::node_data<std::int64_t>{
+                    static_cast<std::int64_t>(size)} };
             }
             else if (is_boolean_operand_strict(arg) ||
                 is_integer_operand_strict(arg) ||

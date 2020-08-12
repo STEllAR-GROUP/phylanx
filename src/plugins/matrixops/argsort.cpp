@@ -9,7 +9,7 @@
 #include <phylanx/plugins/matrixops/argsort.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
-#include <hpx/include/iostreams.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>

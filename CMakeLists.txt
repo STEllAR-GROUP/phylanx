@@ -68,6 +68,12 @@ endif()
 phylanx_info("CMake version: " ${CMAKE_VERSION})
 phylanx_info("Phylanx version: " ${PHYLANX_VERSION})
 
+# ##############################################################################
+# C++ feature tests
+# ##############################################################################
+include(Phylanx_PerformCxxFeatureTests)
+phylanx_perform_cxx_feature_tests()
+
 ################################################################################
 # Locate HPX as we need to ensure to use at least the same C++ dialect as HPX uses
 phylanx_setup_hpx()

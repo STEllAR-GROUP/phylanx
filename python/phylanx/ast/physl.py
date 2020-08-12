@@ -913,6 +913,10 @@ class PhySL:
 
         return comprehension
 
+    def _Constant(self, node):
+        """A constant value."""
+        return self._apply_rule(node.value)
+
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
 
@@ -1147,6 +1151,11 @@ class PhySL:
         """Leaf node, returning raw string of the 'less than or equal' operation."""
 
         return '__le'
+
+    def _Mod(self, node):
+        """Leaf node, returning raw string of the `mod` operation."""
+
+        return '__mod'
 
     def _Module(self, node):
         """Root node of the Python AST."""

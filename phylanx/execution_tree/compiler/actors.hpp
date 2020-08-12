@@ -15,6 +15,10 @@
 #include <hpx/async_base/launch_policy.hpp>
 #include <hpx/serialization/serialization_fwd.hpp>
 
+#if !defined(PHYLANX_HAVE_CXX17_SHARED_PTR_ARRAY)
+#include <boost/shared_array.hpp>
+#endif
+
 #include <array>
 #include <cstddef>
 #include <functional>
@@ -357,12 +361,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
             name_ = std::move(name);
         }
 
+#if !defined(PHYLANX_HAVE_CXX17_SHARED_PTR_ARRAY)
+        void set_named_args(boost::shared_array<std::string> named_args,
+            std::size_t num_named_args)
+        {
+            num_named_args_ = num_named_args;
+            named_args_ = std::move(named_args);
+        }
+#else
         void set_named_args(std::shared_ptr<std::string[]> named_args,
             std::size_t num_named_args)
         {
             num_named_args_ = num_named_args;
             named_args_ = std::move(named_args);
         }
+#endif
 
         ////////////////////////////////////////////////////////////////////////
         topology get_expression_topology() const
@@ -407,7 +420,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         primitive_argument_type arg_;
         std::string name_;
         std::size_t num_named_args_;
+#if !defined(PHYLANX_HAVE_CXX17_SHARED_PTR_ARRAY)
+        boost::shared_array<std::string> named_args_;
+#else
         std::shared_ptr<std::string[]> named_args_;
+#endif
 
     private:
         friend class hpx::serialization::access;

@@ -24,9 +24,6 @@
 #include <utility>
 #include <vector>
 
-HPX_REGISTER_ALLTOALL(
-    phylanx::execution_tree::annotation, meta_annotation_all_to_all);
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {
@@ -95,7 +92,7 @@ namespace phylanx { namespace execution_tree
             extract_locality_information(locality_ann, name, codename);
 
         hpx::future<std::vector<annotation>> f =
-            hpx::all_to_all(("all_to_all_" + ann_name).c_str(), std::move(ann),
+            hpx::all_gather(("all_gather_" + ann_name).c_str(), std::move(ann),
                 locality_info.num_localities_, std::size_t(-1),
                 locality_info.locality_id_);
 
@@ -288,7 +285,7 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::localities_annotation",
-                        "annotations do not represent an ampty matrix");
+                        "annotations do not represent an empty matrix");
                 }
             }
             else if (row_span_size != target_dims[0] ||
@@ -303,8 +300,39 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        case 3:
+        {
+            std::size_t page_span_size =
+                extract_span(ann, "pages", name, codename).size();
+            std::size_t row_span_size =
+                extract_span(ann, "rows", name, codename).size();
+            std::size_t col_span_size =
+                extract_span(ann, "columns", name, codename).size();
+            if (target_dims[2] == 0)
+            {
+                // shape of [[[]]] is (1, 1, 0) while it is shown with
+                // ("pages", 0, 0), ("rows", 0, 0) and ("columns", 0, 0) spans
+                if (page_span_size != 0 || row_span_size != 0 ||
+                    col_span_size != 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::localities_annotation",
+                        "annotations do not represent an empty matrix");
+                }
+            }
+            else if (page_span_size != target_dims[0] ||
+                row_span_size != target_dims[1] ||
+                col_span_size != target_dims[2])
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "at least in one of the page, row or column dimension, the "
+                    "dimension does not comply with its corresponding in the "
+                    "given tensor");
+            }
+            break;
+        }
         case 0: HPX_FALLTHROUGH;
-        case 3: HPX_FALLTHROUGH;
         case 4: HPX_FALLTHROUGH;
         default:
 
@@ -417,7 +445,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::localities_annotation",
-                    "the row dimension of matrix  does not contain a span of "
+                    "the row dimension of matrix does not contain a span of "
                     "consecutive integers starting from zero");
             }
 
@@ -430,8 +458,33 @@ namespace phylanx { namespace execution_tree
             }
             break;
         }
+        case 3:
+        {
+            if (!detail::validate_dimension<0>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the page dimension of tensor does not contain a span of "
+                    "consecutive integers starting from zero");
+            }
+            if (!detail::validate_dimension<1>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the row dimension of tensor does not contain a span of "
+                    "consecutive integers starting from zero");
+            }
+
+            if (!detail::validate_dimension<2>(tiles))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::localities_annotation",
+                    "the column dimension of tensor does not contain a span of "
+                    "consecutive integers starting from zero");
+            }
+            break;
+        }
         case 0: HPX_FALLTHROUGH;
-        case 3: HPX_FALLTHROUGH;
         case 4: HPX_FALLTHROUGH;
         default:
 

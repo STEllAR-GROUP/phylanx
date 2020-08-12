@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Bita Hasheminezhad
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,21 +9,16 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/plugins/common/statistics_operations.hpp>
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_max_op;
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
+    ///////////////////////////////////////////////////////////////////////////
     /// \brief Calculates the maximum of an array or maximum along an axis.
     /// \param a         The scalar, vector, or matrix to perform max over
     /// \param axis      Optional. If provided, max is calculated along the
@@ -32,10 +27,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///                  number of dimensions as a. Otherwise, the axes with
     ///                  size one will be reduced.
     class max_operation
-      : public statistics<detail::statistics_max_op, max_operation>
+      : public statistics_base<common::statistics_max_op, max_operation>
     {
         using base_type =
-            statistics<detail::statistics_max_op, max_operation>;
+            statistics_base<common::statistics_max_op, max_operation>;
 
     public:
         static match_pattern_type const match_data;
@@ -53,6 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "amax", std::move(operands), name, codename);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 #endif

@@ -26,6 +26,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(clip_plugin,
     phylanx::execution_tree::primitives::clip::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(count_nonzero_operation_plugin,
     phylanx::execution_tree::primitives::count_nonzero_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(column_dist_slicing_operation_plugin,
+    phylanx::execution_tree::primitives::slicing_operation::match_data[6]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(column_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[2]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(concatenate_plugin,
@@ -52,10 +54,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(expand_dims_plugin,
     phylanx::execution_tree::primitives::expand_dims::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(extract_shape_plugin,
     phylanx::execution_tree::primitives::extract_shape::match_data[0]);
-PHYLANX_REGISTER_PLUGIN_FACTORY(extract_len_plugin,
-    phylanx::execution_tree::primitives::extract_shape::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(extract_dist_shape_plugin,
-    phylanx::execution_tree::primitives::extract_shape::match_data[2]);
+    phylanx::execution_tree::primitives::extract_shape::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(eye_operation_plugin,
     phylanx::execution_tree::primitives::eye_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(flatten_operation_plugin,
@@ -102,6 +102,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(reshape_operation_plugin,
     phylanx::execution_tree::primitives::reshape_operation::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(row_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[1]);
+    PHYLANX_REGISTER_PLUGIN_FACTORY(row_dist_slicing_operation_plugin,
+    phylanx::execution_tree::primitives::slicing_operation::match_data[5]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(shuffle_operation_plugin,
     phylanx::execution_tree::primitives::shuffle_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(size_plugin,

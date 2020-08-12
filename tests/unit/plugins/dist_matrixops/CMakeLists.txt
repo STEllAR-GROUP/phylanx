@@ -4,6 +4,10 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    all_gather_2_loc
+    all_gather_4_loc
+    dist_argmax_3_loc
+    dist_argmin_2_loc
     dist_cannon_product_4_loc
     dist_cannon_product_9_loc
     dist_constant_2_loc
@@ -34,7 +38,10 @@ set(tests
     retile_6_loc
    )
 
-
+set(all_gather_2_loc_PARAMETERS LOCALITIES 2)
+set(all_gather_4_loc_PARAMETERS LOCALITIES 4)
+set(dist_argmax_3_loc_PARAMETERS LOCALITIES 3)
+set(dist_argmin_2_loc_PARAMETERS LOCALITIES 2)
 set(dist_cannon_product_4_loc_PARAMETERS LOCALITIES 4)
 set(dist_cannon_product_9_loc_PARAMETERS LOCALITIES 9)
 set(dist_constant_2_loc_PARAMETERS LOCALITIES 2)

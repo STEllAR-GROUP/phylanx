@@ -1,5 +1,5 @@
 // Copyright (c) 2019 Bita Hasheminezhad
-// Copyright (c) 2019 Hartmut Kaiser
+// Copyright (c) 2019-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,21 +9,16 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/plugins/common/statistics_operations.hpp>
 #include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_logsumexp_op;
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
+    ///////////////////////////////////////////////////////////////////////////
     /// \brief Compute the log of the sum of exponentials of input elements.
     /// \param a          The scalar, vector, or matrix to perform calculations
     ///                   over
@@ -33,10 +28,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///                   number of dimensions as a. Otherwise, the axes with
     ///                   size one will be reduced.
     class logsumexp_operation
-      : public statistics<detail::statistics_logsumexp_op, logsumexp_operation>
+      : public statistics_base<common::statistics_logsumexp_op,
+            logsumexp_operation>
     {
-        using base_type =
-            statistics<detail::statistics_logsumexp_op, logsumexp_operation>;
+        using base_type = statistics_base<common::statistics_logsumexp_op,
+            logsumexp_operation>;
 
     public:
         static match_pattern_type const match_data;
@@ -54,6 +50,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return create_primitive_component(
             locality, "logsumexp", std::move(operands), name, codename);
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
 
 #endif

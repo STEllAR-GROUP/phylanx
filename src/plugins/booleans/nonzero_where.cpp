@@ -1,9 +1,10 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/annotation.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/booleans/nonzero_where.hpp>
@@ -542,25 +543,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (nonzero_ || (where_ && operands.size() == 1))
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op)
+            return hpx::dataflow(hpx::launch::sync,
+                [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& op1)
                 -> primitive_argument_type
                 {
-                    return util::visit(visit_nonzero{*this_},
-                        std::move(op.variant()));
-                }),
+                    auto&& op = op1.get();
+
+                    annotation_wrapper wrap(op);
+
+                    return wrap.propagate(util::visit(visit_nonzero{*this_},
+                                              std::move(op.variant())),
+                        this_->name_, this_->codename_);
+                },
                 value_operand(operands[0], args, name_, codename_));
         }
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& cond,
-                primitive_argument_type&& lhs, primitive_argument_type&& rhs)
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& cond,
+                    hpx::future<primitive_argument_type>&& lhs,
+                    hpx::future<primitive_argument_type>&& rhs)
             -> primitive_argument_type
             {
-                return util::visit(
-                    visit_where{*this_, std::move(lhs), std::move(rhs)},
-                    std::move(cond.variant()));
-            }),
+                auto&& c = cond.get();
+                auto&& op1 = lhs.get();
+                auto&& op2 = rhs.get();
+
+                annotation_wrapper wrap(op1, op2);
+
+                return wrap.propagate(
+                    util::visit(
+                        visit_where{*this_, std::move(op1), std::move(op2)},
+                        std::move(c.variant())),
+                    this_->name_, this_->codename_);
+            },
             value_operand(operands[0], args, name_, codename_),
             value_operand(operands[1], args, name_, codename_),
             value_operand(operands[2], args, name_, codename_));

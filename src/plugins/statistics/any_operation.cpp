@@ -6,64 +6,14 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/any_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/blaze_traits.hpp>
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <limits>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
-
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_any_op
-        {
-            using result_type = std::uint8_t;
-
-            statistics_any_op(std::string const& name,
-                std::string const& codename)
-            {}
-
-            static constexpr bool initial()
-            {
-                return false;
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, bool>::type
-            operator()(Scalar s, bool initial) const
-            {
-                return s || initial;
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, bool initial) const
-            {
-                return initial || std::any_of(v.begin(), v.end(),
-                    [](T val) -> bool
-                    {
-                        return val != 0;
-                    });
-            }
-
-            static constexpr bool finalize(bool value, std::size_t size)
-            {
-                return value;
-            }
-        };
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const any_operation::match_data =
@@ -92,4 +42,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : base_type(std::move(args), name, codename)
     {
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives

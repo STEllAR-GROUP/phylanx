@@ -8,6 +8,7 @@
 #define PHYLANX_PRIMITIVES_ARGMAX
 
 #include <phylanx/config.hpp>
+#include <phylanx/plugins/common/argminmax_operations.hpp>
 #include <phylanx/plugins/matrixops/argminmax.hpp>
 
 #include <cstdint>
@@ -18,11 +19,6 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    namespace detail
-    {
-        struct argmax_op;
-    }
-
     /// \brief Implementation of argmax as a Phylanx primitive.
     /// Returns the index of the largest element of argument a.
     /// This implementation is intended to behave like [NumPy implementation of argmax]
@@ -30,9 +26,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /// \param a It may be a scalar value, vector, or matrix
     /// \param axis The dimension along which the indices of the max value(s) should be found
     class argmax
-      : public argminmax<detail::argmax_op, argmax>
+      : public argminmax<common::argmax_op, argmax>
     {
-        using base_type = argminmax<detail::argmax_op, argmax>;
+        using base_type = argminmax<common::argmax_op, argmax>;
 
     public:
         static match_pattern_type const match_data;

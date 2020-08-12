@@ -6,27 +6,26 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/fileio/file_read_csv.hpp>
+#include <phylanx/plugins/fileio/file_read_csv_impl.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
-#include <hpx/runtime/threads/run_as_os_thread.hpp>
-
-#include <boost/spirit/include/qi_char.hpp>
-#include <boost/spirit/include/qi_list.hpp>
-#include <boost/spirit/include/qi_lit.hpp>
-#include <boost/spirit/include/qi_parse.hpp>
-#include <boost/spirit/include/qi_real.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
+#include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -35,16 +34,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const file_read_csv::match_data =
     {
         hpx::util::make_tuple("file_read_csv",
-            std::vector<std::string>{"file_read_csv(_1)"},
+            std::vector<std::string>{R"(
+                file_read_csv(
+                    _1_filename,
+                    __arg(_2_mode3d, false),
+                    __arg(_3_page_nrows, 1)
+                )
+            )"},
             &create_file_read_csv, &create_primitive<file_read_csv>,
-            R"(fname
+            R"(filename, mode3d, page_nrows
             Args:
 
-                fname (string) : file name
+                filename (string) : file name
+                mode3d (bool, optional) : If sets to true, the result will be a
+                    3d array. Each page_nrows rows of the data is stored in a
+                    new page of the result.
+                page_nrows (int, optional) : it is used only whenmode3d is true.
+                    It determines the number of rows in each page of the
+                    resulted array.
 
             Returns:
 
-            Returns a matrix representation of the contents of a
+            Returns an array representation of the contents of a
             csv file.)"
             )
     };
@@ -56,18 +67,75 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    // read data from given file and return content
+    ///////////////////////////////////////////////////////////////////////////
+    inline primitive_argument_type file_read_csv::read(
+        std::ifstream&& infile, std::string const& filename) const
+    {
+        std::vector<double> data;
+        std::size_t n_rows, n_cols;
+        std::tie(data, n_rows, n_cols) =
+            read_helper(std::move(infile), filename);
+
+        if (n_rows == 1)
+        {
+            if (n_cols == 1)
+            {
+                // scalar value
+                return primitive_argument_type{
+                    ir::node_data<double>{data[0]}};
+            }
+
+            // vector
+            blaze::DynamicVector<double> vector(n_cols, data.data());
+
+            return primitive_argument_type{
+                ir::node_data<double>{std::move(vector)}};
+        }
+
+        // matrix
+        blaze::DynamicMatrix<double> matrix(n_rows, n_cols, data.data());
+
+        return primitive_argument_type{
+            ir::node_data<double>{std::move(matrix)}};
+    }
+
+    inline primitive_argument_type file_read_csv::read_3d(
+        std::ifstream&& infile, std::string const& filename,
+        std::int64_t given_nrows) const
+    {
+        std::vector<double> data;
+        std::size_t n_rows, n_cols;
+        std::tie(data, n_rows, n_cols) =
+            read_helper(std::move(infile), filename);
+
+        if (n_rows % given_nrows != 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "file_read_csv::read_3d",
+                util::generate_error_message(
+                    "the number of rows in the csv file is not divisible by "
+                    "the given number of rows in a page"));
+        }
+
+        // tensor
+        blaze::DynamicTensor<double> result(
+            static_cast<std::size_t>(n_rows / given_nrows), given_nrows, n_cols,
+            data.data());
+
+        return primitive_argument_type{
+            ir::node_data<double>{std::move(result)}};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> file_read_csv::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1)
+        if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::eval",
-                generate_error_message(
-                    "the file_read_csv primitive requires exactly one "
-                        "literal argument"));
+                generate_error_message("the file_read_csv primitive requires "
+                                       "at least one and at most 3 operands."));
         }
 
         if (!valid(operands[0]))
@@ -79,14 +147,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "operand is valid"));
         }
 
-        std::string filename = string_operand_sync(
-            operands[0], args, name_, codename_, std::move(ctx));
-
         auto this_ = this->shared_from_this();
-        return hpx::threads::run_as_os_thread(
-            [filename = std::move(filename), this_ = std::move(this_)]()
-            ->  primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](
+                primitive_arguments_type&& args)
+                -> primitive_argument_type
             {
+
+                std::string filename = extract_string_value_strict(
+                    std::move(args[0]), this_->name_, this_->codename_);
+
+                bool mode3d = false;
+                if (args.size() > 1 && valid(args[1]))
+                {
+                    mode3d = extract_scalar_boolean_value(
+                        std::move(args[1]), this_->name_, this_->codename_);
+                }
+
+                std::int64_t page_nrows;
+                if (args.size() > 2 && valid(args[2]))
+                {
+                    page_nrows = extract_scalar_positive_integer_value_strict(
+                        std::move(args[2]), this_->name_, this_->codename_);
+                }
+
                 std::ifstream infile(filename.c_str(), std::ios::in);
 
                 if (!infile.is_open())
@@ -95,75 +179,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "couldn't open file: " + filename));
                 }
 
-                std::string line;
-                bool header_parsed = false;
-                std::vector<double> matrix_array, current_line;
-                std::size_t n_rows = 0, n_cols = 0;
-                std::size_t before_readln = 0, after_readln = 0;
-
-                while (std::getline(infile, line))
+                if (mode3d)
                 {
-                    before_readln = matrix_array.size();
-
-                    auto begin_local = line.begin();
-                    if (boost::spirit::qi::parse(begin_local, line.end(),
-                            boost::spirit::qi::double_ % ',', current_line))
-                    {
-                        if (begin_local == line.end() || header_parsed)
-                        {
-                            header_parsed = true;
-
-                            matrix_array.insert(matrix_array.end(),
-                                current_line.begin(), current_line.end());
-
-                            after_readln = matrix_array.size();
-                            if (n_rows == 0)
-                            {
-                                n_cols = matrix_array.size();
-                            }
-                            else if (n_cols != (after_readln - before_readln))
-                            {
-                                throw std::runtime_error(
-                                    this_->generate_error_message(
-                                        "wrong data format, different number "
-                                        "of element in this row " + filename +
-                                        ':' + std::to_string(n_rows)));
-                            }
-                            n_rows++;
-                        }
-                        current_line.clear();
-                    }
-                    else
-                    {
-                        throw std::runtime_error(
-                            this_->generate_error_message("wrong data format " +
-                                filename + ':' + std::to_string(n_rows)));
-                    }
+                    return this_->read_3d(
+                        std::move(infile), filename, page_nrows);
                 }
+                return this_->read(std::move(infile), filename);
 
-                if (n_rows == 1)
-                {
-                    if (n_cols == 1)
-                    {
-                        // scalar value
-                        return primitive_argument_type{
-                            ir::node_data<double>{matrix_array[0]}};
-                    }
-
-                    // vector
-                    blaze::DynamicVector<double> vector(n_cols,
-                        matrix_array.data());
-
-                    return primitive_argument_type{
-                        ir::node_data<double>{std::move(vector)}};
-                }
-
-                // matrix
-                blaze::DynamicMatrix<double> matrix(
-                    n_rows, n_cols, matrix_array.data());
-
-                return primitive_argument_type{
-                    ir::node_data<double>{std::move(matrix)}};
-            });
+                }),
+            detail::map_operands(operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

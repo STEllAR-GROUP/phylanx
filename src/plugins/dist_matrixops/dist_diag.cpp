@@ -345,7 +345,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         }
 
         // size of the whole array
-        std::size_t dim = arr_localities.size();
+        std::size_t dim = arr_localities.size(name_, codename_);
         std::size_t size = dim + std::abs(k);
 
         std::int64_t row_start, column_start;

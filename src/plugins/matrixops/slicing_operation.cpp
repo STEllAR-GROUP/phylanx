@@ -74,27 +74,64 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             docstr
         },
 
+
         match_pattern_type{"tuple_slice",
             std::vector<std::string>{"tuple_slice(_1, _2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
             docstr
-        }
-      , match_pattern_type{"slice_page",
+        },
+
+        match_pattern_type{"slice_page",
             std::vector<std::string>{"slice_page(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
             docstr
-        }
+        },
+
+        match_pattern_type{"slice_row_d",
+            std::vector<std::string>{"slice_row_d(_1, __2)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>,
+            docstr
+        },
+
+        match_pattern_type{"slice_column_d",
+            std::vector<std::string>{"slice_column_d(_1, __2)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>,
+            docstr
+        },
+
     };
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        slicing_operation::slice_mode slicing_operation_mode(
+            std::string const& name)
+        {
+            slicing_operation::slice_mode result
+                = slicing_operation::local_mode;
+            if ((name.find("slice_row_d") != std::string::npos) ||
+                (name.find("slice_column_d") != std::string::npos))
+            {
+                result = slicing_operation::dist_mode;
+            }
+            return result;
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , mode_(detail::slicing_operation_mode(name_))
       , slice_rows_(false)
       , slice_columns_(false)
+      , slice_rows_d_(false)
+      , slice_columns_d_(false)
       , slice_pages_(false)
       , is_tuple_slice_(false)
     {
@@ -106,6 +143,14 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         else if (func_name == "slice_column")
         {
             slice_columns_ = true;
+        }
+        if (func_name == "slice_row_d")
+        {
+            slice_rows_d_ = true;
+        }
+        else if (func_name == "slice_column_d")
+        {
+            slice_columns_d_ = true;
         }
         else if (func_name == "slice_page")
         {
@@ -122,7 +167,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > 4)
+        if (operands.empty() || operands.size() > 4 )
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -132,7 +177,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     "either one, two, three or four arguments"));
         }
 
-        if ((slice_rows_ || slice_columns_ || slice_pages_) &&
+        if ((slice_rows_ || slice_columns_ || slice_pages_
+            || slice_rows_d_ || slice_columns_d_) &&
             operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -190,46 +236,79 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     args = std::move(ops);
                 }
 
-                switch (args.size())
+                if (this_->mode_ == local_mode)
                 {
-                case 1:
-                    return std::move(args[0]);
-
-                case 2:
+                    switch (args.size())
                     {
-                        if (this_->slice_rows_)
+                    case 1:
+                        return std::move(args[0]);
+
+                    case 2:
                         {
-                            return slice(args[0], args[1],
-                                this_->name_, this_->codename_);
+                            if (this_->slice_rows_)
+                            {
+                                return slice(args[0], args[1],
+                                    this_->name_, this_->codename_);
+                            }
+                            else if (this_->slice_columns_)
+                            {
+                                return slice(args[0], {}, args[1],
+                                    this_->name_, this_->codename_);
+                            }
+                            else if (this_->slice_pages_)
+                            {
+                                return slice(args[0], args[1], {},
+                                    this_->name_, this_->codename_);
+                            }
+                            else
+                            {
+                                return slice(args[0], args[1],
+                                    this_->name_, this_->codename_);
+                            }
                         }
-                        else if (this_->slice_columns_)
+
+                    case 3:
+                        return slice(args[0], args[1], args[2],
+                            this_->name_, this_->codename_);
+
+                    case 4:
+                        return slice(args[0], args[1], args[2], args[3],
+                            this_->name_, this_->codename_);
+
+                    default:
+                        break;
+                    }
+                }
+                else{       // dist_mode is asked
+                    switch (args.size())
+                    {
+                    case 2:
                         {
-                            return slice(args[0], {}, args[1],
-                                this_->name_, this_->codename_);
+                            if (this_->slice_rows_d_)
+                            {
+                                return dist_slice(args[0], args[1],
+                                    this_->name_, this_->codename_);
+                            }
+                            else if (this_->slice_columns_d_)
+                            {
+                                return dist_slice(args[0], {}, args[1],
+                                    this_->name_, this_->codename_);
+                            }
+                            else
+                            {
+                                return dist_slice(args[0], args[1],
+                                    this_->name_, this_->codename_);
+                            }
                         }
-                        else if (this_->slice_pages_)
-                        {
-                            return slice(args[0], args[1], {},
+                    case 3:
+                            return slice(args[0], args[1], args[2],
                                 this_->name_, this_->codename_);
-                        }
-                        else
-                        {
-                            return slice(args[0], args[1],
-                                this_->name_, this_->codename_);
-                        }
+                    default:
+                        break;
                     }
 
-                case 3:
-                    return slice(args[0], args[1], args[2],
-                        this_->name_, this_->codename_);
-
-                case 4:
-                    return slice(args[0], args[1], args[2], args[3],
-                        this_->name_, this_->codename_);
-
-                default:
-                    break;
                 }
+
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"

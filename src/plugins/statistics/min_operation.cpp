@@ -7,59 +7,14 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/min_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
-#include <phylanx/util/blaze_traits.hpp>
 
-#include <algorithm>
-#include <cstddef>
-#include <limits>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include <blaze/Math.h>
-#include <blaze_tensor/Math.h>
-
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        template <typename T>
-        struct statistics_min_op
-        {
-            using result_type = T;
-
-            statistics_min_op(std::string const& name,
-                std::string const& codename)
-            {}
-
-            static constexpr T initial()
-            {
-                return (std::numeric_limits<T>::max)();
-            }
-
-            template <typename Scalar>
-            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
-            operator()(Scalar s, T initial) const
-            {
-                return (std::min)(s, initial);
-            }
-
-            template <typename Vector>
-            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
-            operator()(Vector& v, T initial) const
-            {
-                return (std::min)((blaze::min)(v), initial);
-            }
-
-            static T finalize(T value, std::size_t size)
-            {
-                return value;
-            }
-        };
-    }
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const min_operation::match_data =
@@ -91,8 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     min_operation::min_operation(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename)
       : base_type(std::move(operands), name, codename)
     {
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives

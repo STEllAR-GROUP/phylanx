@@ -8,6 +8,7 @@
 #define PHYLANX_PRIMITIVES_ARGMIN
 
 #include <phylanx/config.hpp>
+#include <phylanx/plugins/common/argminmax_operations.hpp>
 #include <phylanx/plugins/matrixops/argminmax.hpp>
 
 #include <cstdint>
@@ -18,11 +19,6 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    namespace detail
-    {
-        struct argmin_op;
-    }
-
     /// \brief Implementation of argmin as a Phylanx primitive.
     /// Returns the index of the smallest element of argument a.
     /// This implementation is intended to behave like [NumPy implementation of argmax]
@@ -30,9 +26,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /// \param a It may be a scalar value, vector, or matrix
     /// \param axis The dimension along which the indices of the min value(s) should be found
     class argmin
-      : public argminmax<detail::argmin_op, argmin>
+      : public argminmax<common::argmin_op, argmin>
     {
-        using base_type = argminmax<detail::argmin_op, argmin>;
+        using base_type = argminmax<common::argmin_op, argmin>;
 
     public:
         static match_pattern_type const match_data;

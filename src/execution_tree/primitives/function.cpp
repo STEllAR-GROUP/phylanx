@@ -78,6 +78,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
+            // we represent function calls with empty argument lists as
+            // a function call with a single nil argument to be able to
+            // distinguish func() from invoke(func)
+            if (args.size() == 1 && args[0].is_implicit_nil())
+            {
+                return p->eval(primitive_arguments_type{}, std::move(ctx));
+            }
             return p->eval(args, std::move(ctx));
         }
         return hpx::make_ready_future(

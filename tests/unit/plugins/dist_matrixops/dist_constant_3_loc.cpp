@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/modules/testing.hpp>
 
@@ -38,7 +39,7 @@ void test_constant_d_operation(std::string const& name,
     phylanx::execution_tree::primitive_argument_type comparison =
         compile_and_run(name, expected_str);
 
-    HPX_TEST_EQ(result, comparison);
+    HPX_TEST_EQ(hpx::cout, result, comparison);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

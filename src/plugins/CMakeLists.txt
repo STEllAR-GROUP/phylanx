@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019 Hartmut Kaiser
+# Copyright (c) 2018-2020 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,7 +9,9 @@ set(subdirs
     booleans
     common
     controls
+    dist_keras_support
     dist_matrixops
+    dist_statistics
     fileio
     keras_support
     listops

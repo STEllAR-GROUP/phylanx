@@ -9,12 +9,14 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_file_read_csv_plugin,
+    phylanx::execution_tree::primitives::dist_file_read_csv::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(file_read_plugin,
     phylanx::execution_tree::primitives::file_read::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(file_write_plugin,
-    phylanx::execution_tree::primitives::file_write::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(file_read_csv_plugin,
     phylanx::execution_tree::primitives::file_read_csv::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(file_write_plugin,
+    phylanx::execution_tree::primitives::file_write::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(file_write_csv_plugin,
     phylanx::execution_tree::primitives::file_write_csv::match_data);
 
