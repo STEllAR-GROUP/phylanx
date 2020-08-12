@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "two operands"));
         }
 
-        if (!valid(operands_[0]) || !valid(operands_[1]))
+        if (!valid(operands_[0])) 
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "store_operation::store_operation",
@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store_operation::store_operation",
                 generate_error_message(
                     "the store_operation primitive requires that "
-                    "the arguments given by the operands array is valid"));
+                    "the arguments given by the operands array is valid(2)"));
         }
 
         if (!is_primitive_operand(operands_[0]))
