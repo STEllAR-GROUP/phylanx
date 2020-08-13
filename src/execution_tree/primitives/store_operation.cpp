@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "two operands"));
         }
 
-        if (!valid(operands_[0]) || !valid(operands_[1]))
+        if (!valid(operands_[0]) || is_implicit_nil(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "store_operation::store_operation",
