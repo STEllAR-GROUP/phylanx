@@ -26,25 +26,29 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const lda_trainer::match_data = {hpx::util::make_tuple("lda_trainer",
-        std::vector<std::string>{
-            "lda_trainer(_1, _2, _3, _4, _5)"},
-        &create_lda_trainer, &create_primitive<lda_trainer>,
-        "n_topics, alpha, beta, iters, word_doc_matrix\n"
-        "Args:\n"
-        "\n"
-        "    n_topics (integer): number of topics to compute\n"
-        "    alpha (float): alpha parameter\n"
-        "    beta (float): beta parameter\n"
-        "    iters (integer): the number of iterations\n"
-        "    word_doc_matrix (2x2 matrix float): word-document histogram, words are columns, documents are rows\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "The algorithm returns a list of two matrices: [word_topic, document_topic] :\n"
-        "word_topic: document-topic assignment matrix\n"
-        "document_topic: document-topic assignment matrix\n"
-        "\n"
+    match_pattern_type const lda_trainer::match_data =
+        {hpx::util::make_tuple("lda_trainer",
+            std::vector<std::string>{
+                "lda_trainer(_1, _2, _3, _4, _5)"},
+            &create_lda_trainer, &create_primitive<lda_trainer>,
+            "n_topics, alpha, beta, iters, word_doc_matrix\n"
+            "Args:\n"
+            "\n"
+            "    n_topics (integer): number of topics to compute\n"
+            "    alpha (float): alpha parameter\n"
+            "    beta (float): beta parameter\n"
+            "    iters (integer): the number of iterations\n"
+            "    word_doc_matrix (2x2 matrix float): word-document histogram,\n"
+            "    words are columns, documents are rows\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The algorithm returns a list of two matrices:\n"
+            "    [word_topic, document_topic] :\n"
+            "\n"
+            "word_topic: document-topic assignment matrix\n"
+            "document_topic: document-topic assignment matrix\n"
+            "\n"
         )};
 
     ///////////////////////////////////////////////////////////////////////////
@@ -116,7 +120,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     wcm_localities.locality_.locality_id_
                 );
 
-                auto result = trainer(dist_word_doc_mat, topics, iterations, wcm_localities);
+                auto result =
+                    trainer(dist_word_doc_mat, topics, iterations, wcm_localities);
  
                 return primitive_argument_type
                 {

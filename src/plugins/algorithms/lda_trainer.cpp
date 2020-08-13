@@ -4,6 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "phylanx/plugins/algorithms/lda_trainer.hpp"
+#include <cstdint>
 
 /////////////////////////////////////////////////////////////////////
 REGISTER_DISTRIBUTED_MATRIX_DECLARATION(double);
@@ -56,7 +57,7 @@ void lda_trainer_impl::gibbs(
                 static_cast<std::int64_t>(word_doc_mat(d, w));
 
             if(wdf < 1) { continue; }
-         
+
             for(std::int64_t f = 0; f < wdf; ++f) {
 
                 std::int64_t t = z[n];
@@ -180,9 +181,9 @@ std::tuple<dmatrix_t, dmatrix_t> lda_trainer_impl::operator()(
         //
         gibbs(word_doc_mat, alpha, beta, z, wp, dp, ztot0);
         wp = wp0 + (wp - wp0);
-    } 
+    }
 
     return std::make_tuple(wp, dp);
-}    
+}
 
 } } } // end namespaces

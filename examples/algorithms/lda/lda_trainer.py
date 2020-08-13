@@ -90,11 +90,11 @@ def lda_trainer(wdc, T, a=0.1, b=0.01, iters=500):
         z[n] = randint(0, T - 1)
 
     k = 0
-    I = 0
+    K = 0
     J = 0
     for i in range(W):
-        I = int(wfreq[i])
-        for j in range(I):
+        K = int(wfreq[i])
+        for j in range(K):
             wp[i, int(z[k])] += 1.0
             k += 1
             J += j
