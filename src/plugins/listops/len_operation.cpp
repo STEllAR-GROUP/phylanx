@@ -84,12 +84,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{ir::node_data<std::int64_t>{
                     static_cast<std::int64_t>(val.size())}};
             }
-            else if (is_dictionary_operand(arg))
+            else if (is_dictionary_operand_strict(arg))
             {
                 std::size_t size = extract_dictionary_value_size(
                     std::move(arg), this_->name_, this_->codename_);
-                return primitive_argument_type{ ir::node_data<std::int64_t>{
-                    static_cast<std::int64_t>(size)} };
+                return primitive_argument_type{ir::node_data<std::int64_t>{
+                    static_cast<std::int64_t>(size)}};
             }
             else if (is_boolean_operand_strict(arg) ||
                 is_integer_operand_strict(arg) ||

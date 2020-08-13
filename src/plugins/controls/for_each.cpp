@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     auto&& dict = extract_dictionary_value_strict(
                         std::move(value), this_->name_, this_->codename_);
-                    for (auto&& e : std::move(dict))
+                    for (auto&& e : std::move(dict).dict())
                     {
                         auto result = p->eval(hpx::launch::sync,
                             primitive_argument_type{std::move(e.first.get())}, ctx);

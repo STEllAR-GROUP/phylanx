@@ -1281,6 +1281,97 @@ namespace pybind11 { namespace detail
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    template <>
+    class type_caster<phylanx::ir::dictionary>
+    {
+    private:
+        using dict_type = phylanx::ir::dictionary::dictionary_data_type;
+
+        using dict_caster_type = make_caster<dict_type>;
+        dict_caster_type subcaster;
+
+        ///////////////////////////////////////////////////////////////////////
+        bool load_dict(handle src, bool convert)
+        {
+            if (subcaster.load(src, convert))
+            {
+                value = std::move(std::move(subcaster).operator dict_type &&());
+                return true;
+            }
+            return false;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Type>
+        static handle cast_impl(
+            Type* src, return_value_policy policy, handle parent)
+        {
+            return dict_caster_type::cast(src->dict(), policy, parent);
+        }
+
+    public:
+        bool load(handle src, bool convert)
+        {
+            return load_dict(src, convert);
+        }
+
+        // Normal returned non-reference, non-const value:
+        static handle cast(phylanx::ir::dictionary&& src,
+            return_value_policy /* policy */, handle parent)
+        {
+            return cast_impl(&src, return_value_policy::move, parent);
+        }
+
+        // If you return a non-reference const, we mark the list as read only
+        static handle cast(phylanx::ir::dictionary const&& src,
+            return_value_policy /* policy */, handle parent)
+        {
+            return cast_impl(&src, return_value_policy::move, parent);
+        }
+
+        // lvalue reference return; default (automatic) becomes copy
+        static handle cast(phylanx::ir::dictionary& src,
+            return_value_policy policy, handle parent)
+        {
+            if (policy == return_value_policy::automatic ||
+                policy == return_value_policy::automatic_reference)
+            {
+                policy = return_value_policy::copy;
+            }
+            return cast_impl(&src, policy, parent);
+        }
+
+        // const lvalue reference return; default (automatic) becomes copy
+        static handle cast(phylanx::ir::dictionary const& src,
+            return_value_policy policy, handle parent)
+        {
+            if (policy == return_value_policy::automatic ||
+                policy == return_value_policy::automatic_reference)
+            {
+                policy = return_value_policy::copy;
+            }
+            return cast(&src, policy, parent);
+        }
+
+        // non-const pointer return
+        static handle cast(phylanx::ir::dictionary* src,
+            return_value_policy policy, handle parent)
+        {
+            return cast_impl(src, policy, parent);
+        }
+
+        // const pointer return
+        static handle cast(phylanx::ir::dictionary const* src,
+            return_value_policy policy, handle parent)
+        {
+            return cast_impl(src, policy, parent);
+        }
+
+        using Type = phylanx::ir::dictionary;
+        PYBIND11_TYPE_CASTER(Type, _("dictionary"));
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Derived, template <typename...> class V, typename... Ts>
     template <typename U, typename... Us>
     bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(

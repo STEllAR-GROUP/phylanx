@@ -85,7 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the key/value pairs"));
             }
 
-            dict[std::move(p[0])] = std::move(p[1]);
+            dict.insert(extract_copy_value(std::move(p[0]), name_, codename_),
+                extract_copy_value(std::move(p[1]), name_, codename_));
         }
         return primitive_argument_type(std::move(dict));
     }

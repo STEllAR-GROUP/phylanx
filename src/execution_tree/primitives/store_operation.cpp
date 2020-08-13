@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             params.reserve(args.size());
             for (auto const& arg : args)
             {
-                params.emplace_back(extract_ref_value(arg, name_, codename_));
+                params.emplace_back(extract_value(arg, name_, codename_));
             }
         }
 

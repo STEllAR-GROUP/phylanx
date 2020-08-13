@@ -459,8 +459,9 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    primitive_argument_type extract_copy_value(primitive_argument_type const& val,
-        std::string const& name, std::string const& codename)
+    primitive_argument_type extract_copy_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
     {
         switch (val.index())
         {
@@ -471,8 +472,7 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
         case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
         case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index:
+        case primitive_argument_type::primitive_index:
             return val;
 
         case primitive_argument_type::bool_index:
@@ -510,6 +510,24 @@ namespace phylanx { namespace execution_tree
                 }
 
                 return primitive_argument_type{
+                    std::move(result), val.annotation() };
+            }
+            break;
+
+        case primitive_argument_type::dictionary_index:
+            {
+                auto const& d = util::get<8>(val).dict();
+
+                ir::dictionary result;
+                result.reserve(d.size());
+
+                for (auto const& e : d)
+                {
+                    result[extract_copy_value(e.first.get(), name, codename)] =
+                        extract_copy_value(e.second.get(), name, codename);
+                }
+
+                return primitive_argument_type{
                     std::move(result), val.annotation()};
             }
             break;
@@ -538,10 +556,30 @@ namespace phylanx { namespace execution_tree
 
         case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
         case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index:
+        case primitive_argument_type::primitive_index:
             return val;
+
+        case primitive_argument_type::list_index:
+            {
+                auto const& l = util::get<7>(val);
+                if (l.is_ref())
+                {
+                    return primitive_argument_type{l, val.annotation()};
+                }
+                return primitive_argument_type{l.ref(), val.annotation()};
+            }
+            break;
+
+        case primitive_argument_type::dictionary_index:
+            {
+                auto const& d = util::get<8>(val);
+                if (d.is_ref())
+                {
+                    return primitive_argument_type{d, val.annotation() };
+                }
+                return primitive_argument_type{d.ref(), val.annotation() };
+            }
+            break;
 
         case primitive_argument_type::bool_index:
             {
@@ -635,8 +673,7 @@ namespace phylanx { namespace execution_tree
 
         case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
         case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index:
+        case primitive_argument_type::primitive_index:
             return std::move(val);
 
         case primitive_argument_type::bool_index:
@@ -674,19 +711,41 @@ namespace phylanx { namespace execution_tree
 
         case primitive_argument_type::list_index:
             {
+                auto ann = val.annotation();
                 auto&& args = util::get<7>(std::move(val));
 
                 primitive_arguments_type result;
                 result.reserve(args.size());
 
-                for (auto&& arg : args)
+                for (auto&& arg : std::move(args))
                 {
                     result.push_back(
                         extract_copy_value(std::move(arg), name, codename));
                 }
 
                 return primitive_argument_type{
-                    std::move(result), val.annotation()};
+                    std::move(result), std::move(ann)};
+            }
+            break;
+
+        case primitive_argument_type::dictionary_index:
+            {
+                auto ann = val.annotation();
+                auto&& d = util::get<8>(std::move(val));
+
+                ir::dictionary result;
+                result.reserve(d.dict().size());
+
+                for (auto&& e : std::move(d.dict()))
+                {
+                    result[extract_copy_value(
+                        std::move(e.first.get()), name, codename)] =
+                        extract_copy_value(
+                            std::move(e.second.get()), name, codename);
+                }
+
+                return primitive_argument_type{
+                    std::move(result), std::move(ann)};
             }
             break;
 
@@ -757,13 +816,15 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::list_index:
             return util::get<7>(val).is_ref();
 
+        case primitive_argument_type::dictionary_index:
+            return util::get<8>(val).is_ref();
+
         case primitive_argument_type::future_index:
             return is_ref_value(util::get<6>(val).get().get(), name, codename);
 
         case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
         case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index:
+        case primitive_argument_type::primitive_index:
             return false;
 
         default:
@@ -860,7 +921,15 @@ namespace phylanx { namespace execution_tree
             break;
 
         case primitive_argument_type::dictionary_index:
-            return val;
+            {
+                auto const& d = util::get<8>(val);
+                if (d.is_ref())
+                {
+                    return primitive_argument_type{d, val.annotation()};
+                }
+                return primitive_argument_type{d.ref(), val.annotation()};
+            }
+            break;
 
         case primitive_argument_type::future_index:
             return extract_literal_ref_value(
@@ -4375,7 +4444,7 @@ namespace phylanx { namespace execution_tree
             {
                 os << "dict{";
                 bool first = true;
-                for (auto const& elem : util::get<8>(val))
+                for (auto const& elem : util::get<8>(val).dict())
                 {
                     if (!first)
                     {

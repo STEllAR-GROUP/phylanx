@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -53,10 +53,12 @@ namespace phylanx { namespace execution_tree
             return slice_list(extract_list_value_strict(data, name, codename),
                 indices, name, codename);
         }
-        if (is_dictionary_operand(data))
+        if (is_dictionary_operand_strict(data))
         {
-            auto dict = phylanx::execution_tree::extract_dictionary_value(data);
-            return dict[indices].get();
+            auto&& dict =
+                phylanx::execution_tree::extract_dictionary_value_strict(
+                    data, name, codename);
+            return dict[indices];
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -413,11 +415,12 @@ namespace phylanx { namespace execution_tree
                 extract_boolean_value(std::move(value), name, codename),
                 name, codename)};
         }
-        else if (is_dictionary_operand(data))
+        else if (is_dictionary_operand_strict(data))
         {
-            auto&& dict = phylanx::execution_tree::extract_dictionary_value(
-                std::move(data));
-            dict[indices] = value;
+            auto&& dict =
+                phylanx::execution_tree::extract_dictionary_value_strict(
+                    std::move(data));
+            dict[indices] = std::move(value);
             return primitive_argument_type{std::move(dict)};
         }
 
