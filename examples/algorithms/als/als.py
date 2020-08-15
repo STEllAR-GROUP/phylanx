@@ -102,11 +102,11 @@ if __name__ == '__main__':
                         help='file name for reading data')
     args = parser.parse_args()
 
-    t0 = time.perf_counter()
-
     data_csv = genfromtxt(args.data_csv, delimiter=',')
     ratings = slice_array(data_csv, args.row_start, args.row_stop,
                           args.col_start, args.col_stop)
+
+    t0 = time.perf_counter()
 
     result = ALS(ratings, args.regularization, args.num_factors,
                  args.iterations, args.alpha, args.enable_output)
