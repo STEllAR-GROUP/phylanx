@@ -9,5 +9,6 @@
 #include <phylanx/plugins/algorithms/als.hpp>
 #include <phylanx/plugins/algorithms/kmeans.hpp>
 #include <phylanx/plugins/algorithms/lra.hpp>
+#include <phylanx/plugins/algorithms/lda.hpp>
 
 #endif
