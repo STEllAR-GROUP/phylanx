@@ -42,18 +42,17 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
-                auto kslice = blaze::columnslice(k, c);
-                for (std::size_t i = 0; i != result_length; ++i)
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            batch, [&](std::size_t p) {
+                for (std::size_t c = 0; c != out_channels; ++c)
                 {
-                    auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
-                                             filter_length, in_channels) %
-                        kslice;
-                    for (std::size_t p = 0; p != batch; ++p)
+                    auto kslice = blaze::columnslice(k, c);
+                    for (std::size_t i = 0; i != result_length; ++i)
                     {
+                        auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
+                                                 filter_length, in_channels) %
+                            kslice;
+
                         auto pslice = blaze::pageslice(schur_product, p);
                         result(p, i, c) = blaze::sum(pslice);
                     }
