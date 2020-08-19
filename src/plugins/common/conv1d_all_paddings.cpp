@@ -11,10 +11,11 @@
 #include <phylanx/plugins/common/conv1d_all_paddings.hpp>
 #include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
 
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
+#include <hpx/include/parallel_for_loop.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/errors/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -41,21 +42,22 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != result_length; ++i)
-            {
-                auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
-                                         filter_length, in_channels) %
-                    kslice;
-                for (std::size_t p = 0; p != batch; ++p)
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            batch, [&](std::size_t p) {
+                for (std::size_t c = 0; c != out_channels; ++c)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto kslice = blaze::columnslice(k, c);
+                    for (std::size_t i = 0; i != result_length; ++i)
+                    {
+                        auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
+                                                 filter_length, in_channels) %
+                            kslice;
+
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -74,21 +76,24 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != result_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto schur_product = blaze::subtensor(a, 0, i * strides, 0,
-                                         batch, filter_length, in_channels) %
-                    kslice;
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != result_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto schur_product =
+                        blaze::subtensor(a, 0, i * strides, 0, batch,
+                            filter_length, in_channels) %
+                        kslice;
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -115,22 +120,24 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != result_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto schur_product =
-                    blaze::dilatedsubtensor(a, 0, i, 0, batch, filter_length,
-                        in_channels, 1, dilation_rate, 1) %
-                    kslice;
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != result_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto schur_product =
+                        blaze::dilatedsubtensor(a, 0, i, 0, batch,
+                            filter_length, in_channels, 1, dilation_rate, 1) %
+                        kslice;
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -150,24 +157,26 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != data_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto sub = conv_indices::get_subsizes(
-                    data_length, filter_length, i - pad_top);
-                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
-                                         batch, sub.size_, in_channels) %
-                    blaze::submatrix(
-                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != data_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto sub = conv_indices::get_subsizes(
+                        data_length, filter_length, i - pad_top);
+                    auto schur_product = blaze::subtensor(a, 0, sub.image_beg_,
+                                             0, batch, sub.size_, in_channels) %
+                        blaze::submatrix(
+                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -203,24 +212,26 @@ namespace phylanx { namespace common {
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
         std::size_t pad_top = pad_width / 2;
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != result_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto sub = conv_indices::get_subsizes(
-                    data_length, filter_length, i * strides - pad_top);
-                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
-                                         batch, sub.size_, in_channels) %
-                    blaze::submatrix(
-                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != result_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto sub = conv_indices::get_subsizes(
+                        data_length, filter_length, i * strides - pad_top);
+                    auto schur_product = blaze::subtensor(a, 0, sub.image_beg_,
+                                             0, batch, sub.size_, in_channels) %
+                        blaze::submatrix(
+                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -240,29 +251,31 @@ namespace phylanx { namespace common {
         blaze::DynamicTensor<double> result(
             batch, data_length, out_channels, 0.);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != data_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto sub = conv_indices::get_subsizes_dilated(
-                    data_length, filter_length, i - pad_top, dilation_rate);
-
-                if (sub.size_ == 0)
-                    continue;
-
-                auto schur_product =
-                    blaze::dilatedsubtensor(a, 0, sub.image_beg_, 0, batch,
-                        sub.size_, in_channels, 1, dilation_rate, 1) %
-                    blaze::submatrix(
-                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != data_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto sub = conv_indices::get_subsizes_dilated(
+                        data_length, filter_length, i - pad_top, dilation_rate);
+
+                    if (sub.size_ == 0)
+                        continue;
+
+                    auto schur_product =
+                        blaze::dilatedsubtensor(a, 0, sub.image_beg_, 0, batch,
+                            sub.size_, in_channels, 1, dilation_rate, 1) %
+                        blaze::submatrix(
+                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -281,24 +294,26 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != data_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto sub = conv_indices::get_subsizes_causal(
-                    filter_length, i - pad_top);
-                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
-                                         batch, sub.size_, in_channels) %
-                    blaze::submatrix(
-                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != data_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto sub = conv_indices::get_subsizes_causal(
+                        filter_length, i - pad_top);
+                    auto schur_product = blaze::subtensor(a, 0, sub.image_beg_,
+                                             0, batch, sub.size_, in_channels) %
+                        blaze::submatrix(
+                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -320,24 +335,26 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != result_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto sub = conv_indices::get_subsizes_causal(
-                    filter_length, i * strides - pad_top);
-                auto schur_product = blaze::subtensor(a, 0, sub.image_beg_, 0,
-                                         batch, sub.size_, in_channels) %
-                    blaze::submatrix(
-                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != result_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto sub = conv_indices::get_subsizes_causal(
+                        filter_length, i * strides - pad_top);
+                    auto schur_product = blaze::subtensor(a, 0, sub.image_beg_,
+                                             0, batch, sub.size_, in_channels) %
+                        blaze::submatrix(
+                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -357,29 +374,31 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        for (std::size_t c = 0; c != out_channels; ++c)
-        {
-            auto kslice = blaze::columnslice(k, c);
-            for (std::size_t i = 0; i != data_length; ++i)
+        hpx::parallel::for_loop(
+            hpx::parallel::execution::par, std::size_t(0), out_channels,
+            [&](std::size_t c)
             {
-                auto sub = conv_indices::get_subsizes_causal_dilated(
-                    filter_length, i - pad_top, dilation_rate);
-
-                if (sub.size_ == 0)
-                    continue;
-
-                auto schur_product =
-                    blaze::dilatedsubtensor(a, 0, sub.image_beg_, 0, batch,
-                        sub.size_, in_channels, 1, dilation_rate, 1) %
-                    blaze::submatrix(
-                        kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
-                for (std::size_t p = 0; p != batch; ++p)
+                auto kslice = blaze::columnslice(k, c);
+                for (std::size_t i = 0; i != data_length; ++i)
                 {
-                    auto pslice = blaze::pageslice(schur_product, p);
-                    result(p, i, c) = blaze::sum(pslice);
+                    auto sub = conv_indices::get_subsizes_causal_dilated(
+                        filter_length, i - pad_top, dilation_rate);
+
+                    if (sub.size_ == 0)
+                        continue;
+
+                    auto schur_product =
+                        blaze::dilatedsubtensor(a, 0, sub.image_beg_, 0, batch,
+                            sub.size_, in_channels, 1, dilation_rate, 1) %
+                        blaze::submatrix(
+                            kslice, sub.kernel_beg_, 0, sub.size_, in_channels);
+                    for (std::size_t p = 0; p != batch; ++p)
+                    {
+                        auto pslice = blaze::pageslice(schur_product, p);
+                        result(p, i, c) = blaze::sum(pslice);
+                    }
                 }
-            }
-        }
+            });
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
