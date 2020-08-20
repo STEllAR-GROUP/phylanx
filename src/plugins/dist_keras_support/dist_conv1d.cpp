@@ -177,7 +177,7 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
             res_col_start, res_col_stop;
         primitive_argument_type local_result;
 
-        if (numtiles > 1 && numtiles_k == 1)
+        if (numtiles > 0 && numtiles_k == 1)
         {
             std::size_t filter_length = kernel.tensor().pages();
 
