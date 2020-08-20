@@ -6,6 +6,7 @@
 set(tests
     blaze_benchmarks
     simple_loop
+    test_conv1d_instrumented
    )
 
 foreach(test ${tests})
