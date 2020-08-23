@@ -72,7 +72,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else if (valid(params[argnum_]) || is_explicit_nil(params[argnum_]))
         {
-            target = extract_ref_value(params[argnum_], name_, codename_);
+            // we must copy the parameter to avoid dangling references
+            target = extract_value(params[argnum_], name_, codename_);
         }
         else
         {
@@ -180,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // evaluate the argument
         ctx.add_mode(eval_dont_evaluate_partials);
         return value_operand(
-            target, this->noargs, name_, codename_, std::move(ctx));
+            std::move(target), this->noargs, name_, codename_, std::move(ctx));
     }
 
     void access_argument::store(primitive_arguments_type&& data,
@@ -231,7 +232,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 data.emplace_back(extract_ref_value(*it, name_, codename_));
             }
 
-            primitive* p = util::get_if<primitive>(&operands_[0]);
+            primitive* p = util::get_if<primitive>(&target);
             HPX_ASSERT(p != nullptr);
 
             p->store(hpx::launch::sync, std::move(data), std::move(params),

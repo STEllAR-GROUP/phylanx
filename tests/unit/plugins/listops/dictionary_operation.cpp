@@ -72,15 +72,12 @@ void test_dict_key()
 
     HPX_TEST_EQ(f[phylanx::execution_tree::primitive_argument_type{
                     phylanx::ir::node_data<std::int64_t>(42)}],
-        phylanx::util::recursive_wrapper<
-            phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_argument_type{
             std::string("Question of Life, Universe, and Everything")});
 
-    HPX_TEST_EQ(f[phylanx::util::recursive_wrapper<
-                    phylanx::execution_tree::primitive_argument_type>{
+    HPX_TEST_EQ(f[phylanx::execution_tree::primitive_argument_type{
                     std::string("Question?")}],
-        phylanx::util::recursive_wrapper<
-            phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_argument_type{
             phylanx::ir::node_data<double>(42.0)});
 }
 

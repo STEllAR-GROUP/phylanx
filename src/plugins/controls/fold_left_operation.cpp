@@ -82,11 +82,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type&& bound_func, primitive_argument_type&& initial,
         primitive_argument_type&& data, eval_context ctx) const
     {
-        ir::range&& list = extract_list_value_strict(data, name_, codename_);
+        ir::range&& list =
+            extract_list_value_strict(std::move(data), name_, codename_);
 
         // sequentially evaluate bound_func for all elements of the list
         std::size_t index = 0;
-        for (auto&& elem : list)
+        for (auto&& elem : std::move(list))
         {
             // the initial value is allowed to be nil in which case fold_left
             // will use the first element of the list as its initial value

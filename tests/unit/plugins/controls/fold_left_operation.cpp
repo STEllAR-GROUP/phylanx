@@ -173,8 +173,8 @@ void test_fold_left_operation_func_lambda_list()
 void test_fold_left_list_length()
 {
     std::string const code = R"(block(
-            define(list_length, list,
-                fold_left(lambda(sum, element, sum + 1), 0, list)),
+            define(list_length, l,
+                fold_left(lambda(sum, element, sum + 1), 0, l)),
             list_length(list(1, 2, 3, 4))
         ))";
 
