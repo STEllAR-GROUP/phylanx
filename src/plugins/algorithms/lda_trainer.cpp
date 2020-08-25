@@ -64,7 +64,7 @@ void lda_trainer_impl::gibbs(
                 --ztot[t];
                 --wp(w, t);
                 --dp(d, t);
- 
+
                 row_iterator wp_beg = wp.begin(w);
                 row_iterator wp_end = wp.end(w);
 
@@ -91,10 +91,11 @@ void lda_trainer_impl::gibbs(
 
                 probs = (lhs * ( rhs / zprob ));
 
-                double max_prob = std::abs(drand48()) *
+                double max_prob = std::abs(rand() / (RAND_MAX + 1.0)) *
                     (*std::max_element(probs.begin(), probs.end())) * 2.0;
 
-                t = static_cast<std::int64_t>(std::abs(drand48()) * T);
+                t = static_cast<std::int64_t>(
+                    std::abs(rand() / (RAND_MAX + 1.0)) * T);
 
                 while(max_prob > 1e-10) {
                     max_prob -= probs[t];
