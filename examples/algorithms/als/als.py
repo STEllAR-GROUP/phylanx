@@ -18,8 +18,15 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
     num_items = np.shape(ratings)[1]
 
     conf = alpha * ratings
+    pref = ratings.copy()
+    threshold_condition = pref > 0
+    pref[threshold_condition] = 1
+
     conf_u = np.zeros((num_items, 1))
     conf_i = np.zeros((num_users, 1))
+
+    mse = np.zeros((iterations, 1))
+    mse_average = np.zeros((iterations, 1))
 
     c_u = np.zeros((num_items, num_items))
     c_i = np.zeros((num_users, num_users))
@@ -71,10 +78,15 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
             b = np.dot(np.dot(np.transpose(X), c_i + I_u), np.transpose(p_i))
             Y[i, :] = np.dot(np.linalg.inv(A), b)
             i = i + 1
+        mse[k] = regularization *
+                        (np.sum(np.power(X, 2)) + np.sum(np.power(Y, 2)))
+        mse[k] += np.sum(np.multiply(conf,
+                            np.power((pref - np.dot(X, np.transpose(Y))), 2)))
+        mse_average[k] = mse[k]/(num_users * num_items)
         u = 0
         i = 0
         k = k + 1
-    return [X, Y]
+    return [X, Y, mse, mse_average]
 
 
 if __name__ == '__main__':
@@ -115,4 +127,6 @@ if __name__ == '__main__':
 
     print("X = ", result[0])
     print("Y = ", result[1])
+    print("training loss = ", result[2])
+    print("average training loss = ", result[3])
     print("elapsed time is: ", t1)
