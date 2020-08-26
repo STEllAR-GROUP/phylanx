@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Hartmut Kaiser
+// Copyright (c) 2017-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree
 {
@@ -52,13 +53,37 @@ namespace phylanx { namespace execution_tree
     void variable_frame::serialize(
         hpx::serialization::output_archive& ar, unsigned)
     {
-        ar & variables_;
+        int lang = static_cast<int>(lang_);
+        ar & variables_ & lang & name_ & codename_;
     }
 
     void variable_frame::serialize(
         hpx::serialization::input_archive& ar, unsigned)
     {
-        ar & variables_;
+        int lang = 0;
+        ar & variables_ & lang & name_ & codename_;
+        lang_ = static_cast<language>(lang);
+    }
+
+    std::vector<std::string> variable_frame::back_trace() const
+    {
+        std::vector<std::string> result;
+        if (nextframe_)
+        {
+            result = nextframe_->back_trace();
+        }
+
+        if (lang_ == language::cxx)
+        {
+            result.push_back(
+                util::generate_error_message("(PhySL)", name_, codename_));
+        }
+        else
+        {
+            result.push_back(
+                util::generate_error_message("(Python)", name_, codename_));
+        }
+        return result;
     }
 
     ///////////////////////////////////////////////////////////////////////////

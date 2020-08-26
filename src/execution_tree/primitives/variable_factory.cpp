@@ -106,7 +106,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable_factory::store",
                 generate_error_message(
                     "the variable_factory primitive's store method should be "
-                    "called only once"));
+                    "called only once", ctx));
         }
         operands_[0] = std::move(data);
     }

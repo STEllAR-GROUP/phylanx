@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_)));
+                        target_name_), ctx));
         }
 
         if (!(ctx.mode_ & eval_dont_wrap_functions) && !params.empty())
@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_)));
+                        target_name_), ctx));
         }
 
         primitive* p = util::get_if<primitive>(target);
@@ -130,7 +130,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_)));
+                        target_name_), ctx));
         }
 
         primitive* p = util::get_if<primitive>(target);

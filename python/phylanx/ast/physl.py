@@ -363,7 +363,8 @@ class PhySL:
             else:
                 # the static method compiler_state is constructed only once
                 PhySL.compiler_state = \
-                    phylanx.execution_tree.global_compiler_state(self.file_name)
+                    phylanx.execution_tree.global_compiler_state(
+                        self.wrapped_function.__name__, self.file_name)
 
     def _compile_or_load(self):
         """Compile or load this function from database"""

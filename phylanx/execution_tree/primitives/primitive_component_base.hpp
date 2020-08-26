@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -123,6 +123,9 @@ namespace phylanx { namespace execution_tree
 
         protected:
             std::string generate_error_message(std::string const& msg) const;
+            std::string generate_error_message(
+                std::string const& msg, eval_context const& ctx) const;
+
             static bool get_sync_execution();
             static std::int64_t get_ec_threshold();
             static std::int64_t get_exec_upper_threshold();

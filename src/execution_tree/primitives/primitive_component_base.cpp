@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -190,19 +190,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "phylanx::execution_tree::primitives::primitive_component_base::"
                 "eval",
             generate_error_message(
-                "eval function should be implemented by all primitives"));
+                "eval function should be implemented by all primitives", ctx));
     }
 
     // store_action
     void primitive_component_base::store(primitive_arguments_type&&,
-        primitive_arguments_type&&, eval_context)
+        primitive_arguments_type&&, eval_context ctx)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
                 "store",
             generate_error_message(
                 "store function should only be called for the primitives that "
-                "support it (e.g. variables)"));
+                "support it (e.g. variables)", ctx));
     }
 
     void primitive_component_base::store(primitive_argument_type&& param,
@@ -256,19 +256,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "primitive_component_base::bind",
             generate_error_message(
                 "bind function should only be called for the "
-                    "primitives that support it (e.g. variable/function)"));
+                    "primitives that support it (e.g. variable/function)", ctx));
         return true;
     }
 
     // initialize evaluation context (used by target-reference only)
-    void primitive_component_base::set_eval_context(eval_context)
+    void primitive_component_base::set_eval_context(eval_context ctx)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
                 "set_eval_context",
             generate_error_message(
                 "set_eval_context function should only be called for the "
-                "primitives that support it (e.g. target-references)"));
+                "primitives that support it (e.g. target-references)", ctx));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -276,6 +276,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& msg) const
     {
         return util::generate_error_message(msg, name_, codename_);
+    }
+
+    std::string primitive_component_base::generate_error_message(
+        std::string const& msg, eval_context const& ctx) const
+    {
+        return util::generate_error_message(
+            msg, name_, codename_, ctx.back_trace());
     }
 
     std::int64_t primitive_component_base::get_eval_count(bool reset) const

@@ -32,7 +32,7 @@ if __name__ != '__main__':
 _compiler_state = None
 
 
-def global_compiler_state(file_name=None):
+def global_compiler_state(name=None, file_name=None):
 
     global _compiler_state
     if _compiler_state is None:
@@ -40,10 +40,13 @@ def global_compiler_state(file_name=None):
         if not PhylanxSession.is_initialized:
             PhylanxSession.init(1)
 
+        if name is None:
+            name = '<unknown>'
+
         if file_name is None:
             file_name = _name_of_importing_file
 
-        _compiler_state = compiler_state(file_name)
+        _compiler_state = compiler_state(name, file_name)
 
     return _compiler_state
 

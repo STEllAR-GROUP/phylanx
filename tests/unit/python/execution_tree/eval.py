@@ -12,7 +12,7 @@ import numpy as np
 PhylanxSession.init(1)
 
 et = phylanx.execution_tree
-cs = et.compiler_state(__name__)
+cs = et.compiler_state('global', __name__)
 
 fib10 = et.eval(cs, """
 block(
