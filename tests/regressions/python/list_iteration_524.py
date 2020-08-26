@@ -11,10 +11,12 @@ import numpy as np
 def foo(x):
     local_x = x
     result = []
-    for ele in local_x[::-1][:-1]:
+    sliced_local_x = local_x[::-1]
+    for ele in sliced_local_x[:-1]:
         result += ele
     return result
 
 
 a = [[1, 2], [3, 4], [5, 6], [7, 8]]
-assert (foo(a) == [7, 8, 5, 6, 3, 4])
+result = foo(a)
+assert result == [7, 8, 5, 6, 3, 4], result

@@ -956,10 +956,12 @@ namespace phylanx { namespace execution_tree { namespace compiler {
             return define_f;
         }
 
-        bool handle_sliced_variable_reference(std::string name,
+        bool handle_sliced_variable_reference(std::string const& name,
             ast::expression const& expr, std::list<function>&& elements,
             function& result)
         {
+            HPX_ASSERT(!name.empty());
+
             ast::tagged id = ast::detail::tagged_id(expr);
 
             primitive_name_parts name_parts(name, 0ull, id.id, id.col,
@@ -995,28 +997,122 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                     name_, id));
         }
 
+        // nested slize() invocations with one slicing argument each can be
+        // transformed into a single slice() with more than one argument
+        bool extract_slice_asts(std::pair<placeholder_map_type::iterator,
+                                    placeholder_map_type::iterator> const& p1,
+            placeholder_map_type& placeholders, ast::tagged const& slice_id,
+            ast::expression const& slice_ast, int level,
+            ast::expression& identifier_ast,
+            std::vector<ast::expression>& arguments)
+        {
+            using iterator = placeholder_map_type::iterator;
+
+            // we don't know how to handle a missing slicing target
+            if (p1.first == p1.second)
+            {
+                return false;
+            }
+
+            ast::tagged id = ast::detail::tagged_id(p1.first->second);
+            if (!ast::detail::is_identifier(p1.first->second))
+            {
+                if (!ast::detail::is_function_call(p1.first->second) ||
+                    ast::detail::function_name(p1.first->second) != "slice")
+                {
+                    return false;
+                }
+
+                if (level >= PHYLANX_MAX_DIMENSIONS)
+                {
+                    return false;
+                }
+
+                // __2 represents (up to PHYLANX_MAX_DIMENSIONS) slicing arguments
+                std::pair<iterator, iterator> pargs =
+                    placeholders.equal_range("_2");
+
+                // embedded slices handle only cases with one arguments each
+                std::size_t numargs = std::distance(pargs.first, pargs.second);
+                if (numargs != 1)
+                {
+                    return false;
+                }
+
+                // handle slice(slice(...)) constructs
+                placeholder_map_type inner_placeholders;
+                if (ast::match_ast(p1.first->second, slice_ast,
+                        ast::detail::on_placeholder_match{inner_placeholders}))
+                {
+                    auto inner_p1 = inner_placeholders.equal_range("_1");
+                    if (!extract_slice_asts(inner_p1, inner_placeholders, id,
+                            slice_ast, ++level, identifier_ast, arguments))
+                    {
+                        return false;
+                    }
+                }
+
+                arguments.push_back(pargs.first->second);
+
+                return true;
+            }
+            else
+            {
+                identifier_ast = p1.first->second;
+
+                // __2 represents (up to PHYLANX_MAX_DIMENSIONS) slicing
+                // arguments
+                std::pair<iterator, iterator> pargs =
+                    placeholders.equal_range("_2");
+
+                std::size_t numargs = std::distance(pargs.first, pargs.second);
+                if (level != 0 && numargs != 1)
+                {
+                    return false;
+                }
+
+                if (numargs == 0 || numargs > PHYLANX_MAX_DIMENSIONS)
+                {
+                    return false;
+                }
+
+                for (iterator it = pargs.first; it != pargs.second; ++it)
+                {
+                    arguments.push_back(it->second);
+                }
+
+                return true;
+            }
+            return false;
+        }
+
         // handle slice(), this has to be transformed into an immediate slicing
         // on the first argument
         bool handle_slice(placeholder_map_type& placeholders,
-            ast::tagged const& slice_id, function& result)
+            ast::tagged const& slice_id, ast::expression const& slice_ast,
+            function& result)
         {
             //  _1 represents the expression to slice
             using iterator = placeholder_map_type::iterator;
             std::pair<iterator, iterator> p1 = placeholders.equal_range("_1");
 
             // we don't know how to handle a missing slicing target
-            if (p1.first == p1.second ||
-                !ast::detail::is_identifier(p1.first->second))
+            if (p1.first == p1.second)
             {
                 return false;
             }
 
-            // __2 represents (up to two) slicing arguments
-            std::pair<iterator, iterator> pargs =
-                placeholders.equal_range("_2");
+            ast::expression identifier_ast;
+            std::vector<ast::expression> arguments;
 
-            // handle only cases with one, two, or three slicing arguments
-            std::size_t numargs = std::distance(pargs.first, pargs.second);
+            if (!extract_slice_asts(p1, placeholders, slice_id, slice_ast, 0,
+                    identifier_ast, arguments))
+            {
+                return false;
+            }
+
+            // handle only cases with at max PHYLANX_MAX_DIMENSIONS arguments
+            std::size_t numargs = arguments.size();
             if (numargs == 0 || numargs > PHYLANX_MAX_DIMENSIONS)
             {
                 return false;
@@ -1026,18 +1122,20 @@ namespace phylanx { namespace execution_tree { namespace compiler {
             std::list<function> args;
             {
                 environment env(&env_);
-                for (iterator it = pargs.first; it != pargs.second; ++it)
+                for (auto const& arg : arguments)
                 {
-                    args.emplace_back(compile(name_, it->second, snippets_, env,
+                    args.emplace_back(compile(name_, arg, snippets_, env,
                         patterns_, default_locality_));
                 }
             }
 
-            // compile the target expression, make sure slicing parameters are
-            // passed through to the access-variable object
+            HPX_ASSERT(ast::detail::is_identifier(identifier_ast));
+
+            // compile the target expression, make sure slicing parameters
+            // are passed through to the access-variable object
             return handle_sliced_variable_reference(
-                ast::detail::identifier_name(p1.first->second),
-                p1.first->second, std::move(args), result);
+                ast::detail::identifier_name(identifier_ast), identifier_ast,
+                std::move(args), result);
         }
 
         // handle list() constructs directly in  the compiler
@@ -1507,7 +1605,8 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                                     placeholders}))
                         {
                             function slice_result;
-                            if (handle_slice(placeholders, id, slice_result))
+                            if (handle_slice(placeholders, id,
+                                    cit->second.pattern_ast_, slice_result))
                             {
                                 // handle only special case where sliced
                                 // expression is a variable
