@@ -7,8 +7,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/common/export_definitions.hpp>
 #include <phylanx/plugins/common/conv1d_all_paddings.hpp>
+#include <phylanx/plugins/common/export_definitions.hpp>
 #include <phylanx/plugins/keras_support/conv_indices_helper.hpp>
 
 #include <hpx/errors/throw_exception.hpp>
@@ -35,29 +35,28 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         std::size_t batch = a.pages();
-        std::size_t filter_length = k.pages();
-        std::size_t in_channels = a.columns();
-        std::size_t out_channels = k.columns();
-        std::size_t result_length = a.rows() - filter_length + 1;
+        std::size_t filter_length = k.columns();
+        std::size_t in_channels = a.rows();
+        std::size_t out_channels = k.pages();
+        std::size_t result_length = a.columns() - filter_length + 1;
 
-        blaze::DynamicTensor<double> result(batch, result_length, out_channels);
-
+        blaze::DynamicTensor<double> result(batch, out_channels, result_length);
         hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
             batch, [&](std::size_t p) {
-                for (std::size_t c = 0; c != out_channels; ++c)
+                for (std::size_t l = 0; l < k.pages(); ++l)
                 {
-                    auto kslice = blaze::columnslice(k, c);
-                    for (std::size_t i = 0; i != result_length; ++i)
+                    for (std::size_t m = 0; m < result_length; ++m)
                     {
-                        auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
-                                                 filter_length, in_channels) %
-                            kslice;
-
-                        auto pslice = blaze::pageslice(schur_product, p);
-                        result(p, i, c) = blaze::sum(pslice);
+                        auto x = blaze::subtensor(
+                            a, p, 0, m, 1, a.rows(), k.columns());
+                        auto y = blaze::subtensor(
+                            k, l, 0, 0, 1, k.rows(), k.columns());
+                        auto w = blaze::sum(x % y);
+                        blaze::subtensor(result, p, l, m, 1, 1, 1) = w;
                     }
                 }
             });
+
         return execution_tree::primitive_argument_type{std::move(result)};
     }
 
@@ -76,10 +75,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != result_length; ++i)
                 {
@@ -112,7 +109,7 @@ namespace phylanx { namespace common {
         std::int64_t result_length =
             data_length - dilation_rate * (filter_length - 1);
 
-        if(result_length <= 0)
+        if (result_length <= 0)
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "conv1d_valid_dilation",
                 util::generate_error_message(
                     "this dilation_rate causes non-positive "
@@ -120,10 +117,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != result_length; ++i)
                 {
@@ -148,7 +143,7 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         auto filter_length = static_cast<std::int64_t>(k.pages());
-        auto data_length   = static_cast<std::int64_t>(a.rows());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
@@ -157,10 +152,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != data_length; ++i)
                 {
@@ -187,7 +180,7 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         auto filter_length = static_cast<std::int64_t>(k.pages());
-        auto data_length   = static_cast<std::int64_t>(a.rows());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
@@ -212,10 +205,8 @@ namespace phylanx { namespace common {
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
         std::size_t pad_top = pad_width / 2;
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != result_length; ++i)
                 {
@@ -242,7 +233,7 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         auto filter_length = static_cast<std::int64_t>(k.pages());
-        auto data_length   = static_cast<std::int64_t>(a.rows());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
@@ -251,10 +242,8 @@ namespace phylanx { namespace common {
         blaze::DynamicTensor<double> result(
             batch, data_length, out_channels, 0.);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != data_length; ++i)
                 {
@@ -286,7 +275,7 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         auto filter_length = static_cast<std::int64_t>(k.pages());
-        auto data_length   = static_cast<std::int64_t>(a.rows());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
@@ -294,10 +283,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != data_length; ++i)
                 {
@@ -324,7 +311,7 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         auto filter_length = static_cast<std::int64_t>(k.pages());
-        auto data_length   = static_cast<std::int64_t>(a.rows());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
@@ -335,10 +322,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != result_length; ++i)
                 {
@@ -365,7 +350,7 @@ namespace phylanx { namespace common {
         auto a = arg.tensor();
         auto k = kernel.tensor();
         auto filter_length = static_cast<std::int64_t>(k.pages());
-        auto data_length   = static_cast<std::int64_t>(a.rows());
+        auto data_length = static_cast<std::int64_t>(a.rows());
         std::size_t batch = a.pages();
         std::size_t in_channels = a.columns();
         std::size_t out_channels = k.columns();
@@ -374,10 +359,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
-            [&](std::size_t c)
-            {
+        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+            out_channels, [&](std::size_t c) {
                 auto kslice = blaze::columnslice(k, c);
                 for (std::size_t i = 0; i != data_length; ++i)
                 {
@@ -409,7 +392,7 @@ namespace phylanx { namespace common {
         std::string const& codename)
     {
         if (execution_tree::extract_numeric_value_dimensions(
-            arg, name, codename)[2] !=
+                arg, name, codename)[1] !=
             execution_tree::extract_numeric_value_dimensions(
                 kernel, name, codename)[1])
         {
@@ -440,7 +423,7 @@ namespace phylanx { namespace common {
         std::string const& codename)
     {
         if (execution_tree::extract_numeric_value_dimensions(
-                arg, name, codename)[2] !=
+                arg, name, codename)[1] !=
             execution_tree::extract_numeric_value_dimensions(
                 kernel, name, codename)[1])
         {
@@ -471,7 +454,7 @@ namespace phylanx { namespace common {
         std::string const& name, std::string const& codename)
     {
         if (execution_tree::extract_numeric_value_dimensions(
-                arg, name, codename)[2] !=
+                arg, name, codename)[1] !=
             execution_tree::extract_numeric_value_dimensions(
                 kernel, name, codename)[1])
         {
@@ -498,4 +481,4 @@ namespace phylanx { namespace common {
         return conv1d_causal_dilation(
             std::move(arg), std::move(kernel), dilation_rate);
     }
-}}
+}}    // namespace phylanx::common

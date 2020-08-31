@@ -101,15 +101,15 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
 
             auto a = arg.tensor();
             auto k = kernel.tensor();
-            auto filter_length = static_cast<std::int64_t>(k.pages());
-            auto data_length = static_cast<std::int64_t>(a.rows());
+            auto filter_length = static_cast<std::int64_t>(k.columns());
+            auto data_length = static_cast<std::int64_t>(a.columns());
             std::size_t batch = a.pages();
-            std::size_t in_channels = a.columns();
-            std::size_t out_channels = k.columns();
+            std::size_t in_channels = a.rows();
+            std::size_t out_channels = k.pages();
             std::size_t result_length = pad + data_length - filter_length + 1;
 
             blaze::DynamicTensor<double> result(
-                batch, result_length, out_channels);
+                batch, out_channels, result_length);
 
             if (mode)    // top padding
             {
@@ -362,32 +362,32 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
                     padding = extract_string_value_strict(
                         args[2], this_->name_, this_->codename_);
 
-                    if (padding != "valid" && padding != "same" &&
-                        padding != "causal")
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_conv1d::eval",
-                            this_->generate_error_message(
-                                "invalid padding. Padding can be either "
-                                "`valid`, `same`, or `causal`"));
-                    }
+//                    if (padding != "valid" && padding != "same" &&
+//                        padding != "causal")
+//                    {
+//                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+//                            "dist_conv1d::eval",
+//                            this_->generate_error_message(
+//                                "invalid padding. Padding can be either "
+//                                "`valid`, `same`, or `causal`"));
+//                    }
                 }
 
 
-                if (padding == "valid")
-                {
-                    if (extract_numeric_value_dimensions(
-                            args[0], this_->name_, this_->codename_)[1] <
-                        extract_numeric_value_dimensions(
-                            args[1], this_->name_, this_->codename_)[0])
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "dist_conv1d::eval",
-                            this_->generate_error_message(
-                                "the kernel size cannot be greater than the "
-                                "array size in the valid padding mode"));
-                    }
-                }
+//                if (padding == "valid")
+//                {
+//                    if (extract_numeric_value_dimensions(
+//                            args[0], this_->name_, this_->codename_)[1] <
+//                        extract_numeric_value_dimensions(
+//                            args[1], this_->name_, this_->codename_)[0])
+//                    {
+//                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+//                            "dist_conv1d::eval",
+//                            this_->generate_error_message(
+//                                "the kernel size cannot be greater than the "
+//                                "array size in the valid padding mode"));
+//                    }
+//                }
 
                 std::int64_t strides = 1;
                 if (valid(args[3]))

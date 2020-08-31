@@ -24,12 +24,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const conv1d_test_code = R"(
-    define(conv1d_test, input1, input2, input3, filter1, filter2, filter3,
+    define(conv1d_test, batch, length, channel, filter_length, out_channels,
     block(
+cout(list(batch, channel, length)),
+cout(list(out_channels, channel, filter_length)),
         define(array,
-            random_d(list(input1, input2, input3), nil, nil, "", "page")),
+            constant_d(1, list(batch, channel, length), nil, nil, "", "page")),
         define(kernel,
-            random(list(filter1, filter2, filter3))),
+            constant(1, list(out_channels, channel, filter_length))),
         //timer(
             define(out, conv1d_d(array, kernel)),
           //  lambda(time, cout("locality", find_here(), ":", time))
@@ -39,6 +41,23 @@ char const* const conv1d_test_code = R"(
     )
     conv1d_test
 )";
+///////////////////////////////////////////////////////////////////////////////
+//char const* const conv1d_test_code = R"(
+//    define(conv1d_test, input1, input2, input3, filter1, filter2, filter3,
+//    block(
+//        define(array,
+//            random_d(list(input1, input2, input3), nil, nil, "", "page")),
+//        define(kernel,
+//            random(list(filter1, filter2, filter3))),
+//        //timer(
+//            define(out, conv1d_d(array, kernel)),
+//          //  lambda(time, cout("locality", find_here(), ":", time))
+//        //)
+//        out
+//       )
+//    )
+//    conv1d_test
+//)";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Find the line/column position in the source code from a given iterator
@@ -254,9 +273,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto length = vm["length"].as<std::int64_t>();
     auto channel = vm["channel"].as<std::int64_t>();
 
-    auto k_length = vm["k_length"].as<std::int64_t>();
-    auto k_channel = vm["k_channel"].as<std::int64_t>();
-    auto k_out = vm["k_out"].as<std::int64_t>();
+    auto filter_length = vm["filter_length"].as<std::int64_t>();
+    auto out_channels = vm["out_channels"].as<std::int64_t>();
     // Read the data from the files
 
     // Measure execution time
@@ -264,10 +282,12 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     // Evaluate ALS using the read data
     auto result =
-        conv1d_test(batch, length, channel, k_length, k_channel, k_out);
+        conv1d_test(batch, length, channel, filter_length, out_channels);
     auto elapsed = t.elapsed();
     std::cout << "time: " << t.elapsed() << std::endl;
 
+    auto output = phylanx::execution_tree::extract_numeric_value(result);
+    std::cout<<output<<std::endl;
     // Print performance counter data in CSV
     if (vm.count("instrument") != 0)
     {
@@ -296,9 +316,10 @@ int main(int argc, char* argv[])
         hpx::program_options::value<std::int64_t>(),
         "batch")("length,l", hpx::program_options::value<std::int64_t>(),
         "length")("channel,c", hpx::program_options::value<std::int64_t>(),
-        "channel")("k_length,f", hpx::program_options::value<std::int64_t>(),
-        "kernel length")("k_channel,h",
-        hpx::program_options::value<std::int64_t>(), "kernel channels")(
-        "k_out,o", hpx::program_options::value<std::int64_t>(), "kernel out");
+        "channel")("filter_length,f", hpx::program_options::value<std::int64_t>(),
+        "kernel length")(
+        "out_channels,o", hpx::program_options::value<std::int64_t>(), "out channels");
+//    std::vector<std::string> cfg = {"hpx.run_hpx_main!=1"};
+
     return hpx::init(desc, argc, argv);
 }
