@@ -44,17 +44,17 @@ namespace phylanx { namespace common {
 
         hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
             batch, [&](std::size_t p) {
-                for (std::size_t c = 0; c != out_channels; ++c)
+                auto res_slice = blaze::pageslice(result, p);
+                auto aslice = blaze::pageslice(a, p);
+                for (std::size_t i = 0; i != result_length; ++i)
                 {
-                    auto kslice = blaze::columnslice(k, c);
-                    for (std::size_t i = 0; i != result_length; ++i)
+                    auto a_mat = blaze::submatrix(
+                        aslice, i, 0, filter_length, in_channels);
+                    for (std::size_t c = 0; c != out_channels; ++c)
                     {
-                        auto schur_product = blaze::subtensor(a, 0, i, 0, batch,
-                                                 filter_length, in_channels) %
-                            kslice;
+                        auto kslice = blaze::columnslice(k, c);
 
-                        auto pslice = blaze::pageslice(schur_product, p);
-                        result(p, i, c) = blaze::sum(pslice);
+                        res_slice(i, c) = blaze::sum(a_mat % kslice);
                     }
                 }
             });
