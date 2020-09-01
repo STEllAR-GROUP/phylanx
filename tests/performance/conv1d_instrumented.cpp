@@ -26,8 +26,6 @@
 char const* const conv1d_test_code = R"(
     define(conv1d_test, batch, length, channel, filter_length, out_channels,
     block(
-cout(list(batch, channel, length)),
-cout(list(out_channels, channel, filter_length)),
         define(array,
             constant_d(1, list(batch, channel, length), nil, nil, "", "page")),
         define(kernel,
@@ -287,7 +285,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     std::cout << "time: " << t.elapsed() << std::endl;
 
     auto output = phylanx::execution_tree::extract_numeric_value(result);
-    std::cout<<output<<std::endl;
+    auto output_t = output.tensor();
+    std::cout << "["<< output_t.pages() << "," << output_t.rows() <<","<< output_t.columns() << "]" << std::endl;
+
     // Print performance counter data in CSV
     if (vm.count("instrument") != 0)
     {
