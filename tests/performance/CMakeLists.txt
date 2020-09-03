@@ -5,6 +5,7 @@
 
 set(tests
     blaze_benchmarks
+    conv1d_dist_instrumented
     simple_loop
    )
 

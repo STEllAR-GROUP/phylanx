@@ -7,5 +7,7 @@
 #define PHYLANX_PLUGINS_DIST_KERAS_SUPPORT_JUN_25_2020
 
 #include <phylanx/plugins/dist_keras_support/dist_conv1d.hpp>
+#include <phylanx/plugins/dist_keras_support/dist_conv1d_bita.hpp>
+#include <phylanx/plugins/dist_keras_support/dist_conv1d_shahrzad.hpp>
 
 #endif

@@ -13,3 +13,9 @@ PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(dist_conv1d_plugin,
     phylanx::dist_keras_support::primitives::dist_conv1d::match_data);
+
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_conv1d_bita_plugin,
+    phylanx::dist_keras_support::primitives::dist_conv1d_bita::match_data);
+
+PHYLANX_REGISTER_PLUGIN_FACTORY(dist_conv1d_shahrzad_plugin,
+    phylanx::dist_keras_support::primitives::dist_conv1d_shahrzad::match_data);
