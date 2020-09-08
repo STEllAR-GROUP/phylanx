@@ -152,7 +152,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "annotate_primitive::eval_annotate",
                 generate_error_message(
-                    "the annotate primitive requires two operands"));
+                    "the annotate primitive requires two operands", ctx));
         }
 
         auto f = value_operand(operands[0], args, name_, codename_, ctx);
@@ -178,7 +178,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "annotate_primitive::eval_annotate_d",
                 generate_error_message(
-                    "the annotate primitive requires three operands"));
+                    "the annotate primitive requires three operands", ctx));
         }
 
         auto ftarget = value_operand(operands[0], args, name_, codename_, ctx);

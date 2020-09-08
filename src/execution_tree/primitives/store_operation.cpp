@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store_operation::eval",
                 generate_error_message(
                     "the store_operation primitive requires exactly "
-                        "two operands"));
+                        "two operands", ctx));
         }
 
         if (!valid(operands_[0]) || is_implicit_nil(operands_[1]))
@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store_operation::store_operation",
                 generate_error_message(
                     "the store_operation primitive requires that "
-                    "the arguments given by the operands array is valid"));
+                    "the arguments given by the operands array is valid", ctx));
         }
 
         if (!is_primitive_operand(operands_[0]))
@@ -92,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     "the first argument of the store primitive must "
                         "refer to a another primitive and can't be a "
-                        "literal value"));
+                        "literal value", ctx));
         }
 
         auto this_ = this->shared_from_this();
@@ -136,7 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store_operation::eval",
                 generate_error_message(
                     "the store_operation primitive requires exactly "
-                        "two  operands"));
+                        "two  operands", ctx));
         }
 
         if (!valid(operands_[0]) || !valid(operands_[1]))
@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store_operation::store_operation",
                 generate_error_message(
                     "the store_operation primitive requires that "
-                    "the arguments given by the operands array is valid"));
+                    "the arguments given by the operands array is valid", ctx));
         }
 
         if (!is_primitive_operand(operands_[0]))
@@ -155,7 +155,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     "the first argument of the store primitive must "
                         "refer to a another primitive and can't be a "
-                        "literal value"));
+                        "literal value", ctx));
         }
 
         auto this_ = this->shared_from_this();

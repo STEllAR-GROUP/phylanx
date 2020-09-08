@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Hartmut Kaiser
+// Copyright (c) 2017-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -93,6 +93,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
+    enum class language { cxx = 0, python = 1 };
+
     class variable_frame
     {
         using allocator_type = hpx::util::internal_allocator<
@@ -103,8 +105,12 @@ namespace phylanx { namespace execution_tree
     public:
         variable_frame() = default;
 
-        variable_frame(std::shared_ptr<variable_frame> nextframe) noexcept
+        variable_frame(std::shared_ptr<variable_frame> nextframe,
+            language lang, std::string const& name, std::string const& codename)
           : nextframe_(std::move(nextframe))
+          , lang_(lang)
+          , name_(name)
+          , codename_(codename)
         {
         }
 
@@ -114,6 +120,8 @@ namespace phylanx { namespace execution_tree
             util::hashed_string const& name) const noexcept;
         inline primitive_argument_type& set_var(
             util::hashed_string const& name, primitive_argument_type&& var);
+
+        PHYLANX_EXPORT std::vector<std::string> back_trace() const;
 
     private:
         friend class hpx::serialization::access;
@@ -125,6 +133,9 @@ namespace phylanx { namespace execution_tree
     private:
         variables_map_type variables_;
         std::shared_ptr<variable_frame> nextframe_;
+        language lang_;
+        std::string name_;
+        std::string codename_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -148,8 +159,17 @@ namespace phylanx { namespace execution_tree
         }
 
         explicit eval_context(eval_mode mode = eval_default)
-            : mode_(mode)
-          , variables_(std::allocate_shared<variable_frame>(alloc_))
+          : mode_(mode)
+          , variables_(std::allocate_shared<variable_frame>(alloc_,
+                std::shared_ptr<variable_frame>(), language::cxx, "<unknown>",
+                "<unknown>"))
+        {}
+
+        eval_context(std::string const& name, std::string const& codename,
+            language lang = language::cxx, eval_mode mode = eval_default)
+          : mode_(mode)
+          , variables_(std::allocate_shared<variable_frame>(alloc_,
+                std::shared_ptr<variable_frame>(), lang, name, codename))
         {}
 
         eval_context& set_mode(eval_mode mode) noexcept
@@ -184,16 +204,22 @@ namespace phylanx { namespace execution_tree
         inline primitive_argument_type& set_var(util::hashed_string const& name,
             primitive_argument_type&& var);
 
-        eval_context& add_frame()
+        eval_context& add_frame(
+            std::string const& name, std::string const& codename)
         {
             variables_ = std::allocate_shared<variable_frame>(
-                alloc_, std::move(variables_));
+                alloc_, std::move(variables_), language::cxx, name, codename);
             return *this;
         }
 
         explicit operator bool() const noexcept
         {
             return bool(variables_);
+        }
+
+        std::vector<std::string> back_trace() const
+        {
+            return variables_->back_trace();
         }
 
     private:
@@ -245,10 +271,11 @@ namespace phylanx { namespace execution_tree
         return std::move(newctx.remove_mode(mode));
     }
 
-    inline eval_context add_frame(eval_context && ctx)
+    inline eval_context add_frame(eval_context&& ctx, std::string const& name,
+        std::string const& codename)
     {
         eval_context newctx = std::move(ctx);
-        return std::move(newctx.add_frame());
+        return std::move(newctx.add_frame(name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////

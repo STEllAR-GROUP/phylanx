@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -90,12 +90,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context next_ctx = set_mode(std::move(ctx), eval_default);
             if (target_)
             {
-                return target_->eval(
-                    std::move(fargs), add_frame(std::move(next_ctx)));
+                return target_->eval(std::move(fargs),
+                    add_frame(std::move(next_ctx), name_, codename_));
             }
 
             return value_operand(operands_[0], std::move(fargs), name_,
-                codename_, add_frame(std::move(next_ctx)));
+                codename_, add_frame(std::move(next_ctx), name_, codename_));
         }
 
         eval_context next_ctx =
@@ -103,11 +103,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (target_)
         {
-            return target_->eval(params, add_frame(std::move(next_ctx)));
+            return target_->eval(
+                params, add_frame(std::move(next_ctx), name_, codename_));
         }
 
         return value_operand(operands_[0], params, name_, codename_,
-            add_frame(std::move(next_ctx)));
+            add_frame(std::move(next_ctx), name_, codename_));
     }
 
     hpx::future<primitive_argument_type> target_reference::eval(
@@ -136,23 +137,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (target_)
             {
-                return target_->eval(fargs, add_frame(std::move(next_ctx)));
+                return target_->eval(
+                    fargs, add_frame(std::move(next_ctx), name_, codename_));
             }
 
             return value_operand(operands_[0], std::move(fargs), name_,
-                codename_, add_frame(std::move(next_ctx)));
+                codename_, add_frame(std::move(next_ctx), name_, codename_));
         }
 
         eval_context next_ctx =
             set_mode(std::move(ctx), eval_dont_wrap_functions);
         if (target_)
         {
-            return target_->eval_single(
-                std::move(param), add_frame(std::move(next_ctx)));
+            return target_->eval_single(std::move(param),
+                add_frame(std::move(next_ctx), name_, codename_));
         }
 
         return value_operand(operands_[0], std::move(param), name_, codename_,
-            add_frame(std::move(next_ctx)));
+            add_frame(std::move(next_ctx), name_, codename_));
     }
 
     bool target_reference::bind(

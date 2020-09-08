@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "timer::eval",
                 generate_error_message(
-                    "the timer primitive requires exactly two operands"));
+                    "the timer primitive requires exactly two operands", ctx));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 "timer::eval",
                 generate_error_message(
                     "the timer primitive requires that the "
-                    "arguments given by the operands array are valid"));
+                    "arguments given by the operands array are valid", ctx));
         }
 
         auto this_ = this->shared_from_this();
@@ -95,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         "timer::eval",
                         this_->generate_error_message(
                             "the first argument to timer must be an "
-                            "invocable object"));
+                            "invocable object", ctx));
                 }
 
                 primitive_argument_type result = p->eval(hpx::launch::sync,
@@ -113,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         "timer::eval",
                         this_->generate_error_message(
                             "the second argument to timer must be an "
-                            "invocable object"));
+                            "invocable object", ctx));
                 }
 
                 r->eval(hpx::launch::sync, primitive_argument_type{elapsed},

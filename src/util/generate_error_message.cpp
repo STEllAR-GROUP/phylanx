@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,8 @@
 #include <hpx/modules/format.hpp>
 
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace phylanx { namespace util
 {
@@ -19,6 +21,33 @@ namespace phylanx { namespace util
     {
         return generate_error_message(msg,
             execution_tree::compiler::compose_primitive_name(parts), codename);
+    }
+
+    namespace detail
+    {
+        std::string format_frame(int frame_no, std::string&& frame)
+        {
+            return hpx::util::format(
+                "  [{}]: {}\n", frame_no, std::move(frame));
+        }
+    }
+
+    std::string generate_error_message(std::string const& msg,
+        std::string const& name, std::string const& codename,
+        std::vector<std::string>&& frames)
+    {
+        std::string trace = "\n<stack frames>\n";
+
+        int frame_no = 0;
+        for (auto&& frame : frames)
+        {
+            trace += detail::format_frame(++frame_no, std::move(frame));
+        }
+
+        trace += detail::format_frame(++frame_no,
+            generate_error_message("(PhySL)\n", name, codename));
+
+        return trace + msg;
     }
 
     std::string generate_error_message(std::string const& msg,

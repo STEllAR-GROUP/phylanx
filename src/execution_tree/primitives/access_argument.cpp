@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
-                        argnum_ + 1, params.size())));
+                        argnum_ + 1, params.size()), ctx));
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
@@ -189,10 +189,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (data.size() != 1)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "access_argument::store",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_argument::store",
                 generate_error_message(
-                    "invoking store with slicing parameters is not supported"));
+                    "invoking store with slicing parameters is not supported",
+                    ctx));
         }
 
         primitive_argument_type target;
@@ -207,7 +207,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
-                        argnum_ + 1, params.size())));
+                        argnum_ + 1, params.size()), ctx));
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
@@ -250,7 +250,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "store",
                         generate_error_message(
                             "assignment to (non-sliced) function argument is "
-                            "not supported (yet)"));
+                            "not supported (yet)", ctx));
                 }
                 break;
 
@@ -294,7 +294,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::access_argument::store",
                 generate_error_message(
-                    "storing a value to a local value has no effect"));
+                    "storing a value to a local value has no effect", ctx));
         }
     }
 
@@ -313,7 +313,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
-                        argnum_ + 1, params.size())));
+                        argnum_ + 1, params.size()), ctx));
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
@@ -372,7 +372,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "store",
                         generate_error_message(
                             "assignment to (non-sliced) function argument is "
-                            "not supported (yet)"));
+                            "not supported (yet)", ctx));
                 }
 
             case 3:
@@ -415,7 +415,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::access_argument::store",
                 generate_error_message(
-                    "storing a value to a local value has no effect"));
+                    "storing a value to a local value has no effect", ctx));
         }
     }
 }}}

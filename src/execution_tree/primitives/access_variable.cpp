@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_)));
+                        target_name_), ctx));
         }
 
         // handle slicing, we can replace the params with our slicing
@@ -159,10 +159,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (vals.size() != 1)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "access_variable::store",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_variable::store",
                 generate_error_message(
-                    "invoking store with slicing parameters is not supported"));
+                    "invoking store with slicing parameters is not supported",
+                ctx));
         }
 
         // access variable from execution context
@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_)));
+                        target_name_), ctx));
         }
 
         // handle slicing, simply append the slicing parameters to the end of
@@ -209,7 +209,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_)));
+                        target_name_), ctx));
         }
 
         if (operands_.size() > 1)

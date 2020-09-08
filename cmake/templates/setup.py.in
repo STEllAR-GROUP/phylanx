@@ -75,6 +75,7 @@ setup_args = {
     'cmdclass': {
         'build_ext': CopyBuildExt
     },
+    'install_requires': ['numpy'],
     'platforms': 'All',
     'zip_safe': False,
     'license': 'Boost Software License, '

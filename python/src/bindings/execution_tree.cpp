@@ -31,7 +31,7 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
     // Compiler State
     pybind11::class_<phylanx::bindings::compiler_state>(
             execution_tree, "compiler_state")
-        .def(pybind11::init<std::string>());
+        .def(pybind11::init<std::string, std::string>());
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree.def("compile", phylanx::bindings::expression_compiler,

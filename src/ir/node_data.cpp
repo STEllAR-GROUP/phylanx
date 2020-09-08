@@ -2837,15 +2837,8 @@ namespace phylanx { namespace ir
             }
         };
 
-        if (hpx::threads::get_self_ptr() != nullptr)
-        {
-            hpx::util::ignore_all_while_checking ignore;
-            hpx::threads::run_as_os_thread(f).get();
-        }
-        else
-        {
-            f();
-        }
+        f();
+
         return out;
     }
 
@@ -2899,15 +2892,8 @@ namespace phylanx { namespace ir
             }
         };
 
-        if (hpx::threads::get_self_ptr() != nullptr)
-        {
-            hpx::util::ignore_all_while_checking ignore;
-            hpx::threads::run_as_os_thread(f).get();
-        }
-        else
-        {
-            f();
-        }
+        f();
+
         return out;
     }
 
@@ -2962,15 +2948,8 @@ namespace phylanx { namespace ir
             }
         };
 
-        if (hpx::threads::get_self_ptr() != nullptr)
-        {
-            hpx::util::ignore_all_while_checking ignore;
-            hpx::threads::run_as_os_thread(f).get();
-        }
-        else
-        {
-            f();
-        }
+        f();
+
         return out;
     }
 
