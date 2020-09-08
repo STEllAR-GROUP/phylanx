@@ -3232,12 +3232,29 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type const& val, primitive_argument_type&& arg,
+        std::string const& name, std::string const& codename, eval_context ctx)
+    {
+        return detail::value_operand_helper(
+            val, std::move(arg), name, codename, std::move(ctx));
+    }
+
+    hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
         std::string const& name, std::string const& codename,
         eval_context ctx)
     {
         return detail::value_operand_helper(
             std::move(val), arg, name, codename, std::move(ctx));
+    }
+
+    hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type&& val, primitive_argument_type&& arg,
+        std::string const& name, std::string const& codename,
+        eval_context ctx)
+    {
+        return detail::value_operand_helper(
+            std::move(val), std::move(arg), name, codename, std::move(ctx));
     }
 
     ///////////////////////////////////////////////////////////////////////////

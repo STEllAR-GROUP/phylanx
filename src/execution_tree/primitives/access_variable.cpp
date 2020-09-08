@@ -88,8 +88,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             return value_operand(target,
                                 rows.get(), this_->name_, this_->codename_,
-                                add_mode(std::move(ctx), eval_mode(
-                                    eval_dont_wrap_functions|eval_slicing)));
+                                remove_mode(add_mode(std::move(ctx), eval_mode(
+                                    eval_dont_wrap_functions|eval_slicing)),
+                                    eval_dont_evaluate_partials));
                         });
             }
 
@@ -110,8 +111,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         return value_operand(target,
                             std::move(args), this_->name_, this_->codename_,
-                            add_mode(std::move(ctx), eval_mode(
-                                eval_dont_wrap_functions|eval_slicing)));
+                            remove_mode(add_mode(std::move(ctx), eval_mode(
+                                eval_dont_wrap_functions|eval_slicing)),
+                                eval_dont_evaluate_partials));
                     },
                     value_operand(operands_[1], params, name_, codename_, ctx),
                     value_operand(operands_[2], params, name_, codename_, ctx));
@@ -136,8 +138,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     return value_operand(target,
                         std::move(args), this_->name_, this_->codename_,
-                        add_mode(std::move(ctx), eval_mode(
-                            eval_dont_wrap_functions|eval_slicing)));
+                        remove_mode(add_mode(std::move(ctx), eval_mode(
+                            eval_dont_wrap_functions|eval_slicing)),
+                            eval_dont_evaluate_partials));
                     },
                     value_operand(operands_[1], params, name_, codename_, ctx),
                     value_operand(operands_[2], params, name_, codename_, ctx),

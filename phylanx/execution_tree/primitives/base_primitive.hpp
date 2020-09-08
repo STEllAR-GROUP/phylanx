@@ -823,7 +823,15 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "", std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type const& val, primitive_argument_type&& arg,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type&& val, primitive_argument_type&& arg,
         std::string const& name = "", std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
 
