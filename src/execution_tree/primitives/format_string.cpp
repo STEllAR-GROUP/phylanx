@@ -285,7 +285,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "format_string::eval",
                 generate_error_message(
                     "the format_string primitive expects to be invoked with "
-                    "at least one argument"));
+                    "at least one argument", ctx));
         }
 
         auto this_ = this->shared_from_this();

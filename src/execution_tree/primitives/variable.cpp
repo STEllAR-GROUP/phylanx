@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::eval",
                 generate_error_message(
                     "the expression representing the variable target "
-                    "has not been initialized"));
+                    "has not been initialized", ctx));
         }
 
         primitive_argument_type const& target =
@@ -191,7 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::eval",
                 generate_error_message(
                     "the expression representing the variable target "
-                    "has not been initialized"));
+                    "has not been initialized", ctx));
         }
 
         primitive_argument_type const& target =
@@ -239,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::bind",
                 generate_error_message(
                     "the expression representing the variable target "
-                        "has not been initialized"));
+                        "has not been initialized", ctx));
         }
 
         primitive const* p = util::get_if<primitive>(&operands_[0]);
@@ -266,7 +266,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::store1dslice",
                 generate_error_message(
                     "in order for slicing to be possible a variable must have "
-                    "a value bound to it"));
+                    "a value bound to it", ctx));
         }
 
         auto result = slice(std::move(bound_value_),
@@ -285,7 +285,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::store2dslice",
                 generate_error_message(
                     "in order for slicing to be possible a variable must have "
-                    "a value bound to it"));
+                    "a value bound to it", ctx));
         }
 
         auto data1 =
@@ -306,7 +306,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::store3dslice",
                 generate_error_message(
                     "in order for slicing to be possible a variable must have "
-                    "a value bound to it"));
+                    "a value bound to it", ctx));
         }
 
         auto data1 = value_operand_sync(data[1], params, name_, codename_, ctx);
@@ -331,7 +331,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "variable::store",
                 generate_error_message(
-                    "the right hand side expression is not valid"));
+                    "the right hand side expression is not valid", ctx));
         }
 
         if (!value_set_ || !valid(operands_[0]))
@@ -342,7 +342,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "variable::store",
                     generate_error_message(
                         "the initial expression a variable is bound to is "
-                        "not allowed to have slicing parameters"));
+                        "not allowed to have slicing parameters", ctx));
             }
 
             operands_[0] =
@@ -380,7 +380,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "variable::store",
                 generate_error_message(
-                    "there can be at most two slicing arguments"));
+                    "there can be at most two slicing arguments", ctx));
         }
     }
 
@@ -393,14 +393,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "variable::store",
                 generate_error_message(
-                    "the right hand side expression is not valid"));
+                    "the right hand side expression is not valid", ctx));
         }
 //         if (!params.empty())
 //         {
 //             HPX_THROW_EXCEPTION(hpx::invalid_status,
 //                 "valiable::store",
 //                 generate_error_message(
-//                     "store shouldn't be called with dynamic arguments"));
+//                     "store shouldn't be called with dynamic arguments", ctx));
 //         }
 
         if (!value_set_ || !valid(operands_[0]))

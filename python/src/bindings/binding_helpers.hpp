@@ -42,6 +42,9 @@ namespace phylanx { namespace bindings
         phylanx::execution_tree::compiler::function_list eval_snippets;
         phylanx::execution_tree::eval_context eval_ctx;
 
+        // name of the calling Python function
+        std::string name_;
+
         // name of the main source compiled file
         std::string codename_;
 
@@ -71,10 +74,12 @@ namespace phylanx { namespace bindings
                 });
         }
 
-        compiler_state(std::string codename)
+        compiler_state(std::string name, std::string codename)
           : m(import_phylanx())
           , eval_env(construct_default_environment())
           , eval_snippets()
+          , eval_ctx(name, codename, phylanx::execution_tree::language::python)
+          , name_(std::move(name))
           , codename_(std::move(codename))
           , enable_measurements(false)
         {

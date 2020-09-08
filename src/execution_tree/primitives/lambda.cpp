@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2019 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
 
         return value_operand(operands_[0], args, name_, codename_,
-            add_frame(std::move(next_ctx)));
+            add_frame(std::move(next_ctx), name_, codename_));
     }
 
     void lambda::store(primitive_arguments_type&& data,
@@ -117,21 +117,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lambda::store",
                 generate_error_message(
                     "the expression representing the function target "
-                        "has already been initialized"));
+                        "has already been initialized", ctx));
         }
         if (data.empty())
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "lambda::store",
                 generate_error_message(
-                    "the right hand side expression is not valid"));
+                    "the right hand side expression is not valid", ctx));
         }
         if (!params.empty())
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "lambda::store",
                 generate_error_message(
-                    "store shouldn't be called with dynamic arguments"));
+                    "store shouldn't be called with dynamic arguments", ctx));
         }
 
         // initialize the lambda's body

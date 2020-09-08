@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phytype::eval",
                 generate_error_message(
-                    "phylanx.name requires exactly one argument"));
+                    "phylanx.name requires exactly one argument", ctx));
         }
 
         auto this_ = this->shared_from_this();

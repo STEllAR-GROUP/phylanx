@@ -62,23 +62,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "assert_condition",
                 generate_error_message(
-                    "Assert requires exactly one argument"));
+                    "Assert requires exactly one argument", ctx));
         }
 
+        auto arg =
+            scalar_boolean_operand(operands_[0], args, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](std::uint8_t cond)
-            -> primitive_argument_type
+        return hpx::dataflow(
+            hpx::launch::sync,
+            [this_ = std::move(this_), ctx = std::move(ctx)](
+                hpx::future<std::uint8_t>&& cond) -> primitive_argument_type
             {
-                if (cond == 0)
+                if (cond.get() == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "assert_condition",
-                        this_->generate_error_message("Assertion failed"));
+                        this_->generate_error_message("Assertion failed", ctx));
                 }
                 return {};
-            }),
-            scalar_boolean_operand(
-                operands_[0], args, name_, codename_, std::move(ctx)));
+            },
+            std::move(arg));
     }
 }}}
