@@ -55,6 +55,7 @@ set(tests
     1224_dictionary_len
     1225_iterate_dictionary
     1230_assign_argument_dictionary
+    1235_print
     array_len_494
     array_shape_486
     array_subscript_403
