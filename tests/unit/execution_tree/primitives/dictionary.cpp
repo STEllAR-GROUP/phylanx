@@ -94,14 +94,15 @@ void test_dict_print_function()
     u[key_2] = val_2;
 
     std::ostringstream stream;
-    stream << phylanx::execution_tree::primitive_argument_type{std::move(u)};
+    stream << phylanx::util::repr
+           << phylanx::execution_tree::primitive_argument_type{std::move(u)};
     const std::string str = stream.str();
 
     auto fail = std::string::npos;
-    auto find1 = str.find("Question?: 42");
-    auto find2 = str.find("42: Question of Life, Universe, and Everything");
-    HPX_TEST_NEQ(fail,find1);
-    HPX_TEST_NEQ(fail,find2);
+    auto find1 = str.find("\"Question?\", 42");
+    auto find2 = str.find("42, \"Question of Life, Universe, and Everything\"");
+    HPX_TEST_NEQ(fail, find1);
+    HPX_TEST_NEQ(fail, find2);
 }
 
 int main(int argc, char* argv[])

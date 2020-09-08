@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -392,11 +393,18 @@ namespace phylanx { namespace execution_tree {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    std::string to_string(annotation const& ann)
+    {
+        std::stringstream str;
+        str << ann;
+        return str.str();
+    }
+
     std::ostream& operator<<(std::ostream& os, annotation const& ann)
     {
         util::repr_wrapper wrap(os);
 
-        os << "annotation(";
+        os << "list(";
         bool first = true;
         for (auto const& elem : ann.get_range_ref())
         {
