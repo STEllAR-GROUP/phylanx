@@ -226,15 +226,16 @@ read_arguments(std::vector<std::string> const& args,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int handle_command_line(int argc, char* argv[], po::variables_map& vm)
+int handle_command_line(int argc, char* argv[],
+    po::variables_map& vm,
+    po::options_description& cmdline_options)
 {
     try
     {
-        po::options_description cmdline_options(
-            "Usage: physl <physl_script> [options] [arguments...]");
         cmdline_options.add_options()
             ("help,h", "print out program usage")
             ("docs","Print out all primitives/plugins and descriptions")
+            ("connect","Provide more localities for a computation")
             ("code,c", po::value<std::string>(),
                 "Execute the PhySL code given in argument")
             ("print,p", po::value<std::string>()->implicit_value("<none>"),
@@ -729,14 +730,8 @@ void interpreter(po::variables_map const& vm)
     }
 }
 
-int hpx_main(int argc, char* argv[])
+int physl_main(po::variables_map& vm)
 {
-    po::variables_map vm;
-    int const cmdline_result = handle_command_line(argc, argv, vm);
-    if (cmdline_result != 0)
-    {
-        return cmdline_result > 0 ? 0 : cmdline_result;
-    }
 
     if (vm.count("docs") != 0)
     {
@@ -755,14 +750,42 @@ int hpx_main(int argc, char* argv[])
         return -1;
     }
 
-    return hpx::finalize();
+    if (vm.count("connect") != 0)
+        return hpx::disconnect();
+    else
+        return hpx::finalize();
 }
+
+void empty() {}
 
 int main(int argc, char* argv[])
 {
     // making sure hpx_main is executed on all localities
+    /*
     hpx::init_params params;
-    params.cfg = {"hpx.run_hpx_main!=1", "hpx.commandline.allow_unknown!=1"};
+    params.cfg = {
+        "hpx.run_hpx_main!=1",
+        "hpx.commandline.allow_unknown!=1"
+    };
+    */
 
-    return hpx::init(argc, argv, params);
+    po::variables_map vm;
+    po::options_description cmdline_options(
+        "Usage: physl <physl_script> [options] [arguments...]");
+    int const cmdline_result = handle_command_line(argc, argv, vm, cmdline_options);
+    if (cmdline_result != 0)
+    {
+        return cmdline_result > 0 ? 0 : cmdline_result;
+    }
+
+    hpx::runtime_mode mode = hpx::runtime_mode_default;
+    if (vm.count("connect") != 0) {
+        mode = hpx::runtime_mode::connect;
+        std::cout << "Connection mode" << std::endl;
+    } else {
+        std::cout << "Normal mode" << std::endl;
+    }
+    return hpx::init(physl_main,
+        cmdline_options, argc, argv, 
+        empty, empty, mode);
 }

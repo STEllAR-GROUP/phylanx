@@ -679,7 +679,8 @@ class PhySL:
             raise Exception("Phylanx does not support chain assignments.")
         if isinstance(node.targets[0], ast.Tuple):
             raise Exception(
-                "Phylanx does not support multi-target assignments.")
+                "Phylanx does not support multi-target assignments. line=%d" \
+                % node.lineno)
 
         symbol = self._apply_rule(node.targets[0])
         # if lhs is not indexed.
@@ -717,6 +718,8 @@ class PhySL:
         while isinstance(current_node, ast.Attribute):
             namespace.insert(0, current_node.attr)
             current_node = current_node.value
+        if not hasattr(current_node, "id"):
+            raise Exception("error at line %d" % current_node.lineno)
         namespace.insert(0, current_node.id)
 
         if isinstance(current_node, ast.Name):
@@ -726,7 +729,7 @@ class PhySL:
                 attr = '.'.join(namespace)
                 raise NotImplementedError(
                     'Phylanx does not support non-NumPy member functions.'
-                    'Cannot transform: %s' % attr)
+                    'Cannot transform: %s, line=%d' % (attr, current_node.lineno))
 
     def _AugAssign(self, node):
         """class AugAssign(target, op, value)"""
@@ -995,7 +998,10 @@ class PhySL:
         # extract the type of the iteration space- used as the lookup key in
         # `mapping_function` dictionary above.
         if isinstance(iteration_space, list):
-            symbol_name = mapping_function[iteration_space[0].split('$', 1)[0]]
+            key = iteration_space[0].split('$', 1)[0]
+            if key not in mapping_function:
+                raise Exception("key not found: '%s' at line %d" % (key,node.lineno))
+            symbol_name = mapping_function[key]
             symbol = get_symbol_info(node, symbol_name)
             # replace keyword `prange` to `range` for compatibility with Phylanx.
             iteration_space[0] = iteration_space[0].replace('prange', 'range')
