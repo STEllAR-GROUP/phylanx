@@ -676,11 +676,12 @@ class PhySL:
         """
 
         if len(node.targets) > 1:
-            raise Exception("Phylanx does not support chain assignments.")
+            raise Exception("Phylanx does not support chain assignments. line=%d" %
+                node.lineno)
         if isinstance(node.targets[0], ast.Tuple):
             raise Exception(
-                "Phylanx does not support multi-target assignments. line=%d" \
-                % node.lineno)
+                "Phylanx does not support multi-target assignments. line=%d" %
+                node.lineno)
 
         symbol = self._apply_rule(node.targets[0])
         # if lhs is not indexed.
@@ -1000,7 +1001,7 @@ class PhySL:
         if isinstance(iteration_space, list):
             key = iteration_space[0].split('$', 1)[0]
             if key not in mapping_function:
-                raise Exception("key not found: '%s' at line %d" % (key,node.lineno))
+                raise Exception("Undefined '%s' at line %d" % (key, node.lineno))
             symbol_name = mapping_function[key]
             symbol = get_symbol_info(node, symbol_name)
             # replace keyword `prange` to `range` for compatibility with Phylanx.
