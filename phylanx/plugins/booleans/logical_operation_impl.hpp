@@ -94,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{Op{}(bool(lhs), bool(rhs))});
         }
 
-        primitive_argument_type operator()(ir::range lhs, ir::range rhs) const
+        primitive_argument_type operator()(ir::range&& lhs, ir::range&& rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::eval",
@@ -104,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(
-            std::string lhs, std::string rhs) const
+            std::string&& lhs, std::string&& rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::eval",
