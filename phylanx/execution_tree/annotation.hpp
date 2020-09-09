@@ -136,6 +136,8 @@ namespace phylanx { namespace execution_tree {
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& os, annotation const& ann);
 
+    PHYLANX_EXPORT std::string to_string(annotation const& ann);
+
     ////////////////////////////////////////////////////////////////////////////
     struct PHYLANX_EXPORT annotation_wrapper
     {
