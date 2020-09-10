@@ -934,7 +934,7 @@ namespace phylanx { namespace execution_tree
     };
 
     // specialize formatting of primitive_argument_types
-    void format_value(std::ostream& os, boost::string_ref spec,
+    PHYLANX_EXPORT void format_value(std::ostream& os, boost::string_ref spec,
         primitive_argument_type const& value);
 
     inline bool valid(primitive_argument_type const& val) noexcept
@@ -975,8 +975,11 @@ namespace phylanx { namespace execution_tree
     }
 
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
+        argument_value_type const&);
+    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
         primitive_argument_type const&);
 
+    PHYLANX_EXPORT std::string to_string(argument_value_type const&);
     PHYLANX_EXPORT std::string to_string(primitive_argument_type const&);
 
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,

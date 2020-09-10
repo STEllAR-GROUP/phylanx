@@ -11,6 +11,7 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/iostream.hpp>
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -18,10 +19,10 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <cstdlib>
 
-#include <hpx/program_options.hpp>
 #include <hpx/filesystem.hpp>
+#include <hpx/format.hpp>
+#include <hpx/program_options.hpp>
 
 namespace fs = hpx::filesystem;
 namespace po = hpx::program_options;
@@ -239,8 +240,10 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             ("print,p", po::value<std::string>()->implicit_value("<none>"),
                 "Print the result of evaluation of the last "
                 "PhySL expression encountered in the input. "
-                "If a filename is specified, print to the file."
-                )
+                "If a filename is specified, print to the file.")
+            ("print-format", po::value<std::string>(),
+                "Print the result of evaluation using the given format, valid "
+                "values are 'plain', 'physl', or 'json' (default: 'plain')")
             ("performance", "Print the topology of the created execution "
                 "tree and the corresponding performance counter results")
             ("dump-dot", po::value<std::string>(), "Write the topology of the "
@@ -588,6 +591,57 @@ void print_performance_profile(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+std::string format_as_physl(
+    phylanx::execution_tree::primitive_argument_type const& result)
+{
+    if (result.has_annotation())
+    {
+        return hpx::util::format(
+            "dict(list(\"data\", {}), list(\"annotation\", {}))",
+            to_string(result.variant()), to_string(*result.annotation()));
+    }
+
+    return hpx::util::format(
+        "dict(list(\"data\", {}))", to_string(result.variant()));
+}
+
+std::string format_as_json(
+    phylanx::execution_tree::primitive_argument_type const& result)
+{
+    if (result.has_annotation())
+    {
+        return hpx::util::format(
+            "{{\n    \"data\" : {},\n    \"annotation\" : {}\n}}",
+            to_string(result.variant()), to_string(*result.annotation()));
+    }
+
+    return hpx::util::format(
+        "{{\n    \"data\" : {}\n}}", to_string(result.variant()));
+}
+
+std::string format_result(
+    phylanx::execution_tree::primitive_argument_type const& result,
+    std::string const& format)
+{
+    if (format == "plain")
+    {
+        return to_string(result);
+    }
+    if (format == "physl")
+    {
+        return format_as_physl(result);
+    }
+    if (format == "json")
+    {
+        return format_as_json(result);
+    }
+
+    HPX_THROW_EXCEPTION(hpx::filesystem_error, "format_result",
+        "Invalid format specification: " + format +
+            ", valid values are 'plain', 'physl', and 'json'");
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void interpreter(po::variables_map const& vm)
 {
     // Collect positional arguments
@@ -623,14 +677,22 @@ void interpreter(po::variables_map const& vm)
     auto const result = compile_and_run(ast, positional_args, snippets,
         code_source_name, vm.count("dry-run") != 0, vm.count("time") != 0);
 
-    // Print the result of the last PhySL expression, if requested
-    // Print the result to the specified file, if requested
+    // Print the result of the last PhySL expression, and to the specified file,
+    // if requested
     if (vm.count("print") != 0)
     {
         std::string const result_file = vm["print"].as<std::string>();
-        if(result_file == "<none>") {
-            hpx::cout << result << "\n";
-        } else {
+        std::string format = "plain";
+        if (vm.count("print-format") != 0)
+        {
+            format = vm["print-format"].as<std::string>();
+        }
+        if (result_file == "<none>")
+        {
+            hpx::cout << format_result(result, format) << "\n";
+        }
+        else
+        {
             std::ofstream os(result_file);
             if (!os.good())
             {
@@ -638,7 +700,7 @@ void interpreter(po::variables_map const& vm)
                     "result-file",
                     "Failed to open the specified file: " + result_file);
             }
-            os << result << "\n";
+            os << format_result(result, format) << "\n";
         }
     }
 

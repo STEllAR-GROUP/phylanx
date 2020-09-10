@@ -3232,12 +3232,29 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type const& val, primitive_argument_type&& arg,
+        std::string const& name, std::string const& codename, eval_context ctx)
+    {
+        return detail::value_operand_helper(
+            val, std::move(arg), name, codename, std::move(ctx));
+    }
+
+    hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
         std::string const& name, std::string const& codename,
         eval_context ctx)
     {
         return detail::value_operand_helper(
             std::move(val), arg, name, codename, std::move(ctx));
+    }
+
+    hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type&& val, primitive_argument_type&& arg,
+        std::string const& name, std::string const& codename,
+        eval_context ctx)
+    {
+        return detail::value_operand_helper(
+            std::move(val), std::move(arg), name, codename, std::move(ctx));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -4391,8 +4408,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::ostream& operator<<(std::ostream& os,
-        primitive_argument_type const& val)
+    std::ostream& operator<<(std::ostream& os, argument_value_type const& val)
     {
         switch (val.index())
         {
@@ -4442,7 +4458,7 @@ namespace phylanx { namespace execution_tree
 
         case primitive_argument_type::dictionary_index:
             {
-                os << "dict{";
+                os << "dict(";
                 bool first = true;
                 for (auto const& elem : util::get<8>(val).dict())
                 {
@@ -4451,11 +4467,14 @@ namespace phylanx { namespace execution_tree
                         os << ", ";
                     }
                     first = false;
+
+                    os << "list(";
                     ast::detail::to_string{os}(elem.first);
-                    os << ": ";
+                    os << ", ";
                     ast::detail::to_string{os}(elem.second);
+                    os << ")";
                 }
-                os << "}";
+                os << ")";
             }
             break;
 
@@ -4466,12 +4485,27 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        return os;
+    }
+
+    std::ostream& operator<<(
+        std::ostream& os, primitive_argument_type const& val)
+    {
+        os << val.variant();
+
         if (!!val.annotation())
         {
             os << ", " << *val.annotation();
         }
 
         return os;
+    }
+
+    std::string to_string(argument_value_type const& value)
+    {
+        std::stringstream str;
+        str << value;
+        return str.str();
     }
 
     std::string to_string(primitive_argument_type const& value)
