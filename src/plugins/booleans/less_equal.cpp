@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 #include <hpx/include/util.hpp>
 
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -22,6 +23,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct less_equal_op
         {
+            using can_compare_lists = std::false_type;
+
             template <typename T1, typename T2>
             HPX_FORCEINLINE bool operator()(T1 const& t1, T2 const& t2) const
             {

@@ -20,12 +20,14 @@
 #include <hpx/include/util.hpp>
 #include <hpx/errors/throw_exception.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <numeric>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -431,14 +433,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     comparison_.name_, comparison_.codename_));
         }
 
-        primitive_argument_type operator()(ir::range&&, ir::range&&) const
+        primitive_argument_type compare_lists(
+            ir::range&& lhs, ir::range&& rhs, std::true_type) const
+        {
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{std::equal(
+                    lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), *this)}};
+        }
+
+        primitive_argument_type compare_lists(
+            ir::range&& lhs, ir::range&& rhs, std::false_type) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "comparison<Op>::eval",
                 util::generate_error_message(
                     "left hand side and right hand side are incompatible "
-                        "and can't be compared",
+                    "and can't be compared",
                     comparison_.name_, comparison_.codename_));
+        }
+
+        primitive_argument_type operator()(
+            ir::range&& lhs, ir::range&& rhs) const
+        {
+            return compare_lists(std::move(lhs), std::move(rhs),
+                typename Op::can_compare_lists{});
+        }
+
+        primitive_argument_type operator()(
+            std::string&& lhs, std::string&& rhs) const
+        {
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{std::lexicographical_compare(
+                    lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), Op{})}};
         }
 
         primitive_argument_type operator()(
