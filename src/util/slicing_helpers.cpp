@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //  Copyright (c) 2018 Bibek Wagle
+//  Copyright (c) 2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -38,7 +39,8 @@ namespace phylanx { namespace util { namespace slicing_helpers
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::util::slicing_helpers::extract_integer",
-                    "slicing arguments cannot be empty");
+                    util::generate_error_message(
+                        "slicing arguments cannot be empty", name, codename));
             }
 
             return nd[0];
@@ -123,7 +125,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
     ir::slicing_indices extract_slicing(
         execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, execution_tree::eval_context const& ctx)
     {
         ir::slicing_indices indices;
 
@@ -144,7 +146,8 @@ namespace phylanx { namespace util { namespace slicing_helpers
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::util::slicing_helpers::extract_slicing",
-                    "too many indicies given");
+                    util::generate_error_message("too many indices given",
+                        name, codename, ctx.back_trace()));
             }
 
             if (size == 0)
@@ -238,10 +241,9 @@ namespace phylanx { namespace util { namespace slicing_helpers
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::size_t slicing_size(
-        execution_tree::primitive_argument_type const& arg,
+    std::size_t slicing_size(execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, execution_tree::eval_context const& ctx)
     {
         // Extract the list or the single integer index
         // from second argument (row-> start, stop, step)
@@ -260,7 +262,8 @@ namespace phylanx { namespace util { namespace slicing_helpers
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::util::slicing_helpers::extract_slicing",
-                    "too many indicies given");
+                    util::generate_error_message("too many indicies given",
+                        name, codename, ctx.back_trace()));
             }
 
             if (size == 0)

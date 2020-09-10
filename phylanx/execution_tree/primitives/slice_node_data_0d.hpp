@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -30,7 +30,8 @@ namespace phylanx { namespace execution_tree
     // Extracting slice functionality
     template <typename T, typename F>
     ir::node_data<T> slice0d_basic(T data, ir::slicing_indices const& indices,
-        F const& f, std::string const& name, std::string const& codename)
+        F const& f, std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (indices.start() != 0 || indices.span() != 1 || indices.step() != 1)
         {
@@ -39,7 +40,7 @@ namespace phylanx { namespace execution_tree
                 util::generate_error_message(
                     "cannot extract anything but the first element from a "
                     "scalar",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
         return f.scalar(data, data);
     }
@@ -48,11 +49,13 @@ namespace phylanx { namespace execution_tree
     template <typename T>
     ir::node_data<T> slice1d_extract0d(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         return slice0d_basic<T>(data.scalar(),
-            util::slicing_helpers::extract_slicing(indices, 1, name, codename),
-            detail::slice_identity<T>{}, name, codename);
+            util::slicing_helpers::extract_slicing(
+                indices, 1, name, codename, ctx),
+            detail::slice_identity<T>{}, name, codename, ctx);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -60,7 +63,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_assign0d(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         switch (value.num_dimensions())
         {
@@ -72,8 +75,8 @@ namespace phylanx { namespace execution_tree
                 ir::node_data<T> rhs(std::move(result));
                 return slice0d_basic<T>(data.scalar(),
                     util::slicing_helpers::extract_slicing(
-                        indices, 1, name, codename),
-                    detail::slice_assign_scalar<T>{rhs}, name, codename);
+                        indices, 1, name, codename, ctx),
+                    detail::slice_assign_scalar<T>{rhs}, name, codename, ctx);
             }
 
         case 1: HPX_FALLTHROUGH;
@@ -86,7 +89,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice0d_assign",
             util::generate_error_message(
                 "source ir::node_data object holds unsupported data type", name,
-                codename));
+                codename, ctx.back_trace()));
     }
 }}
 

@@ -208,8 +208,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives
         }
 
         auto this_ = this->shared_from_this();
+        auto ctx_copy = ctx;
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_arguments_type&& ops)
+            [this_ = std::move(this_), ctx = std::move(ctx_copy)](
+                primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
                 primitive_arguments_type args;
@@ -248,32 +250,32 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             if (this_->slice_rows_)
                             {
                                 return slice(args[0], args[1],
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                             else if (this_->slice_columns_)
                             {
                                 return slice(args[0], {}, args[1],
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                             else if (this_->slice_pages_)
                             {
                                 return slice(args[0], args[1], {},
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                             else
                             {
                                 return slice(args[0], args[1],
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                         }
 
                     case 3:
                         return slice(args[0], args[1], args[2],
-                            this_->name_, this_->codename_);
+                            this_->name_, this_->codename_, ctx);
 
                     case 4:
                         return slice(args[0], args[1], args[2], args[3],
-                            this_->name_, this_->codename_);
+                            this_->name_, this_->codename_, ctx);
 
                     default:
                         break;
@@ -287,35 +289,33 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             if (this_->slice_rows_d_)
                             {
                                 return dist_slice(args[0], args[1],
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                             else if (this_->slice_columns_d_)
                             {
                                 return dist_slice(args[0], {}, args[1],
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                             else
                             {
                                 return dist_slice(args[0], args[1],
-                                    this_->name_, this_->codename_);
+                                    this_->name_, this_->codename_, ctx);
                             }
                         }
                     case 3:
                             return slice(args[0], args[1], args[2],
-                                this_->name_, this_->codename_);
+                                this_->name_, this_->codename_, ctx);
                     default:
                         break;
                     }
-
                 }
-
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                         "slicing_operation::eval",
                     this_->generate_error_message(
                         "the slicing_operation primitive requires "
-                            "either one, two, or three arguments"));
+                            "either one, two, or three arguments", ctx));
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,

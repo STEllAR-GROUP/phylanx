@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Hartmut Kaiser
+// Copyright (c) 2017-2020 Hartmut Kaiser
 // Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Tianyi Zhang
 //
@@ -145,6 +145,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
     PHYLANX_EXPORT bool is_dictionary_operand(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT bool is_hashable_operand(
         primitive_argument_type const& val);
 
     // Extract a dictionary type from a given primitive_argument_type,

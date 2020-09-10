@@ -28,36 +28,45 @@ namespace phylanx { namespace execution_tree
     // return a slice of the given primitive_argument_type instance
     primitive_argument_type slice(primitive_argument_type const& data,
         primitive_argument_type const& indices, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_integer_value_strict(data, name, codename), indices,
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_numeric_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_numeric_value_strict(data, name, codename), indices,
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_boolean_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_boolean_value_strict(data, name, codename), indices,
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_list_operand_strict(data))
         {
             return slice_list(extract_list_value_strict(data, name, codename),
-                indices, name, codename);
+                indices, name, codename, ctx);
         }
         if (is_dictionary_operand_strict(data))
         {
             auto&& dict =
                 phylanx::execution_tree::extract_dictionary_value_strict(
                     data, name, codename);
+            if (!is_hashable_operand(indices))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::slice",
+                    util::generate_error_message(
+                        "the given index cannot be used for indexing a "
+                        "dictionary",
+                        name, codename, ctx.back_trace()));
+            }
             return dict[indices];
         }
 
@@ -65,12 +74,13 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric, range, or dictionary "
-                "type and as such does not support slicing", name, codename));
+                "type and as such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 
     primitive_argument_type dist_slice(primitive_argument_type const& data,
         primitive_argument_type const& indices, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         localities_information arr_localities =
             extract_localities_information(data, name, codename);
@@ -78,64 +88,64 @@ namespace phylanx { namespace execution_tree
         {
             return dist_slice_extract(
                 extract_integer_value_strict(data, name, codename), indices,
-                std::move(arr_localities), name, codename);
+                std::move(arr_localities), name, codename, ctx);
         }
         if (is_numeric_operand_strict(data))
         {
             return dist_slice_extract(
                 extract_numeric_value_strict(data, name, codename), indices,
-                std::move(arr_localities), name, codename);
+                std::move(arr_localities), name, codename, ctx);
         }
         if (is_boolean_operand_strict(data))
         {
             return dist_slice_extract(
                 extract_boolean_value_strict(data, name, codename), indices,
-                std::move(arr_localities), name, codename);
+                std::move(arr_localities), name, codename, ctx);
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
-            util::generate_error_message("distributed target object does "
-                                         "not hold a numeric type and as "
-                                         "such does not support slicing",
-                name, codename));
-
+            util::generate_error_message(
+                "distributed target object does not hold a numeric type and as "
+                "such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 
     primitive_argument_type slice(primitive_argument_type const& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_integer_value_strict(data, name, codename),
-                rows, columns, name, codename)};
+                rows, columns, name, codename, ctx)};
         }
         if (is_numeric_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_numeric_value_strict(data, name, codename),
-                rows, columns, name, codename)};
+                rows, columns, name, codename, ctx)};
         }
         if (is_boolean_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_boolean_value_strict(data, name, codename),
-                rows, columns, name, codename)};
+                rows, columns, name, codename, ctx)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric data type and "
-                "as such does not support slicing", name, codename));
+                "as such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 
     primitive_argument_type dist_slice(primitive_argument_type const& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         localities_information arr_localities =
             extract_localities_information(data, name, codename);
@@ -143,26 +153,26 @@ namespace phylanx { namespace execution_tree
         {
             return dist_slice_extract(
                 extract_integer_value_strict(data, name, codename), rows,
-                columns, std::move(arr_localities), name, codename);
+                columns, std::move(arr_localities), name, codename, ctx);
         }
         if (is_numeric_operand_strict(data))
         {
             return dist_slice_extract(
                 extract_numeric_value_strict(data, name, codename), rows,
-                columns, std::move(arr_localities), name, codename);
+                columns, std::move(arr_localities), name, codename, ctx);
         }
         if (is_boolean_operand_strict(data))
         {
             return dist_slice_extract(
                 extract_boolean_value_strict(data, name, codename), rows,
-                columns, std::move(arr_localities), name, codename);
+                columns, std::move(arr_localities), name, codename, ctx);
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric data type and "
                 "as such does not support slicing",
-                name, codename));
+                name, codename, ctx.back_trace()));
 
     }
 
@@ -170,39 +180,41 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& pages,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_integer_value_strict(data, name, codename),
-                pages, rows, columns, name, codename)};
+                pages, rows, columns, name, codename, ctx)};
         }
         if (is_numeric_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_numeric_value_strict(data, name, codename),
-                pages, rows, columns, name, codename)};
+                pages, rows, columns, name, codename, ctx)};
         }
         if (is_boolean_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
                 extract_boolean_value_strict(data, name, codename),
-                pages, rows, columns, name, codename)};
+                pages, rows, columns, name, codename, ctx)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric data type and "
-                "as such does not support slicing", name, codename));
+                "as such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given primitive_argument_type instance
     primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& indices, primitive_argument_type&& value,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
 
         if (data.has_annotation() && value.has_annotation())
@@ -223,7 +235,7 @@ namespace phylanx { namespace execution_tree
                         extract_integer_value_strict(
                             std::move(value), name, codename),
                         std::move(arr_localities), std::move(val_localities),
-                        name, codename);
+                        name, codename, ctx);
                 }
 
                 return dist_slice_assign(extract_integer_value_strict(
@@ -231,7 +243,7 @@ namespace phylanx { namespace execution_tree
                     indices,
                     extract_integer_value(std::move(value), name, codename),
                     std::move(arr_localities), std::move(val_localities), name,
-                    codename);
+                    codename, ctx);
             }
             else if (is_numeric_operand_strict(data))
             {
@@ -243,7 +255,7 @@ namespace phylanx { namespace execution_tree
                         extract_numeric_value_strict(
                             std::move(value), name, codename),
                         std::move(arr_localities), std::move(val_localities),
-                        name, codename);
+                        name, codename, ctx);
                 }
 
                 return dist_slice_assign(extract_numeric_value_strict(
@@ -251,7 +263,7 @@ namespace phylanx { namespace execution_tree
                     indices,
                     extract_numeric_value(std::move(value), name, codename),
                     std::move(arr_localities), std::move(val_localities), name,
-                    codename);
+                    codename, ctx);
             }
             else if (is_boolean_operand_strict(data))
             {
@@ -263,7 +275,7 @@ namespace phylanx { namespace execution_tree
                         extract_boolean_value_strict(
                             std::move(value), name, codename),
                         std::move(arr_localities), std::move(val_localities),
-                        name, codename);
+                        name, codename, ctx);
                 }
 
                 return dist_slice_assign(extract_boolean_value_strict(
@@ -271,7 +283,7 @@ namespace phylanx { namespace execution_tree
                     indices,
                     extract_boolean_value(std::move(value), name, codename),
                     std::move(arr_localities), std::move(val_localities), name,
-                    codename);
+                    codename, ctx);
             }
 
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -279,7 +291,7 @@ namespace phylanx { namespace execution_tree
                 util::generate_error_message(
                     "distributed target object does not hold a numeric type "
                     "and as such does not support slicing",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         if (data.has_annotation())
@@ -296,14 +308,14 @@ namespace phylanx { namespace execution_tree
                         indices,
                         extract_integer_value_strict(
                             std::move(value), name, codename),
-                        std::move(arr_localities), name, codename);
+                        std::move(arr_localities), name, codename, ctx);
                 }
 
                 return dist_slice_assign(extract_integer_value_strict(
                     std::move(data), name, codename),
                     indices,
                     extract_integer_value(std::move(value), name, codename),
-                    std::move(arr_localities), name, codename);
+                    std::move(arr_localities), name, codename, ctx);
             }
             else if (is_numeric_operand_strict(data))
             {
@@ -314,14 +326,14 @@ namespace phylanx { namespace execution_tree
                         indices,
                         extract_numeric_value_strict(
                             std::move(value), name, codename),
-                        std::move(arr_localities), name, codename);
+                        std::move(arr_localities), name, codename, ctx);
                 }
 
                 return dist_slice_assign(extract_numeric_value_strict(
                     std::move(data), name, codename),
                     indices,
                     extract_numeric_value(std::move(value), name, codename),
-                    std::move(arr_localities), name, codename);
+                    std::move(arr_localities), name, codename, ctx);
             }
             else if (is_boolean_operand_strict(data))
             {
@@ -332,14 +344,14 @@ namespace phylanx { namespace execution_tree
                         indices,
                         extract_boolean_value_strict(
                             std::move(value), name, codename),
-                        std::move(arr_localities), name, codename);
+                        std::move(arr_localities), name, codename, ctx);
                 }
 
                 return dist_slice_assign(extract_boolean_value_strict(
                     std::move(data), name, codename),
                     indices,
                     extract_boolean_value(std::move(value), name, codename),
-                    std::move(arr_localities), name, codename);
+                    std::move(arr_localities), name, codename, ctx);
             }
 
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -347,7 +359,7 @@ namespace phylanx { namespace execution_tree
                 util::generate_error_message(
                     "distributed target object does not hold a numeric type "
                     "and as such does not support slicing",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
 
@@ -356,7 +368,7 @@ namespace phylanx { namespace execution_tree
             return primitive_argument_type{slice_list(
                 extract_list_value_strict(std::move(data), name, codename),
                 indices, extract_value(std::move(value), name, codename), name,
-                codename)};
+                codename, ctx)};
         }
         else if (is_integer_operand_strict(data))
         {
@@ -368,14 +380,14 @@ namespace phylanx { namespace execution_tree
                     indices,
                     extract_integer_value_strict(
                         std::move(value), name, codename),
-                    name, codename)};
+                    name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_integer_value_strict(std::move(data), name, codename),
                 indices,
                 extract_integer_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         else if (is_numeric_operand_strict(data))
         {
@@ -387,14 +399,14 @@ namespace phylanx { namespace execution_tree
                     indices,
                     extract_numeric_value_strict(
                         std::move(value), name, codename),
-                    name, codename)};
+                    name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_numeric_value_strict(std::move(data), name, codename),
                 indices,
                 extract_numeric_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         else if (is_boolean_operand_strict(data))
         {
@@ -406,20 +418,29 @@ namespace phylanx { namespace execution_tree
                     indices,
                     extract_boolean_value_strict(
                         std::move(value), name, codename),
-                    name, codename)};
+                    name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_boolean_value_strict(std::move(data), name, codename),
                 indices,
                 extract_boolean_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         else if (is_dictionary_operand_strict(data))
         {
             auto&& dict =
                 phylanx::execution_tree::extract_dictionary_value_strict(
                     std::move(data));
+            if (!is_hashable_operand(indices))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::slice",
+                    util::generate_error_message(
+                        "the given index cannot be used for indexing a "
+                        "dictionary",
+                        name, codename, ctx.back_trace()));
+            }
             dict[indices] = std::move(value);
             return primitive_argument_type{std::move(dict)};
         }
@@ -428,13 +449,15 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric, range, or dictionary "
-                "type and as such does not support slicing", name, codename));
+                "type and as such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 
     primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, primitive_argument_type&& value,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (is_integer_operand_strict(data))
         {
@@ -447,14 +470,14 @@ namespace phylanx { namespace execution_tree
                         rows, columns,
                         extract_integer_value_strict(
                             std::move(value), name, codename),
-                        name, codename)};
+                        name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_integer_value_strict(std::move(data), name, codename),
                 rows, columns,
                 extract_integer_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_numeric_operand_strict(data))
         {
@@ -467,14 +490,14 @@ namespace phylanx { namespace execution_tree
                         rows, columns,
                         extract_numeric_value_strict(
                             std::move(value), name, codename),
-                        name, codename)};
+                        name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_numeric_value_strict(std::move(data), name, codename),
                 rows, columns,
                 extract_numeric_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_boolean_operand_strict(data))
         {
@@ -487,28 +510,30 @@ namespace phylanx { namespace execution_tree
                         rows, columns,
                         extract_boolean_value_strict(
                             std::move(value), name, codename),
-                        name, codename)};
+                        name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_boolean_value_strict(std::move(data), name, codename),
                 rows, columns,
                 extract_boolean_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric data type and "
-                "as such does not support slicing", name, codename));
+                "as such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 
     primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& pages,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, primitive_argument_type&& value,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (is_integer_operand_strict(data))
         {
@@ -521,14 +546,14 @@ namespace phylanx { namespace execution_tree
                         pages, rows, columns,
                         extract_integer_value_strict(
                             std::move(value), name, codename),
-                        name, codename)};
+                        name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_integer_value_strict(std::move(data), name, codename),
                 pages, rows, columns,
                 extract_integer_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_numeric_operand_strict(data))
         {
@@ -541,14 +566,14 @@ namespace phylanx { namespace execution_tree
                         pages, rows, columns,
                         extract_numeric_value_strict(
                             std::move(value), name, codename),
-                        name, codename)};
+                        name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_numeric_value_strict(std::move(data), name, codename),
                 pages, rows, columns,
                 extract_numeric_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
         if (is_boolean_operand_strict(data))
         {
@@ -561,21 +586,22 @@ namespace phylanx { namespace execution_tree
                         pages, rows, columns,
                         extract_boolean_value_strict(
                             std::move(value), name, codename),
-                        name, codename)};
+                        name, codename, ctx)};
             }
 
             return primitive_argument_type{slice_assign(
                 extract_boolean_value_strict(std::move(data), name, codename),
                 pages, rows, columns,
                 extract_boolean_value(std::move(value), name, codename),
-                name, codename)};
+                name, codename, ctx)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
                 "target object does not hold a numeric data type and "
-                "as such does not support slicing", name, codename));
+                "as such does not support slicing",
+                name, codename, ctx.back_trace()));
     }
 }}
 
