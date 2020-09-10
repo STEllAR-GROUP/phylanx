@@ -1027,19 +1027,11 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::dictionary_index:
-            {
-            //yyy
-            std::size_t num_val = extract_numeric_value(val).size();
-            std::cout << "num_val={" << num_val << "}" << std::endl;
-            ir::node_data<double> num_val_ir{(double)num_val};
-            return std::move(num_val_ir);
-            }
-
         case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
         case primitive_argument_type::string_index: HPX_FALLTHROUGH;
         case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
         case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -1049,7 +1041,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "@ value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1082,7 +1074,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value_strict",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "@@ value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1120,7 +1112,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "@@@ value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1278,7 +1270,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value_strict",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "~ value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1389,13 +1381,7 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index: HPX_FALLTHROUGH;
         case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
         case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index:// HPX_FALLTHROUGH;
-            // yyy
-            {
-            auto num_val = extract_numeric_value(val).size();
-            std::cout << "num_val=(" << num_val << ")" << std::endl;
-            return num_val;
-            }
+        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -1405,7 +1391,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value_dimension",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "~~ value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1442,7 +1428,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value_size",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "* value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1479,7 +1465,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value_dimensions",
             util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "** value type (type held: '" + type + "')",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -2698,10 +2684,10 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_numeric_value_size",
+            "phylanx::execution_tree::extract_list_value_size",
             util::generate_error_message(
-                "primitive_argument_type does not hold a numeric "
-                    "*** value type (type held: '" + type + "')",
+                "primitive_argument_type does not hold a list "
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -2804,6 +2790,154 @@ namespace phylanx { namespace execution_tree
                 "primitive_argument_type does not hold a dictionary "
                 "value type (type held: '" + type + "')",
                 name, codename));
+    }
+
+    // Extract a dictionary type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    ir::dictionary extract_dictionary_value_strict(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case primitive_argument_type::dictionary_index:
+            return util::get<8>(val);
+
+        case primitive_argument_type::nil_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::int64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::string_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::float64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::list_index:
+            HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_dictionary_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a dictionary "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    ir::dictionary&& extract_dictionary_value_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case primitive_argument_type::dictionary_index:
+            return util::get<8>(std::move(val));
+
+        case primitive_argument_type::nil_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::int64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::string_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::float64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::list_index:
+            HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_dictionary_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a dictionary "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    std::size_t extract_dictionary_value_size(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case primitive_argument_type::dictionary_index:
+            return util::get<8>(val).size();
+
+        case primitive_argument_type::nil_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::int64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::string_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::float64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::list_index:
+            HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_dictionary_value_size",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a dictionary "
+                "value type (type held: '" +
+                    type + "')",
+                name, codename));
+    }
+
+    bool is_dictionary_operand_strict(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case primitive_argument_type::dictionary_index:
+            return true;
+
+        case primitive_argument_type::nil_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::int64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::string_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::float64_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index:
+            HPX_FALLTHROUGH;
+        case primitive_argument_type::list_index:
+            HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+        return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////
