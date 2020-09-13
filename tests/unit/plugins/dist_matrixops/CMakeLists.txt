@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Hartmut Kaiser
+# Copyright (c) 2019-2020 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -81,6 +81,7 @@ foreach(test ${tests})
     SOURCES ${sources}
     ${${test}_FLAGS}
     EXCLUDE_FROM_ALL
+    DEPENDENCIES HPX::iostreams_component
     FOLDER "Tests/Unit/Plugins/DistMatrixOps")
 
   add_phylanx_unit_test("plugins.dist_matrixops" ${test} ${${test}_PARAMETERS})
