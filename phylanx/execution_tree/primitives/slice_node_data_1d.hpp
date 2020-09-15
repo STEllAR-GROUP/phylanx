@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice1d_basic(Data&& data,
         ir::slicing_indices const& indices, F const& f, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         std::size_t size = data.size();
         if (indices.start() >= std::int64_t(size) ||
@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree
                 util::generate_error_message(
                     "cannot extract anything but the existing elements from a "
                     "vector",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         // handle single argument slicing parameters
@@ -56,8 +56,8 @@ namespace phylanx { namespace execution_tree
         // handle single value slicing result
         if (indices.single_value())
         {
-            return f.scalar(
-                data, data[detail::check_index(start, size, name, codename)]);
+            return f.scalar(data,
+                data[detail::check_index(start, size, name, codename, ctx)]);
         }
 
         std::int64_t stop = indices.stop();
@@ -77,7 +77,7 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slicing1d",
                 util::generate_error_message(
-                    "step can not be zero", name, codename));
+                    "step can not be zero", name, codename, ctx.back_trace()));
         }
 
         auto element_indices =
@@ -92,17 +92,20 @@ namespace phylanx { namespace execution_tree
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_integer_1d0d_scalar(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         std::size_t size = data.size();
         return f.scalar(data,
-            data[detail::check_index(indices.scalar(), size, name, codename)]);
+            data[detail::check_index(
+                indices.scalar(), size, name, codename, ctx)]);
     }
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_integer_1d0d(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         std::size_t size = data.size();
         std::size_t index_size = indices.size();
@@ -111,7 +114,7 @@ namespace phylanx { namespace execution_tree
         for (std::size_t i = 0; i != index_size; ++i)
         {
             index_list[i] =
-                detail::check_index(index_list[i], size, name, codename);
+                detail::check_index(index_list[i], size, name, codename, ctx);
         }
 
         auto sv = blaze::elements(data, index_list.data(), index_list.size());
@@ -121,7 +124,8 @@ namespace phylanx { namespace execution_tree
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_integer_1d1d(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         std::size_t size = data.size();
         std::size_t index_size = indices.size();
@@ -130,7 +134,7 @@ namespace phylanx { namespace execution_tree
         for (std::size_t i = 0; i != index_size; ++i)
         {
             index_list[i] =
-                detail::check_index(index_list[i], size, name, codename);
+                detail::check_index(index_list[i], size, name, codename, ctx);
         }
 
         auto sv = blaze::elements(data, index_list.data(), index_list.size());
@@ -140,7 +144,8 @@ namespace phylanx { namespace execution_tree
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_integer_1d2d(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         std::size_t size = data.size();
 
@@ -158,8 +163,8 @@ namespace phylanx { namespace execution_tree
 
             for (std::size_t i = 0; i != index_size; ++i)
             {
-                index_row[i] =
-                    detail::check_index(index_row[i], size, name, codename);
+                index_row[i] = detail::check_index(
+                    index_row[i], size, name, codename, ctx);
             }
 
             blaze::row(result, row) = blaze::trans(
@@ -172,21 +177,22 @@ namespace phylanx { namespace execution_tree
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice1d_integer(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         switch (indices.num_dimensions())
         {
         case 0:         // 0d index
             return slice_integer_1d0d_scalar<T>(std::forward<Data>(data),
-                std::move(indices), f, name, codename);
+                std::move(indices), f, name, codename, ctx);
 
         case 1:         // 1d indexes
             return slice_integer_1d1d<T>(std::forward<Data>(data),
-                std::move(indices), f, name, codename);
+                std::move(indices), f, name, codename, ctx);
 
         case 2:         // 2d indexes
             return slice_integer_1d2d<T>(std::forward<Data>(data),
-                std::move(indices), f, name, codename);
+                std::move(indices), f, name, codename, ctx);
 
         default:
             break;
@@ -196,14 +202,15 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice1d_integer",
             util::generate_error_message(
                 "unexpected type for indices used for advanced integer array "
-                "indexing", name, codename));
+                "indexing", name, codename, ctx.back_trace()));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_boolean_1d0d(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (indices.size() == 0)
         {
@@ -211,18 +218,19 @@ namespace phylanx { namespace execution_tree
                 "phylanx::execution_tree::slice_boolean1d0d",
                 util::generate_error_message(
                     "boolean arrays used as indices must be non-empty", name,
-                    codename));
+                    codename, ctx.back_trace()));
         }
 
         return slice_integer_1d0d<T>(std::forward<Data>(data),
             util::slicing_helpers::create_list_slice(indices[0], data.size()),
-            f, name, codename);
+            f, name, codename, ctx);
     }
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_boolean_1d1d(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (data.size() != indices.size())
         {
@@ -234,45 +242,47 @@ namespace phylanx { namespace execution_tree
                         "dimension 0; dimension is {} but corresponding "
                         "boolean dimension is {}",
                         data.size(), indices.size()),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         return slice_integer_1d1d<T>(std::forward<Data>(data),
-            util::slicing_helpers::create_list_slice(indices), f,
-            name, codename);
+            util::slicing_helpers::create_list_slice(indices), f, name,
+            codename, ctx);
     }
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice_boolean_1d2d(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         // we are not allowed to use a 2d boolean index array for indexing a
         // vector
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice_boolean1d2d",
-            util::generate_error_message(
-                "too many indices for array", name, codename));
+            util::generate_error_message("too many indices for array", name,
+                codename, ctx.back_trace()));
     }
 
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice1d_boolean(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         switch (indices.num_dimensions())
         {
         case 0:         // 0d index
             return slice_boolean_1d0d<T>(std::forward<Data>(data),
-                std::move(indices), f, name, codename);
+                std::move(indices), f, name, codename, ctx);
 
         case 1:         // 1d indexes
             return slice_boolean_1d1d<T>(std::forward<Data>(data),
-                std::move(indices), f, name, codename);
+                std::move(indices), f, name, codename, ctx);
 
         case 2:         // 2d indexes
             return slice_boolean_1d2d<T>(std::forward<Data>(data),
-                std::move(indices), f, name, codename);
+                std::move(indices), f, name, codename, ctx);
 
         default:
             break;
@@ -282,14 +292,15 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice1d_boolean",
             util::generate_error_message(
                 "unexpected type for indices used for advanced boolean array "
-                "indexing", name, codename));
+                "indexing", name, codename, ctx.back_trace()));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice1d(Data&& data,
         primitive_argument_type const& indices, F const& f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (is_list_operand_strict(indices))
         {
@@ -302,8 +313,8 @@ namespace phylanx { namespace execution_tree
                 std::size_t size = data.size();
                 return slice1d_basic<T>(std::forward<Data>(data),
                     util::slicing_helpers::extract_slicing(
-                        indices, size, name, codename),
-                    f, name, codename);
+                        indices, size, name, codename, ctx),
+                    f, name, codename, ctx);
             }
 
             if (t == detail::slicing_index_advanced_integer)
@@ -315,7 +326,7 @@ namespace phylanx { namespace execution_tree
                 return slice1d_integer<T>(std::forward<Data>(data),
                     extract_integer_value_strict(
                         std::move(integer_index), name, codename),
-                    f, name, codename);
+                    f, name, codename, ctx);
             }
 
             if (t == detail::slicing_index_advanced_boolean)
@@ -327,7 +338,7 @@ namespace phylanx { namespace execution_tree
                 return slice1d_boolean<T>(std::forward<Data>(data),
                     extract_boolean_value_strict(
                         std::move(boolean_index), name, codename),
-                    f, name, codename);
+                    f, name, codename, ctx);
             }
         }
         else if (valid(indices))
@@ -337,7 +348,7 @@ namespace phylanx { namespace execution_tree
                 // advanced indexing (Boolean array indexing)
                 return slice1d_boolean<T>(std::forward<Data>(data),
                     extract_boolean_value_strict(indices, name, codename), f,
-                    name, codename);
+                    name, codename, ctx);
             }
 
             if (is_integer_operand(indices))
@@ -345,7 +356,7 @@ namespace phylanx { namespace execution_tree
                 // advanced indexing (integer array indexing)
                 return slice1d_integer<T>(std::forward<Data>(data),
                     extract_integer_value(indices, name, codename), f,
-                    name, codename);
+                    name, codename, ctx);
             }
         }
         else
@@ -353,24 +364,25 @@ namespace phylanx { namespace execution_tree
             std::size_t size = data.size();
             return slice1d_basic<T>(std::forward<Data>(data),
                 util::slicing_helpers::extract_slicing(
-                    indices, size, name, codename),
-                f, name, codename);
+                    indices, size, name, codename, ctx),
+                f, name, codename, ctx);
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice1d",
             util::generate_error_message(
-                "unsupported indexing type", name, codename));
+                "unsupported indexing type", name, codename, ctx.back_trace()));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     ir::node_data<T> slice1d_extract1d(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         return slice1d<T>(data.vector(), indices,
-            detail::slice_identity<T>{}, name, codename);
+            detail::slice_identity<T>{}, name, codename, ctx);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -378,7 +390,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_assign1d(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         switch (value.num_dimensions())
         {
@@ -387,8 +399,8 @@ namespace phylanx { namespace execution_tree
             {
                 auto v = data.vector();
 
-                std::size_t result_size =
-                    detail::slicing_size(indices, v.size(), name, codename);
+                std::size_t result_size = detail::slicing_size(
+                    indices, v.size(), name, codename, ctx);
 
                 typename ir::node_data<T>::storage1d_type result;
                 extract_value_vector(result, std::move(value),
@@ -398,11 +410,12 @@ namespace phylanx { namespace execution_tree
                 if (data.is_ref())
                 {
                     return slice1d<T>(std::move(v), indices,
-                        detail::slice_assign_vector<T>{rhs}, name, codename);
+                        detail::slice_assign_vector<T>{rhs}, name, codename,
+                        ctx);
                 }
 
                 return slice1d<T>(std::move(data.vector_non_ref()), indices,
-                    detail::slice_assign_vector<T>{rhs}, name, codename);
+                    detail::slice_assign_vector<T>{rhs}, name, codename, ctx);
             }
 
         case 2: HPX_FALLTHROUGH;
@@ -414,7 +427,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice1d_assign1d",
             util::generate_error_message(
                 "source ir::node_data object holds unsupported data type", name,
-                codename));
+                codename, ctx.back_trace()));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -423,7 +436,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         switch (value.num_dimensions())
         {
@@ -434,14 +447,14 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_ASSERT(!valid(columns));
                     return slice1d_assign1d(std::move(data), rows,
-                        std::move(value), name, codename);
+                        std::move(value), name, codename, ctx);
                 }
 
                 if (valid(columns))
                 {
                     HPX_ASSERT(!valid(rows));
                     return slice1d_assign1d(std::move(data), columns,
-                        std::move(value), name, codename);
+                        std::move(value), name, codename, ctx);
                 }
             }
             break;
@@ -455,7 +468,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice2d_assign1d",
             util::generate_error_message(
                 "source ir::node_data object holds unsupported data type", name,
-                codename));
+                codename, ctx.back_trace()));
     }
 }}
 

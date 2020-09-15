@@ -36,7 +36,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 void test_ginv_operation(std::string const& name, std::string const& code,
     std::string const& expected_str)
 {
-    HPX_TEST_EQ(
+    HPX_TEST_EQ(hpx::cout,
         compile_and_run(name, code), compile_and_run(name, expected_str));
 }
 
@@ -51,13 +51,13 @@ void test_gauss_inverse_3loc_1()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_ginv_operation("test_3_1", R"(
-            inverse_d(
-                annotate_d( [[3.0], [2.0], [0.0]],
-                    "test_3_1a",
-                    list("tile", list("columns", 0, 1), list("rows", 0,3)))
-            )
-        )",
+            test_ginv_operation("test_3_1", R"(
+                inverse_d(
+                    annotate_d( [[3.0], [2.0], [0.0]],
+                        "test_3_1a",
+                        list("tile", list("columns", 0, 1), list("rows", 0,3)))
+                )
+            )",
             R"(
             annotate_d([[1.0], [-2.0], [-2.0]], "test_3_1a/1",
                 list("tile", list("columns", 0, 1), list("rows", 0, 3)))
@@ -65,13 +65,13 @@ void test_gauss_inverse_3loc_1()
     }
     else if (hpx::get_locality_id() == 1)
     {
-         test_ginv_operation("test_3_1", R"(
-             inverse_d(
-                annotate_d( [[-3.0], [-3.0], [-1.0]],
-                    "test_3_1a",
-                    list("tile", list("columns", 1, 2), list("rows", 0,3)))
-             )
-         )",
+             test_ginv_operation("test_3_1", R"(
+                 inverse_d(
+                    annotate_d( [[-3.0], [-3.0], [-1.0]],
+                        "test_3_1a",
+                        list("tile", list("columns", 1, 2), list("rows", 0,3)))
+                 )
+             )",
             R"(
             annotate_d([[-1.0], [3.0], [3.0]], "test_3_1a/1",
                 list("tile", list("columns", 1, 2), list("rows", 0, 3)))
@@ -79,13 +79,13 @@ void test_gauss_inverse_3loc_1()
     }
     else
     {
-        test_ginv_operation("test_3_1", R"(
-           inverse_d(
-               annotate_d( [[4.0], [4.0], [1.0]],
-                    "test_3_1a",
-                    list("tile", list("columns", 2, 3), list("rows", 0,3)))
-           )
-        )",
+            test_ginv_operation("test_3_1", R"(
+               inverse_d(
+                   annotate_d( [[4.0], [4.0], [1.0]],
+                        "test_3_1a",
+                        list("tile", list("columns", 2, 3), list("rows", 0,3)))
+               )
+            )",
             R"(
             annotate_d([[0.0], [-4.0], [-3.0]], "test_3_1a/1",
                 list("tile", list("columns", 2, 3), list("rows", 0, 3)))
@@ -103,13 +103,13 @@ void test_gauss_inverse_3loc_2()
 {
     if (hpx::get_locality_id() == 0)
     {
-        test_ginv_operation("test_3_2", R"(
-            inverse_d(
-                annotate_d( [[3.0], [0.0], [2.0]],
-                    "test_3_2a",
-                    list("tile", list("columns", 0, 1), list("rows", 0,3)))
-            )
-        )",
+            test_ginv_operation("test_3_2", R"(
+                inverse_d(
+                    annotate_d( [[3.0], [0.0], [2.0]],
+                        "test_3_2a",
+                        list("tile", list("columns", 0, 1), list("rows", 0,3)))
+                )
+            )",
             R"(
             annotate_d([[0.2], [-0.2], [0.2]], "test_3_2a/1",
                 list("tile", list("columns", 0, 1), list("rows", 0, 3)))
@@ -118,12 +118,12 @@ void test_gauss_inverse_3loc_2()
     else if (hpx::get_locality_id() == 1)
     {
         test_ginv_operation("test_3_2", R"(
-            inverse_d(
-                annotate_d( [[0.0], [1.0], [0.0]],
-                    "test_3_2a",
-                    list("tile", list("columns", 1, 2), list("rows", 0,3)))
-            )
-        )",
+                inverse_d(
+                    annotate_d( [[0.0], [1.0], [0.0]],
+                        "test_3_2a",
+                        list("tile", list("columns", 1, 2), list("rows", 0,3)))
+                )
+            )",
             R"(
             annotate_d([[0.0], [1.0], [0.0]], "test_3_2a/1",
                 list("tile", list("columns", 1, 2), list("rows", 0, 3)))
@@ -132,12 +132,12 @@ void test_gauss_inverse_3loc_2()
     else
     {
         test_ginv_operation("test_3_2", R"(
-            inverse_d(
-                annotate_d( [[2.0], [1.0], [-2.0]],
-                    "test_3_2a",
-                     list("tile", list("columns", 2, 3), list("rows", 0,3)))
-            )
-        )",
+                inverse_d(
+                    annotate_d( [[2.0], [1.0], [-2.0]],
+                        "test_3_2a",
+                         list("tile", list("columns", 2, 3), list("rows", 0,3)))
+                )
+            )",
             R"(
             annotate_d([[0.2], [0.3], [-0.3]], "test_3_2a/1",
                 list("tile", list("columns", 2, 3), list("rows", 0, 3)))
@@ -156,12 +156,12 @@ void test_gauss_inverse_3loc_3()
     if (hpx::get_locality_id() == 0)
     {
         test_ginv_operation("test_3_3", R"(
-            inverse_d(
-                annotate_d( [[1.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
-                    "test_3_3a",
-                    list("tile", list("columns", 0, 2), list("rows", 0,4)))
-             )
-        )",
+                inverse_d(
+                    annotate_d( [[1.0, 1.0], [0.0, 3.0], [2.0, 3.0], [1.0, 0.0]],
+                        "test_3_3a",
+                        list("tile", list("columns", 0, 2), list("rows", 0,4)))
+                 )
+            )",
             R"(
             annotate_d([[-3.0, -0.5], [1.0, 0.25], [3.0, 0.25], [-3.0, 0.0]],
                 "test_3_3a/1",
@@ -171,12 +171,12 @@ void test_gauss_inverse_3loc_3()
     else if (hpx::get_locality_id() == 1)
     {
         test_ginv_operation("test_3_3", R"(
-            inverse_d(
-                annotate_d( [[1.0], [1.0], [1.0], [2.0]],
-                    "test_3_3a",
-                    list("tile", list("columns", 2, 3), list("rows", 0,4)))
-            )
-        )",
+                inverse_d(
+                    annotate_d( [[1.0], [1.0], [1.0], [2.0]],
+                        "test_3_3a",
+                        list("tile", list("columns", 2, 3), list("rows", 0,4)))
+                )
+            )",
             R"(
             annotate_d([[1.5], [-0.25], [-1.25], [1.0]], "test_3_3a/1",
                 list("tile", list("columns", 2, 3), list("rows", 0, 4)))
@@ -185,22 +185,18 @@ void test_gauss_inverse_3loc_3()
     else
     {
         test_ginv_operation("test_3_3", R"(
-            inverse_d(
-                annotate_d( [[0.0], [2.0], [0.0], [1.0]],
-                    "test_3_3a",
-                    list("tile", list("columns", 3, 4), list("rows", 0,4)))
-            )
-        )",
+                inverse_d(
+                    annotate_d( [[0.0], [2.0], [0.0], [1.0]],
+                        "test_3_3a",
+                        list("tile", list("columns", 3, 4), list("rows", 0,4)))
+                )
+            )",
             R"(
             annotate_d([[1.0], [-0.5], [-0.5], [1.0]], "test_3_3a/1",
                 list("tile", list("columns", 3, 4), list("rows", 0, 4)))
         )");
     }
 }
-
-
-
-
 
 int hpx_main(int argc, char* argv[])
 {

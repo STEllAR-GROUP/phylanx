@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Hartmut Kaiser
+// Copyright (c) 2017-2020 Hartmut Kaiser
 // Copyright (c) 2018 Tianyi Zhang
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -2733,6 +2733,27 @@ namespace phylanx { namespace execution_tree
         return false;
     }
 
+    bool is_hashable_operand(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index:
+            return true;
+
+        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+        return false;
+    }
+
     ir::dictionary extract_dictionary_value(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
@@ -4569,7 +4590,7 @@ namespace std
 
         case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
         case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;   // ir::range
+        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
         case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
         default:
             break;

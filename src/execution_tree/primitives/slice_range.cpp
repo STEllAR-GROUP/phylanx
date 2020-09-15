@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree
     // extract a slice from the given range instance
     primitive_argument_type slice_list(ir::range&& list,
         ir::slicing_indices const& indices, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         std::size_t list_size = list.size();
 
@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice_list",
                 util::generate_error_message(
-                    "step can not be zero", name, codename));
+                    "step can not be zero", name, codename, ctx.back_trace()));
         }
 
         // handle single element to return
@@ -130,20 +130,21 @@ namespace phylanx { namespace execution_tree
     // extract a slice from the given range instance
     primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         std::size_t size = data.size();
         return slice_list(std::move(data),
             util::slicing_helpers::extract_slicing(
-                indices, size, name, codename),
-            name, codename);
+                indices, size, name, codename, ctx),
+            name, codename, ctx);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename F>
     primitive_argument_type slice_list(ir::range&& list,
         ir::slicing_indices const& indices, F && f,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
 //         std::size_t list_size = list.size();
 
@@ -156,7 +157,7 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice_list",
                 util::generate_error_message(
-                    "step can not be zero", name, codename));
+                    "step can not be zero", name, codename, ctx.back_trace()));
         }
 
         // handle single element to return
@@ -255,7 +256,8 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::slice_list",
             util::generate_error_message(
                 "assignment to list elements based on an index list is not "
-                "supported (yet)", name, codename));
+                "supported (yet)",
+                name, codename, ctx.back_trace()));
 
         return primitive_argument_type{std::move(list)};
     }
@@ -310,7 +312,8 @@ namespace phylanx { namespace execution_tree
     // modify a slice of the given range instance
     primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices, primitive_argument_type&& value,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         std::size_t size = data.size();
 
@@ -319,13 +322,13 @@ namespace phylanx { namespace execution_tree
             ir::range rhs = extract_list_value_strict(value, name, codename);
             return slice_list(std::move(data),
                 util::slicing_helpers::extract_slicing(
-                    indices, size, name, codename),
-                detail::slice_assign_list{rhs}, name, codename);
+                    indices, size, name, codename, ctx),
+                detail::slice_assign_list{rhs}, name, codename, ctx);
         }
 
         return slice_list(std::move(data),
             util::slicing_helpers::extract_slicing(
-                indices, size, name, codename),
-            detail::slice_assign_value{value}, name, codename);
+                indices, size, name, codename, ctx),
+            detail::slice_assign_value{value}, name, codename, ctx);
     }
 }}

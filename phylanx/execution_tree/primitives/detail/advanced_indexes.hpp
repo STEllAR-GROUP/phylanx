@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,9 +22,9 @@
 namespace phylanx { namespace execution_tree { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
-    HPX_FORCEINLINE std::int64_t
-    check_index(std::int64_t index, std::size_t size, std::string const& name,
-        std::string const& codename)
+    HPX_FORCEINLINE std::int64_t check_index(std::int64_t index,
+        std::size_t size, std::string const& name, std::string const& codename,
+        eval_context const& ctx)
     {
         if (index < 0)
         {
@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace detail
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::detail::check_index",
                 util::generate_error_message(
-                    "index out of range", name, codename));
+                    "index out of range", name, codename, ctx.back_trace()));
         }
 #endif
         return index;
@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace detail
     std::size_t slicing_size(
         execution_tree::primitive_argument_type const& indices,
         std::size_t arg_size, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context const& ctx)
     {
         if (is_list_operand_strict(indices))
         {
@@ -144,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace detail
             {
                 // basic slicing and indexing
                 return util::slicing_helpers::slicing_size(
-                    indices, arg_size, name, codename);
+                    indices, arg_size, name, codename, ctx);
             }
 
             if (t == slicing_index_advanced_integer)
@@ -179,7 +179,7 @@ namespace phylanx { namespace execution_tree { namespace detail
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slicing_size",
             util::generate_error_message(
-                "unsupported indexing type", name, codename));
+                "unsupported indexing type", name, codename, ctx.back_trace()));
     }
 }}}
 
