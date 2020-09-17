@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const softsign_operation::match_data =
     {
-        hpx::util::make_tuple("softsign",
+        hpx::make_tuple("softsign",
             std::vector<std::string>{"softsign(_1)"},
             &create_softsign_operation, &create_primitive<softsign_operation>,
             R"(a

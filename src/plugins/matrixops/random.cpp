@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const random::match_data =
     {
-        hpx::util::make_tuple(
+        hpx::make_tuple(
             "random",
             std::vector<std::string>{
                 "random(_1, __arg(_2_dist, nil), __arg(_3_dtype, nil))"},
@@ -1367,7 +1367,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const set_seed_match_data =
     {
-        hpx::util::make_tuple(
+        hpx::make_tuple(
             "set_seed", std::vector<std::string>{"set_seed(_1)"},
             &create_generic_function<set_seed_action>,
             &create_primitive<generic_function<set_seed_action>>,
@@ -1382,7 +1382,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const get_seed_match_data =
     {
-        hpx::util::make_tuple(
+        hpx::make_tuple(
             "get_seed", std::vector<std::string>{"get_seed()"},
             &create_generic_function<get_seed_action>,
             &create_primitive<generic_function<get_seed_action>>,

@@ -31,7 +31,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const clip::match_data = {hpx::util::make_tuple("clip",
+    match_pattern_type const clip::match_data = {hpx::make_tuple("clip",
         std::vector<std::string>{"clip(_1, _2, _3)"}, &create_clip,
         &create_primitive<clip>, R"(
             a, axis

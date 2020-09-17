@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const bias_add_operation::match_data =
     {
-        hpx::util::make_tuple("bias_add",
+        hpx::make_tuple("bias_add",
         std::vector<std::string>{R"(bias_add(_1, _2))"},
         &create_bias_add_operation,
         &create_primitive<bias_add_operation>,

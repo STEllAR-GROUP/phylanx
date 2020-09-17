@@ -252,7 +252,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const format_string::match_data =
     {
-        hpx::util::make_tuple("format",
+        hpx::make_tuple("format",
             std::vector<std::string>{"format(_1, __2)"},
             &create_format_string, &create_primitive<format_string>,
             R"(s,args

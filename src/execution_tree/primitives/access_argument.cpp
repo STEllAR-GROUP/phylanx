@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const access_argument::match_data =
     {
-        hpx::util::make_tuple("access-argument",
+        hpx::make_tuple("access-argument",
             std::vector<std::string>{},
             nullptr, &create_primitive<access_argument>,
             "Internal")

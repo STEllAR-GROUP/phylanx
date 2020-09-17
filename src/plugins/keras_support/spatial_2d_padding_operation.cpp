@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const spatial_2d_padding_operation::match_data =
     {
-        hpx::util::make_tuple("spatial_2d_padding",
+        hpx::make_tuple("spatial_2d_padding",
         std::vector<std::string>{R"(
             spatial_2d_padding(_1,
             __arg(_2_padding, list(list(1,1),list(1,1))))

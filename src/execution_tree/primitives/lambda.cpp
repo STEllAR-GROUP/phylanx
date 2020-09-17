@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const lambda::match_data =
     {
-        hpx::util::make_tuple("lambda",
+        hpx::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
             nullptr, &create_primitive<lambda>,
             R"(args, body

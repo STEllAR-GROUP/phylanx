@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const conv2d_transpose_operation::match_data =
     {
-        hpx::util::make_tuple("conv2d_transpose",
+        hpx::make_tuple("conv2d_transpose",
         std::vector<std::string>{R"(
             conv2d_transpose(_1,
             _2_kernel,

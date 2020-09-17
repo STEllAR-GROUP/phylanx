@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const range_operation::match_data =
     {
-        hpx::util::make_tuple("range",
+        hpx::make_tuple("range",
             std::vector<std::string>{
                 "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
             },

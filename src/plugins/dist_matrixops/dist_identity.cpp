@@ -38,7 +38,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_identity::match_data = {
 
-        hpx::util::make_tuple("identity_d", std::vector<std::string>{R"(
+        hpx::make_tuple("identity_d", std::vector<std::string>{R"(
                 identity_d(
                     _1_sz,
                     __arg(_2_tile_index, find_here()),

@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const filter_operation::match_data =
     {
-        hpx::util::make_tuple("filter",
+        hpx::make_tuple("filter",
             std::vector<std::string>{"filter(_1, _2)"},
             &create_filter_operation, &create_primitive<filter_operation>, R"(
             func, iter

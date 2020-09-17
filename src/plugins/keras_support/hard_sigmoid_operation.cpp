@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const hard_sigmoid_operation::match_data =
     {
-        hpx::util::make_tuple("hard_sigmoid",
+        hpx::make_tuple("hard_sigmoid",
             std::vector<std::string>{"hard_sigmoid(_1)"},
             &create_hard_sigmoid_operation, &create_primitive<hard_sigmoid_operation>,
             R"(a

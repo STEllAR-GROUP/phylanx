@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const file_read_hdf5::match_data =
     {
-        hpx::util::make_tuple("file_read_hdf5",
+        hpx::make_tuple("file_read_hdf5",
             std::vector<std::string>{"file_read_hdf5(_1, _2)"},
             &create_file_read_hdf5, &create_primitive<file_read_hdf5>,
             R"(fname,dsetname

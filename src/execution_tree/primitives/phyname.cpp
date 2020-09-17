@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const phyname::match_data =
     {
-        hpx::util::make_tuple("__name",
+        hpx::make_tuple("__name",
             std::vector<std::string>{"__name(_1)"},
             &create_phyname, &create_primitive<phyname>,
             R"(arg

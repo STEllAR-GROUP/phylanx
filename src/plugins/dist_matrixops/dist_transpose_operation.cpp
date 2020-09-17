@@ -37,7 +37,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_transpose_operation::match_data =
     {
-        hpx::util::make_tuple("transpose_d",
+        hpx::make_tuple("transpose_d",
             std::vector<std::string>{"transpose_d(_1)", "transpose_d(_1, _2)"},
             &create_dist_transpose_operation,
             &execution_tree::create_primitive<dist_transpose_operation>, R"(

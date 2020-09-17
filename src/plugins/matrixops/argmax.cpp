@@ -20,7 +20,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const argmax::match_data =
     {
-        hpx::util::make_tuple("argmax",
+        hpx::make_tuple("argmax",
             std::vector<std::string>{"argmax(_1, _2)", "argmax(_1)"},
             &create_argmax, &create_primitive<argmax>, R"(
             a, axis

@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const transpose_operation::match_data =
     {
-        hpx::util::make_tuple("transpose",
+        hpx::make_tuple("transpose",
             std::vector<std::string>{"transpose(_1)", "transpose(_1,_2)"},
             &create_transpose_operation,
             &create_primitive<transpose_operation>, R"(

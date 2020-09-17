@@ -42,7 +42,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_diag::match_data =
     {
-        hpx::util::make_tuple("diag_d", std::vector<std::string>{R"(
+        hpx::make_tuple("diag_d", std::vector<std::string>{R"(
                 diag_d(
                     _1_arr,
                     __arg(_2_k, 0),

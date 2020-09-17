@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const if_conditional::match_data =
     {
-        hpx::util::make_tuple("if",
+        hpx::make_tuple("if",
             std::vector<std::string>{"if(_1, _2, _3)", "if(_1, _2)"},
             &create_if_conditional, &create_primitive<if_conditional>,
             R"(cond, thenf, elsef

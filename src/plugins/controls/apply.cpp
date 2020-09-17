@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const apply::match_data =
     {
-        hpx::util::make_tuple("apply",
+        hpx::make_tuple("apply",
             std::vector<std::string>{"apply(_1, _2)"},
             &create_apply, &create_primitive<apply>,
             R"(func, range

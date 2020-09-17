@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const prepend_operation::match_data =
     {
-        hpx::util::make_tuple("prepend",
+        hpx::make_tuple("prepend",
             std::vector<std::string>{"prepend(_1, _2)"},
             &create_prepend_operation, &create_primitive<prepend_operation>,
             R"(val,li

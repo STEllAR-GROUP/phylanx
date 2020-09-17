@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const store_operation::match_data =
     {
-        hpx::util::make_tuple("store",
+        hpx::make_tuple("store",
             std::vector<std::string>{"store(_1, _2)"},
             &create_store_operation, &create_primitive<store_operation>,
             R"(var, value

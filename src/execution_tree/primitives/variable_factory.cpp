@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const variable_factory::match_data =
     {
-        hpx::util::make_tuple("variable-factory",
+        hpx::make_tuple("variable-factory",
             std::vector<std::string>{},
             nullptr, &create_primitive<variable_factory>,
             "Internal")

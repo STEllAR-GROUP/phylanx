@@ -34,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const max_pool3d_operation::match_data =
     {
-        hpx::util::make_tuple("max_pool3d",
+        hpx::make_tuple("max_pool3d",
         std::vector<std::string>{R"(
             max_pool3d(_1,_2_pool_size,
             __arg(_3_padding, "valid"),

@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     // (4) a connection between the name and the type (always the same)
     // (5) describes the usage of the primitive
     match_pattern_type const matrix_GJE_Inverse::match_data = {
-        hpx::util::make_tuple("invGJE", std::vector<std::string>{"invGJE(_1)"},
+        hpx::make_tuple("invGJE", std::vector<std::string>{"invGJE(_1)"},
             &create_matrix_GJE_Inverse, &create_primitive<matrix_GJE_Inverse>,
             help_string)};
 

@@ -37,7 +37,7 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
         ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_conv1d::match_data =
     {
-        hpx::util::make_tuple("conv1d_d",
+        hpx::make_tuple("conv1d_d",
         std::vector<std::string>{R"(
             conv1d_d(_1, _2_kernel,
             __arg(_3_padding, "valid"),

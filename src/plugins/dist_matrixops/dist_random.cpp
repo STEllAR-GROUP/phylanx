@@ -41,7 +41,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_random::match_data =
     {
-        hpx::util::make_tuple("random_d", std::vector<std::string>{R"(
+        hpx::make_tuple("random_d", std::vector<std::string>{R"(
                 random_d(
                     _1_shape,
                     __arg(_2_tile_index, find_here()),

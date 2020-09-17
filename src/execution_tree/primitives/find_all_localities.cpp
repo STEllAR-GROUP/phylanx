@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const find_all_localities::match_data =
     {
-        hpx::util::make_tuple("find_all_localities",
+        hpx::make_tuple("find_all_localities",
             std::vector<std::string>{"find_all_localities()"},
             &create_find_all, &create_primitive<find_all_localities>,
             R"(

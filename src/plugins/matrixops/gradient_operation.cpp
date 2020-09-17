@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const gradient_operation::match_data =
     {
-        hpx::util::make_tuple("gradient",
+        hpx::make_tuple("gradient",
             std::vector<std::string>{"gradient(_1, _2)", "gradient(_1)"},
             &create_gradient_operation,
             &create_primitive<gradient_operation>, R"(

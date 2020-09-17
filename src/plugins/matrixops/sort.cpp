@@ -30,7 +30,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const sort::match_data = {hpx::util::make_tuple("sort",
+    match_pattern_type const sort::match_data = {hpx::make_tuple("sort",
         std::vector<std::string>{"sort(_1, __arg(_2_axis, -1), __arg(_3_kind, "
                                  "\"quicksort\"), __arg(_4_order, nil))"},
         &create_sort, &create_primitive<sort>, R"(

@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const block_operation::match_data =
     {
-        hpx::util::make_tuple("block",
+        hpx::make_tuple("block",
             std::vector<std::string>{"block(__1)"},
             &create_block_operation, &create_primitive<block_operation>,
             R"(stmt

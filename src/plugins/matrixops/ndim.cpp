@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const ndim::match_data =
     {
-        hpx::util::make_tuple("ndim",
+        hpx::make_tuple("ndim",
             std::vector<std::string>{"ndim(_1)"},
             &create_ndim, &create_primitive<ndim>, R"(
             a

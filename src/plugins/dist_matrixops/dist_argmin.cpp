@@ -17,7 +17,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_argmin::match_data = {
-        hpx::util::make_tuple("argmin_d",
+        hpx::make_tuple("argmin_d",
             std::vector<std::string>{"argmin_d(_1, _2)", "argmin_d(_1)"},
             &create_dist_argmin, &execution_tree::create_primitive<dist_argmin>,
             R"(

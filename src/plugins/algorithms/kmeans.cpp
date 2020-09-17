@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const kmeans::match_data =
     {
-        hpx::util::make_tuple("kmeans",
+        hpx::make_tuple("kmeans",
         std::vector<std::string>{R"(
                 kmeans(
                     _1_points,

@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const dist_file_read_csv::match_data =
     {
-        hpx::util::make_tuple("file_read_csv_d",
+        hpx::make_tuple("file_read_csv_d",
             std::vector<std::string>{R"(
                 file_read_csv_d(
                     _1_filename,

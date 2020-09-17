@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const assert_condition::match_data =
     {
-        hpx::util::make_tuple("assert",
+        hpx::make_tuple("assert",
             std::vector<std::string>{"assert(_1)"},
             &create_assert_condition, &create_primitive<assert_condition>,
             R"(cond

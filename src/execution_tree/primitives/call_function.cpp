@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const call_function::match_data =
     {
-        hpx::util::make_tuple("call-function",
+        hpx::make_tuple("call-function",
             std::vector<std::string>{},
             nullptr, &create_primitive<call_function>,
             "Internal")

@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
     match_pattern_type const timer::match_data = {
 
-        hpx::util::make_tuple("timer",
+        hpx::make_tuple("timer",
             std::vector<std::string>{"timer(_1, _2)"}, &create_timer,
             &create_primitive<timer>,
             R"(arg, done

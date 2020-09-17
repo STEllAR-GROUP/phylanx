@@ -170,18 +170,18 @@ namespace phylanx { namespace ast
         template <typename F, typename... Ts>
         struct match_visitor
         {
-            match_visitor(F && f, hpx::util::tuple<Ts const&...> const& t)
+            match_visitor(F && f, hpx::tuple<Ts const&...> const& t)
               : f_(static_cast<F&&>(f)), t_(t)
             {}
 
             F && f_;
-            hpx::util::tuple<Ts const&...> const& t_;
+            hpx::tuple<Ts const&...> const& t_;
 
             template <typename Ast1, typename Ast2, std::size_t... Is>
             inline bool call(Ast1 const& ast1, Ast2 const& ast2,
                 hpx::util::pack_c<std::size_t, Is...>) const
             {
-                return match_ast(ast1, ast2, f_, hpx::util::get<Is>(t_)...);
+                return match_ast(ast1, ast2, f_, hpx::get<Is>(t_)...);
             }
 
             template <typename Ast1, typename Ast2>
@@ -199,7 +199,7 @@ namespace phylanx { namespace ast
         make_match_visitor(F && f, Ts const&... ts)
         {
             return match_visitor<F, Ts...>(
-                std::forward<F>(f), hpx::util::forward_as_tuple(ts...));
+                std::forward<F>(f), hpx::forward_as_tuple(ts...));
         }
     }
 

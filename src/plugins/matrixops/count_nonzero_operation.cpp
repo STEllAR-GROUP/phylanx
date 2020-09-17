@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const count_nonzero_operation::match_data =
     {
-        hpx::util::make_tuple("count_nonzero",
+        hpx::make_tuple("count_nonzero",
             std::vector<std::string>{"count_nonzero(_1)"},
             &create_count_nonzero_operation,
             &create_primitive<count_nonzero_operation>,

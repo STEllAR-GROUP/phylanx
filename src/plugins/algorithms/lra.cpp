@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const lra::match_data =
     {
-        hpx::util::make_tuple("lra",
+        hpx::make_tuple("lra",
             std::vector<std::string>{
                 "lra(_1, _2, _3, _4, _5)",
                 "lra(_1, _2, _3, _4)"

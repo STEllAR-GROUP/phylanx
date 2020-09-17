@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const ctc_decode_operation::match_data = {
-        hpx::util::make_tuple("ctc_decode",
+        hpx::make_tuple("ctc_decode",
             std::vector<std::string>{
                 "ctc_decode(_1, _2, __arg(_3_greedy, 1), __arg(_4_beam_width, "
                 "100), __arg(_5_top_paths, 1))"},

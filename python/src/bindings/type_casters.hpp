@@ -95,7 +95,7 @@ namespace pybind11 { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     // Takes an input array and determines whether we can make it fit into the
     // Blaze type.
-    using array_index_type = hpx::util::tuple<
+    using array_index_type = hpx::tuple<
         std::size_t, std::size_t, std::size_t, std::size_t,
         std::size_t, std::size_t, std::size_t, std::size_t>;
 
@@ -535,7 +535,7 @@ namespace pybind11 { namespace detail
             if (!fits) return false;
 
             // Allocate the new type, then build a numpy reference into it
-            value = blaze::DynamicVector<T>(hpx::util::get<0>(t));
+            value = blaze::DynamicVector<T>(hpx::get<0>(t));
 
             auto v = value.vector();
             auto ref = reinterpret_steal<array>(blaze_ref_array(v));
@@ -580,7 +580,7 @@ namespace pybind11 { namespace detail
 
             // Allocate the new type, then build a numpy reference into it
             value = blaze::DynamicMatrix<T>(
-                hpx::util::get<0>(t), hpx::util::get<1>(t));
+                hpx::get<0>(t), hpx::get<1>(t));
 
             auto m = value.matrix();
             auto ref = reinterpret_steal<array>(blaze_ref_array(m));
@@ -623,8 +623,8 @@ namespace pybind11 { namespace detail
             if (!fits) return false;
 
             // Allocate the new type, then build a numpy reference into it
-            value = blaze::DynamicTensor<T>(hpx::util::get<0>(ait),
-                hpx::util::get<1>(ait), hpx::util::get<2>(ait));
+            value = blaze::DynamicTensor<T>(hpx::get<0>(ait),
+                hpx::get<1>(ait), hpx::get<2>(ait));
 
             auto t = value.tensor();
             auto ref = reinterpret_steal<array>(blaze_ref_array(t));
@@ -668,8 +668,8 @@ namespace pybind11 { namespace detail
 
             // Allocate the new type, then build a numpy reference into it
             value = blaze::DynamicArray<4, T>(
-                hpx::util::get<0>(ait), hpx::util::get<1>(ait),
-                hpx::util::get<2>(ait), hpx::util::get<3>(ait));
+                hpx::get<0>(ait), hpx::get<1>(ait),
+                hpx::get<2>(ait), hpx::get<3>(ait));
 
             auto q = value.quatern();
             auto ref = reinterpret_steal<array>(blaze_ref_array(q));
