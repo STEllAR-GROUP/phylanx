@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const async_operation::match_data =
     {
-        hpx::util::make_tuple("async",
+        hpx::make_tuple("async",
             std::vector<std::string>{"async(_1)"},
             &create_async_operation, &create_primitive<async_operation>, R"(
             expr

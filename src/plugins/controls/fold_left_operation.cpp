@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const fold_left_operation::match_data =
     {
-        hpx::util::make_tuple("fold_left",
+        hpx::make_tuple("fold_left",
             std::vector<std::string>{"fold_left(_1_func, _2_initial, _3_data)"},
             &create_fold_left_operation,
             &create_primitive<fold_left_operation>,

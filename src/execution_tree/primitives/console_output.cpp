@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const console_output::match_data =
     {
-        hpx::util::make_tuple("cout",
+        hpx::make_tuple("cout",
             std::vector<std::string>{"cout(__1)"},
             &create_console_output, &create_primitive<console_output>,
             R"(args

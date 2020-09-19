@@ -180,16 +180,16 @@ namespace phylanx { namespace execution_tree
 
     struct match_pattern_type
     {
-        using match_pattern_data = hpx::util::tuple<std::string,
+        using match_pattern_data = hpx::tuple<std::string,
             std::vector<std::string>, factory_function_type,
             primitive_factory_function_type, std::string>;
 
         match_pattern_type(match_pattern_data && data)
-          : primitive_type_(std::move(hpx::util::get<0>(data)))
-          , patterns_(std::move(hpx::util::get<1>(data)))
-          , create_primitive_(hpx::util::get<2>(data))
-          , create_instance_(hpx::util::get<3>(data))
-          , help_string_(std::move(hpx::util::get<4>(data)))
+          : primitive_type_(std::move(hpx::get<0>(data)))
+          , patterns_(std::move(hpx::get<1>(data)))
+          , create_primitive_(hpx::get<2>(data))
+          , create_instance_(hpx::get<3>(data))
+          , help_string_(std::move(hpx::get<4>(data)))
           , supports_dtype_(false)
         {}
 

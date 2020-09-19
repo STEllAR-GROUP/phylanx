@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const pad::match_data = {hpx::util::make_tuple("pad",
+    match_pattern_type const pad::match_data = {hpx::make_tuple("pad",
         std::vector<std::string>{"pad(_1, _2, _3)", "pad(_1, _2, _3, _4)"},
         &create_pad, &create_primitive<pad>, R"(
             a, pad_width, mode, constant_values

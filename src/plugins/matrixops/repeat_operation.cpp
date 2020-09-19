@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const repeat_operation::match_data = {
-        hpx::util::make_tuple("repeat",
+        hpx::make_tuple("repeat",
             std::vector<std::string>{"repeat(_1,_2)", "repeat(_1,_2,_3)"},
             &create_repeat_operation, &create_primitive<repeat_operation>,
             R"(a, repeats, axis

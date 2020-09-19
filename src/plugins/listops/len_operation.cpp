@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const len_operation::match_data =
     {
-        hpx::util::make_tuple("__len",
+        hpx::make_tuple("__len",
             std::vector<std::string>{"__len(_1)"},
             &create_len_operation, &create_primitive<len_operation>,
             R"(a

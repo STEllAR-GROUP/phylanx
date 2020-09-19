@@ -17,7 +17,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const dist_argmax::match_data = {
-        hpx::util::make_tuple("argmax_d",
+        hpx::make_tuple("argmax_d",
             std::vector<std::string>{"argmax_d(_1, _2)", "argmax_d(_1)"},
             &create_dist_argmax, &execution_tree::create_primitive<dist_argmax>,
             R"(

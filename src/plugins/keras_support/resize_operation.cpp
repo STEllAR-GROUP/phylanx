@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const resize_operation::match_data = {
-        hpx::util::make_tuple("resize_images",
+        hpx::make_tuple("resize_images",
             std::vector<std::string>{R"(
                 resize_images(_1,
                 _2_height_factor,

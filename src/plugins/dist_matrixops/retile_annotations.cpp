@@ -45,7 +45,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     execution_tree::match_pattern_type const retile_annotations::match_data =
     {
-        hpx::util::make_tuple("retile_d", std::vector<std::string>{R"(
+        hpx::make_tuple("retile_d", std::vector<std::string>{R"(
                 retile_d(
                     _1_a,
                     __arg(_2_tiling_type, "sym"),

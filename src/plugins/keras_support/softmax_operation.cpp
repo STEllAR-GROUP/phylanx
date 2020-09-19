@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const softmax_operation::match_data =
     {
-        hpx::util::make_tuple("softmax",
+        hpx::make_tuple("softmax",
         std::vector<std::string>{
             "softmax(_1)",
             "softmax(_1,_2)"

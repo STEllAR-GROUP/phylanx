@@ -31,7 +31,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const argsort::match_data = {
-        hpx::util::make_tuple("argsort",
+        hpx::make_tuple("argsort",
             std::vector<std::string>{
                 "argsort(_1, __arg(_2_axis, -1), __arg(_3_kind, "
                 "\"quicksort\"), __arg(_4_order, nil))"},

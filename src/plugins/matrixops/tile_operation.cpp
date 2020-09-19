@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const tile_operation::match_data = {
-        hpx::util::make_tuple("tile", std::vector<std::string>{"tile(_1,_2)"},
+        hpx::make_tuple("tile", std::vector<std::string>{"tile(_1,_2)"},
             &create_tile_operation, &create_primitive<tile_operation>,
             R"(a, reps
             Args:

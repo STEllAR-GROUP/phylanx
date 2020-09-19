@@ -30,7 +30,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const unique::match_data = {hpx::util::make_tuple(
+    match_pattern_type const unique::match_data = {hpx::make_tuple(
         "unique", std::vector<std::string>{"unique(_1)", "unique(_1, _2)"},
         &create_unique, &create_primitive<unique>, R"(
             a, axis

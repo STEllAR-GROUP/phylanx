@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const define_variable::match_data =
     {
-        hpx::util::make_tuple("define-variable",
+        hpx::make_tuple("define-variable",
             std::vector<std::string>{},
             nullptr, &create_primitive<define_variable>,
             "Internal")
@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const define_variable::match_data_define =
     {
-        hpx::util::make_tuple("define",
+        hpx::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
             nullptr, nullptr, R"(
             name, args, body
@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const define_variable::match_data_lambda =
     {
-        hpx::util::make_tuple("lambda",
+        hpx::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
             nullptr, nullptr, R"(
             args, body

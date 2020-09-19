@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const target_reference::match_data =
     {
-        hpx::util::make_tuple("target-reference",
+        hpx::make_tuple("target-reference",
             std::vector<std::string>{},
             nullptr, &create_primitive<target_reference>,
             "Internal")

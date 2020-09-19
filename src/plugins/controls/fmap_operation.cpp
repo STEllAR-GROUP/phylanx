@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const fmap_operation::match_data =
     {
-        hpx::util::make_tuple("fmap",
+        hpx::make_tuple("fmap",
             std::vector<std::string>{"fmap(_1, __2)"},
             &create_fmap_operation, &create_primitive<fmap_operation>,
             R"(func, listv

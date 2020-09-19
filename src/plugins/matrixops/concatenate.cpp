@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const concatenate::match_data = {
-        hpx::util::make_tuple("concatenate",
+        hpx::make_tuple("concatenate",
             std::vector<std::string>{
                 "concatenate(_1, __arg(_2_axis, 0))"
             },

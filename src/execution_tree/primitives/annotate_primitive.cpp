@@ -49,7 +49,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         The `target` annotated with the list of values given by `*args`.)";
 
     match_pattern_type const annotate_primitive::match_data_annotate = {
-        hpx::util::make_tuple("annotate",
+        hpx::make_tuple("annotate",
             std::vector<std::string>{
                 "annotate(_1_target, __arg(_2_args, nil))"},
             &create_annotate, &create_primitive<annotate_primitive>,
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         `target` is also identified by the given `name` across localities.)";
 
     match_pattern_type const annotate_primitive::match_data_annotate_d = {
-        hpx::util::make_tuple("annotate_d",
+        hpx::make_tuple("annotate_d",
             std::vector<std::string>{
                 "annotate_d(_1_target, _2_name, __arg(_3_args, nil))"},
             &create_annotate, &create_primitive<annotate_primitive>,

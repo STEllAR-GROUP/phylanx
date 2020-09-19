@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const diag_operation::match_data =
     {
-        hpx::util::make_tuple("diag",
+        hpx::make_tuple("diag",
             std::vector<std::string>{"diag(_1)", "diag(_1, _2)"},
             &create_diag_operation, &create_primitive<diag_operation>, R"(
             m

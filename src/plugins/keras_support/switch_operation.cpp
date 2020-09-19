@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const switch_operation::match_data =
     {
-        hpx::util::make_tuple("switch",
+        hpx::make_tuple("switch",
             std::vector<std::string>{"switch(_1, _2, _3)"},
             &create_switch_operation, &create_primitive<switch_operation>,
             R"(condition, then_expression, else_expression

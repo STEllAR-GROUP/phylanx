@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const for_each::match_data =
     {
-        hpx::util::make_tuple("for_each",
+        hpx::make_tuple("for_each",
             std::vector<std::string>{"for_each(_1, _2)"},
             &create_for_each, &create_primitive<for_each>,
             R"(func, range

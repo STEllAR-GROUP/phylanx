@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const batch_dot_operation::match_data = {
-        hpx::util::make_tuple("batch_dot",
+        hpx::make_tuple("batch_dot",
             std::vector<std::string>{
                 "batch_dot(_1, _2)", "batch_dot(_1, _2, _3)"},
             &create_batch_dot_operation, &create_primitive<batch_dot_operation>,

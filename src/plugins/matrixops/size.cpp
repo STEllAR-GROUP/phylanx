@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const size_operation::match_data =
     {
-        hpx::util::make_tuple("size",
+        hpx::make_tuple("size",
             std::vector<std::string>{"size(_1)"},
             &create_size_operation, &create_primitive<size_operation>, R"(
             a

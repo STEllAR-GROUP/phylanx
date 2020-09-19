@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const l2_normalize_operation::match_data =
     {
-        hpx::util::make_tuple("l2_normalize",
+        hpx::make_tuple("l2_normalize",
         std::vector<std::string>{"l2_normalize(_1)","l2_normalize(_1,_2)"},
         &create_l2_normalize_operation, &create_primitive<l2_normalize_operation>,
         R"(a, axis

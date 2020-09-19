@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const bin_cross_operation::match_data =
     {
-        hpx::util::make_tuple("binary_crossentropy",
+        hpx::make_tuple("binary_crossentropy",
         std::vector<std::string>{
             "binary_crossentropy(_1_target,_2_output,"
                 "__arg(_3_from_logits,false))"

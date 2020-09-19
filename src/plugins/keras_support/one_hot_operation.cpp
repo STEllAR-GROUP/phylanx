@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const one_hot_operation::match_data =
     {
-        hpx::util::make_tuple("one_hot",
+        hpx::make_tuple("one_hot",
         std::vector<std::string>{"one_hot(_1,_2)"},
         &create_one_hot_operation, &create_primitive<one_hot_operation>,
         R"(indices, num_classes

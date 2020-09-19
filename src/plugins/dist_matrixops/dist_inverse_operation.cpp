@@ -47,7 +47,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         )";
 
     execution_tree::match_pattern_type const dist_inverse::match_data = {
-        hpx::util::make_tuple("inverse_d", std::vector<std::string>{R"(
+        hpx::make_tuple("inverse_d", std::vector<std::string>{R"(
               inverse_d(
                  _1_matrix
                )

@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const separable_conv1d_operation::match_data = {
-        hpx::util::make_tuple("separable_conv1d", std::vector<std::string>{R"(
+        hpx::make_tuple("separable_conv1d", std::vector<std::string>{R"(
             separable_conv1d(_1,
             _2_depthwise_kernel,
             _3_pointwise_kernel,

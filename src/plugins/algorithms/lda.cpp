@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const lda_trainer::match_data =
-        {hpx::util::make_tuple("lda_trainer",
+        {hpx::make_tuple("lda_trainer",
             std::vector<std::string>{
                 "lda_trainer(_1, _2, _3, _4, _5)"},
             &create_lda_trainer, &create_primitive<lda_trainer>,

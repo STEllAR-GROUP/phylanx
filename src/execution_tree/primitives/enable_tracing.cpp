@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const enable_tracing::match_data =
     {
-        hpx::util::make_tuple("enable_tracing",
+        hpx::make_tuple("enable_tracing",
             std::vector<std::string>{"enable_tracing(_1)"},
             &create_enable_tracing, &create_primitive<enable_tracing>,
             R"(eon
