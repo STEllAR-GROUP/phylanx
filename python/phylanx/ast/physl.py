@@ -372,7 +372,7 @@ class PhySL:
         physl_db = None
         try:
             # create/open database representing the function in this file
-            physl_db = db(_name_of_importing_file)
+            physl_db = db(self.file_name)   # _name_of_importing_file)
 
             # check whether this Phylanx function is already in database
             self.__src__, self.__ast__ = physl_db.select(
@@ -927,7 +927,6 @@ class PhySL:
 
         # everything that's not a string can be directly passed on
         return '%s' % node.n
-
 
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""

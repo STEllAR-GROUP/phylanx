@@ -9,17 +9,19 @@ from phylanx import Phylanx
 
 
 dict_nn = {
-    "key " : "value"
+    "key": "value"
 }
 
 
-@Phylanx(debug=True)
+@Phylanx
 def change(data):
-    data["key"] = 42.0
-    data["key"] = 42
+    data["key_float"] = 42.0
+    data["key_int"] = 42
     data["key"] = "new value"
     return data
 
 
 result = change(dict_nn)
+assert result['key_float'] == 42.0, result
+assert result['key_int'] == 42, result
 assert result['key'] == 'new value', result
