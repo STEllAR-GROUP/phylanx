@@ -916,7 +916,18 @@ class PhySL:
 
     def _Constant(self, node):
         """A constant value."""
-        return self._apply_rule(node.value)
+        import sys
+        if sys.version_info.minor <= 7:
+            return self._apply_rule(node.value)
+
+        # starting V3.8 string and number literals are represented as _Constant
+        # nodes
+        if isinstance(node.value, str):
+            return self._Str(node)
+
+        # everything that's not a string can be directly passed on
+        return '%s' % node.n
+
 
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
