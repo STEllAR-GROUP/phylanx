@@ -65,11 +65,11 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                 if (p.supports_dtype_)
                 {
                     result.define_variable(p.primitive_type_ + "__bool",
-                        builtin_function(
-                            p.create_primitive_, default_locality), "<builtin>");
+                        builtin_function(p.create_primitive_, default_locality),
+                        "<builtin>");
                     result.define_variable(p.primitive_type_ + "__int",
-                        builtin_function(
-                            p.create_primitive_, default_locality), "<builtin>");
+                        builtin_function(p.create_primitive_, default_locality),
+                        "<builtin>");
                     result.define_variable(p.primitive_type_ + "__float",
                         builtin_function(p.create_primitive_, default_locality),
                         "<builtin>");
@@ -1234,13 +1234,15 @@ namespace phylanx { namespace execution_tree { namespace compiler {
             // find the first pattern that has a sufficient number of
             // placeholders
             auto it = p.first;
-            while (it != p.second && !it->second.expect_variadics() &&
-                exprs.size() > it->second.args_.size())
+            auto jt = it;
+            while (jt != p.second && !jt->second.expect_variadics() &&
+                exprs.size() > jt->second.args_.size())
             {
-                it = ++p.first;
+                it = jt;
+                jt = ++p.first;
             }
 
-            if (it == p.second)
+            if (jt == p.second)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::compiler::"
@@ -1596,7 +1598,7 @@ namespace phylanx { namespace execution_tree { namespace compiler {
 
                     // Handle slice(_1, __2) and slice_row(_1, _2)
                     if (function_name == "slice" ||
-                        function_name == "slice_row"||
+                        function_name == "slice_row" ||
                         function_name == "slice_row_d")
                     {
                         placeholder_map_type placeholders;

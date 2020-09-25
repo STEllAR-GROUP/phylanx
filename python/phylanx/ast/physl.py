@@ -1333,6 +1333,20 @@ class PhySL:
         expr = tuple(map(self._apply_rule, node.elts))
         return expr
 
+    def _Assert(self, node):
+        """class Assert(test, msg)
+
+       `test`: holds a single expression to evaluate
+       `msg`: an optional expression to evaluate (and print) if test fails.
+       """
+        symbol = '%s' % get_symbol_info(node, 'assert')
+        test = self._apply_rule(node.test)
+        if node.msg:
+            msg = self._apply_rule(node.msg)
+            return [symbol, (test, msg)]
+
+        return [symbol, (test,)]
+
     def _UAdd(self, node):
         """
 
