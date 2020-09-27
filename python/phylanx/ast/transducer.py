@@ -12,7 +12,7 @@ import types
 import phylanx
 from .physl import PhySL
 from .openscop import OpenSCoP
-from phylanx import execution_tree
+from phylanx import execution_tree, PhylanxSession
 from phylanx.ast import generate_ast as generate_phylanx_ast
 from phylanx.exceptions import InvalidDecoratorArgumentError
 
@@ -42,12 +42,27 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 'doc_src',
                 'performance',
                 'localities',
-                'startatlineone'
+                'startatlineone',
+                'print_progress',
+                'disable_decorator'
             ]
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
-            self.startatlineone = kwargs.get("startatlineone", False)
+            self.startatlineone = kwargs.get(
+                "startatlineone", PhylanxSession.startatlineone)
+
+            self.disable_decorator = kwargs.get(
+                "disable_decorator", PhylanxSession.disable_decorator)
+            self.decorated_function = f
+
+            if self.startatlineone:
+                kwargs['startatlineone'] = True
+            if kwargs.get("print_progress", PhylanxSession.print_progress):
+                kwargs['print_progress'] = True
+            if kwargs.get("debug", PhylanxSession.debug):
+                kwargs['debug'] = True
+
             for key in kwargs.keys():
                 if key not in valid_kwargs:
                     raise NotImplementedError("Unknown Phylanx argument '%s'." % key)
@@ -146,6 +161,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """Compile this decorator, return wrapper binding the function to
                arguments"""
 
+            # just invoke original function if decorator should be disabled
+            if self.disable_decorator:
+                return lambda: self.decorated_function(*args, **kwargs)
+
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
@@ -157,6 +176,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
         def __call__(self, *args, **kwargs):
             """Invoke this decorator using the given arguments"""
+
+            # just invoke original function if decorator should be disabled
+            if self.disable_decorator:
+                return self.decorated_function(*args, **kwargs)
 
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(

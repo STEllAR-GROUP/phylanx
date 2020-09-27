@@ -366,11 +366,18 @@ class PhySL:
                     phylanx.execution_tree.global_compiler_state(
                         self.wrapped_function.__name__, self.file_name)
 
+    def _print_progress(self, msg):
+        if self.kwargs.get("print_progress"):
+            msg += ' %s(%s)'
+            print(msg % (self.wrapped_function.__name__, self.file_name))
+
     def _compile_or_load(self):
         """Compile or load this function from database"""
 
         physl_db = None
         try:
+            self._print_progress('physl: compiling')
+
             # create/open database representing the function in this file
             physl_db = db(self.file_name)   # _name_of_importing_file)
 
@@ -379,6 +386,8 @@ class PhySL:
                 self.wrapped_function.__name__)
 
             if self.__src__ is None:
+                self._print_progress('physl: not found in db')
+
                 # this function is not in database, generate physl
                 self.ir = self._apply_rule(self.python_tree.body[0])
                 check_return(self.ir)
@@ -421,6 +430,8 @@ class PhySL:
         if self.kwargs.get("debug"):
             print_physl_src(self.__src__)
             print(end="", flush="")
+
+        self._print_progress('physl: compiled')
 
     def _ensure_global_state(self):
         """Ensure global PhySL session has been initialized"""
