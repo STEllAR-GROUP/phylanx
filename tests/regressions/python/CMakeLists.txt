@@ -59,6 +59,7 @@ set(tests
     1236_store_failure
     1242_list_comparison
     1244_function_call
+    1255_assign_string
     array_len_494
     array_shape_486
     array_subscript_403
