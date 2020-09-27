@@ -37,6 +37,10 @@ def test_traverse(expr, expected):
 
 
 ###############################################################################
-test_traverse('A + B', '(A$1$1 + B$1$5)\nA$1$1\nB$1$5\n+\n')
+# test_traverse('A + B', '(A$1$1 + B$1$5)\nA$1$1\nB$1$5\n+\n')
+# test_traverse('A + B - C',
+#               '(A$1$1 + B$1$5 - C$1$9)\nA$1$1\nB$1$5\n+\nC$1$9\n-\n')
+test_traverse('A + B', '(A$1$1 + B$1$5)\nA$1$1\nB$1$5\noptoken.op_plus\n')
 test_traverse('A + B - C',
-              '(A$1$1 + B$1$5 - C$1$9)\nA$1$1\nB$1$5\n+\nC$1$9\n-\n')
+              '(A$1$1 + B$1$5 - C$1$9)\nA$1$1\nB$1$5\noptoken.op_plus\n' + \
+              'C$1$9\noptoken.op_minus\n')
