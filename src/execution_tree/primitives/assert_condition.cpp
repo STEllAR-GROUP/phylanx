@@ -7,11 +7,11 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/assert_condition.hpp>
 
-#include <hpx/iostream.hpp>
+#include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/errors/throw_exception.hpp>
+#include <hpx/iostream.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -21,67 +21,88 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_assert_condition(hpx::id_type const& locality,
-        primitive_arguments_type&& operands,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type&& operands, std::string const& name,
+        std::string const& codename)
     {
         static std::string type("assert");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const assert_condition::match_data =
-    {
+    match_pattern_type const assert_condition::match_data = {
         hpx::make_tuple("assert",
-            std::vector<std::string>{"assert(_1)"},
+            std::vector<std::string>{"assert(_1_test, __arg(_2_msg, nil))"},
             &create_assert_condition, &create_primitive<assert_condition>,
-            R"(cond
+            R"(cond, msg
             Args:
 
                 cond (boolean expression) : if not true, raise an AssertionError
-            Returns:)"
-            )
-    };
+                msg (any expression) : if given, the evaluated result is printed
+
+            Returns:)")};
 
     ///////////////////////////////////////////////////////////////////////////
-    assert_condition::assert_condition(
-            primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    assert_condition::assert_condition(primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-    {}
+    {
+    }
 
     hpx::future<primitive_argument_type> assert_condition::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1)
+        if (operands.size() != 1 && operands.size() != 2)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "assert_condition",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "assert_condition",
                 generate_error_message(
-                    "Assert requires exactly one argument", ctx));
+                    "Assert requires exactly one or two argument(s)", ctx));
         }
 
         auto arg =
-            scalar_boolean_operand(operands_[0], args, name_, codename_, ctx);
+            scalar_boolean_operand(operands[0], args, name_, codename_, ctx);
 
         auto this_ = this->shared_from_this();
+        if (operands.size() == 1 || !valid(operands[1]))
+        {
+            return hpx::dataflow(
+                hpx::launch::sync,
+                [this_ = std::move(this_), ctx = std::move(ctx)](
+                    hpx::future<std::uint8_t>&& cond)
+                    -> primitive_argument_type {
+                    if (cond.get() == 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "assert_condition",
+                            this_->generate_error_message(
+                                "Assertion failed", ctx));
+                    }
+                    return {};
+                },
+                std::move(arg));
+        }
+
+        auto msg = value_operand(operands[1], args, name_, codename_, ctx);
+
         return hpx::dataflow(
             hpx::launch::sync,
             [this_ = std::move(this_), ctx = std::move(ctx)](
-                hpx::future<std::uint8_t>&& cond) -> primitive_argument_type
-            {
+                hpx::future<std::uint8_t>&& cond,
+                hpx::future<primitive_argument_type>&& msg)
+                -> primitive_argument_type {
                 if (cond.get() == 0)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "assert_condition",
-                        this_->generate_error_message("Assertion failed", ctx));
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "assert_condition",
+                        this_->generate_error_message(
+                            hpx::util::format(
+                                "Assertion failed: {}", to_string(msg.get())),
+                            ctx));
                 }
                 return {};
             },
-            std::move(arg));
+            std::move(arg), std::move(msg));
     }
-}}}
+}}}    // namespace phylanx::execution_tree::primitives
