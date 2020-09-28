@@ -60,6 +60,7 @@ set(tests
     1242_list_comparison
     1244_function_call
     1255_assign_string
+    1267_random_sample
     array_len_494
     array_shape_486
     array_subscript_403

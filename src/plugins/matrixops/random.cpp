@@ -38,17 +38,16 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const random::match_data =
-    {
-        hpx::make_tuple(
-            "random",
+    std::vector<match_pattern_type> const random::match_data = {
+        match_pattern_type("random",
             std::vector<std::string>{
                 "random(_1, __arg(_2_dist, nil), __arg(_3_dtype, nil))"},
             &create_random, &create_primitive<random>, R"(
             size, dist, dtype
             Args:
 
-                size (int) : the size of the array of random numbers
+                size (int or tuple of ints) : the size of the array of random
+                    numbers to generate
                 dist (optional, string or list) : the name of the
                     distribution, or a list that begins with the name and is
                     followed by up to two numeric parameters.
@@ -57,7 +56,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Returns:
 
-            An array of random numbers.)")};
+            An array of random numbers.)"),
+        match_pattern_type("random_sample",
+            std::vector<std::string>{"random_sample(__arg(_1_size, nil))"},
+            & create_random,& create_primitive<random>, R"(
+            size
+            Args:
+
+                size (int or tuple of ints) : the size of the array of random
+                    numbers to generate
+
+            Returns:
+
+            An array of random numbers.)"),
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
@@ -209,8 +221,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return extract_dimensions(f.get(), name, codename);
                 });
         }
-
-        HPX_ASSERT(valid(val));
         return hpx::make_ready_future(extract_dimensions(val, name, codename));
     }
 
@@ -299,9 +309,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail {
+
+        random::operation extract_random_operation_helper(
+            std::string const& name)
+        {
+            if (name.find("random_sample") == 0)
+                return random::operation::random_sample;
+
+            return random::operation::random;
+        }
+
+        random::operation extract_random_operation(std::string const& name)
+        {
+            compiler::primitive_name_parts name_parts;
+            if (compiler::parse_primitive_name(name, name_parts))
+            {
+                return extract_random_operation_helper(name_parts.primitive);
+            }
+            return extract_random_operation_helper(name);
+        }
+    }
+
     random::random(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , random_operation_(detail::extract_random_operation(name))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -416,14 +449,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         using create_distribution_type = std::unique_ptr<distribution> (*)(
             distribution_parameters_type const&, std::string const&,
-            std::string const&);
+            std::string const&, eval_context);
 
         template <typename Result, typename T>
         typename std::enable_if<!std::is_same<Result, T>::value,
             primitive_argument_type>::type
         convert_to(ir::node_data<T>&& val)
         {
-            return primitive_argument_type(ir::node_data<Result>(std::move(val)));
+            return primitive_argument_type(
+                ir::node_data<Result>(std::move(val)));
         }
 
         template <typename Result, typename T>
@@ -437,7 +471,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T, typename Dist, typename Array>
         primitive_argument_type randomize(
             Dist& dist, Array& data, node_data_type dtype,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            eval_context ctx)
         {
             ir::node_data<T> result = randomize(dist, data);
             switch (dtype)
@@ -459,7 +494,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::random::randomize",
                 util::generate_error_message(
-                    "unsupported requested numeric data type", name, codename));
+                    "unsupported requested numeric data type", name, codename,
+                    ctx.back_trace()));
         }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -469,7 +505,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         node_data_type dtype) override                                         \
     {                                                                          \
         blaze::DynamicTensor<T> data(dims[0], dims[1], dims[2]);               \
-        return randomize<T>(dist_, data, dtype, name_, codename_);             \
+        return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);       \
     }                                                                          \
     /**/
 #define PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
@@ -478,7 +514,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         node_data_type dtype) override                                         \
     {                                                                          \
         blaze::DynamicArray<4UL, T> data(dims[0], dims[1], dims[2], dims[3]);  \
-        return randomize<T>(dist_, data, dtype, name_, codename_);             \
+        return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);       \
     }                                                                          \
     /**/
 
@@ -486,9 +522,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     struct type##_distribution : distribution                                  \
     {                                                                          \
         type##_distribution(distribution_parameters_type const& params,        \
-            std::string const& name, std::string const& codename)              \
+            std::string const& name, std::string const& codename,              \
+            eval_context ctx)                                                  \
           : name_(name)                                                        \
           , codename_(codename)                                                \
+          , ctx_(std::move(ctx))                                               \
         {                                                                      \
             switch (std::get<1>(params))                                       \
             {                                                                  \
@@ -511,26 +549,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type call0d(node_data_type dtype) override          \
         {                                                                      \
             T data;                                                            \
-            return randomize<T>(dist_, data, dtype, name_, codename_);         \
+            return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);   \
         }                                                                      \
         primitive_argument_type call1d(                                        \
             std::size_t dim, node_data_type dtype) override                    \
         {                                                                      \
             blaze::DynamicVector<T> data(dim);                                 \
-            return randomize<T>(dist_, data, dtype, name_, codename_);         \
+            return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);   \
         }                                                                      \
         primitive_argument_type call2d(                                        \
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,       \
             node_data_type dtype) override                                     \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
-            return randomize<T>(dist_, data, dtype, name_, codename_);         \
+            return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);   \
         }                                                                      \
         PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
         PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
         stdtype dist_;                                                         \
         std::string const& name_;                                              \
         std::string const& codename_;                                          \
+        eval_context ctx_;                                                     \
     };                                                                         \
     /**/
 
@@ -538,9 +577,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     struct type##_distribution : distribution                                  \
     {                                                                          \
         type##_distribution(distribution_parameters_type const& params,        \
-            std::string const& name, std::string const& codename)              \
+            std::string const& name, std::string const& codename,              \
+            eval_context ctx)                                                  \
           : name_(name)                                                        \
           , codename_(codename)                                                \
+          , ctx_(std::move(ctx))                                               \
         {                                                                      \
             switch (std::get<1>(params))                                       \
             {                                                                  \
@@ -567,26 +608,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type call0d(node_data_type dtype) override          \
         {                                                                      \
             T data;                                                            \
-            return randomize<T>(dist_, data, dtype, name_, codename_);         \
+            return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);   \
         }                                                                      \
         primitive_argument_type call1d(                                        \
             std::size_t dim, node_data_type dtype) override                    \
         {                                                                      \
             blaze::DynamicVector<T> data(dim);                                 \
-            return randomize<T>(dist_, data, dtype, name_, codename_);         \
+            return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);   \
         }                                                                      \
         primitive_argument_type call2d(                                        \
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,       \
             node_data_type dtype) override                                     \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
-            return randomize<T>(dist_, data, dtype, name_, codename_);         \
+            return randomize<T>(dist_, data, dtype, name_, codename_, ctx_);   \
         }                                                                      \
         PHYLANX_RANDOM_IMPLEMENT_TENSOR(T)                                     \
         PHYLANX_RANDOM_IMPLEMENT_QUATERN(T)                                    \
         stdtype dist_;                                                         \
         std::string const& name_;                                              \
         std::string const& codename_;                                          \
+        eval_context ctx_;                                                     \
     };                                                                         \
     /**/
 
@@ -597,66 +639,70 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_uniform_int(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) > std::get<3>(params))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_uniform_int",
-                util::generate_error_message(hpx::util::format(
-                    "the uniform_int distributions requires for the given min "
-                    "value to be less than the given max value (actual values: "
-                    "min: {}, max: {})", std::get<2>(params),
-                        std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the uniform_int distributions requires for the given "
+                        "min value to be less than the given max value "
+                        "(actual values: min: {}, max: {})",
+                        std::get<2>(params), std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
-        return std::unique_ptr<distribution>{
-            new uniform_int_distribution(params, name, codename)};
+        return std::unique_ptr<distribution>{new uniform_int_distribution(
+            params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_2(
-        uniform, std::uniform_real_distribution<double>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_2(uniform,
+        std::uniform_real_distribution<double>, double, double);
 
     std::unique_ptr<distribution> create_uniform(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) > std::get<3>(params))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_uniform",
-                util::generate_error_message(hpx::util::format(
-                    "the uniform distributions requires for the given min "
-                    "value to be less than the given max value (actual values: "
-                    "min: {}, max: {})", std::get<2>(params),
-                        std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the uniform distributions requires for the given min "
+                        "value to be less than the given max value "
+                        "(actual values: min: {}, max: {})",
+                        std::get<2>(params), std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new uniform_distribution(params, name, codename)};
+            new uniform_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_1(
-        bernoulli, std::bernoulli_distribution, double, std::uint8_t);
+    PHYLANX_RANDOM_DISTRIBUTION_1(bernoulli,
+        std::bernoulli_distribution, double, std::uint8_t);
 
     std::unique_ptr<distribution> create_bernoulli(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) < 0 || std::get<2>(params) > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_bernoulli",
-                util::generate_error_message(hpx::util::format(
-                    "the bernoulli distribution requires for the given "
-                    "probability argument to be in the range of [0, 1] (actual "
-                    "value: p: {})", std::get<2>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the bernoulli distribution requires for the given "
+                        "probability argument to be in the range "
+                        "of [0, 1] (actual value: p: {})",
+                        std::get<2>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new bernoulli_distribution(params, name, codename)};
+            new bernoulli_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -665,22 +711,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_binomial(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
-        if (std::get<2>(params) < 0 ||
-            std::get<3>(params) < 0 || std::get<3>(params) > 1)
+        if (std::get<2>(params) < 0 || std::get<3>(params) < 0 ||
+            std::get<3>(params) > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_binomial",
-                util::generate_error_message(hpx::util::format(
-                    "the binomial distribution requires for the number of "
-                    "trials to be non-negative and the probability to be in "
-                    "the range of [0, 1] (actual values: t: {}, p: {})",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the binomial distribution requires for the number of "
+                        "trials to be non-negative and the "
+                        "probability to be in "
+                        "the range of [0, 1] (actual values: t: {}, p: {})",
                         std::get<2>(params), std::get<3>(params)),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new binomial_distribution(params, name, codename)};
+            new binomial_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -689,44 +737,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_negative_binomial(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
-        if (std::get<2>(params) <= 0 ||
-            std::get<3>(params) <= 0 || std::get<3>(params) >= 1)
+        if (std::get<2>(params) <= 0 || std::get<3>(params) <= 0 ||
+            std::get<3>(params) >= 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_negative_binomial",
-                util::generate_error_message(hpx::util::format(
-                    "the negative binomial distribution requires for the "
-                    "number of trials to be strictly positive and the probability "
-                    "to be in the range of (0, 1) (actual values: k: {}, p: {})",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the negative binomial distribution requires for the "
+                        "number of trials to be strictly positive "
+                        "and the probability to be in the range of (0, 1) "
+                        "(actual values: k: {}, p: {})",
                         std::get<2>(params), std::get<3>(params)),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
-        return std::unique_ptr<distribution>{
-            new negative_binomial_distribution(params, name, codename)};
+        return std::unique_ptr<distribution>{new negative_binomial_distribution(
+            params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_1(
-        geometric, std::geometric_distribution<int>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_1(geometric,
+        std::geometric_distribution<int>, double, double);
 
     std::unique_ptr<distribution> create_geometric(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0 || std::get<2>(params) >= 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_geometric",
-                util::generate_error_message(hpx::util::format(
-                    "the geometric distribution requires for the given "
-                    "probability argument to be in the range of (0, 1) (actual "
-                    "value: p: {})", std::get<2>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the geometric distribution requires for the given "
+                        "probability argument to be in the range of (0, 1) "
+                        "(actual value: p: {})",
+                        std::get<2>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new geometric_distribution(params, name, codename)};
+            new geometric_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -735,42 +787,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_poisson(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_poisson",
-                util::generate_error_message(hpx::util::format(
-                    "the poisson distribution requires for its argument to be "
-                    "strictly positive (non-zero) (actual value: m: {})",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the poisson distribution requires for its argument to be "
+                        "strictly positive (non-zero) (actual value: m: {})",
                         std::get<2>(params)),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new poisson_distribution(params, name, codename)};
+            new poisson_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_1(
-        exponential, std::exponential_distribution<double>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_1(exponential,
+        std::exponential_distribution<double>, double, double);
 
     std::unique_ptr<distribution> create_exponential(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_exponential",
-                util::generate_error_message(hpx::util::format(
-                    "the exponential distribution requires for its argument "
-                    "to be strictly positive (non-zero) (actual value: "
-                    "lambda: {})", std::get<2>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the exponential distribution requires for its argument "
+                        "to be strictly positive (non-zero) (actual value: "
+                        "lambda: {})",
+                        std::get<2>(params)),
+                    name, codename, ctx.back_trace()));
         }
-        return std::unique_ptr<distribution>{
-            new exponential_distribution(params, name, codename)};
+        return std::unique_ptr<distribution>{new exponential_distribution(
+            params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -779,20 +834,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_gamma(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0 || std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_gamma",
-                util::generate_error_message(hpx::util::format(
-                    "the gamma distribution requires for its arguments "
-                    "to be strictly positive (non-zero) (actual values: alpha: "
-                    "{}, beta: {})", std::get<2>(params), std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the gamma distribution requires for its arguments "
+                        "to be strictly positive (non-zero) (actual values: "
+                        "alpha: {}, beta: {})",
+                        std::get<2>(params), std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new gamma_distribution(params, name, codename)};
+            new gamma_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -801,20 +858,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_weibull(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0 || std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_weibull",
-                util::generate_error_message(hpx::util::format(
-                    "the weibull distribution requires for its arguments "
-                    "to be strictly positive (non-zero) (actual values: "
-                    "a: {}, b: {})", std::get<2>(params), std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the weibull distribution requires for its arguments "
+                        "to be strictly positive (non-zero) (actual values: "
+                        "a: {}, b: {})",
+                        std::get<2>(params), std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new weibull_distribution(params, name, codename)};
+            new weibull_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -823,20 +882,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_extreme_value(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_extreme_value",
-                util::generate_error_message(hpx::util::format(
-                    "the extreme_value distribution requires for its third "
-                    "argument to be strictly positive (non-zero)  actual value: "
-                    "b: {})", std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the extreme_value distribution requires for its third "
+                        "argument to be strictly positive (non-zero)  actual "
+                        "value: b: {})",
+                        std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
-        return std::unique_ptr<distribution>{
-            new extreme_value_distribution(params, name, codename)};
+        return std::unique_ptr<distribution>{new extreme_value_distribution(
+            params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -845,87 +906,95 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_normal(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_normal",
-                util::generate_error_message(hpx::util::format(
-                    "the normal distribution requires for its third "
-                    "argument to be strictly positive (non-zero) (actual value: "
-                    "s: {})", std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the normal distribution requires for its third "
+                        "argument to be strictly positive (non-zero) (actual "
+                        "value: s: {})",
+                        std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new normal_distribution(params, name, codename)};
+            new normal_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_2(
-        truncated_normal, util::truncated_normal_distribution<double>,
-        double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_2(truncated_normal,
+        util::truncated_normal_distribution<double>, double,
+        double);
 
     std::unique_ptr<distribution> create_truncated_normal(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_truncated_normal",
-                util::generate_error_message(hpx::util::format(
-                    "the truncated_normal distribution requires for its third "
-                    "argument to be strictly positive (non-zero) (actual value: "
-                    "s: {})", std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the truncated_normal distribution requires for its "
+                        "third argument to be strictly positive "
+                        "(non-zero) (actual value: s: {})",
+                        std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
-        return std::unique_ptr<distribution>{
-            new truncated_normal_distribution(params, name, codename)};
+        return std::unique_ptr<distribution>{new truncated_normal_distribution(
+            params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_2(
-        lognormal, std::lognormal_distribution<double>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_2(lognormal,
+        std::lognormal_distribution<double>, double, double);
 
     std::unique_ptr<distribution> create_lognormal(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_lognormal",
-                util::generate_error_message(hpx::util::format(
-                    "the lognormal distribution requires for its third "
-                    "argument to be strictly positive (non-zero) (actual value: "
-                    "s: {})", std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the lognormal distribution requires for its third "
+                        "argument to be strictly positive (non-zero) (actual "
+                        "value: s: {})",
+                        std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new lognormal_distribution(params, name, codename)};
+            new lognormal_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_1(
-        chi_squared, std::chi_squared_distribution<double>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_1(chi_squared,
+        std::chi_squared_distribution<double>, double, double);
 
     std::unique_ptr<distribution> create_chi_squared(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_chi_squared",
-                util::generate_error_message(hpx::util::format(
-                    "the chi_squared distribution requires for its argument "
-                    "to be strictly positive (non-zero) (actual value: n: {})",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the chi_squared distribution requires for its "
+                        "argument to be strictly positive (non-zero) (actual "
+                        "value: n: {})",
                         std::get<2>(params)),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
-        return std::unique_ptr<distribution>{
-            new chi_squared_distribution(params, name, codename)};
+        return std::unique_ptr<distribution>{new chi_squared_distribution(
+            params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -934,64 +1003,70 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     std::unique_ptr<distribution> create_cauchy(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_cauchy",
-                util::generate_error_message(hpx::util::format(
-                    "the cauchy distribution requires for its third "
-                    "argument to be strictly positive (non-zero) (actual "
-                    "value: b: {})", std::get<3>(params)),
-                    name, codename));
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the cauchy distribution requires for its third "
+                        "argument to be strictly positive (non-zero) (actual "
+                        "value: b: {})",
+                        std::get<3>(params)),
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new cauchy_distribution(params, name, codename)};
+            new cauchy_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_2(
-        fisher_f, std::fisher_f_distribution<double>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_2(fisher_f,
+        std::fisher_f_distribution<double>, double, double);
 
     std::unique_ptr<distribution> create_fisher_f(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0 || std::get<3>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_fisher_f",
-                util::generate_error_message(hpx::util::format(
-                    "the fisher_f distribution requires for its arguments "
-                    "to be positive (non-zero) (actual values: m: {}, n: {})",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the fisher_f distribution requires for its arguments "
+                        "to be positive (non-zero) (actual values: m: {}, n: "
+                        "{})",
                         std::get<2>(params), std::get<3>(params)),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new fisher_f_distribution(params, name, codename)};
+            new fisher_f_distribution(params, name, codename, std::move(ctx))};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_RANDOM_DISTRIBUTION_1(
-        student_t, std::student_t_distribution<double>, double, double);
+    PHYLANX_RANDOM_DISTRIBUTION_1(student_t,
+        std::student_t_distribution<double>, double, double);
 
     std::unique_ptr<distribution> create_student_t(
         distribution_parameters_type const& params, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         if (std::get<2>(params) <= 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::create_student_t",
-                util::generate_error_message(hpx::util::format(
-                    "the student_t distribution requires for its argument "
-                    "to be strictly positive (non-zero) (actual value: n: {})",
+                util::generate_error_message(
+                    hpx::util::format(
+                        "the student_t distribution requires for its argument "
+                        "to be strictly positive (non-zero) (actual value: n: "
+                        "{})",
                         std::get<2>(params)),
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
         return std::unique_ptr<distribution>{
-            new student_t_distribution(params, name, codename)};
+            new student_t_distribution(params, name, codename, std::move(ctx))};
     }
 
 #undef PHYLANX_RANDOM_DISTRIBUTION_1
@@ -1025,130 +1100,160 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///////////////////////////////////////////////////////////////////////
         primitive_argument_type randomize0d(
             distribution_parameters_type&& params, node_data_type dtype,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            eval_context ctx)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
                 std::ostringstream msg;
                 msg << "attempting to use an unknown random number "
-                            "distribution: " << std::get<0>(params) << ". ";
-                msg << "Known distributions are";
-                std::string tween = ": ";
-                for(it = distributions.begin(); it != distributions.end(); ++it) {
-                    msg << tween;
-                    msg << it->first;
-                    tween = ", ";
+                       "distribution: "
+                    << std::get<0>(params) << ". Known distributions are: ";
+                bool first = true;
+                for (auto&& dist : distributions)
+                {
+                    if (!first)
+                    {
+                        msg << ", ";
+                        first = false;
+                    }
+                    msg << dist.first;
                 }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize0d",
                     util::generate_error_message(
-                            msg.str(), name, codename));
+                            msg.str(), name, codename, ctx.back_trace()));
             }
-            return (it->second)(params, name, codename)->call0d(dtype);
+            return (it->second)(params, name, codename, std::move(ctx))
+                ->call0d(dtype);
         }
 
         primitive_argument_type randomize1d(std::size_t dim,
             distribution_parameters_type&& params, node_data_type dtype,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            eval_context ctx)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
                 std::ostringstream msg;
                 msg << "attempting to use an unknown random number "
-                            "distribution: " << std::get<0>(params) << ". ";
-                msg << "Known distributions are";
-                std::string tween = ": ";
-                for(it = distributions.begin(); it != distributions.end(); ++it) {
-                    msg << tween;
-                    msg << it->first;
-                    tween = ", ";
+                       "distribution: "
+                    << std::get<0>(params) << ". Known distributions are: ";
+                bool first = true;
+                for (auto&& dist : distributions)
+                {
+                    if (!first)
+                    {
+                        msg << ", ";
+                        first = false;
+                    }
+                    msg << dist.first;
                 }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize1d",
                     util::generate_error_message(
-                        msg.str(), name, codename));
+                        msg.str(), name, codename, ctx.back_trace()));
             }
-            return (it->second)(params, name, codename)->call1d(dim, dtype);
+            return (it->second)(params, name, codename, std::move(ctx))
+                ->call1d(dim, dtype);
         }
 
         primitive_argument_type randomize2d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params, node_data_type dtype,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            eval_context ctx)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
                 std::ostringstream msg;
                 msg << "attempting to use an unknown random number "
-                            "distribution: " << std::get<0>(params) << ". ";
-                msg << "Known distributions are";
-                std::string tween = ": ";
-                for(it = distributions.begin(); it != distributions.end(); ++it) {
-                    msg << tween;
-                    msg << it->first;
-                    tween = ", ";
+                       "distribution: "
+                    << std::get<0>(params) << ". Known distributions are: ";
+                bool first = true;
+                for (auto&& dist : distributions)
+                {
+                    if (!first)
+                    {
+                        msg << ", ";
+                        first = false;
+                    }
+                    msg << dist.first;
                 }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize2d",
                     util::generate_error_message(
-                        msg.str(), name, codename));
+                        msg.str(), name, codename, ctx.back_trace()));
             }
-            return (it->second)(params, name, codename)->call2d(dims, dtype);
+            return (it->second)(params, name, codename, std::move(ctx))
+                ->call2d(dims, dtype);
         }
 
         primitive_argument_type randomize3d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params, node_data_type dtype,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            eval_context ctx)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
                 std::ostringstream msg;
                 msg << "attempting to use an unknown random number "
-                            "distribution: " << std::get<0>(params) << ". ";
-                msg << "Known distributions are";
-                std::string tween = ": ";
-                for(it = distributions.begin(); it != distributions.end(); ++it) {
-                    msg << tween;
-                    msg << it->first;
-                    tween = ", ";
+                       "distribution: "
+                    << std::get<0>(params) << ". Known distributions are: ";
+                bool first = true;
+                for (auto&& dist : distributions)
+                {
+                    if (!first)
+                    {
+                        msg << ", ";
+                        first = false;
+                    }
+                    msg << dist.first;
                 }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize3d",
                     util::generate_error_message(
-                        msg.str(), name, codename));
+                        msg.str(), name, codename, ctx.back_trace()));
             }
-            return (it->second)(params, name, codename)->call3d(dims, dtype);
+            return (it->second)(params, name, codename, std::move(ctx))
+                ->call3d(dims, dtype);
         }
 
         primitive_argument_type randomize4d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params, node_data_type dtype,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            eval_context ctx)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
                 std::ostringstream msg;
                 msg << "attempting to use an unknown random number "
-                            "distribution: " << std::get<0>(params) << ". ";
-                msg << "Known distributions are";
-                std::string tween = ": ";
-                for(it = distributions.begin(); it != distributions.end(); ++it) {
-                    msg << tween;
-                    msg << it->first;
-                    tween = ", ";
+                       "distribution: "
+                    << std::get<0>(params) << ". Known distributions are: ";
+                bool first = true;
+                for (auto&& dist : distributions)
+                {
+                    if (!first)
+                    {
+                        msg << ", ";
+                        first = false;
+                    }
+                    msg << dist.first;
                 }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize4d",
                     util::generate_error_message(
-                        msg.str(), name, codename));
+                        msg.str(), name, codename, ctx.back_trace()));
             }
-            return (it->second)(params, name, codename)->call4d(dims, dtype);
+            return (it->second)(params, name, codename, std::move(ctx))
+                ->call4d(dims, dtype);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1181,40 +1286,65 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands.size() > 3)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "random::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "random::eval",
                 generate_error_message(
-                    "the random primitive requires at most three operand"));
+                    "the random primitive requires at most three operand",
+                    ctx));
         }
 
-        if ((operands.size() > 1 && !valid(operands[1]) &&
-                !is_explicit_nil(operands[1])) ||
-            (operands.size() > 2 && !valid(operands[2]) &&
-                !is_explicit_nil(operands[2])))
+        if (random_operation_ == operation::random)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "random::eval",
-                generate_error_message(
-                    "the random primitive requires that the arguments "
-                        "given by the operands array are valid"));
+            if ((operands.size() > 1 && !valid(operands[1]) &&
+                    !is_explicit_nil(operands[1])) ||
+                (operands.size() > 2 && !valid(operands[2]) &&
+                    !is_explicit_nil(operands[2])))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "random::eval",
+                    generate_error_message(
+                        "the random primitive requires that the arguments "
+                        "given by the operands array are valid",
+                        ctx));
+            }
+        }
+        else if (random_operation_ == operation::random_sample)
+        {
+            if ((operands.size() > 1 && !valid(operands[0]) &&
+                !is_explicit_nil(operands[0])))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "random_sample::eval",
+                    generate_error_message(
+                        "the random_sample primitive requires that the "
+                        "arguments given by the operands array are valid",
+                        ctx));
+            }
         }
 
         // the first argument encodes the requested dimensionality, this
         // can either be an instance of node_data or a list of values
         hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>> dims =
-            dimensions_operand(operands[0], args, name_, codename_, ctx);
+            dimensions_operand(
+                operands.empty() ? primitive_argument_type{} : operands[0],
+                args, name_, codename_, ctx);
 
         // the second (optional) argument encodes the distribution to use
         hpx::future<distribution_parameters_type> params;
-        if (operands.size() < 2 || !valid(operands[1]))
+        if (random_operation_ == operation::random)
+        {
+            if (operands.size() < 2 || !valid(operands[1]))
+            {
+                params = hpx::make_ready_future(
+                    distribution_parameters_type{"normal", 2, 0.0, 1.0});
+            }
+            else
+            {
+                params = distribution_parameters_operand(
+                    operands[1], args, name_, codename_, std::move(ctx));
+            }
+        }
+        else if(random_operation_ == operation::random_sample)
         {
             params = hpx::make_ready_future(
-                distribution_parameters_type{"normal", 2, 0.0, 1.0});
-        }
-        else
-        {
-            params = distribution_parameters_operand(
-                operands[1], args, name_, codename_, std::move(ctx));
+                distribution_parameters_type{"uniform", 2, 0.0, 1.0});
         }
 
         using array_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
@@ -1223,10 +1353,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             auto this_ = this->shared_from_this();
             return hpx::dataflow(hpx::launch::sync,
-                [this_ = std::move(this_)](
+                [this_ = std::move(this_), ctx = std::move(ctx)](
                         hpx::future<array_type>&& dims_f,
                         hpx::future<distribution_parameters_type>&& params_f)
-                ->  primitive_argument_type
+                mutable ->  primitive_argument_type
                 {
                     array_type&& dims = dims_f.get();
                     distribution_parameters_type&& params = params_f.get();
@@ -1235,40 +1365,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                     case 0:
                         return this_->random0d(
-                            std::move(params), node_data_type_double);
+                            std::move(params), node_data_type_double, ctx);
 
                     case 1:
-                        return this_->random1d(
-                            dims[0], std::move(params), node_data_type_double);
+                        return this_->random1d(dims[0], std::move(params),
+                            node_data_type_double, std::move(ctx));
 
                     case 2:
-                        return this_->random2d(
-                            dims, std::move(params), node_data_type_double);
+                        return this_->random2d(dims, std::move(params),
+                            node_data_type_double, std::move(ctx));
 
                     case 3:
-                        return this_->random3d(
-                            dims, std::move(params), node_data_type_double);
+                        return this_->random3d(dims, std::move(params),
+                            node_data_type_double, std::move(ctx));
 
                     case 4:
-                        return this_->random4d(
-                            dims, std::move(params), node_data_type_double);
+                        return this_->random4d(dims, std::move(params),
+                            node_data_type_double, std::move(ctx));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "random::eval",
                             this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                    "number of dimensions"));
+                                    "number of dimensions", std::move(ctx)));
                     }
                 }, std::move(dims), std::move(params));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            [this_ = std::move(this_)](
+            [this_ = std::move(this_), ctx = std::move(ctx)](
                     hpx::future<array_type>&& dims_f,
                     hpx::future<distribution_parameters_type>&& params_f,
-                    primitive_argument_type const& dtype_arg)
+                    primitive_argument_type const& dtype_arg) mutable
             ->  primitive_argument_type
             {
                 array_type&& dims = dims_f.get();
@@ -1280,66 +1410,77 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (detail::num_dimensions(dims))
                 {
                 case 0:
-                    return this_->random0d(std::move(params), dtype);
+                    return this_->random0d(
+                        std::move(params), dtype, std::move(ctx));
 
                 case 1:
-                    return this_->random1d(dims[0], std::move(params), dtype);
+                    return this_->random1d(
+                        dims[0], std::move(params), dtype, std::move(ctx));
 
                 case 2:
-                    return this_->random2d(dims, std::move(params), dtype);
+                    return this_->random2d(
+                        dims, std::move(params), dtype, std::move(ctx));
 
                 case 3:
-                    return this_->random3d(dims, std::move(params), dtype);
+                    return this_->random3d(
+                        dims, std::move(params), dtype, std::move(ctx));
 
                 case 4:
-                    return this_->random4d(dims, std::move(params), dtype);
+                    return this_->random4d(
+                        dims, std::move(params), dtype, std::move(ctx));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
                         this_->generate_error_message(
                         "left hand side operand has unsupported "
-                                "number of dimensions"));
+                                "number of dimensions", std::move(ctx)));
                 }
             }, std::move(dims), std::move(params), operands[2]);
     }
 
     primitive_argument_type random::random0d(
-        distribution_parameters_type&& params, node_data_type dtype) const
+        distribution_parameters_type&& params, node_data_type dtype,
+        eval_context ctx) const
     {
-        return detail::randomize0d(std::move(params), dtype, name_, codename_);
+        return detail::randomize0d(
+            std::move(params), dtype, name_, codename_, std::move(ctx));
     }
 
     primitive_argument_type random::random1d(std::size_t dim,
-        distribution_parameters_type&& params, node_data_type dtype) const
+        distribution_parameters_type&& params, node_data_type dtype,
+        eval_context ctx) const
     {
         auto result = detail::randomize1d(
-            dim, std::move(params), dtype, name_, codename_);
+            dim, std::move(params), dtype, name_, codename_, std::move(ctx));
         return result;
     }
 
     primitive_argument_type random::random2d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        distribution_parameters_type&& params, node_data_type dtype) const
+        distribution_parameters_type&& params, node_data_type dtype,
+        eval_context ctx) const
     {
         return detail::randomize2d(
-            dims, std::move(params), dtype, name_, codename_);
+            dims, std::move(params), dtype, name_, codename_, std::move(ctx));
     }
 
     primitive_argument_type random::random3d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        distribution_parameters_type&& params, node_data_type dtype) const
+        distribution_parameters_type&& params, node_data_type dtype,
+        eval_context ctx) const
     {
         return detail::randomize3d(
-            dims, std::move(params), dtype, name_, codename_);
+            dims, std::move(params), dtype, name_, codename_, std::move(ctx));
     }
 
     primitive_argument_type random::random4d(
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-        distribution_parameters_type&& params, node_data_type dtype) const
+        distribution_parameters_type&& params, node_data_type dtype,
+        eval_context ctx) const
     {
         return detail::randomize4d(
-            dims, std::move(params), dtype, name_, codename_);
+            dims, std::move(params), dtype, name_, codename_, std::move(ctx));
     }
 }}}    // namespace phylanx::execution_tree::primitives
 
@@ -1406,7 +1547,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "random::set_seed",
                 util::generate_error_message(
                     "the set_seed function requires exactly one operand",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         if (!valid(operands[0]))
@@ -1416,7 +1557,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 util::generate_error_message(
                     "the set_seed function requires that the arguments "
                         "given by the operands array are valid",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         return integer_operand(operands[0], args, name, codename, std::move(ctx))
