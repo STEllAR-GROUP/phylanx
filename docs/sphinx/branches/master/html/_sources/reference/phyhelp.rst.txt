@@ -611,10 +611,12 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
 
 assert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-assert (cond)
+assert (cond, msg)
             Args:
 
                 cond (boolean expression) : if not true, raise an AssertionError
+                msg (any expression) : if given, the evaluated result is printed
+
             Returns:
 
 

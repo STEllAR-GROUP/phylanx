@@ -1031,9 +1031,10 @@ ties.</p>
 <div class="section" id="assert">
 <h2>assert<a class="headerlink" href="#assert" title="Permalink to this headline">¶</a></h2>
 <dl>
-<dt>assert (cond)</dt><dd><p>Args:</p>
+<dt>assert (cond, msg)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>cond (boolean expression) : if not true, raise an AssertionError</p>
+<div><p>cond (boolean expression) : if not true, raise an AssertionError
+msg (any expression) : if given, the evaluated result is printed</p>
 </div></blockquote>
 <p>Returns:</p>
 </dd>
@@ -3725,7 +3726,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Sep 27, 2020.
+        Last updated on Sep 28, 2020.
       </span>
 
     </p>
