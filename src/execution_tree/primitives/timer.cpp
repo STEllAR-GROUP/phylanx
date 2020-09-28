@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                     hpx::future<primitive_argument_type>&& l) mutable
                 -> primitive_argument_type
             {
-                hpx::util::high_resolution_timer t;
+                hpx::chrono::high_resolution_timer t;
 
                 // execute body
                 primitive const* p = util::get_if<primitive>(&func);

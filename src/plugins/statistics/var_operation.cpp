@@ -21,20 +21,23 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "var",
             std::vector<std::string>{
-                "var(_1)", "var(_1, _2)", "var(_1, _2, _3)"
+                "var(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_dummy_, nil), __arg(_5_dtype, nil))"
             },
             &create_var_operation, &create_primitive<var_operation>, R"(
-            v, axis, keepdims
+            arg, axis, keepdims, initial, dummy_, dtype
             Args:
 
-                v (vector or matrix) : a vector or matrix
-                axis (optional, integer): a axis to sum along
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
-            The statistical variance of all values along the specified axis.)",
-            true
+            The statistical variance of all values along the specified axis.)"
         }
     };
 

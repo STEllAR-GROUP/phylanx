@@ -25,6 +25,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -41,7 +42,7 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (axis)
             {
@@ -49,7 +50,7 @@ namespace phylanx { namespace common {
                     util::generate_error_message(
                         "the statistics_operation primitive requires that no "
                         "axis is specified for scalar values.",
-                        name, codename));
+                        name, codename, ctx.back_trace()));
             }
 
             Op<T> op{name, codename};
@@ -72,7 +73,8 @@ namespace phylanx { namespace common {
         template <template <class T> class Op, typename T, typename Init>
         execution_tree::primitive_argument_type statistics1d_axis(
             ir::node_data<T>&& arg, hpx::util::optional<Init> const& initial,
-            bool keepdims, std::string const& name, std::string const& codename)
+            bool keepdims, std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             Op<T> op{name, codename};
 
@@ -98,10 +100,25 @@ namespace phylanx { namespace common {
                 op.finalize(result, v.size())};
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        template <typename F1, typename F2>
+        auto invoke_if(F1&& f1, F2&& f2, std::false_type)
+        {
+            return f2();
+        }
+
+        template <typename F1, typename F2>
+        auto invoke_if(F1&& f1, F2&& f2, std::true_type)
+        {
+            return f1();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         template <template <class T> class Op, typename T, typename Init>
         execution_tree::primitive_argument_type statistics1d(
             ir::node_data<T>&& arg, hpx::util::optional<Init> const& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             Op<T> op{name, codename};
 
@@ -114,25 +131,33 @@ namespace phylanx { namespace common {
             auto v = arg.vector();
             std::size_t size = v.size();
 
-            if (arg.is_ref())
-            {
-                using result_type = typename Op<T>::result_type;
+            using result_type = typename Op<T>::result_type;
 
+            auto f_ref = [&]() {
                 blaze::DynamicVector<result_type> result(size);
                 for (std::size_t i = 0; i != size; ++i)
                 {
                     result[i] = op(v[i], initial_value);
                 }
                 return execution_tree::primitive_argument_type{
-                    std::move(result)};
-            }
+                    std::move(result) };
+            };
 
-            for (std::size_t i = 0; i != size; ++i)
+            if (arg.is_ref())
             {
-                v[i] = op(v[i], initial_value);
+                return f_ref();
             }
 
-            return execution_tree::primitive_argument_type{std::move(arg)};
+            auto f = [&]() {
+                for (std::size_t i = 0; i != size; ++i)
+                {
+                    v[i] = op(v[i], initial_value);
+                }
+                return execution_tree::primitive_argument_type{std::move(arg)};
+            };
+
+            using pred = typename std::is_same<result_type, T>::type;
+            return invoke_if(std::move(f), std::move(f_ref), pred{});
         }
 
         template <template <class T> class Op, typename T, typename Init>
@@ -140,21 +165,21 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (axis)
             {
                 if (axis.value() == 0 || axis.value() == -1)
                 {
-                    return statistics1d_axis<Op>(
-                        std::move(arg), initial, keepdims, name, codename);
+                    return statistics1d_axis<Op>(std::move(arg), initial,
+                        keepdims, name, codename, std::move(ctx));
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter, "common::statistics1d",
                     util::generate_error_message(
                         "the statistics_operation primitive requires "
                         "operand axis to be either 0 or -1 for vectors.",
-                        name, codename));
+                        name, codename, ctx.back_trace()));
             }
 
             Op<T> op{ name, codename };
@@ -185,7 +210,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics2d_flat(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto m = arg.matrix();
 
@@ -222,7 +247,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics2d_axis0(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto m = arg.matrix();
 
@@ -264,7 +289,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics2d_axis1(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto m = arg.matrix();
 
@@ -305,7 +330,8 @@ namespace phylanx { namespace common {
         template <template <class T> class Op, typename T, typename Init>
         execution_tree::primitive_argument_type statistics2d(
             ir::node_data<T>&& arg, hpx::util::optional<Init> const& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             Op<T> op{name, codename};
 
@@ -319,10 +345,9 @@ namespace phylanx { namespace common {
             std::size_t rows = m.rows();
             std::size_t columns = m.columns();
 
-            if (arg.is_ref())
-            {
-                using result_type = typename Op<T>::result_type;
+            using result_type = typename Op<T>::result_type;
 
+            auto f_ref = [&]() {
                 blaze::DynamicMatrix<result_type> result(rows, columns);
                 for (std::size_t i = 0; i != rows; ++i)
                 {
@@ -332,17 +357,27 @@ namespace phylanx { namespace common {
                     }
                 }
                 return execution_tree::primitive_argument_type{
-                    std::move(result)};
+                    std::move(result) };
+            };
+
+            if (arg.is_ref())
+            {
+                return f_ref();
             }
 
-            for (std::size_t i = 0; i != rows; ++i)
-            {
-                for (std::size_t j = 0; j != columns; ++j)
+            auto f = [&]() {
+                for (std::size_t i = 0; i != rows; ++i)
                 {
-                    m(i, j) = op(m(i, j), initial_value);
+                    for (std::size_t j = 0; j != columns; ++j)
+                    {
+                        m(i, j) = op(m(i, j), initial_value);
+                    }
                 }
-            }
-            return execution_tree::primitive_argument_type{std::move(arg)};
+                return execution_tree::primitive_argument_type{std::move(arg)};
+            };
+
+            using pred = typename std::is_same<result_type, T>::type;
+            return invoke_if(std::move(f), std::move(f_ref), pred{});
         }
 
         template <template <class T> class Op, typename T, typename Init>
@@ -350,7 +385,7 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (axis)
             {
@@ -359,14 +394,14 @@ namespace phylanx { namespace common {
                 case -2:
                     HPX_FALLTHROUGH;
                 case 0:
-                    return statistics2d_axis0<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics2d_axis0<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 case -1:
                     HPX_FALLTHROUGH;
                 case 1:
-                    return statistics2d_axis1<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics2d_axis1<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -374,11 +409,11 @@ namespace phylanx { namespace common {
                         util::generate_error_message(
                             "the statistics_operation primitive requires "
                             "operand axis to be between -2 and 1 for matrices.",
-                            name, codename));
+                            name, codename, ctx.back_trace()));
                 }
             }
-            return statistics2d_flat<Op>(
-                std::move(arg), keepdims, initial, name, codename);
+            return statistics2d_flat<Op>(std::move(arg), keepdims, initial,
+                name, codename, std::move(ctx));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -386,7 +421,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_flat(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -428,7 +463,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_axis0(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -480,7 +515,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_axis1(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -532,7 +567,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_axis2(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -583,7 +618,8 @@ namespace phylanx { namespace common {
         template <template <class T> class Op, typename T, typename Init>
         execution_tree::primitive_argument_type statistics3d(
             ir::node_data<T>&& arg, hpx::util::optional<Init> const& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             Op<T> op{name, codename};
 
@@ -598,10 +634,9 @@ namespace phylanx { namespace common {
             std::size_t rows = t.rows();
             std::size_t columns = t.columns();
 
-            if (arg.is_ref())
-            {
-                using result_type = typename Op<T>::result_type;
+            using result_type = typename Op<T>::result_type;
 
+            auto f_ref = [&]() {
                 blaze::DynamicTensor<result_type> result(pages, rows, columns);
                 for (std::size_t k = 0; k != pages; ++k)
                 {
@@ -615,19 +650,29 @@ namespace phylanx { namespace common {
                 }
                 return execution_tree::primitive_argument_type{
                     std::move(result)};
+            };
+
+            if (arg.is_ref())
+            {
+                return f_ref();
             }
 
-            for (std::size_t k = 0; k != pages; ++k)
-            {
-                for (std::size_t i = 0; i != rows; ++i)
+            auto f = [&]() {
+                for (std::size_t k = 0; k != pages; ++k)
                 {
-                    for (std::size_t j = 0; j != columns; ++j)
+                    for (std::size_t i = 0; i != rows; ++i)
                     {
-                        t(k, i, j) = op(t(k, i, j), initial_value);
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            t(k, i, j) = op(t(k, i, j), initial_value);
+                        }
                     }
                 }
-            }
-            return execution_tree::primitive_argument_type{std::move(arg)};
+                return execution_tree::primitive_argument_type{std::move(arg)};
+            };
+
+            using pred = typename std::is_same<result_type, T>::type;
+            return invoke_if(std::move(f), std::move(f_ref), pred{});
         }
 
         template <template <class T> class Op, typename T, typename Init>
@@ -635,7 +680,7 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (axis)
             {
@@ -644,20 +689,20 @@ namespace phylanx { namespace common {
                 case -3:
                     HPX_FALLTHROUGH;
                 case 0:
-                    return statistics3d_axis0<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics3d_axis0<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 case -2:
                     HPX_FALLTHROUGH;
                 case 1:
-                    return statistics3d_axis1<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics3d_axis1<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 case -1:
                     HPX_FALLTHROUGH;
                 case 2:
-                    return statistics3d_axis2<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics3d_axis2<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -665,11 +710,11 @@ namespace phylanx { namespace common {
                         util::generate_error_message(
                             "the statistics_operation primitive requires "
                             "operand axis to be between -3 and 2 for tensors.",
-                            name, codename));
+                            name, codename, ctx.back_trace()));
                 }
             }
-            return statistics3d_flat<Op>(
-                std::move(arg), keepdims, initial, name, codename);
+            return statistics3d_flat<Op>(std::move(arg), keepdims, initial,
+                name, codename, std::move(ctx));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -677,7 +722,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_columnslice(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -719,7 +764,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_rowslice(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -761,7 +806,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_pageslice(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto t = arg.tensor();
 
@@ -803,7 +848,8 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics3d_slice(
             ir::node_data<T>&& arg, std::int64_t axis0, std::int64_t axis1,
             bool keepdims, execution_tree::primitive_argument_type&& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             using result_type = typename Op<T>::result_type;
 
@@ -820,17 +866,18 @@ namespace phylanx { namespace common {
                 if (axis1 == 1)
                 {
                     return statistics3d_columnslice<Op>(std::move(arg),
-                        keepdims, initial_value, name, codename);
+                        keepdims, initial_value, name, codename,
+                        std::move(ctx));
                 }
 
                 // axis0 == 0 && axis1 == 2
-                return statistics3d_rowslice<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics3d_rowslice<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
             }
 
             // axis0 == 1 && axis1 == 2
-            return statistics3d_pageslice<Op>(
-                std::move(arg), keepdims, initial_value, name, codename);
+            return statistics3d_pageslice<Op>(std::move(arg), keepdims,
+                initial_value, name, codename, std::move(ctx));
         }
 
         template <template <class T> class Op>
@@ -839,7 +886,7 @@ namespace phylanx { namespace common {
             std::int64_t axis1, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
             execution_tree::node_data_type dtype, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (dtype == execution_tree::node_data_type_unknown)
             {
@@ -857,20 +904,23 @@ namespace phylanx { namespace common {
                 return statistics3d_slice<Op>(
                     extract_boolean_value_strict(
                         std::move(arg), name, codename),
-                    axis0, axis1, keepdims, std::move(initial), name, codename);
+                    axis0, axis1, keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             case execution_tree::node_data_type_int64:
                 return statistics3d_slice<Op>(
                     extract_integer_value_strict(
                         std::move(arg), name, codename),
-                    axis0, axis1, keepdims, std::move(initial), name, codename);
+                    axis0, axis1, keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
                 HPX_FALLTHROUGH;
             case execution_tree::node_data_type_double:
                 return statistics3d_slice<Op>(
                     extract_numeric_value(std::move(arg), name, codename),
-                    axis0, axis1, keepdims, std::move(initial), name, codename);
+                    axis0, axis1, keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             default:
                 break;
@@ -881,7 +931,7 @@ namespace phylanx { namespace common {
                 util::generate_error_message(
                     "the statistics primitive requires for all arguments "
                     "to be numeric data types",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -889,7 +939,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice01(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -944,7 +994,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice02(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -999,7 +1049,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice03(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1053,7 +1103,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice12(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1106,7 +1156,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice13(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1158,7 +1208,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice23(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1210,7 +1260,8 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_slice(
             ir::node_data<T>&& arg, std::int64_t axis0, std::int64_t axis1,
             bool keepdims, execution_tree::primitive_argument_type&& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             using result_type = typename Op<T>::result_type;
 
@@ -1227,17 +1278,17 @@ namespace phylanx { namespace common {
                 if (axis1 == 1)
                 {
                     return statistics4d_slice01<Op>(std::move(arg), keepdims,
-                        initial_value, name, codename);
+                        initial_value, name, codename, std::move(ctx));
                 }
 
                 else if (axis1 == 2)
                 {
                     return statistics4d_slice02<Op>(std::move(arg), keepdims,
-                        initial_value, name, codename);
+                        initial_value, name, codename, std::move(ctx));
                 }
                 // axis0 == 0 && axis1 == 3
-                return statistics4d_slice03<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_slice03<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
             }
 
             else if (axis0 == 1)
@@ -1245,16 +1296,16 @@ namespace phylanx { namespace common {
                 if (axis1 == 2)
                 {
                     return statistics4d_slice12<Op>(std::move(arg), keepdims,
-                        initial_value, name, codename);
+                        initial_value, name, codename, std::move(ctx));
                 }
                 // axis0 == 1 && axis1 == 3
-                return statistics4d_slice13<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_slice13<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
             }
 
             // axis0 == 2 && axis1 == 3
-            return statistics4d_slice23<Op>(
-                std::move(arg), keepdims, initial_value, name, codename);
+            return statistics4d_slice23<Op>(std::move(arg), keepdims,
+                initial_value, name, codename, std::move(ctx));
         }
 
         template <template <class T> class Op>
@@ -1263,7 +1314,7 @@ namespace phylanx { namespace common {
             std::int64_t axis1, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
             execution_tree::node_data_type dtype, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (dtype == execution_tree::node_data_type_unknown)
             {
@@ -1281,20 +1332,23 @@ namespace phylanx { namespace common {
                 return statistics4d_slice<Op>(
                     extract_boolean_value_strict(
                         std::move(arg), name, codename),
-                    axis0, axis1, keepdims, std::move(initial), name, codename);
+                    axis0, axis1, keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             case execution_tree::node_data_type_int64:
                 return statistics4d_slice<Op>(
                     extract_integer_value_strict(
                         std::move(arg), name, codename),
-                    axis0, axis1, keepdims, std::move(initial), name, codename);
+                    axis0, axis1, keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
                 HPX_FALLTHROUGH;
             case execution_tree::node_data_type_double:
                 return statistics4d_slice<Op>(
                     extract_numeric_value(std::move(arg), name, codename),
-                    axis0, axis1, keepdims, std::move(initial), name, codename);
+                    axis0, axis1, keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             default:
                 break;
@@ -1305,7 +1359,7 @@ namespace phylanx { namespace common {
                 util::generate_error_message(
                     "the statistics primitive requires for all arguments "
                     "to be numeric data types",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1313,7 +1367,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_tensor012(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1357,7 +1411,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_tensor013(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1400,7 +1454,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_tensor023(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1444,7 +1498,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_tensor123(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1487,7 +1541,8 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg, std::int64_t axis0, std::int64_t axis1,
             std::int64_t axis2, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             using result_type = typename Op<T>::result_type;
 
@@ -1503,20 +1558,20 @@ namespace phylanx { namespace common {
             switch (axis0 + axis1 + axis2)
             {
             case 3:
-                return statistics4d_tensor012<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_tensor012<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             case 4:
-                return statistics4d_tensor013<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_tensor013<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             case 5:
-                return statistics4d_tensor023<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_tensor023<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             case 6:
-                return statistics4d_tensor123<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_tensor123<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             default:
                 break;
@@ -1524,8 +1579,8 @@ namespace phylanx { namespace common {
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "common::statistics4d_tensor",
-                util::generate_error_message(
-                    "invalid combination of axes", name, codename));
+                util::generate_error_message("invalid combination of axes",
+                    name, codename, ctx.back_trace()));
         }
 
         template <template <class T> class Op>
@@ -1534,7 +1589,7 @@ namespace phylanx { namespace common {
             std::int64_t axis1, std::int64_t axis2, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
             execution_tree::node_data_type dtype, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (dtype == execution_tree::node_data_type_unknown)
             {
@@ -1548,14 +1603,14 @@ namespace phylanx { namespace common {
                     execution_tree::extract_boolean_value_strict(
                         std::move(arg), name, codename),
                     axis0, axis1, axis2, keepdims, std::move(initial), name,
-                    codename);
+                    codename, std::move(ctx));
 
             case execution_tree::node_data_type_int64:
                 return statistics4d_tensor<Op>(
                     execution_tree::extract_integer_value_strict(
                         std::move(arg), name, codename),
                     axis0, axis1, axis2, keepdims, std::move(initial), name,
-                    codename);
+                    codename, std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
                 HPX_FALLTHROUGH;
@@ -1564,7 +1619,7 @@ namespace phylanx { namespace common {
                     execution_tree::extract_numeric_value(
                         std::move(arg), name, codename),
                     axis0, axis1, axis2, keepdims, std::move(initial), name,
-                    codename);
+                    codename, std::move(ctx));
 
             default:
                 break;
@@ -1575,7 +1630,7 @@ namespace phylanx { namespace common {
                 util::generate_error_message(
                     "the statistics primitive requires for all arguments "
                     "to be numeric data types",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1583,7 +1638,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_flat(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1630,7 +1685,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_axis0(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1693,7 +1748,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_axis1(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1754,7 +1809,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_axis2(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1815,7 +1870,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statistics4d_axis3(
             ir::node_data<T>&& arg, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             auto q = arg.quatern();
 
@@ -1875,7 +1930,8 @@ namespace phylanx { namespace common {
         template <template <class T> class Op, typename T, typename Init>
         execution_tree::primitive_argument_type statistics4d(
             ir::node_data<T>&& arg, hpx::util::optional<Init> const& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             Op<T> op{name, codename};
 
@@ -1891,10 +1947,9 @@ namespace phylanx { namespace common {
             std::size_t rows = q.rows();
             std::size_t columns = q.columns();
 
-            if (arg.is_ref())
-            {
-                using result_type = typename Op<T>::result_type;
+            using result_type = typename Op<T>::result_type;
 
+            auto f_ref = [&]() {
                 blaze::DynamicArray<4UL, result_type> result(
                     quats, pages, rows, columns);
                 for (std::size_t l = 0; l != quats; ++l)
@@ -1913,22 +1968,33 @@ namespace phylanx { namespace common {
                 }
                 return execution_tree::primitive_argument_type{
                     std::move(result)};
+            };
+
+            if (arg.is_ref())
+            {
+                return f_ref();
             }
 
-            for (std::size_t l = 0; l != quats; ++l)
-            {
-                for (std::size_t k = 0; k != pages; ++k)
+            auto f = [&]() {
+                for (std::size_t l = 0; l != quats; ++l)
                 {
-                    for (std::size_t i = 0; i != rows; ++i)
+                    for (std::size_t k = 0; k != pages; ++k)
                     {
-                        for (std::size_t j = 0; j != columns; ++j)
+                        for (std::size_t i = 0; i != rows; ++i)
                         {
-                            q(l, k, i, j) = op(q(l, k, i, j), initial_value);
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                q(l, k, i, j) =
+                                    op(q(l, k, i, j), initial_value);
+                            }
                         }
                     }
                 }
-            }
-            return execution_tree::primitive_argument_type{std::move(arg)};
+                return execution_tree::primitive_argument_type{std::move(arg)};
+            };
+
+            using pred = typename std::is_same<result_type, T>::type;
+            return invoke_if(std::move(f), std::move(f_ref), pred{});
         }
 
         template <template <class T> class Op, typename T, typename Init>
@@ -1936,7 +2002,7 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
             hpx::util::optional<Init> const& initial, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (axis)
             {
@@ -1945,26 +2011,26 @@ namespace phylanx { namespace common {
                 case -4:
                     HPX_FALLTHROUGH;
                 case 0:
-                    return statistics4d_axis0<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics4d_axis0<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 case -3:
                     HPX_FALLTHROUGH;
                 case 1:
-                    return statistics4d_axis1<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics4d_axis1<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 case -2:
                     HPX_FALLTHROUGH;
                 case 2:
-                    return statistics4d_axis2<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics4d_axis2<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 case -1:
                     HPX_FALLTHROUGH;
                 case 3:
-                    return statistics4d_axis3<Op>(
-                        std::move(arg), keepdims, initial, name, codename);
+                    return statistics4d_axis3<Op>(std::move(arg), keepdims,
+                        initial, name, codename, std::move(ctx));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -1973,12 +2039,12 @@ namespace phylanx { namespace common {
                             "the statistics_operation primitive requires "
                             "operand axis to be between -4 and 3 for 4d "
                             "arrays.",
-                            name, codename));
+                            name, codename, ctx.back_trace()));
                 }
             }
 
-            return statistics4d_flat<Op>(
-                std::move(arg), keepdims, initial, name, codename);
+            return statistics4d_flat<Op>(std::move(arg), keepdims, initial,
+                name, codename, std::move(ctx));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1987,7 +2053,8 @@ namespace phylanx { namespace common {
             ir::node_data<T>&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             using initial_type = typename Op<T>::result_type;
 
@@ -2002,30 +2069,30 @@ namespace phylanx { namespace common {
             switch (arg.num_dimensions())
             {
             case 0:
-                return statistics0d<Op>(
-                    std::move(arg), axis, initial_value, name, codename);
+                return statistics0d<Op>(std::move(arg), axis, initial_value,
+                    name, codename, std::move(ctx));
 
             case 1:
                 return statistics1d<Op>(std::move(arg), axis, keepdims,
-                    initial_value, name, codename);
+                    initial_value, name, codename, std::move(ctx));
 
             case 2:
                 return statistics2d<Op>(std::move(arg), axis, keepdims,
-                    initial_value, name, codename);
+                    initial_value, name, codename, std::move(ctx));
 
             case 3:
                 return statistics3d<Op>(std::move(arg), axis, keepdims,
-                    initial_value, name, codename);
+                    initial_value, name, codename, std::move(ctx));
 
             case 4:
                 return statistics4d<Op>(std::move(arg), axis, keepdims,
-                    initial_value, name, codename);
+                    initial_value, name, codename, std::move(ctx));
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter, "common::statisticsnd",
                     util::generate_error_message(
                         "operand a has an invalid number of dimensions", name,
-                        codename));
+                        codename, ctx.back_trace()));
             }
         }
     }    // namespace detail
@@ -2037,7 +2104,7 @@ namespace phylanx { namespace common {
         hpx::util::optional<std::int64_t> const& axis, bool keepdims,
         execution_tree::primitive_argument_type&& initial,
         execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, execution_tree::eval_context ctx)
     {
         if (dtype == execution_tree::node_data_type_unknown)
         {
@@ -2049,19 +2116,21 @@ namespace phylanx { namespace common {
         case execution_tree::node_data_type_bool:
             return detail::statisticsnd<Op>(
                 extract_boolean_value_strict(std::move(arg), name, codename),
-                axis, keepdims, std::move(initial), name, codename);
+                axis, keepdims, std::move(initial), name, codename,
+                std::move(ctx));
 
         case execution_tree::node_data_type_int64:
             return detail::statisticsnd<Op>(
                 extract_integer_value_strict(std::move(arg), name, codename),
-                axis, keepdims, std::move(initial), name, codename);
+                axis, keepdims, std::move(initial), name, codename,
+                std::move(ctx));
 
         case execution_tree::node_data_type_unknown:
             HPX_FALLTHROUGH;
         case execution_tree::node_data_type_double:
             return detail::statisticsnd<Op>(
                 extract_numeric_value(std::move(arg), name, codename), axis,
-                keepdims, std::move(initial), name, codename);
+                keepdims, std::move(initial), name, codename, std::move(ctx));
 
         default:
             break;
@@ -2071,7 +2140,7 @@ namespace phylanx { namespace common {
             util::generate_error_message(
                 "the statistics primitive requires for all arguments "
                 "to be numeric data types",
-                name, codename));
+                name, codename, ctx.back_trace()));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2081,7 +2150,8 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statisticsnd(
             ir::node_data<T>&& arg,
             execution_tree::primitive_argument_type&& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             using initial_type = typename Op<T>::result_type;
 
@@ -2098,29 +2168,29 @@ namespace phylanx { namespace common {
             case 0:
                 return statistics0d<Op>(std::move(arg),
                     hpx::util::optional<std::int64_t>(), initial_value, name,
-                    codename);
+                    codename, std::move(ctx));
 
             case 1:
-                return statistics1d<Op>(
-                    std::move(arg), initial_value, name, codename);
+                return statistics1d<Op>(std::move(arg), initial_value, name,
+                    codename, std::move(ctx));
 
             case 2:
-                return statistics2d<Op>(
-                    std::move(arg), initial_value, name, codename);
+                return statistics2d<Op>(std::move(arg), initial_value, name,
+                    codename, std::move(ctx));
 
             case 3:
-                return statistics3d<Op>(
-                    std::move(arg), initial_value, name, codename);
+                return statistics3d<Op>(std::move(arg), initial_value, name,
+                    codename, std::move(ctx));
 
             case 4:
-                return statistics4d<Op>(
-                    std::move(arg), initial_value, name, codename);
+                return statistics4d<Op>(std::move(arg), initial_value, name,
+                    codename, std::move(ctx));
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter, "common::statisticsnd",
                     util::generate_error_message("operand a has an unsupported "
                                                  "number of dimensions",
-                        name, codename));
+                        name, codename, ctx.back_trace()));
             }
         }
 
@@ -2130,7 +2200,7 @@ namespace phylanx { namespace common {
             execution_tree::primitive_argument_type&& arg,
             execution_tree::primitive_argument_type&& initial,
             execution_tree::node_data_type dtype, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (dtype == execution_tree::node_data_type_unknown)
             {
@@ -2143,13 +2213,13 @@ namespace phylanx { namespace common {
                 return detail::statisticsnd<Op>(
                     execution_tree::extract_boolean_value_strict(
                         std::move(arg), name, codename),
-                    std::move(initial), name, codename);
+                    std::move(initial), name, codename, std::move(ctx));
 
             case execution_tree::node_data_type_int64:
                 return detail::statisticsnd<Op>(
                     execution_tree::extract_integer_value_strict(
                         std::move(arg), name, codename),
-                    std::move(initial), name, codename);
+                    std::move(initial), name, codename, std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
                 HPX_FALLTHROUGH;
@@ -2157,7 +2227,7 @@ namespace phylanx { namespace common {
                 return detail::statisticsnd<Op>(
                     execution_tree::extract_numeric_value(
                         std::move(arg), name, codename),
-                    std::move(initial), name, codename);
+                    std::move(initial), name, codename, std::move(ctx));
 
             default:
                 break;
@@ -2167,7 +2237,7 @@ namespace phylanx { namespace common {
                 util::generate_error_message(
                     "the statistics primitive requires for all arguments "
                     "to be numeric data types",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -2175,7 +2245,8 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type statisticsnd_flat(
             ir::node_data<T>&& arg, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            execution_tree::eval_context ctx)
         {
             using result_type = typename Op<T>::result_type;
 
@@ -2192,30 +2263,30 @@ namespace phylanx { namespace common {
             case 0:
                 return statistics0d<Op>(std::move(arg),
                     hpx::util::optional<std::int64_t>(), initial_value, name,
-                    codename);
+                    codename, std::move(ctx));
 
             case 1:
-                return statistics1d<Op>(
-                    std::move(arg), initial_value, name, codename);
+                return statistics1d<Op>(std::move(arg), initial_value, name,
+                    codename, std::move(ctx));
 
             case 2:
-                return statistics2d_flat<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics2d_flat<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             case 3:
-                return statistics3d_flat<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics3d_flat<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             case 4:
-                return statistics4d_flat<Op>(
-                    std::move(arg), keepdims, initial_value, name, codename);
+                return statistics4d_flat<Op>(std::move(arg), keepdims,
+                    initial_value, name, codename, std::move(ctx));
 
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "common::statisticsnd_flat",
                     util::generate_error_message(
                         "operand a has an invalid number of dimensions", name,
-                        codename));
+                        codename, ctx.back_trace()));
             }
         }
 
@@ -2225,7 +2296,7 @@ namespace phylanx { namespace common {
             execution_tree::primitive_argument_type&& arg, bool keepdims,
             execution_tree::primitive_argument_type&& initial,
             execution_tree::node_data_type dtype, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context ctx)
         {
             if (dtype == execution_tree::node_data_type_unknown)
             {
@@ -2238,13 +2309,15 @@ namespace phylanx { namespace common {
                 return statisticsnd_flat<Op>(
                     execution_tree::extract_boolean_value_strict(
                         std::move(arg), name, codename),
-                    keepdims, std::move(initial), name, codename);
+                    keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             case execution_tree::node_data_type_int64:
                 return statisticsnd_flat<Op>(
                     execution_tree::extract_integer_value_strict(
                         std::move(arg), name, codename),
-                    keepdims, std::move(initial), name, codename);
+                    keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
                 HPX_FALLTHROUGH;
@@ -2252,7 +2325,8 @@ namespace phylanx { namespace common {
                 return statisticsnd_flat<Op>(
                     execution_tree::extract_numeric_value(
                         std::move(arg), name, codename),
-                    keepdims, std::move(initial), name, codename);
+                    keepdims, std::move(initial), name, codename,
+                    std::move(ctx));
 
             default:
                 break;
@@ -2262,13 +2336,13 @@ namespace phylanx { namespace common {
                 util::generate_error_message(
                     "the statistics primitive requires for all arguments "
                     "to be numeric data types",
-                    name, codename));
+                    name, codename, ctx.back_trace()));
         }
 
         ///////////////////////////////////////////////////////////////////////
         inline void verify_axis(std::int64_t axis, std::int64_t min_axis,
             std::int64_t max_axis, char const* type, std::string const& name,
-            std::string const& codename)
+            std::string const& codename, execution_tree::eval_context const& ctx)
         {
             if (axis < min_axis || axis > max_axis)
             {
@@ -2279,7 +2353,7 @@ namespace phylanx { namespace common {
                             "operand "
                             "axis to be between {} and {} for {}.",
                             min_axis, max_axis, type),
-                        name, codename));
+                        name, codename, ctx.back_trace()));
             }
         }
     }    // namespace detail
@@ -2289,7 +2363,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type&& arg, ir::range&& axes,
         bool keepdims, execution_tree::primitive_argument_type&& initial,
         execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, execution_tree::eval_context ctx)
     {
         std::size_t dims = execution_tree::extract_numeric_value_dimension(
             arg, name, codename);
@@ -2298,8 +2372,8 @@ namespace phylanx { namespace common {
         {
         case 0:
             // empty list given, we have element-wise operation
-            return detail::statisticsnd<Op>(
-                std::move(arg), std::move(initial), dtype, name, codename);
+            return detail::statisticsnd<Op>(std::move(arg), std::move(initial),
+                dtype, name, codename, std::move(ctx));
 
         case 1:
             // one axis specified, requires at least 1D data to work with
@@ -2310,7 +2384,7 @@ namespace phylanx { namespace common {
                         *axes.begin(), name, codename);
                 return statisticsnd<Op>(std::move(arg),
                     hpx::util::optional<std::int64_t>(axis), keepdims,
-                    std::move(initial), dtype, name, codename);
+                    std::move(initial), dtype, name, codename, std::move(ctx));
             }
             break;
 
@@ -2334,38 +2408,41 @@ namespace phylanx { namespace common {
                         util::generate_error_message(
                             "the statistics primitive requires for all axis "
                             "arguments to be unique",
-                            name, codename));
+                            name, codename, ctx.back_trace()));
                 }
 
                 if (dims == 2)
                 {
                     detail::verify_axis(
-                        axis0, 0, 1, "matrices", name, codename);
+                        axis0, 0, 1, "matrices", name, codename, ctx);
                     detail::verify_axis(
-                        axis1, 0, 1, "matrices", name, codename);
+                        axis1, 0, 1, "matrices", name, codename, ctx);
 
                     return detail::statisticsnd_flat<Op>(std::move(arg),
-                        keepdims, std::move(initial), dtype, name, codename);
+                        keepdims, std::move(initial), dtype, name, codename,
+                        std::move(ctx));
                 }
                 else if (dims == 3)
                 {
-                    detail::verify_axis(axis0, 0, 2, "tensors", name, codename);
-                    detail::verify_axis(axis1, 0, 2, "tensors", name, codename);
+                    detail::verify_axis(
+                        axis0, 0, 2, "tensors", name, codename, ctx);
+                    detail::verify_axis(
+                        axis1, 0, 2, "tensors", name, codename, ctx);
 
                     return detail::statistics3d_slice<Op>(std::move(arg), axis0,
                         axis1, keepdims, std::move(initial), dtype, name,
-                        codename);
+                        codename, std::move(ctx));
                 }
                 else if (dims == 4)
                 {
                     detail::verify_axis(
-                        axis0, 0, 3, "4d arrays", name, codename);
+                        axis0, 0, 3, "4d arrays", name, codename, ctx);
                     detail::verify_axis(
-                        axis1, 0, 3, "4d arrays", name, codename);
+                        axis1, 0, 3, "4d arrays", name, codename, ctx);
 
                     return detail::statistics4d_slice<Op>(std::move(arg), axis0,
                         axis1, keepdims, std::move(initial), dtype, name,
-                        codename);
+                        codename, std::move(ctx));
                 }
             }
             break;
@@ -2394,31 +2471,35 @@ namespace phylanx { namespace common {
                         util::generate_error_message(
                             "the statistics primitive requires for all axis "
                             "arguments to be unique",
-                            name, codename));
+                            name, codename, ctx.back_trace()));
                 }
 
                 if (dims == 3)
                 {
-                    detail::verify_axis(axis0, 0, 2, "tensors", name, codename);
-                    detail::verify_axis(axis1, 0, 2, "tensors", name, codename);
-                    detail::verify_axis(axis2, 0, 2, "tensors", name, codename);
+                    detail::verify_axis(
+                        axis0, 0, 2, "tensors", name, codename, ctx);
+                    detail::verify_axis(
+                        axis1, 0, 2, "tensors", name, codename, ctx);
+                    detail::verify_axis(
+                        axis2, 0, 2, "tensors", name, codename, ctx);
 
                     return detail::statisticsnd_flat<Op>(std::move(arg),
-                        keepdims, std::move(initial), dtype, name, codename);
+                        keepdims, std::move(initial), dtype, name, codename,
+                        std::move(ctx));
                 }
 
                 else if (dims == 4)
                 {
                     detail::verify_axis(
-                        axis0, 0, 3, "4d arrays", name, codename);
+                        axis0, 0, 3, "4d arrays", name, codename, ctx);
                     detail::verify_axis(
-                        axis1, 0, 3, "4d arrays", name, codename);
+                        axis1, 0, 3, "4d arrays", name, codename, ctx);
                     detail::verify_axis(
-                        axis2, 0, 3, "4d arrays", name, codename);
+                        axis2, 0, 3, "4d arrays", name, codename, ctx);
 
                     return detail::statistics4d_tensor<Op>(std::move(arg),
                         axis0, axis1, axis2, keepdims, std::move(initial),
-                        dtype, name, codename);
+                        dtype, name, codename, std::move(ctx));
                 }
             }
 
@@ -2448,16 +2529,16 @@ namespace phylanx { namespace common {
                     util::generate_error_message(
                         "the statistics primitive requires for all axis "
                         "arguments to be unique",
-                        name, codename));
+                        name, codename, ctx.back_trace()));
             }
 
-            detail::verify_axis(axis0, 0, 3, "4d arrays", name, codename);
-            detail::verify_axis(axis1, 0, 3, "4d arrays", name, codename);
-            detail::verify_axis(axis2, 0, 3, "4d arrays", name, codename);
-            detail::verify_axis(axis3, 0, 3, "4d arrays", name, codename);
+            detail::verify_axis(axis0, 0, 3, "4d arrays", name, codename, ctx);
+            detail::verify_axis(axis1, 0, 3, "4d arrays", name, codename, ctx);
+            detail::verify_axis(axis2, 0, 3, "4d arrays", name, codename, ctx);
+            detail::verify_axis(axis3, 0, 3, "4d arrays", name, codename, ctx);
 
             return detail::statisticsnd_flat<Op>(std::move(arg), keepdims,
-                std::move(initial), dtype, name, codename);
+                std::move(initial), dtype, name, codename, std::move(ctx));
         }
         default:
             break;
@@ -2469,7 +2550,7 @@ namespace phylanx { namespace common {
                     "invalid number of axis specified ({}), "
                     "should be not larger than the data's dimension ({})",
                     axes.size(), dims),
-                name, codename));
+                name, codename, ctx.back_trace()));
     }
 
 }}    // namespace phylanx::common

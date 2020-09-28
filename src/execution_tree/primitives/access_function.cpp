@@ -56,6 +56,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> access_function::eval(
         primitive_arguments_type const& params, eval_context ctx) const
     {
+        if (!ctx)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_function::eval",
+                generate_error_message(
+                    hpx::util::format(
+                        "the execution context used to access the function "
+                        "'{}' is invalid",
+                        target_name_)));
+        }
+
         // access variable from execution context
         auto const* target = ctx.get_var(target_name_);
         if (target == nullptr)
@@ -98,6 +108,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void access_function::store(primitive_arguments_type&& vals,
         primitive_arguments_type&& params, eval_context ctx)
     {
+        if (!ctx)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_function::store",
+                generate_error_message(
+                    hpx::util::format(
+                        "the execution context used to access the function "
+                        "'{}' is invalid",
+                        target_name_)));
+        }
+
         // access variable from execution context
         auto* target = ctx.get_var(target_name_);
         if (target == nullptr)
@@ -121,6 +141,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void access_function::store(primitive_argument_type&& val,
         primitive_arguments_type&& params, eval_context ctx)
     {
+        if (!ctx)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_function::store",
+                generate_error_message(
+                    hpx::util::format(
+                        "the execution context used to access the function "
+                        "'{}' is invalid",
+                        target_name_)));
+        }
+
         // access variable from execution context
         auto* target = ctx.get_var(target_name_);
         if (target == nullptr)

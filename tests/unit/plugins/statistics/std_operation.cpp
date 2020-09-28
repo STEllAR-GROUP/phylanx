@@ -38,11 +38,12 @@ int main(int argc, char* argv[])
     // scalars
     test_count_std_operation("std(1.0)", "0.0");
     test_count_std_operation("std(1)", "0.0");
-    test_count_std_operation("std__float(1)", "0.0");
+    test_count_std_operation("std(1, __arg(dtype, \"float\"))", "0.0");
 
     // vectors
     test_count_std_operation("std([1.0, 2.0, 3.0, 4.0])", "sqrt(1.25)");
-    test_count_std_operation("std__float([1, 2, 3, 4])", "sqrt(1.25)");
+    test_count_std_operation(
+        "std([1, 2, 3, 4], __arg(dtype, \"float\"))", "sqrt(1.25)");
 
     test_count_std_operation("std([1.0, 2.0, 3.0, 4.0], 0)", "sqrt(1.25)");
     test_count_std_operation("std([1.0, 2.0, 3.0, 4.0], -1)", "sqrt(1.25)");

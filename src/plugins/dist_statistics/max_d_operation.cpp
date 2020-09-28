@@ -19,10 +19,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const max_d_operation::match_data = {
         match_pattern_type{"amax_d",
-            std::vector<std::string>{"amax_d(_1)", "amax_d(_1, _2)",
-                "amax_d(_1, _2, _3)", "amax_d(_1, _2, _3, _4)"},
+            std::vector<std::string>{
+                "amax_d(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_initial, nil), __arg(_5_dtype, nil))"},
             &create_amax_d_operation, &create_primitive<max_d_operation>, R"(
-            a, axis, keepdims, initial
+            a, axis, keepdims, initial, dtype
             Args:
 
                 a (vector or matrix): a scalar, a vector or a matrix
@@ -33,11 +34,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                    one. False by default
                 initial (optional, scalar): The minimum value of an output
                    element.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
-            Returns the maximum of an array or maximum along an axis.)",
-            true}};
+            Returns the maximum of an array or maximum along an axis.)"}};
 
     ///////////////////////////////////////////////////////////////////////////
     max_d_operation::max_d_operation(primitive_arguments_type&& operands,

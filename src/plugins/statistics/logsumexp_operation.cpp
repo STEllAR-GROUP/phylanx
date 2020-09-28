@@ -22,17 +22,20 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "logsumexp",
             std::vector<std::string>{
-                "logsumexp(_1)", "logsumexp(_1, _2)", "logsumexp(_1, _2, _3)"
+                "logsumexp(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_dummy_, nil), __arg(_5_dtype, nil))"
             },
             &create_logsumexp_operation, &create_primitive<logsumexp_operation>,
             R"(
-            a, axis, keepdims
+            arg, axis, keepdims, initial, dummy_, dtype
             Args:
 
-                a (array) : a scalar, a vector, a matrix or a tensor
-                axis (optional, integer): Axis over which the sum is taken.
-                    By default axis is None, and all elements are summed.
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 

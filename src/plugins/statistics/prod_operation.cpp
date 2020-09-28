@@ -26,22 +26,23 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "prod",
             std::vector<std::string>{
-                "prod(_1)", "prod(_1, _2)", "prod(_1, _2, _3)",
-                "prod(_1, _2, _3, _4)"
+                "prod(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_initial, nil), __arg(_5_dtype, nil))"
             },
             &create_prod_operation, &create_primitive<prod_operation>, R"(
-            v, axis, keepdims, initial
+            v, axis, keepdims, initial, dtype
             Args:
 
                 v (vector or matrix) : a vector or matrix
                 axis (optional, integer): a axis to sum along
                 keepdims (optional, boolean): keep dimension of input
                 initial (optional, scalar): The starting value for the product
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
-            The product of all values along the specified axis.)",
-            true
+            The product of all values along the specified axis.)"
         }
     };
 
