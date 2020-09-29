@@ -98,6 +98,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(random_plugin,
     phylanx::execution_tree::primitives::random::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(random_sample_plugin,
     phylanx::execution_tree::primitives::random::match_data[1]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(random_integers_plugin,
+    phylanx::execution_tree::primitives::random::match_data[2]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(repeat_operation_plugin,
     phylanx::execution_tree::primitives::repeat_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(reshape_operation_plugin,

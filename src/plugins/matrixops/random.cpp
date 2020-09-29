@@ -59,12 +59,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
             An array of random numbers.)"),
         match_pattern_type("random_sample",
             std::vector<std::string>{"random_sample(__arg(_1_size, nil))"},
-            & create_random,& create_primitive<random>, R"(
+            &create_random, &create_primitive<random>, R"(
             size
             Args:
 
                 size (int or tuple of ints) : the size of the array of random
                     numbers to generate
+
+            Returns:
+
+            An array of random numbers.)"),
+        match_pattern_type("random_integers",
+            std::vector<std::string>{
+                "random_integers(low, __arg(_2_high, nil), "
+                    "__arg(_3_size, nil))"},
+            &create_random, &create_primitive<random>, R"(
+            low, high, size
+            Args:
+
+                low (int) : Lowest (signed) integer to be drawn from the
+                    distribution (unless high=nil, in which case this parameter
+                    is the highest such integer, the lowest in this case is 1).
+                high (int, optional) : If provided, the largest (signed) integer
+                    to be drawn from the distribution
+                size (int or tuple of ints, optional) : the size of the array of
+                    random numbers to generate
 
             Returns:
 
@@ -316,6 +335,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (name.find("random_sample") == 0)
                 return random::operation::random_sample;
+
+            if (name.find("random_integers") == 0)
+                return random::operation::random_integers;
 
             return random::operation::random;
         }
@@ -1280,6 +1302,86 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<primitive_argument_type> random::eval_random_integers(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args,
+        eval_context ctx) const
+    {
+        using array_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
+
+        auto&& low = value_operand(operands[0], args, name_, codename_, ctx);
+        auto&& high = value_operand(operands.size() > 1 && valid(operands[1]) ?
+                operands[1] :
+                primitive_argument_type{},
+            args, name_, codename_, ctx);
+
+        auto&& dims = dimensions_operand(
+            operands.size() < 3 ? primitive_argument_type{} : operands[2],
+            args, name_, codename_, ctx);
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync,
+            [this_ = std::move(this_), ctx = std::move(ctx)](
+                hpx::future<primitive_argument_type>&& low_f,
+                hpx::future<primitive_argument_type>&& high_f,
+                hpx::future<array_type>&& dims_f) mutable
+            -> primitive_argument_type
+        {
+            primitive_argument_type&& high = high_f.get();
+            array_type&& dims = dims_f.get();
+
+            std::int64_t low_value = extract_scalar_integer_value(
+                low_f.get(), this_->name_, this_->codename_);
+            std::int64_t high_value;
+
+            if (is_integer_operand(high))
+            {
+                high_value = extract_scalar_integer_value(
+                    std::move(high), this_->name_, this_->codename_);
+            }
+            else
+            {
+                high_value = low_value;
+                low_value = 1;
+            }
+
+            distribution_parameters_type params{
+                "uniform_int", 2, double(low_value), double(high_value)};
+
+            switch (detail::num_dimensions(dims))
+            {
+            case 0:
+                return this_->random0d(
+                    std::move(params), node_data_type_int64, std::move(ctx));
+
+            case 1:
+                return this_->random1d(dims[0], std::move(params),
+                    node_data_type_int64, std::move(ctx));
+
+            case 2:
+                return this_->random2d(dims, std::move(params),
+                    node_data_type_int64, std::move(ctx));
+
+            case 3:
+                return this_->random3d(dims, std::move(params),
+                    node_data_type_int64, std::move(ctx));
+
+            case 4:
+                return this_->random4d(dims, std::move(params),
+                    node_data_type_int64, std::move(ctx));
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "random_integers::eval",
+                    this_->generate_error_message(
+                        "size operand has unsupported number of dimensions",
+                        std::move(ctx)));
+            }
+        },
+        std::move(low), std::move(high), std::move(dims));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> random::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -1289,7 +1391,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "random::eval",
                 generate_error_message(
                     "the random primitive requires at most three operand",
-                    ctx));
+                    std::move(ctx)));
         }
 
         if (random_operation_ == operation::random)
@@ -1303,7 +1405,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     generate_error_message(
                         "the random primitive requires that the arguments "
                         "given by the operands array are valid",
-                        ctx));
+                        std::move(ctx)));
             }
         }
         else if (random_operation_ == operation::random_sample)
@@ -1315,21 +1417,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     generate_error_message(
                         "the random_sample primitive requires that the "
                         "arguments given by the operands array are valid",
-                        ctx));
+                        std::move(ctx)));
             }
+        }
+        else if (random_operation_ == operation::random_integers)
+        {
+            if (!valid(operands[0]))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "random_integers::eval",
+                    generate_error_message(
+                        "the random_integers primitive requires that the "
+                        "arguments given by the operands array are valid",
+                        std::move(ctx)));
+            }
+            if (operands.size() > 1 &&
+                (!valid(operands[1]) && !is_explicit_nil(operands[1])))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "random_integers::eval",
+                    generate_error_message(
+                        "the random_integers primitive requires that the "
+                        "arguments given by the operands array are valid",
+                        std::move(ctx)));
+            }
+            if (operands.size() > 2 &&
+                (!valid(operands[2]) && !is_explicit_nil(operands[2])))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter, "random_integers::eval",
+                    generate_error_message(
+                        "the random_integers primitive requires that the "
+                        "arguments given by the operands array are valid",
+                        std::move(ctx)));
+            }
+
+            return eval_random_integers(operands, args, std::move(ctx));
         }
 
         // the first argument encodes the requested dimensionality, this
         // can either be an instance of node_data or a list of values
-        hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>> dims =
-            dimensions_operand(
-                operands.empty() ? primitive_argument_type{} : operands[0],
-                args, name_, codename_, ctx);
+        using array_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
+        hpx::future<array_type> dims;
 
         // the second (optional) argument encodes the distribution to use
         hpx::future<distribution_parameters_type> params;
+
         if (random_operation_ == operation::random)
         {
+            dims = dimensions_operand(
+                operands.empty() ? primitive_argument_type{} : operands[0],
+                args, name_, codename_, ctx);
             if (operands.size() < 2 || !valid(operands[1]))
             {
                 params = hpx::make_ready_future(
@@ -1343,11 +1478,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else if(random_operation_ == operation::random_sample)
         {
+            dims = dimensions_operand(
+                operands.empty() ? primitive_argument_type{} : operands[0],
+                args, name_, codename_, ctx);
             params = hpx::make_ready_future(
                 distribution_parameters_type{"uniform", 2, 0.0, 1.0});
         }
-
-        using array_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
 
         if (operands.size() < 3 || !valid(operands[2]))
         {
@@ -1384,11 +1520,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             node_data_type_double, std::move(ctx));
 
                     default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "random::eval",
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "random::eval",
                             this_->generate_error_message(
-                            "left hand side operand has unsupported "
-                                    "number of dimensions", std::move(ctx)));
+                                "size operand has unsupported number of "
+                                "dimensions",
+                                std::move(ctx)));
                     }
                 }, std::move(dims), std::move(params));
         }
@@ -1430,11 +1566,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         dims, std::move(params), dtype, std::move(ctx));
 
                 default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "random::eval",
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "random::eval",
                         this_->generate_error_message(
-                        "left hand side operand has unsupported "
-                                "number of dimensions", std::move(ctx)));
+                            "size operand has unsupported number of dimensions",
+                            std::move(ctx)));
                 }
             }, std::move(dims), std::move(params), operands[2]);
     }

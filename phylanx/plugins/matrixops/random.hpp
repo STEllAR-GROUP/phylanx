@@ -39,7 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         enum class operation
         {
             random,
-            random_sample
+            random_sample,
+            random_integers
         };
 
     public:
@@ -146,6 +147,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+
+        hpx::future<primitive_argument_type> eval_random_integers(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
 
         primitive_argument_type random0d(distribution_parameters_type&& params,
             node_data_type, eval_context ctx) const;
