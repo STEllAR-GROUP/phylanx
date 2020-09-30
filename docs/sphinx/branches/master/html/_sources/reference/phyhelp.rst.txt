@@ -2291,7 +2291,8 @@ random
 random (size, dist, dtype)
             Args:
 
-                size (int) : the size of the array of random numbers
+                size (int or tuple of ints) : the size of the array of random
+                    numbers to generate
                 dist (optional, string or list) : the name of the
                     distribution, or a list that begins with the name and is
                     followed by up to two numeric parameters.
@@ -2331,6 +2332,37 @@ random_d (shape, tile_index, numtiles, name, tiling_type, mean, std)
 
             A part of an array of random numbers on tile_index-th tile out of
             numtiles using the normal distribution
+
+
+random_integers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+random_integers (low, high, size)
+            Args:
+
+                low (int) : Lowest (signed) integer to be drawn from the
+                    distribution (unless high=nil, in which case this parameter
+                    is the highest such integer, the lowest in this case is 1).
+                high (int, optional) : If provided, the largest (signed) integer
+                    to be drawn from the distribution
+                size (int or tuple of ints, optional) : the size of the array of
+                    random numbers to generate
+
+            Returns:
+
+            An array of random numbers.
+
+
+random_sample
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+random_sample (size)
+            Args:
+
+                size (int or tuple of ints) : the size of the array of random
+                    numbers to generate
+
+            Returns:
+
+            An array of random numbers.
 
 
 range

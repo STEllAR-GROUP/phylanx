@@ -236,6 +236,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#prod">prod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random">random</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random-d">random_d</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-integers">random_integers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-sample">random_sample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#range">range</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#relu">relu</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#repeat">repeat</a></li>
@@ -2883,13 +2885,12 @@ initial (optional, scalar): The starting value for the product</p>
 <dl>
 <dt>random (size, dist, dtype)</dt><dd><p>Args:</p>
 <blockquote>
-<div><p>size (int) : the size of the array of random numbers
-dist (optional, string or list) : the name of the</p>
-<blockquote>
-<div><p>distribution, or a list that begins with the name and is
+<div><dl class="simple">
+<dt>size (int or tuple of ints)<span class="classifier">the size of the array of random</span></dt><dd><p>numbers to generate</p>
+</dd>
+<dt>dist (optional, string or list)<span class="classifier">the name of the</span></dt><dd><p>distribution, or a list that begins with the name and is
 followed by up to two numeric parameters.</p>
-</div></blockquote>
-<dl class="simple">
+</dd>
 <dt>dtype (optional, string)<span class="classifier">the data-type of the returned array,</span></dt><dd><p>defaults to ‘float’.</p>
 </dd>
 </dl>
@@ -2928,6 +2929,41 @@ vector, all these three tiling_types are the same.</p>
 <p>Returns:</p>
 <p>A part of an array of random numbers on tile_index-th tile out of
 numtiles using the normal distribution</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="random-integers">
+<h2>random_integers<a class="headerlink" href="#random-integers" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>random_integers (low, high, size)</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>low (int)<span class="classifier">Lowest (signed) integer to be drawn from the</span></dt><dd><p>distribution (unless high=nil, in which case this parameter
+is the highest such integer, the lowest in this case is 1).</p>
+</dd>
+<dt>high (int, optional)<span class="classifier">If provided, the largest (signed) integer</span></dt><dd><p>to be drawn from the distribution</p>
+</dd>
+<dt>size (int or tuple of ints, optional)<span class="classifier">the size of the array of</span></dt><dd><p>random numbers to generate</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>An array of random numbers.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="random-sample">
+<h2>random_sample<a class="headerlink" href="#random-sample" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>random_sample (size)</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>size (int or tuple of ints)<span class="classifier">the size of the array of random</span></dt><dd><p>numbers to generate</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>An array of random numbers.</p>
 </dd>
 </dl>
 </div>
