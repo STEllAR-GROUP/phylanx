@@ -25,6 +25,12 @@ class PhylanxSession:
 
     is_initialized = False
 
+    # global settings for decorator
+    startatlineone = False
+    print_progress = False
+    debug = False
+    disable_decorator = False
+
     @staticmethod
     def init(num_threads=1):
         if not PhylanxSession.is_initialized:
