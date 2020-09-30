@@ -39,7 +39,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_arguments_type&& operands, std::string const& name,
         std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
     {
     }
 
@@ -49,39 +48,27 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() ||
-            operands.size() > derived().match_data.patterns_.size())
+        if (operands.empty() || operands.size() > 5)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "statistics::eval",
                 generate_error_message(
-                    "the statistics primitive requires exactly one, two, or "
-                    "three operands"));
+                    "the statistics primitive requires between one and five "
+                    "operands", std::move(ctx)));
         }
 
-        std::size_t count = 0;
-        for (auto const& i : operands)
-        {
-            // axis (arg1) and keepdims (arg2) are allowed to be nil
-            if (count != 1 && count != 2 && !valid(i))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter, "statistics::eval",
-                    generate_error_message(
-                        "the statistics_operation primitive requires that the "
-                        "arguments given by the operands array are valid"));
-            }
-            ++count;
-        }
-
+        auto ctx_copy = ctx;
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_arguments_type&& args)
-                                      -> primitive_argument_type {
-                // Extract axis and keepdims
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_), ctx = std::move(ctx)](
+                primitive_arguments_type&& args) mutable
+            -> primitive_argument_type
+            {
+                // Extract axis, keepdims, initial, and dtype
                 // Presence of axis changes behavior for >1d cases
                 hpx::util::optional<std::int64_t> axis;
                 bool keepdims = false;
                 primitive_argument_type initial;
+                node_data_type dtype = node_data_type_unknown;
 
                 if (args.size() > 1)
                 {
@@ -93,9 +80,17 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                     }
 
                     // initial is (optional) argument #4
-                    if (args.size() > 3)
+                    if (args.size() > 3 && valid(args[3]))
                     {
                         initial = std::move(args[3]);
+                    }
+
+                    // dtype is (optional) argument #5
+                    if (args.size() > 4 && valid(args[4]))
+                    {
+                        dtype =
+                            map_dtype(extract_string_value(std::move(args[4]),
+                                this_->name_, this_->codename_));
                     }
 
                     // axis is (optional) argument #2
@@ -107,8 +102,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                             return common::statisticsnd<Op>(std::move(args[0]),
                                 extract_list_value_strict(std::move(args[1]),
                                     this_->name_, this_->codename_),
-                                keepdims, std::move(initial), this_->dtype_,
-                                this_->name_, this_->codename_);
+                                keepdims, std::move(initial), dtype,
+                                this_->name_, this_->codename_, std::move(ctx));
                         }
 
                         // ... or a single integer
@@ -118,11 +113,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 }
 
                 return common::statisticsnd<Op>(std::move(args[0]), axis,
-                    keepdims, std::move(initial), this_->dtype_, this_->name_,
-                    this_->codename_);
+                    keepdims, std::move(initial), dtype, this_->name_,
+                    this_->codename_, std::move(ctx));
             }),
             detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                name_, codename_, std::move(ctx_copy)));
     }
 }}}    // namespace phylanx::execution_tree::primitives
 

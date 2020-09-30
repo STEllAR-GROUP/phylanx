@@ -51,9 +51,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         statistics_base(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-    private:
-        node_data_type dtype_;
     };
 }}}    // namespace phylanx::execution_tree::primitives
 

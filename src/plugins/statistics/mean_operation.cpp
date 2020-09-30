@@ -21,22 +21,25 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "mean",
             std::vector<std::string>{
-                "mean(_1, _2, _3)", "mean(_1, _2)", "mean(_1)"
+                "mean(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_dummy_, nil), __arg(_5_dtype, nil))"
             },
             &create_mean_operation,
             &create_primitive<mean_operation>, R"(
-            ar, axis, keepdims
+            arg, axis, keepdims, initial, dummy_, dtype
             Args:
 
-                ar (array) : an array of values
-                axis (optional, int) : the axis along which to calculate the mean
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
             The mean of the array. If an axis is specified, the result is the
-            vector created when the mean is taken along the specified axis.)",
-            true
+            vector created when the mean is taken along the specified axis.)"
         }
     };
 

@@ -21,13 +21,16 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "all",
             std::vector<std::string>{
-                "all(_1)", "all(_1, _2)", "all(_1, _2, _3)"
+                "all(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_dummy0, nil), __arg(_5_dummy1, nil))"
             },
             &create_all_operation, &create_primitive<all_operation>, R"(
-            a, axis, keepdims, initial
+            arg, axis, keepdims, initial
             Args:
 
-                arg (matrix or vector of numbers) : the input values
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
 
             Returns:
 

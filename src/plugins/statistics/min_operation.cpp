@@ -22,11 +22,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "amin",
             std::vector<std::string>{
-                "amin(_1)", "amin(_1, _2)", "amin(_1, _2, _3)",
-                "amin(_1, _2, _3, _4)"
+                "amin(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_initial, nil), __arg(_5_dtype, nil))"
             },
             &create_amin_operation, &create_primitive<min_operation>, R"(
-            a, axis, keepdims, initial
+            a, axis, keepdims, initial, dtype
             Args:
 
                 a (vector or matrix): a scalar, a vector or a matrix
@@ -37,10 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                    one. False by default
                 initial (optional, scalar): The maximum value of an output
                    element.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
+
             Returns:
 
-            Returns the minimum of an array or minimum along an axis.)",
-            true
+            Returns the minimum of an array or minimum along an axis.)"
         }
     };
 

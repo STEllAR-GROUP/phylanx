@@ -28,7 +28,7 @@ namespace phylanx { namespace common {
         execution_tree::primitive_argument_type&& arg, ir::range&& axes,
         bool keepdims, execution_tree::primitive_argument_type&& initial,
         execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename);
+        std::string const& codename, execution_tree::eval_context ctx);
 
     template PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     statisticsnd<statistics_var_op>(
@@ -36,6 +36,6 @@ namespace phylanx { namespace common {
         hpx::util::optional<std::int64_t> const& axis, bool keepdims,
         execution_tree::primitive_argument_type&& initial,
         execution_tree::node_data_type dtype, std::string const& name,
-        std::string const& codename);
+        std::string const& codename, execution_tree::eval_context ctx);
 
 }}    // namespace phylanx::common

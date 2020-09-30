@@ -60,6 +60,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> access_variable::eval(
         primitive_arguments_type const& params, eval_context ctx) const
     {
+        if (!ctx)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_variable::eval",
+                generate_error_message(
+                    hpx::util::format(
+                        "the execution context used to access the variable "
+                        "'{}' is invalid",
+                        target_name_)));
+        }
+
         // access variable from execution context
         auto const* target = ctx.get_var(target_name_);
         if (target == nullptr)
@@ -69,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_), ctx));
+                        target_name_), std::move(ctx)));
         }
 
         // handle slicing, we can replace the params with our slicing
@@ -160,6 +170,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void access_variable::store(primitive_arguments_type&& vals,
         primitive_arguments_type&& params, eval_context ctx)
     {
+        if (!ctx)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_variable::store",
+                generate_error_message(
+                    hpx::util::format(
+                        "the execution context used to access the variable "
+                        "'{}' is invalid",
+                        target_name_)));
+        }
+
         if (vals.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_variable::store",
@@ -203,6 +223,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void access_variable::store(primitive_argument_type&& val,
         primitive_arguments_type&& params, eval_context ctx)
     {
+        if (!ctx)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "access_variable::store",
+                generate_error_message(
+                    hpx::util::format(
+                        "the execution context used to access the variable "
+                        "'{}' is invalid",
+                        target_name_)));
+        }
+
         // access variable from execution context
         auto* target = ctx.get_var(target_name_);
         if (target == nullptr)

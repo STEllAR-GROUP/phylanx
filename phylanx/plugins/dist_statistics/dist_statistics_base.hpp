@@ -53,52 +53,50 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type statistics0d(
-            primitive_argument_type&& arg, ir::range&& axes,
-            bool keepdims, primitive_argument_type&& initial) const;
+        primitive_argument_type statistics0d(primitive_argument_type&& arg,
+            ir::range&& axes, bool keepdims, primitive_argument_type&& initial,
+            node_data_type dtype, eval_context ctx) const;
 
-        primitive_argument_type statistics1d(
-            primitive_argument_type&& arg, ir::range&& axes,
-            bool keepdims, primitive_argument_type&& initial) const;
+        primitive_argument_type statistics1d(primitive_argument_type&& arg,
+            ir::range&& axes, bool keepdims, primitive_argument_type&& initial,
+            node_data_type dtype, eval_context ctx) const;
 
-        primitive_argument_type statistics2d(
-            primitive_argument_type&& arg, ir::range&& axes,
-            bool keepdims, primitive_argument_type&& initial) const;
+        primitive_argument_type statistics2d(primitive_argument_type&& arg,
+            ir::range&& axes, bool keepdims, primitive_argument_type&& initial,
+            node_data_type dtype, eval_context ctx) const;
 
-        primitive_argument_type statistics3d(
-            primitive_argument_type&& arg, ir::range&& axes,
-            bool keepdims, primitive_argument_type&& initial) const;
+        primitive_argument_type statistics3d(primitive_argument_type&& arg,
+            ir::range&& axes, bool keepdims, primitive_argument_type&& initial,
+            node_data_type dtype, eval_context ctx) const;
 
-        primitive_argument_type statisticsnd(
-            primitive_argument_type&& arg, ir::range&& axes,
-            bool keepdims, primitive_argument_type&& initial) const;
+        primitive_argument_type statisticsnd(primitive_argument_type&& arg,
+            ir::range&& axes, bool keepdims, primitive_argument_type&& initial,
+            node_data_type dtype, eval_context ctx) const;
 
-        primitive_argument_type statistics0d(
-            primitive_argument_type&& arg,
+        primitive_argument_type statistics0d(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
-            primitive_argument_type&& initial) const;
+            primitive_argument_type&& initial, node_data_type dtype,
+            eval_context ctx) const;
 
-        primitive_argument_type statistics1d(
-            primitive_argument_type&& arg,
+        primitive_argument_type statistics1d(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
-            primitive_argument_type&& initial) const;
+            primitive_argument_type&& initial, node_data_type dtype,
+            eval_context ctx) const;
 
-        primitive_argument_type statistics2d(
-            primitive_argument_type&& arg,
+        primitive_argument_type statistics2d(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
-            primitive_argument_type&& initial) const;
+            primitive_argument_type&& initial, node_data_type dtype,
+            eval_context ctx) const;
 
-        primitive_argument_type statistics3d(
-            primitive_argument_type&& arg,
+        primitive_argument_type statistics3d(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
-            primitive_argument_type&& initial) const;
+            primitive_argument_type&& initial, node_data_type dtype,
+            eval_context ctx) const;
 
-        primitive_argument_type statisticsnd(
-            primitive_argument_type&& arg,
+        primitive_argument_type statisticsnd(primitive_argument_type&& arg,
             hpx::util::optional<std::int64_t> const& axis, bool keepdims,
-            primitive_argument_type&& initial) const;
-
-        node_data_type dtype_;
+            primitive_argument_type&& initial, node_data_type dtype,
+            eval_context ctx) const;
     };
 }}}    // namespace phylanx::execution_tree::primitives
 

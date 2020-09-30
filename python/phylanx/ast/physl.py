@@ -78,9 +78,7 @@ numpy_constants = {
 methods_supporting_dtype = [
     'linearmatrix',
     'linspace',
-    'mean',
-    'power',
-    'prod'
+    'power'
 ]
 
 

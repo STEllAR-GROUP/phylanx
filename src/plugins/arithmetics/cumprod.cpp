@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 axis (int, optional) : Axis along which the cumulative product is
                     computed. The default (None) is to compute the cumprod over
                     the flattened array.
-                dtype (nil, optional) : the data-type of the returned array,
+                dtype (string, optional) : the data-type of the returned array,
                   defaults to dtype of input arrays.
 
             Returns:
@@ -61,7 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 InIter begin, InIter end, OutIter dest, T init) const
             {
                 return hpx::parallel::inclusive_scan(
-                    hpx::parallel::execution::seq, begin, end, dest,
+                    hpx::execution::seq, begin, end, dest,
                     std::multiplies<>{}, init);
             }
         };

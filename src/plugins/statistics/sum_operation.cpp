@@ -22,22 +22,23 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         match_pattern_type{
             "sum",
             std::vector<std::string>{
-                "sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)",
-                "sum(_1, _2, _3, _4)"
+                "sum(_1, __arg(_2_axis, nil), __arg(_3_keepdims, nil), "
+                    "__arg(_4_initial, nil), __arg(_5_dtype, nil))"
             },
             &create_sum_operation, &create_primitive<sum_operation>, R"(
-            v, axis, keepdims, initial
+            v, axis, keepdims, initial, dtype
             Args:
 
                 v (vector or matrix) : a vector or matrix
                 axis (optional, integer): a axis to sum along
                 keepdims (optional, boolean): keep dimension of input
                 initial (optional, scalar): The starting value for the sum
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
-            The sum of all values along the specified axis.)",
-            true
+            The sum of all values along the specified axis.)"
         }
     };
 
