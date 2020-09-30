@@ -140,7 +140,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto als = code_als.run();
 
     hpx::evaluate_active_counters(true, "start");
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
     auto result = als(
         ratings, regularization, num_factors, iterations, alpha, enable_output);
     auto time_diff = t.elapsed();

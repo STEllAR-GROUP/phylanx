@@ -15,7 +15,7 @@
 #include <pybind11/stl.h>
 
 #include <hpx/errors/exception.hpp>
-#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+#include <hpx/include/run_as.hpp>
 
 #include <cstdint>
 #include <string>

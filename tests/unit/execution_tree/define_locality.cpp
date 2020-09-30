@@ -7,7 +7,7 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/modules/format.hpp>
-#include <hpx/runtime/get_num_localities.hpp>
+#include <hpx/runtime.hpp>
 #include <hpx/modules/testing.hpp>
 
 #include <cstdint>

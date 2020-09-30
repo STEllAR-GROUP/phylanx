@@ -196,7 +196,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto lra = code_lra.run();
 
     // time the execution
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     auto result =
         lra(std::move(x), std::move(y), alpha, iterations, enable_output);

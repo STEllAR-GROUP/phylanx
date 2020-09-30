@@ -42,7 +42,7 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(hpx::parallel::execution::par, std::size_t(0),
+        hpx::for_loop(hpx::execution::par, std::size_t(0),
             batch, [&](std::size_t p) {
                 for (std::size_t c = 0; c != out_channels; ++c)
                 {
@@ -76,8 +76,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -120,8 +120,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -157,8 +157,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -212,8 +212,8 @@ namespace phylanx { namespace common {
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
         std::size_t pad_top = pad_width / 2;
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -251,8 +251,8 @@ namespace phylanx { namespace common {
         blaze::DynamicTensor<double> result(
             batch, data_length, out_channels, 0.);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -294,8 +294,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -335,8 +335,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, result_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);
@@ -374,8 +374,8 @@ namespace phylanx { namespace common {
 
         blaze::DynamicTensor<double> result(batch, data_length, out_channels);
 
-        hpx::parallel::for_loop(
-            hpx::parallel::execution::par, std::size_t(0), out_channels,
+        hpx::for_loop(
+            hpx::execution::par, std::size_t(0), out_channels,
             [&](std::size_t c)
             {
                 auto kslice = blaze::columnslice(k, c);

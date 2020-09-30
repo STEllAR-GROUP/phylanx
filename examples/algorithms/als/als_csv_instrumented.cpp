@@ -364,7 +364,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto ratings = read_x(filepath, row_start, row_stop, col_start, col_stop);
 
     // Measure execution time
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     // Evaluate ALS using the read data
     auto result =
