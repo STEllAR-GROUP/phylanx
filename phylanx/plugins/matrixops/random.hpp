@@ -36,7 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<random>
     {
     public:
-        static match_pattern_type const match_data;
+        enum class operation
+        {
+            random,
+            random_sample,
+            random_integers
+        };
+
+    public:
+        static std::vector<match_pattern_type> const match_data;
 
         random() = default;
 
@@ -140,19 +148,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        primitive_argument_type random0d(
-            distribution_parameters_type&& params, node_data_type) const;
+        hpx::future<primitive_argument_type> eval_random_integers(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
+
+        primitive_argument_type random0d(distribution_parameters_type&& params,
+            node_data_type, eval_context ctx) const;
         primitive_argument_type random1d(std::size_t dim,
-            distribution_parameters_type&& params, node_data_type) const;
+            distribution_parameters_type&& params, node_data_type,
+            eval_context ctx) const;
         primitive_argument_type random2d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params, node_data_type) const;
+            distribution_parameters_type&& params, node_data_type,
+            eval_context ctx) const;
         primitive_argument_type random3d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params, node_data_type) const;
+            distribution_parameters_type&& params, node_data_type,
+            eval_context ctx) const;
         primitive_argument_type random4d(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
-            distribution_parameters_type&& params, node_data_type) const;
+            distribution_parameters_type&& params, node_data_type,
+            eval_context ctx) const;
+
+    private:
+        operation random_operation_;
     };
 
     inline primitive create_random(hpx::id_type const& locality,
