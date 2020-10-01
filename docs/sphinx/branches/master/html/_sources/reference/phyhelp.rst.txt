@@ -330,10 +330,12 @@ _linear_solver (a, b)
 
 all
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-all (a, axis, keepdims, initial)
+all (arg, axis, keepdims, initial)
             Args:
 
-                arg (matrix or vector of numbers) : the input values
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
 
             Returns:
 
@@ -378,7 +380,7 @@ als (ratings, reg, num, iters, alpha, enable_output)
 
 amax
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-amax (a, axis, keepdims, initial)
+amax (a, axis, keepdims, initial, dtype)
             Args:
 
                 a (vector or matrix): a scalar, a vector or a matrix
@@ -389,6 +391,8 @@ amax (a, axis, keepdims, initial)
                    one. False by default
                 initial (optional, scalar): The minimum value of an output
                    element.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
@@ -397,7 +401,7 @@ amax (a, axis, keepdims, initial)
 
 amin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-amin (a, axis, keepdims, initial)
+amin (a, axis, keepdims, initial, dtype)
             Args:
 
                 a (vector or matrix): a scalar, a vector or a matrix
@@ -408,6 +412,9 @@ amin (a, axis, keepdims, initial)
                    one. False by default
                 initial (optional, scalar): The maximum value of an output
                    element.
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
+
             Returns:
 
             Returns the minimum of an array or minimum along an axis.
@@ -446,10 +453,12 @@ annotate_d (target, name, args)
 
 any
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-any (a, axis, keepdims, initial)
+any (arg, axis, keepdims, initial)
             Args:
 
-                arg (matrix or vector of numbers) : the input values
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
 
             Returns:
 
@@ -1082,7 +1091,7 @@ cumprod (a, axis)
                 axis (int, optional) : Axis along which the cumulative product is
                     computed. The default (None) is to compute the cumprod over
                     the flattened array.
-                dtype (nil, optional) : the data-type of the returned array,
+                dtype (string, optional) : the data-type of the returned array,
                   defaults to dtype of input arrays.
 
             Returns:
@@ -1999,13 +2008,15 @@ logical_xor (a, b)
 
 logsumexp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-logsumexp (a, axis, keepdims)
+logsumexp (arg, axis, keepdims, initial, dummy_, dtype)
             Args:
 
-                a (array) : a scalar, a vector, a matrix or a tensor
-                axis (optional, integer): Axis over which the sum is taken.
-                    By default axis is None, and all elements are summed.
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
@@ -2094,12 +2105,15 @@ maximum (x0, x1)
 
 mean
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-mean (ar, axis, keepdims)
+mean (arg, axis, keepdims, initial, dummy_, dtype)
             Args:
 
-                ar (array) : an array of values
-                axis (optional, int) : the axis along which to calculate the mean
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
@@ -2273,13 +2287,15 @@ prepend (val,li)
 
 prod
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-prod (v, axis, keepdims, initial)
+prod (v, axis, keepdims, initial, dtype)
             Args:
 
                 v (vector or matrix) : a vector or matrix
                 axis (optional, integer): a axis to sum along
                 keepdims (optional, boolean): keep dimension of input
                 initial (optional, scalar): The starting value for the product
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
@@ -2824,12 +2840,15 @@ stack (args, axis, dtype)
 
 std
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-std (v, axis, keepdims)
+std (arg, axis, keepdims, initial, dummy_, dtype)
             Args:
 
-                v (vector or matrix) : a vector or matrix
-                axis (optional, integer): a axis to sum along
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
@@ -2865,13 +2884,15 @@ string (args)
 
 sum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-sum (v, axis, keepdims, initial)
+sum (v, axis, keepdims, initial, dtype)
             Args:
 
                 v (vector or matrix) : a vector or matrix
                 axis (optional, integer): a axis to sum along
                 keepdims (optional, boolean): keep dimension of input
                 initial (optional, scalar): The starting value for the sum
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
@@ -3016,12 +3037,15 @@ unique (a, axis)
 
 var
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-var (v, axis, keepdims)
+var (arg, axis, keepdims, initial, dummy_, dtype)
             Args:
 
-                v (vector or matrix) : a vector or matrix
-                axis (optional, integer): a axis to sum along
-                keepdims (optional, boolean): keep dimension of input
+                arg (array of numbers) : the input values
+                axis (optional, integer) : a axis to sum along
+                keepdims (optional, boolean) : keep dimension of input
+                dummy_ (nil) : unused
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to dtype of input array.
 
             Returns:
 
