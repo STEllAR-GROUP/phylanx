@@ -21,7 +21,7 @@ void phylanx::bindings::bind_ast(pybind11::module m)
 {
     auto ast = m.def_submodule("ast");
 
-    pybind11::enum_<phylanx::ast::optoken>(
+    auto optoken = pybind11::enum_<phylanx::ast::optoken>(
             ast, "optoken", pybind11::arithmetic(),
         "an enumerator type representing possible operations with operands")
         .value("op_comma", phylanx::ast::optoken::op_comma)
@@ -62,11 +62,21 @@ void phylanx::bindings::bind_ast(pybind11::module m)
         .value("op_not", phylanx::ast::optoken::op_not)
         .value("op_post_incr", phylanx::ast::optoken::op_post_incr)
         .value("op_post_decr", phylanx::ast::optoken::op_post_decr)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::optoken>)
-        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::optoken>)
+//        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::optoken>)
+//        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::optoken>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::optoken>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::optoken>));
+
+    // workaround for changes in PyBind11 (should be fixed in V2.6, see
+    // https://github.com/pybind/pybind11/issues/2537)
+    optoken.attr("__str__") = pybind11::cpp_function(
+        &phylanx::bindings::as_string<phylanx::ast::optoken>,
+        pybind11::name("__str__"), pybind11::is_method(optoken));
+
+    optoken.attr("__repr__") = pybind11::cpp_function(
+        &phylanx::bindings::repr<phylanx::ast::optoken>,
+        pybind11::name("__str__"), pybind11::is_method(optoken));
 
     // phylanx::ast::nil
     pybind11::class_<phylanx::ast::nil>(
