@@ -13,7 +13,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
-#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+#include <hpx/include/run_as.hpp>
 
 #include <cstdint>
 #include <exception>

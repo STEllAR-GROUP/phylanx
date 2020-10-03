@@ -90,15 +90,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         decltype(auto) hard_sigmoid(Ones const& ones, Zeros const& zeros,
             Fifth const& fifth, Halfs const& halfs, Data const& d)
         {
-            return (blaze::max)(zeros, (blaze::min)(ones, d * fifth + halfs));
+            return (blaze::max)(
+                zeros, (blaze::min)(ones, blaze::eval(d * fifth + halfs)));
         }
 
         template <typename Ones, typename Zeros, typename Fifth, typename Halfs,
             typename Data>
-        decltype(auto) hard_sigmoid_nd(Ones const& ones, Zeros const& zeros,
-            Fifth const& fifth, Halfs const& halfs, Data const& d)
+        blaze::ResultType_t<Data> hard_sigmoid_nd(Ones const& ones,
+            Zeros const& zeros, Fifth const& fifth, Halfs const& halfs,
+            Data const& d)
         {
-            return (blaze::max)(zeros, (blaze::min)(ones, d % fifth + halfs));
+            blaze::ResultType_t<Data> rhs = d % fifth + halfs;
+            return (blaze::max)(zeros, (blaze::min)(ones, std::move(rhs)));
         }
     }
 

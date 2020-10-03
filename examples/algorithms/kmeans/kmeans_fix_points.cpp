@@ -115,7 +115,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
 
     // Measure execution time
-    hpx::util::high_resolution_timer timer;
+    hpx::chrono::high_resolution_timer timer;
 
     auto result = phylanx::execution_tree::extract_numeric_value(
         kmeans(ctx, points, iterations, initial_centroids, enable_output));

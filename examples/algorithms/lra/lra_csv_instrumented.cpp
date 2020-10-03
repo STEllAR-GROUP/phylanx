@@ -350,7 +350,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     bool enable_output = vm.count("enable_output") != 0;
 
     // Measure execution time
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     // Evaluate LRA using the read data
     auto result =

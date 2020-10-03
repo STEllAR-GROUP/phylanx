@@ -125,7 +125,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto enable_output = vm.count("enable_output") != 0;
 
     // Measure execution time
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     auto result = phylanx::execution_tree::extract_list_value(
         als(R, regularization, num_factors, iterations, alpha, enable_output));

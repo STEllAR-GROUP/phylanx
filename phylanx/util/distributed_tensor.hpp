@@ -20,7 +20,7 @@
 #include <hpx/runtime/components/new.hpp>
 #include <hpx/runtime/components/server/component.hpp>
 #include <hpx/runtime_local/get_locality_id.hpp>
-#include <hpx/runtime/get_num_localities.hpp>
+#include <hpx/runtime.hpp>
 #include <hpx/runtime/get_ptr.hpp>
 #include <hpx/async_base/launch_policy.hpp>
 #include <hpx/synchronization/spinlock.hpp>

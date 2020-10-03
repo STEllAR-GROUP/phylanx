@@ -225,7 +225,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     // time the execution
     hpx::evaluate_active_counters(true, "start");
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     auto result =
         als_d(std::move(ratings_row), std::move(ratings_column), regularization,

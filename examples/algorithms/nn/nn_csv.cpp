@@ -119,7 +119,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto nn = code_nn.run();
 
     // time the execution
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     auto result = nn(std::move(x), std::move(y), num_iter, lr);
 

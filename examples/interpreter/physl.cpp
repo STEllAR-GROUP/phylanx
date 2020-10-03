@@ -458,7 +458,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     // Evaluate user code using the read data
     if (!dry_run)
     {
-        hpx::util::high_resolution_timer t;
+        hpx::chrono::high_resolution_timer t;
         auto retval = code.run(ctx).arg_;
 
         if (print_time)

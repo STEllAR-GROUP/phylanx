@@ -51,7 +51,7 @@ int hpx_main(int argc, char* argv[])
 
     for (std::int64_t const& dim_size : dim_sizes)
     {
-        hpx::util::high_resolution_timer t;
+        hpx::chrono::high_resolution_timer t;
 
         auto result = cannon(dim_size);
         auto elapsed = t.elapsed();

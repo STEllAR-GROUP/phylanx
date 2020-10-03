@@ -26,7 +26,7 @@
 
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/get_num_localities.hpp>
+#include <hpx/runtime.hpp>
 
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/include/qi_attr.hpp>

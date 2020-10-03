@@ -129,7 +129,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto lir = code_lir.run();
 
     // time the execution
-    hpx::util::high_resolution_timer t;
+    hpx::chrono::high_resolution_timer t;
 
     auto result =
         lir(std::move(x), std::move(y), alpha, iterations, enable_output);
