@@ -5,6 +5,7 @@
 
 set(tests
     argsort
+    linearalg
    )
 
 foreach(test ${tests})
