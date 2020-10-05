@@ -9,9 +9,9 @@
 #if defined(HPX_HAVE_APEX) && defined(PHYLANX_HAVE_TASK_INLINING_POLICY)
 
 #include <hpx/config.hpp>
-#include <hpx/runtime/config_entry.hpp>
-#include <hpx/runtime_local/get_locality_id.hpp>
 #include <hpx/runtime.hpp>
+#include <hpx/runtime_local/config_entry.hpp>
+#include <hpx/runtime_local/get_locality_id.hpp>
 #include <hpx/runtime_local/startup_function.hpp>
 #include <hpx/util/thread_description.hpp>
 
