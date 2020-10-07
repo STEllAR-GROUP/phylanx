@@ -88,7 +88,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     template <typename T>
     T norm::ninf_norm_vector(ir::node_data<T>&& data) const
     {
-        return blaze::min(blaze::abs(data.vector()));
+        return (blaze::min)(blaze::abs(data.vector()));
     }
 
     template <typename T>

@@ -12,6 +12,7 @@
 
 #include <hpx/futures/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
