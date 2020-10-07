@@ -174,6 +174,8 @@ namespace phylanx { namespace execution_tree
                 "locality", primitives::locality_match_data});
             patterns.push_back(pattern{
                 "num_localities", primitives::num_localities_match_data});
+            patterns.push_back(
+                pattern{"hostname", primitives::hostname_match_data});
 
             return patterns;
         }

@@ -63,6 +63,7 @@ set(tests
     1266_sum_axis_argument
     1267_random_integers
     1267_random_sample
+    1281_hostname
     array_len_494
     array_shape_486
     array_subscript_403

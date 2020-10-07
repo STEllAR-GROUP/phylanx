@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    inline tiling_span extract_span(annotation const& ann, char const* key,
+    tiling_span extract_span(annotation const& ann, char const* key,
         std::string const& name, std::string const& codename)
     {
         annotation key_ann;

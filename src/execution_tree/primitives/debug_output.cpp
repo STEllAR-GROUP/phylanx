@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2020 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,6 +19,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#if defined(HPX_HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -89,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "find_here", std::vector<std::string>{"find_here()"},
             &create_generic_function< ::locality>,
             &create_primitive<generic_function< ::locality>>, R"(
-            locality
+            find_here
 
             Args:
 
@@ -141,5 +145,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         std::int64_t localities = hpx::get_num_localities(hpx::launch::sync);
         return hpx::make_ready_future(primitive_argument_type(localities));
+    }
+}}}
+
+///////////////////////////////////////////////////////////////////////////////
+HPX_PLAIN_ACTION(
+    phylanx::execution_tree::primitives::get_hostname, hostname);
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    match_pattern_type const hostname_match_data =
+    {
+        hpx::make_tuple(
+            "hostname", std::vector<std::string>{"hostname()"},
+            &create_generic_function< ::hostname>,
+            &create_primitive<generic_function< ::hostname>>, R"(
+            hostname
+
+            Args:
+
+                none
+
+            Returns:
+
+            The hostname of the currently executing code)")
+    };
+
+    hpx::future<primitive_argument_type> get_hostname(
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context)
+    {
+        char hostname[1024];
+        hostname[1023] = '\0';
+        gethostname(hostname, 1023);
+
+        return hpx::make_ready_future(
+            primitive_argument_type(std::string(hostname)));
     }
 }}}
