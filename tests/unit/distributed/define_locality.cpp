@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Hartmut Kaiser
+// Copyright (c) 2019-2020 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,7 +19,7 @@ void test_define_variable_here(hpx::id_type const& locality)
 
     auto comp = phylanx::execution_tree::create_compiler();
     auto const& def = comp.compile(hpx::launch::sync,
-        hpx::util::format(R"(define{{L#{}}}(x, locality()))", locality_id));
+        hpx::util::format(R"(define{{L#{}}}(x, find_here()))", locality_id));
 
     // executing the define will create the variable, executing whatever it
     // returned will bind the value to the variable
@@ -39,7 +39,7 @@ void test_define_variable_there(hpx::id_type const& locality)
 
     auto comp = phylanx::execution_tree::create_compiler(locality);
     auto const& def = comp.compile(hpx::launch::sync,
-        hpx::util::format(R"(define{{L#{}}}(x, locality()))", locality_id));
+        hpx::util::format(R"(define{{L#{}}}(x, find_here()))", locality_id));
 
     // executing the define will create the variable, executing whatever it
     // returned will bind the value to the variable
@@ -58,7 +58,7 @@ void test_define_variable(hpx::id_type const& locality)
     std::uint32_t locality_id = hpx::naming::get_locality_id_from_id(locality);
 
     auto comp = phylanx::execution_tree::create_compiler(locality);
-    auto const& def = comp.compile(hpx::launch::sync, "define(x, locality())");
+    auto const& def = comp.compile(hpx::launch::sync, "define(x, find_here())");
 
     // executing the define will create the variable, executing whatever it
     // returned will bind the value to the variable

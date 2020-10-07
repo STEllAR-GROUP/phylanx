@@ -56,8 +56,8 @@ namespace phylanx { namespace execution_tree
         return false;
     }
 
-    inline tiling_span extract_span(annotation const& ann, char const* key,
-        std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT tiling_span extract_span(annotation const& ann,
+        char const* key, std::string const& name, std::string const& codename);
 
     ////////////////////////////////////////////////////////////////////////////
     struct tiling_information
