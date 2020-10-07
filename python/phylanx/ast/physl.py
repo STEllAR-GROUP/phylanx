@@ -466,6 +466,7 @@ class PhySL:
     def __init__(self, func, tree, kwargs):
         self.defined = set()
         self.numpy_aliases = {'numpy'}
+        self.linalg_aliases = {'LA'}
         self.wrapped_function = func
         self.kwargs = kwargs
         self.is_compiled = False
@@ -482,8 +483,15 @@ class PhySL:
         if self.kwargs.get('fglobals'):
             self.fglobals = self.kwargs['fglobals']
             for key, val in self.fglobals.items():
-                if type(val).__name__ == 'module' and val.__name__ == 'numpy':
-                    self.numpy_aliases.add(key)
+                if type(val).__name__ == 'module':
+                    if val.__name__ == 'numpy':
+                        self.numpy_aliases.add(key)
+                    elif val.__name__ == 'linalg':
+                        self.numpy_aliases.add(key)
+                    else:
+                        for npname in self.numpy_aliases:
+                            if val.__name__ == '%s.linalg' % npname:
+                                self.linalg_aliases.add(key)
             self.file_name = self.fglobals.get('__file__')
         if not self.file_name:
             self.file_name = _name_of_importing_file
@@ -730,6 +738,8 @@ class PhySL:
 
         if isinstance(current_node, ast.Name):
             if namespace[0] in self.numpy_aliases:
+                return method_name
+            elif namespace[0] in self.linalg_aliases:
                 return method_name
             else:
                 attr = '.'.join(namespace)

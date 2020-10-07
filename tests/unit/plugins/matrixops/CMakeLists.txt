@@ -32,6 +32,7 @@ set(tests
     linspace
     list_slicing_operation
     ndim
+    norm
     pad
     power_operation
     random
