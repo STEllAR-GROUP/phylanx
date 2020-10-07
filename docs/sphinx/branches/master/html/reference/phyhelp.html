@@ -225,6 +225,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#minimum">minimum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ndim">ndim</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nonzero">nonzero</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#norm">norm</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#num-localities">num_localities</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#one-hot">one_hot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#outer">outer</a></li>
@@ -2746,6 +2747,35 @@ non-zero.</p>
 </dd>
 </dl>
 </div>
+<div class="section" id="norm">
+<h2>norm<a class="headerlink" href="#norm" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>norm (x, ord, axis, keepdims)</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl>
+<dt>x (array_like)<span class="classifier">Input array. If axis is None, x must be 1-D or</span></dt><dd><p>2-D, unless <cite>ord</cite> is None. If both <cite>axis</cite> and <cite>ord</cite> are None,
+the 2-norm of x.ravel will be returned.</p>
+</dd>
+<dt>ord (int, float, string, v)<span class="classifier">non-zero int, <cite>inf</cite>, <cite>-inf</cite>,</span></dt><dd><p>‘fro’, or ‘nuc’. Order of the norm. The default is None.</p>
+</dd>
+<dt>axis (int, optional)<span class="classifier">None, int, 2-tuple of ints.</span></dt><dd><p>If axis is an integer, it specifies the
+axis of x along which to compute the vector norms. If axis
+is a 2-tuple, it specifies the axes that hold 2-D matrices,
+and the matrix norms of these matrices are computed. If
+axis is None then either a vector norm (when x is 1-D) or
+a matrix norm (when x is 2-D) is returned. The default is None.</p>
+</dd>
+<dt>keepdims (bool, optional)<span class="classifier">If this is set to True, the axes</span></dt><dd><p>which are normed over are left in the result as dimensions
+with size one. With this option the result will broadcast
+correctly against the original x. The default is false.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>Norm of the matrix or vector(s).</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="num-localities">
 <h2>num_localities<a class="headerlink" href="#num-localities" title="Permalink to this headline">¶</a></h2>
 <p>num_localities (num_localities)</p>
@@ -3795,7 +3825,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Oct 04, 2020.
+        Last updated on Oct 07, 2020.
       </span>
 
     </p>
