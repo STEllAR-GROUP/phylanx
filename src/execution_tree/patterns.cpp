@@ -129,16 +129,14 @@ namespace phylanx { namespace execution_tree
 
         pattern_list get_all_known_patterns()
         {
-            pattern_list patterns = {
-                // debugging support
+            pattern_list patterns = {// debugging support
                 PHYLANX_MATCH_DATA(assert_condition),
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
                 PHYLANX_MATCH_DATA(enable_tracing),
                 PHYLANX_MATCH_DATA(find_all_localities),
                 PHYLANX_MATCH_DATA(format_string),
-                PHYLANX_MATCH_DATA(string_output),
-                PHYLANX_MATCH_DATA(timer),
+                PHYLANX_MATCH_DATA(string_output), PHYLANX_MATCH_DATA(timer),
 
                 // special purpose primitives
                 PHYLANX_MATCH_DATA_VERBATIM(
@@ -146,8 +144,7 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA_VERBATIM(
                     annotate_primitive::match_data_annotate_d),
                 PHYLANX_MATCH_DATA(store_operation),
-                PHYLANX_MATCH_DATA(phytype),
-                PHYLANX_MATCH_DATA(phyname),
+                PHYLANX_MATCH_DATA(phytype), PHYLANX_MATCH_DATA(phyname),
 
                 // compiler-specific (internal) primitives
                 PHYLANX_MATCH_DATA(access_argument),
@@ -156,13 +153,16 @@ namespace phylanx { namespace execution_tree
 
                 PHYLANX_MATCH_DATA(access_function),
                 PHYLANX_MATCH_DATA(access_variable),
-                PHYLANX_MATCH_DATA(define_variable),
+                PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data),
+                PHYLANX_MATCH_DATA_VERBATIM(
+                    define_variable::match_data_globally),
                 PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define),
-                PHYLANX_MATCH_DATA(function),
-                PHYLANX_MATCH_DATA(lambda),
-                PHYLANX_MATCH_DATA(variable),
-                PHYLANX_MATCH_DATA(variable_factory)
-            };
+                PHYLANX_MATCH_DATA_VERBATIM(
+                    define_variable::match_data_define_globally),
+                PHYLANX_MATCH_DATA(function), PHYLANX_MATCH_DATA(lambda),
+                PHYLANX_MATCH_DATA_VERBATIM(variable::match_data),
+                PHYLANX_MATCH_DATA_VERBATIM(variable::match_data_globally),
+                PHYLANX_MATCH_DATA(variable_factory)};
 
             // patterns registered from external primitive plugins
             for (auto const& p : registered_patterns)

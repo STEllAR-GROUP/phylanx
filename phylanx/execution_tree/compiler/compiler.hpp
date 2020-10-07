@@ -230,20 +230,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
     struct define_operation : compiled_actor<define_operation>
     {
         explicit define_operation(
-                hpx::id_type const& locality = hpx::find_here())
+                hpx::id_type const& locality = hpx::find_here(),
+                std::string const& type = "define-variable")
           : compiled_actor<define_operation>(locality)
+          , type_(type)
         {}
 
         function operator()(argument_type && arg,
             primitive_name_parts&& name_parts,
             std::string const& codename = "<unknown>") const
         {
-            std::string define_variable = "define-variable";
-            if (name_parts.primitive != define_variable)
+            if (name_parts.primitive != type_)
             {
                 HPX_ASSERT(name_parts.instance.empty());
                 name_parts.instance = std::move(name_parts.primitive);
-                name_parts.primitive = std::move(define_variable);
+                name_parts.primitive = type_;
             }
 
             std::string full_name = compose_primitive_name(name_parts);
@@ -252,6 +253,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name_parts.primitive, std::move(arg), full_name, codename)
                 }, full_name};
         }
+
+        std::string type_;
     };
 
     // compose a primitive::variable
@@ -483,11 +486,24 @@ namespace phylanx { namespace execution_tree { namespace compiler
         compiled_function* define_variable(std::string name, F&& f,
             std::string const& codename = "<unknown>",
             std::int64_t line = std::int64_t(-1),
-            std::int64_t column = std::int64_t(-1))
+            std::int64_t column = std::int64_t(-1),
+            bool define_globally = false)
         {
+            if (define_globally && outer_ != nullptr)
+            {
+                return outer_->define_variable(std::move(name),
+                    std::forward<F>(f), codename, line, column,
+                    define_globally);
+            }
+
             auto existing = definitions_.find(name);
             if (existing != definitions_.end())
             {
+                // global variable shouldn't be redefined
+                if (define_globally)
+                {
+                    return &existing->second.f_;
+                }
                 definitions_.erase(existing);
             }
 
@@ -559,7 +575,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             std::size_t count = definitions_.size();
             if (outer_ != nullptr)
+            {
                 count += outer_->size();
+            }
             return count;
         }
 
@@ -603,7 +621,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
     /// Add the given variable to the compilation environment
     PHYLANX_EXPORT function define_variable(std::string const& codename,
         primitive_name_parts name_parts, function_list& snippets, environment& env,
-        primitive_argument_type body, hpx::id_type const& default_locality);
+        primitive_argument_type body, hpx::id_type const& default_locality,
+        bool define_globally = false);
 }}}
 
 #endif

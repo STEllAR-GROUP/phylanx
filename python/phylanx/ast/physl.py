@@ -1366,6 +1366,26 @@ class PhySL:
 
         return [symbol, (test,)]
 
+    def _Global(self, node):
+        """class Global(names)
+
+       `names`: holds a list of identifiers to make global
+       """
+
+        result = ()
+        for name in node.names:
+            if name not in self.defined:
+                # TODO:
+                # For now `self.defined` is a set containing names of symbols
+                # with no extra information. We may want to make it a
+                # dictionary with the symbol names as keys and list of
+                # symbol_infos to keep track of the symbol.
+                op = get_symbol_info(node, "define_global")
+                self.defined.add(name)
+
+            result = result + ([op, (name, 'nil')],)
+        return result
+
     def _UAdd(self, node):
         """
 

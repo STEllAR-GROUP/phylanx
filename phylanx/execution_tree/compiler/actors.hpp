@@ -150,7 +150,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
 
                 return extract_copy_value(
-                    value_operand_sync(arg_, std::move(params), name_), name_);
+                    value_operand_sync(arg_, std::move(params), name_,
+                        "<unknown>", std::move(ctx)),
+                    name_);
             }
             return extract_copy_value(arg_, name_);
         }

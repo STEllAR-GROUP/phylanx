@@ -26,6 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         static match_pattern_type const match_data;
+        static match_pattern_type const match_data_globally;
 
         variable() = default;
 
@@ -64,6 +65,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     PHYLANX_EXPORT primitive create_variable(hpx::id_type const& locality,
         primitive_argument_type&& operand,
+        std::string const& name = "", std::string const& codename = "",
+        bool register_with_agas = true);
+
+    PHYLANX_EXPORT primitive create_global_variable(
+        hpx::id_type const& locality, primitive_argument_type&& operand,
         std::string const& name = "", std::string const& codename = "",
         bool register_with_agas = true);
 }}}

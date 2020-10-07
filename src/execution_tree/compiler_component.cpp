@@ -57,11 +57,11 @@ namespace phylanx { namespace execution_tree
 
     compiler::function compiler_component::define_variable(
         std::string const& codename, std::string const& name,
-        primitive_argument_type body)
+        primitive_argument_type body, bool define_globally)
     {
         return execution_tree::define_variable(codename,
             compiler::primitive_name_parts{name, -1, 0, 0}, snippets_, env_,
-            std::move(body));
+            std::move(body), hpx::find_here(), define_globally);
     }
 
     std::string compiler_component::generate_unique_function_name()
@@ -156,18 +156,19 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<compiler::function> physl_compiler::define_variable(
         std::string const& codename, std::string const& name,
-        primitive_argument_type body)
+        primitive_argument_type body, bool define_globally)
     {
         using action_type = typename compiler_component::define_variable_action;
         return hpx::async(action_type(), this->base_type::get_id(), codename,
-            name, std::move(body));
+            name, std::move(body), define_globally);
     }
 
     compiler::function physl_compiler::define_variable(hpx::launch::sync_policy,
         std::string const& codename, std::string const& name,
-        primitive_argument_type body)
+        primitive_argument_type body, bool define_globally)
     {
-        return define_variable(codename, name, std::move(body)).get();
+        return define_variable(codename, name, std::move(body), define_globally)
+            .get();
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -791,7 +791,8 @@ namespace phylanx { namespace execution_tree { namespace compiler {
         }
 
         function handle_define(placeholder_map_type& placeholders,
-            ast::tagged const& define_id, hpx::id_type const& locality)
+            ast::tagged const& define_id, hpx::id_type const& locality,
+            bool define_globally)
         {
             // we know that 'define()' uses '__1' to match arguments
             using iterator = placeholder_map_type::iterator;
@@ -868,13 +869,14 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                 // create variable in the current environment
                 compiled_function* cf = env_.define_variable(name,
                     access_target(f, "access-variable", default_locality_),
-                    name_, id.id, id.col);
+                    name_, id.id, id.col, define_globally);
 
                 // Correct type of the access object if this variable refers
                 // to a lambda or a block.
                 auto body_f = compile_body(body, locality);
                 primitive_name_parts body_name_parts;
-                if (parse_primitive_name(body_f.name_, body_name_parts) &&
+                if (!define_globally &&
+                    parse_primitive_name(body_f.name_, body_name_parts) &&
                     (body_name_parts.primitive == "lambda" ||
                         body_name_parts.primitive == "block"))
                 {
@@ -889,7 +891,8 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                 }
                 else
                 {
-                    std::string variable_type = "variable";
+                    std::string variable_type =
+                        define_globally ? "global_variable" : "variable";
                     name_parts = primitive_name_parts(variable_type,
                         snippets_.sequence_numbers_[variable_type]++, id.id,
                         id.col, snippets_.compile_id_ - 1,
@@ -898,17 +901,22 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                 name_parts.instance = std::move(name);
 
                 // now create the variable-factory object
-                std::string variable_name = compose_primitive_name(name_parts);
-                f = function{
-                    primitive_argument_type{create_primitive_component(
-                        default_locality_, "variable-factory",
-                        primitive_argument_type{}, variable_name, name_)},
-                    variable_name};
-                f.set_named_args(
-                    std::move(body_f.named_args_), body_f.num_named_args_);
+                if (!define_globally || !f)
+                {
+                    std::string variable_name =
+                        compose_primitive_name(name_parts);
 
-                auto var = primitive_operand(f.arg_, variable_name, name_);
-                var.store(hpx::launch::sync, std::move(body_f.arg_), {});
+                    f = function{
+                        primitive_argument_type{create_primitive_component(
+                            default_locality_, "variable-factory",
+                            primitive_argument_type{}, variable_name, name_)},
+                        variable_name};
+                    f.set_named_args(
+                        std::move(body_f.named_args_), body_f.num_named_args_);
+
+                    auto var = primitive_operand(f.arg_, variable_name, name_);
+                    var.store(hpx::launch::sync, std::move(body_f.arg_), {});
+                }
             }
             else
             {
@@ -922,7 +930,7 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                 // create variable in the current environment
                 env_.define_variable(name_parts.instance,
                     access_target(f, "access-function", default_locality_),
-                    name_, id.id, id.col);
+                    name_, id.id, id.col, define_globally);
 
                 std::string variable_name = compose_primitive_name(name_parts);
                 f = function{
@@ -941,16 +949,18 @@ namespace phylanx { namespace execution_tree { namespace compiler {
 
             // the define-variable object is invoked whenever a define() is
             // executed
-            std::string define_variable = "define-variable";
+            std::string define_variable =
+                define_globally ? "define-global-variable" : "define-variable";
 
             name_parts.sequence_number =
                 snippets_.sequence_numbers_[define_variable]++;
-            name_parts.primitive = std::move(define_variable);
+            name_parts.primitive = define_variable;
 
             function variable_ref = f;    // copy f as we need to move it
 
-            function define_f = define_operation{default_locality_}(
-                std::move(variable_ref.arg_), std::move(name_parts), name_);
+            function define_f =
+                define_operation{default_locality_, std::move(define_variable)}(
+                    std::move(variable_ref.arg_), std::move(name_parts), name_);
             define_f.set_named_args(f.named_args_, f.num_named_args_);
 
             return define_f;
@@ -1561,7 +1571,8 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                 if (cit != patterns_.end())
                 {
                     // Handle define(__1)
-                    if (function_name == "define")
+                    if (function_name == "define" ||
+                        function_name == "define_global")
                     {
                         placeholder_map_type placeholders;
                         if (ast::match_ast(expr, cit->second.pattern_ast_,
@@ -1580,7 +1591,8 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                                 parse_locality_attribute(attr, locality);
                             }
 
-                            return handle_define(placeholders, id, locality);
+                            return handle_define(placeholders, id, locality,
+                                function_name != "define");
                         }
                     }
 
@@ -1804,7 +1816,7 @@ namespace phylanx { namespace execution_tree { namespace compiler {
     function define_variable(std::string const& codename,
         primitive_name_parts name_parts, function_list& snippets,
         environment& env, primitive_argument_type body,
-        hpx::id_type const& default_locality)
+        hpx::id_type const& default_locality, bool define_globally)
     {
         function& f = snippets.program_.add_empty(codename);
 
@@ -1819,7 +1831,7 @@ namespace phylanx { namespace execution_tree { namespace compiler {
         // create variable in the given environment
         env.define_variable(name_parts.instance,
             access_target(f, "access-variable", default_locality), codename,
-            name_parts.tag1, name_parts.tag2);
+            name_parts.tag1, name_parts.tag2, define_globally);
 
         // now create the variable object
         std::string variable_name = compose_primitive_name(name_parts);
@@ -1833,14 +1845,15 @@ namespace phylanx { namespace execution_tree { namespace compiler {
 
         // the define-variable object is invoked whenever a define() is
         // executed
-        std::string define_variable = "define-variable";
+        std::string define_variable =
+            define_globally ? "define-global-variable" : "define-variable";
 
         name_parts.sequence_number =
             snippets.sequence_numbers_[define_variable]++;
-        name_parts.primitive = std::move(define_variable);
+        name_parts.primitive = define_variable;
 
         function variable_ref = f;    // copy f as we need to move it
-        return define_operation{default_locality}(
+        return define_operation{default_locality, std::move(define_variable)}(
             std::move(variable_ref.arg_), std::move(name_parts), codename);
     }
 }}}    // namespace phylanx::execution_tree::compiler

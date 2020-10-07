@@ -35,9 +35,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
             name, codename, register_with_agas);
     }
 
+    primitive create_global_variable(hpx::id_type const& locality,
+        primitive_argument_type&& operand, std::string const& name,
+        std::string const& codename, bool register_with_agas)
+    {
+        static std::string type("global_variable");
+        return create_primitive_component(locality, type, std::move(operand),
+            name, codename, register_with_agas);
+    }
+
     match_pattern_type const variable::match_data =
     {
         hpx::make_tuple("variable",
+            std::vector<std::string>{},
+            nullptr, &create_primitive<variable>,
+            "Internal"
+            )
+    };
+
+    match_pattern_type const variable::match_data_globally =
+    {
+        hpx::make_tuple("global_variable",
             std::vector<std::string>{},
             nullptr, &create_primitive<variable>,
             "Internal"
