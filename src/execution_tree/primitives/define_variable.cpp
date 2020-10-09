@@ -31,9 +31,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "Internal")
     };
 
+    match_pattern_type const define_variable::match_data_globally =
+    {
+        hpx::make_tuple("define-global-variable",
+            std::vector<std::string>{},
+            nullptr, &create_primitive<define_variable>,
+            "Internal")
+    };
+
     match_pattern_type const define_variable::match_data_define =
     {
-        hpx::make_tuple("define",
+        match_pattern_type("define",
             std::vector<std::string>{"define(__1)"},
             nullptr, nullptr, R"(
             name, args, body
@@ -44,6 +52,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     this defines a function.
                 body (expression) : value to bind to symbol `name`
                                     or body of lambda function.
+
+            Returns:
+
+                <nothing>)")
+    };
+
+    match_pattern_type const define_variable::match_data_define_globally =
+    {
+        match_pattern_type("define_global",
+            std::vector<std::string>{"define_global(__1)"},
+            nullptr, nullptr, R"(
+            name
+            Args:
+
+                name (string) : name of symbol to define globally
 
             Returns:
 
@@ -67,11 +90,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    define_variable::define_variable(
-            primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+    namespace detail
+    {
+        bool extract_define_variable_type(std::string const& name)
+        {
+            return name == "define-global-variable";
+        }
+    }
+
+    define_variable::define_variable(primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , target_name_(compiler::extract_instance_name(name_))
+      , define_globally_(detail::extract_define_variable_type(
+            compiler::extract_primitive_name(name_)))
     {
         // body is assumed to be operands_[0]
         if (operands_.size() != 1)
@@ -120,8 +152,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
 
                     // store the variable in the evaluation context
-                    auto& result = ctx.set_var(
-                        this_->target_name_, std::move(var));
+                    auto& result = ctx.set_var(this_->target_name_,
+                        std::move(var), this_->define_globally_);
 
                     // return a reference to this variable
                     return extract_ref_value(result, this_->name_,

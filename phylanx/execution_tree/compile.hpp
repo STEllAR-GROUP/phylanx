@@ -122,7 +122,8 @@ namespace phylanx { namespace execution_tree
         std::string const& codename, compiler::primitive_name_parts const& name,
         compiler::function_list& snippets, compiler::environment& env,
         primitive_argument_type body,
-        hpx::id_type const& default_locality = hpx::find_here());
+        hpx::id_type const& default_locality = hpx::find_here(),
+        bool define_globally = false);
 
     ///////////////////////////////////////////////////////////////////////////
     /// Bind the given arguments to the function

@@ -22,6 +22,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     class variable_factory : public primitive_component_base
     {
     public:
+        enum class mode
+        {
+            create_variable,
+            create_global_variable,
+            create_function
+        };
+
         static match_pattern_type const match_data;
 
         variable_factory() = default;
@@ -41,7 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         primitive_argument_type body_;
-        bool create_variable_;
+        std::string target_name_;
+        mode mode_;
     };
 }}}
 
