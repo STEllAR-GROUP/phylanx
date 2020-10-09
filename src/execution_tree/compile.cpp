@@ -215,10 +215,11 @@ namespace phylanx { namespace execution_tree
     compiler::function define_variable(std::string const& codename,
         compiler::primitive_name_parts const& name_parts,
         compiler::function_list& snippets, compiler::environment& env,
-        primitive_argument_type body, hpx::id_type const& default_locality)
+        primitive_argument_type body, hpx::id_type const& default_locality,
+        bool define_globally)
     {
-        return compiler::define_variable(
-            codename, name_parts, snippets, env, body, default_locality);
+        return compiler::define_variable(codename, name_parts, snippets, env,
+            body, default_locality, define_globally);
     }
 
     ///////////////////////////////////////////////////////////////////////////

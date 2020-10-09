@@ -119,7 +119,8 @@ namespace phylanx { namespace execution_tree
         inline primitive_argument_type const* get_var(
             util::hashed_string const& name) const noexcept;
         inline primitive_argument_type& set_var(
-            util::hashed_string const& name, primitive_argument_type&& var);
+            util::hashed_string const& name, primitive_argument_type&& var,
+            bool define_globally = false);
 
         PHYLANX_EXPORT std::vector<std::string> back_trace() const;
 
@@ -202,7 +203,7 @@ namespace phylanx { namespace execution_tree
         }
 
         inline primitive_argument_type& set_var(util::hashed_string const& name,
-            primitive_argument_type&& var);
+            primitive_argument_type&& var, bool define_globally = false);
 
         eval_context& add_frame(
             std::string const& name, std::string const& codename)
@@ -1004,9 +1005,10 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type& eval_context::set_var(
-        util::hashed_string const& name, primitive_argument_type&& var)
+        util::hashed_string const& name, primitive_argument_type&& var,
+        bool define_globally)
     {
-        return variables_->set_var(name, std::move(var));
+        return variables_->set_var(name, std::move(var), define_globally);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1041,9 +1043,17 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type& variable_frame::set_var(
-        util::hashed_string const& name, primitive_argument_type&& var)
+        util::hashed_string const& name, primitive_argument_type&& var,
+        bool define_globally)
     {
-        // variables are always created in the currently top-most environment
+        // global variables are defined in the outermost frame
+        if (define_globally && nextframe_ != nullptr)
+        {
+            return nextframe_->set_var(name, std::move(var), define_globally);
+        }
+
+        // non-global variables are always created in the currently top-most
+        // environment
         auto it = variables_.find(name);
         if (it == variables_.end())
         {

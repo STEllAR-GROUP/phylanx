@@ -34,10 +34,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        variable_factory::mode extract_variable_factory_mode(
+            std::string const& name)
+        {
+            if (name == "global_variable")
+            {
+                return variable_factory::mode::create_global_variable;
+            }
+            if (name == "variable")
+            {
+                return variable_factory::mode::create_variable;
+            }
+            return variable_factory::mode::create_function;
+        }
+    }
+
     variable_factory::variable_factory(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
-      , create_variable_(compiler::extract_primitive_name(name_) == "variable")
+      , target_name_(compiler::extract_instance_name(name_))
+      , mode_(detail::extract_variable_factory_mode(
+            compiler::extract_primitive_name(name_)))
     {
         // operands_[0] is expected to be the actual variable
         if (operands_.size() != 1)
@@ -57,11 +76,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // copy operand as we have to move it
         primitive_argument_type body = operands_[0];
 
-        if (create_variable_)
+        // create a new instance of the variable, do not register with AGAS
+        if (mode_ == mode::create_variable)
         {
-            // create a new instance of the variable, do not register with AGAS
             return hpx::make_ready_future(
                 primitive_argument_type{create_variable(hpx::find_here(),
+                    std::move(body), name_, codename_, false)});
+        }
+
+        if (mode_ == mode::create_global_variable)
+        {
+            // access variable from execution context if it already exists
+            auto const* target = ctx.get_var(target_name_);
+            if (target != nullptr)
+            {
+                return hpx::make_ready_future(*target);
+            }
+
+            return hpx::make_ready_future(
+                primitive_argument_type{create_global_variable(hpx::find_here(),
                     std::move(body), name_, codename_, false)});
         }
 

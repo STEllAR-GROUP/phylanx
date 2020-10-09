@@ -30,7 +30,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         static match_pattern_type const match_data;
+        static match_pattern_type const match_data_globally;
         static match_pattern_type const match_data_define;
+        static match_pattern_type const match_data_define_globally;
         static match_pattern_type const match_data_lambda;
 
         define_variable() = default;
@@ -51,6 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         util::hashed_string target_name_;   // name of the represented variable
         std::shared_ptr<primitive_component> target_;
+        bool define_globally_;
     };
 }}}
 

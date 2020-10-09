@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree
         // define_variable action
         PHYLANX_EXPORT compiler::function define_variable(
             std::string const& codename, std::string const& name,
-            primitive_argument_type body);
+            primitive_argument_type body, bool define_globally);
 
         HPX_DEFINE_COMPONENT_ACTION(
             compiler_component, compile, compile_action);
@@ -91,10 +91,11 @@ namespace phylanx { namespace execution_tree
 
         PHYLANX_EXPORT hpx::future<compiler::function> define_variable(
             std::string const& codename, std::string const& name,
-            primitive_argument_type body);
+            primitive_argument_type body, bool define_globally = false);
         PHYLANX_EXPORT compiler::function define_variable(
             hpx::launch::sync_policy, std::string const& codename,
-            std::string const& name, primitive_argument_type body);
+            std::string const& name, primitive_argument_type body,
+            bool define_globally = false);
     };
 
     ///////////////////////////////////////////////////////////////////////////
