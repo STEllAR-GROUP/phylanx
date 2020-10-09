@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_basic_basic(Data&& m,
         ir::slicing_indices const& rows, ir::slicing_indices const& columns,
         F const& f, std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numrows = m.rows();
         if (rows.start() >= std::int64_t(numrows) ||
@@ -250,7 +250,7 @@ namespace phylanx { namespace execution_tree
         ir::slicing_indices const& rows,
         ir::node_data<std::int64_t> && columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numrows = m.rows();
         if (rows.start() >= std::int64_t(numrows) ||
@@ -348,7 +348,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_basic_boolean(Data&& m,
         ir::slicing_indices const& rows, ir::node_data<std::uint8_t>&& columns,
         F const& f, std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numrows = m.rows();
         if (rows.start() >= std::int64_t(numrows) ||
@@ -383,7 +383,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_basic_column(Data&& m,
         ir::slicing_indices const& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numcols = m.columns();
         if (columns.start() >= std::int64_t(numcols) ||
@@ -482,7 +482,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t> && rows,
         ir::slicing_indices const& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numcols = m.columns();
         if (columns.start() >= std::int64_t(numcols) ||
@@ -568,7 +568,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_boolean_basic(Data&& m,
         ir::node_data<std::uint8_t>&& rows, ir::slicing_indices const& columns,
         F const& f, std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numcols = m.columns();
         if (columns.start() >= std::int64_t(numcols) ||
@@ -604,7 +604,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t> && rows,
         ir::node_data<std::int64_t> && columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numrows = m.rows();
         std::size_t rows_index_size = rows.size();
@@ -658,7 +658,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t> && rows,
         ir::node_data<std::uint8_t> && columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numrows = m.rows();
         std::size_t rows_index_size = rows.size();
@@ -682,7 +682,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::uint8_t>&& rows,
         ir::node_data<std::int64_t>&& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numcols = m.columns();
         std::size_t columns_index_size = columns.size();
@@ -720,7 +720,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_0d(Data&& m,
         ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         HPX_ASSERT(rows.size() == 1);
 
@@ -735,7 +735,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_1d(Data&& m,
         ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         for (std::size_t i = 0; i != rows.size(); ++i)
         {
@@ -760,7 +760,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_2d(Data&& m,
         ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (!explicit_nil && rows.size() == 1)
         {
@@ -781,7 +781,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer(Data&& m,
         ir::node_data<std::int64_t>&& rows, bool explicit_nil, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         switch (rows.num_dimensions())
         {
@@ -813,7 +813,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_column_0d(Data&& m,
         ir::node_data<std::int64_t>&& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         HPX_ASSERT(columns.size() == 1);
 
@@ -826,7 +826,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_column_1d(Data&& m,
         ir::node_data<std::int64_t>&& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         for (std::size_t i = 0; i != columns.size(); ++i)
         {
@@ -844,7 +844,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_column_2d(Data&& m,
         ir::node_data<std::int64_t>&& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (columns.size() == 1)
         {
@@ -866,7 +866,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_integer_column(Data&& m,
         ir::node_data<std::int64_t>&& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         switch (columns.num_dimensions())
         {
@@ -898,7 +898,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d_boolean(Data&& m,
         ir::node_data<std::uint8_t> && columns, bool explicit_nil, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice2d_integer<T>(std::forward<Data>(m),
             util::slicing_helpers::create_list_slice(columns),
@@ -910,7 +910,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d(Data&& m,
         ir::slicing_indices const& rows, primitive_argument_type const& columns,
         F const& f, std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (is_list_operand_strict(columns))
         {
@@ -973,7 +973,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice2d(Data&& m,
         primitive_argument_type const& rows, ir::slicing_indices const& columns,
         F const& f, std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (is_list_operand_strict(rows))
         {
@@ -1054,7 +1054,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (is_list_operand_strict(rows))
         {
@@ -1207,7 +1207,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_extract2d(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice2d<T>(data.matrix(), indices, primitive_argument_type{},
             detail::slice_identity<T>{}, name, codename, ctx);
@@ -1220,7 +1220,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& indices,
         execution_tree::localities_information&& arr_localities,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (!is_integer_operand_strict(indices))
         {
@@ -1287,7 +1287,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice2d<T>(data.matrix(), rows, columns,
             detail::slice_identity<T>{}, name, codename, ctx);
@@ -1301,7 +1301,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& columns,
         execution_tree::localities_information&& arr_localities,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (!is_integer_operand_strict(columns) || valid(rows))
         {
@@ -1369,7 +1369,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         switch (value.num_dimensions())
         {
@@ -1420,7 +1420,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_assign2d(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         switch (value.num_dimensions())
         {
@@ -1471,7 +1471,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::localities_information&& arr_localities,
         execution_tree::localities_information&& val_localities,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t val_ndim = val_localities.num_dimensions();
         if (val_ndim > 1)
@@ -1622,7 +1622,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& value,
         execution_tree::localities_information&& arr_localities,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
 
         std::uint32_t const loc_id = arr_localities.locality_.locality_id_;

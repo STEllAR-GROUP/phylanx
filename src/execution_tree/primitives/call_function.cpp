@@ -111,21 +111,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "call_function::store",
                 generate_error_message(
                     "the expression representing the function target "
-                        "has already been initialized", ctx));
+                        "has already been initialized", std::move(ctx)));
         }
         if (data.empty())
         {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "call_function::store",
+            HPX_THROW_EXCEPTION(hpx::invalid_status, "call_function::store",
                 generate_error_message(
-                    "the right hand side expression is not valid", ctx));
+                    "the right hand side expression is not valid",
+                    std::move(ctx)));
         }
         if (!params.empty())
         {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "call_function::store",
+            HPX_THROW_EXCEPTION(hpx::invalid_status, "call_function::store",
                 generate_error_message(
-                    "store shouldn't be called with dynamic arguments", ctx));
+                    "store shouldn't be called with dynamic arguments",
+                    std::move(ctx)));
         }
 
         operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);

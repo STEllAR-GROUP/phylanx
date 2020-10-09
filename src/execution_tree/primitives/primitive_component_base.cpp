@@ -188,9 +188,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
-                "eval",
+            "eval",
             generate_error_message(
-                "eval function should be implemented by all primitives", ctx));
+                "eval function should be implemented by all primitives",
+                std::move(ctx)));
     }
 
     // store_action
@@ -202,7 +203,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store",
             generate_error_message(
                 "store function should only be called for the primitives that "
-                "support it (e.g. variables)", ctx));
+                "support it (e.g. variables)", std::move(ctx)));
     }
 
     void primitive_component_base::store(primitive_argument_type&& param,
@@ -253,10 +254,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::"
-                "primitive_component_base::bind",
+            "primitive_component_base::bind",
             generate_error_message(
                 "bind function should only be called for the "
-                    "primitives that support it (e.g. variable/function)", ctx));
+                "primitives that support it (e.g. variable/function)",
+                std::move(ctx)));
         return true;
     }
 
@@ -265,10 +267,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
-                "set_eval_context",
+            "set_eval_context",
             generate_error_message(
                 "set_eval_context function should only be called for the "
-                "primitives that support it (e.g. target-references)", ctx));
+                "primitives that support it (e.g. target-references)",
+                std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////

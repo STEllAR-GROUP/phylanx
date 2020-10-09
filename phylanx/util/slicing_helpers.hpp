@@ -45,15 +45,13 @@ namespace phylanx { namespace util { namespace slicing_helpers {
         execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        execution_tree::eval_context const& ctx =
-            execution_tree::eval_context{});
+        execution_tree::eval_context ctx = execution_tree::eval_context{});
 
     PHYLANX_EXPORT std::size_t slicing_size(
         execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        execution_tree::eval_context const& ctx =
-            execution_tree::eval_context{});
+        execution_tree::eval_context ctx = execution_tree::eval_context{});
 }}}    // namespace phylanx::util::slicing_helpers
 
 #endif    //PHYLANX_SLICING_HELPERS_HPP

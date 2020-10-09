@@ -32,7 +32,10 @@ def physl_zip(loop):
         targets = [it.id for it in loop.target.elts]
         args = [arg.id for arg in loop.iter.args]
     elif isinstance(loop, list):
-        targets = loop[0]
+        if isinstance(loop[0], list):
+            targets = loop[0][1]
+        else:
+            targets = loop[0]
         args = loop[1][1]
 
     lambda_ = ['lambda', (*targets, ['list', (*targets, )])]
@@ -846,9 +849,6 @@ class PhySL:
         if len(method) == 1:
             symbol = symbol.replace(method[0], method[0] + dtype)
 
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        # wrap all tuples
-        args = tuple([oplist, a] if isinstance(a, tuple) else a for a in args)
         return [symbol, args + kwargs]
 
     # def _ClassDef(self, node):
@@ -1079,7 +1079,7 @@ class PhySL:
        `body` and `orelse` each hold a list of nodes.
        """
 
-        symbol = '%s' % get_symbol_info(node, 'if')
+        symbol = get_symbol_info(node, 'if')
         test = self._apply_rule(node.test)
         body = self._block(node.body)
         orelse = self._block(node.orelse)
@@ -1093,7 +1093,7 @@ class PhySL:
        `body` and `orelse` each hold a list of nodes.
        """
 
-        symbol = '%s' % get_symbol_info(node, 'if')
+        symbol = get_symbol_info(node, 'if')
         test = self._apply_rule(node.test)
         body = self._block(node.body)
         orelse = self._block(node.orelse)
@@ -1109,13 +1109,10 @@ class PhySL:
         Simple subscripting with a single value.
         """
 
-        # TODO: **SLICING**
-        # if isinstance(node.value, ast.Tuple):
-        #     op = 'list'
-        #     elements = tuple(map(self._apply_rule, node.value.elts))
-        #     return [op, (*elements, )]
-        # else:
-        #     return self._apply_rule(node.value)
+        # tuple index shouldn't be transformed to list here
+        if isinstance(node.value, ast.Tuple):
+            elements = tuple(map(self._apply_rule, node.value.elts))
+            return (*elements, )
         return self._apply_rule(node.value)
 
     def _Is(self, node):
@@ -1258,7 +1255,7 @@ class PhySL:
         symbol = get_symbol_info(node, "return")
 
         if type(node.value) == ast.Tuple:
-            return [symbol, (["list", self._apply_rule(node.value)],)]
+            return [symbol, self._apply_rule(node.value)]
 
         value = self._apply_rule(node.value)
         if value is None:
@@ -1319,7 +1316,7 @@ class PhySL:
                 slice_ = self._apply_rule(node.slice)
                 return [op, (value, [slice_])]
 
-        op = '%s' % get_symbol_info(node, 'slice')
+        op = get_symbol_info(node, 'slice')
         slice_ = self._apply_rule(node.slice)
         if isinstance(node.value, ast.Subscript):
             value = _NestedSubscript(node.value)
@@ -1359,8 +1356,9 @@ class PhySL:
     def _Tuple(self, node):
         """class Tuple(elts, ctx)"""
 
+        op = get_symbol_info(node, 'list')
         expr = tuple(map(self._apply_rule, node.elts))
-        return expr
+        return [op, expr]
 
     def _Assert(self, node):
         """class Assert(test, msg)
@@ -1429,7 +1427,7 @@ class PhySL:
         an empty list!
         """
 
-        symbol = '%s' % get_symbol_info(node, 'while')
+        symbol = get_symbol_info(node, 'while')
         test = self._block(node.test)
         body = self._block(node.body)
         return [symbol, (test, body)]

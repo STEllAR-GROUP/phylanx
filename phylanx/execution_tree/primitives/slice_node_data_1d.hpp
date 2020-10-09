@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice1d_basic(Data&& data,
         ir::slicing_indices const& indices, F const& f, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         std::size_t size = data.size();
         if (indices.start() >= std::int64_t(size) ||
@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_integer_1d0d_scalar(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t size = data.size();
         return f.scalar(data,
@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_integer_1d0d(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t size = data.size();
         std::size_t index_size = indices.size();
@@ -125,7 +125,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_integer_1d1d(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t size = data.size();
         std::size_t index_size = indices.size();
@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_integer_1d2d(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t size = data.size();
 
@@ -178,7 +178,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_integer(Data&& data,
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         switch (indices.num_dimensions())
         {
@@ -210,7 +210,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_boolean_1d0d(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (indices.size() == 0)
         {
@@ -230,7 +230,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_boolean_1d1d(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (data.size() != indices.size())
         {
@@ -254,7 +254,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice_boolean_1d2d(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         // we are not allowed to use a 2d boolean index array for indexing a
         // vector
@@ -268,7 +268,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_boolean(Data&& data,
         ir::node_data<std::uint8_t>&& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         switch (indices.num_dimensions())
         {
@@ -300,7 +300,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d(Data&& data,
         primitive_argument_type const& indices, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (is_list_operand_strict(indices))
         {
@@ -379,7 +379,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_extract1d(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice1d<T>(data.vector(), indices,
             detail::slice_identity<T>{}, name, codename, ctx);
@@ -390,7 +390,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_assign1d(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         switch (value.num_dimensions())
         {
@@ -436,7 +436,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         switch (value.num_dimensions())
         {

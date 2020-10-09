@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(params, ctx);
+        return primitive_->do_eval(params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component::eval_single(
@@ -135,20 +135,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(std::move(param), ctx);
+        return primitive_->do_eval(std::move(param), std::move(ctx));
     }
 
     // store_action
     void primitive_component::store(primitive_arguments_type&& args,
         primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive_->store(std::move(args), std::move(params), ctx);
+        primitive_->store(std::move(args), std::move(params), std::move(ctx));
     }
 
     void primitive_component::store_single(primitive_argument_type&& arg,
         primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive_->store(std::move(arg), std::move(params), ctx);
+        primitive_->store(std::move(arg), std::move(params), std::move(ctx));
     }
 
     // extract_topology_action
@@ -164,7 +164,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     bool primitive_component::bind(
         primitive_arguments_type const& params, eval_context ctx) const
     {
-        return primitive_->bind(params, ctx);
+        return primitive_->bind(params, std::move(ctx));
     }
 
     // access data for performance counter

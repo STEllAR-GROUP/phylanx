@@ -71,9 +71,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the first argument to apply must be an invocable object"));
         }
 
+        auto ctx_copy = ctx;
+        auto&& arg = list_operand(operands_[1], params, name_, codename_, ctx);
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_), ctx](
+            [this_ = std::move(this_), ctx = std::move(ctx)](
                 primitive_argument_type&& func, ir::range&& list) mutable
             {
                 if (list.is_ref())
@@ -85,10 +88,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     this_->codename_, std::move(ctx));
             }),
             value_operand(operands_[0], params, name_, codename_,
-                add_mode(ctx,
+                add_mode(std::move(ctx_copy),
                     eval_mode(eval_dont_wrap_functions |
                         eval_dont_evaluate_partials |
                         eval_dont_evaluate_lambdas))),
-            list_operand(operands_[1], params, name_, codename_, ctx));
+            std::move(arg));
     }
 }}}

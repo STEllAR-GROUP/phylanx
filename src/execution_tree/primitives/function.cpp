@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "function::eval",
                 generate_error_message(
                     "the expression representing the function target "
-                        "has not been initialized", ctx));
+                        "has not been initialized", std::move(ctx)));
         }
 
         primitive const* p = util::get_if<primitive>(&operands_[0]);
@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "function::bind",
                 generate_error_message(
                     "the expression representing the function target "
-                        "has not been initialized", ctx));
+                        "has not been initialized", std::move(ctx)));
         }
         return true;
     }
@@ -110,17 +110,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (!valid(data))
         {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "function::store",
+            HPX_THROW_EXCEPTION(hpx::invalid_status, "function::store",
                 generate_error_message(
-                    "the right hand side expression is not valid", ctx));
+                    "the right hand side expression is not valid",
+                    std::move(ctx)));
         }
         if (!params.empty())
         {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "function::store",
+            HPX_THROW_EXCEPTION(hpx::invalid_status, "function::store",
                 generate_error_message(
-                    "store shouldn't be called with dynamic arguments", ctx));
+                    "store shouldn't be called with dynamic arguments",
+                    std::move(ctx)));
         }
 
         operands_[0] = extract_copy_value(std::move(data), name_, codename_);

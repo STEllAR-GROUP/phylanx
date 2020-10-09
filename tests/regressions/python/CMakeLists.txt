@@ -65,6 +65,7 @@ set(tests
     1267_random_integers
     1267_random_sample
     1279_global_keyword
+    1280_hstack_problem
     1281_hostname
     array_len_494
     array_shape_486

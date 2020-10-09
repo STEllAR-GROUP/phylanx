@@ -102,7 +102,6 @@ namespace phylanx {namespace execution_tree {    namespace primitives
             &create_primitive<slicing_operation>,
             docstr
         },
-
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -174,11 +173,11 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                 "slicing_operation::eval",
                 generate_error_message(
                     "the slicing_operation primitive requires "
-                    "either one, two, three or four arguments"));
+                    "either one, two, three or four arguments", std::move(ctx)));
         }
 
-        if ((slice_rows_ || slice_columns_ || slice_pages_
-            || slice_rows_d_ || slice_columns_d_) &&
+        if ((slice_rows_ || slice_columns_ || slice_pages_ || slice_rows_d_ ||
+                slice_columns_d_) &&
             operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -186,7 +185,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                     "slicing_operation::eval",
                 generate_error_message(
                     "the page/column/row-slicing_operation primitive requires "
-                        "either one or two arguments"));
+                        "either one or two arguments", std::move(ctx)));
         }
 
         if (is_tuple_slice_ && operands_.size() != 2)
@@ -195,7 +194,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                 "phylanx::execution_tree::primitives::"
                 "slicing_operation::eval",
                 generate_error_message(
-                    "the tuple_slice primitive requires exactly two arguments"));
+                    "the tuple_slice primitive requires exactly two arguments",
+                    std::move(ctx)));
         }
 
         if (!valid(operands[0]) || (is_tuple_slice_ && !valid(operands[1])))
@@ -204,7 +204,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                 "slicing_operation::eval",
                 generate_error_message(
                     "the slicing_operation primitive requires "
-                        "that the first argument given is valid"));
+                        "that the first argument given is valid", std::move(ctx)));
         }
 
         auto this_ = this->shared_from_this();
@@ -249,23 +249,23 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                         {
                             if (this_->slice_rows_)
                             {
-                                return slice(args[0], args[1],
-                                    this_->name_, this_->codename_, ctx);
+                                return slice(args[0], args[1], this_->name_,
+                                    this_->codename_, std::move(ctx));
                             }
                             else if (this_->slice_columns_)
                             {
-                                return slice(args[0], {}, args[1],
-                                    this_->name_, this_->codename_, ctx);
+                                return slice(args[0], {}, args[1], this_->name_,
+                                    this_->codename_, std::move(ctx));
                             }
                             else if (this_->slice_pages_)
                             {
-                                return slice(args[0], args[1], {},
-                                    this_->name_, this_->codename_, ctx);
+                                return slice(args[0], args[1], {}, this_->name_,
+                                    this_->codename_, std::move(ctx));
                             }
                             else
                             {
-                                return slice(args[0], args[1],
-                                    this_->name_, this_->codename_, ctx);
+                                return slice(args[0], args[1], this_->name_,
+                                    this_->codename_, std::move(ctx));
                             }
                         }
 
@@ -275,7 +275,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 
                     case 4:
                         return slice(args[0], args[1], args[2], args[3],
-                            this_->name_, this_->codename_, ctx);
+                            this_->name_, this_->codename_, std::move(ctx));
 
                     default:
                         break;
@@ -289,22 +289,26 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             if (this_->slice_rows_d_)
                             {
                                 return dist_slice(args[0], args[1],
-                                    this_->name_, this_->codename_, ctx);
+                                    this_->name_, this_->codename_,
+                                    std::move(ctx));
                             }
                             else if (this_->slice_columns_d_)
                             {
                                 return dist_slice(args[0], {}, args[1],
-                                    this_->name_, this_->codename_, ctx);
+                                    this_->name_, this_->codename_,
+                                    std::move(ctx));
                             }
                             else
                             {
                                 return dist_slice(args[0], args[1],
-                                    this_->name_, this_->codename_, ctx);
+                                    this_->name_, this_->codename_,
+                                    std::move(ctx));
                             }
                         }
                     case 3:
                             return slice(args[0], args[1], args[2],
-                                this_->name_, this_->codename_, ctx);
+                                this_->name_, this_->codename_, std::move(ctx));
+
                     default:
                         break;
                     }
@@ -312,10 +316,11 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                        "slicing_operation::eval",
+                    "slicing_operation::eval",
                     this_->generate_error_message(
                         "the slicing_operation primitive requires "
-                            "either one, two, or three arguments", ctx));
+                        "either one, two, or three arguments",
+                        std::move(ctx)));
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,

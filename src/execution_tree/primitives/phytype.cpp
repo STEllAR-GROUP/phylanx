@@ -61,10 +61,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands.size() != 1)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phytype::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "phytype::eval",
                 generate_error_message(
-                    "phylanx.name requires exactly one argument", ctx));
+                    "phylanx.name requires exactly one argument",
+                    std::move(ctx)));
         }
 
         auto this_ = this->shared_from_this();

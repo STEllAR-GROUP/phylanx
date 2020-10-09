@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree
         ir::slicing_indices const& pages, ir::slicing_indices const& rows,
         ir::slicing_indices const& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numpages = t.pages();
         if (pages.start() >= std::int64_t(numpages) ||
@@ -253,7 +253,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t> && rows,
         ir::node_data<std::int64_t> && columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numpages = t.pages();
         std::size_t pages_index_size = pages.size();
@@ -320,7 +320,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t> && pages,
         ir::node_data<std::int64_t> && rows, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numpages = t.pages();
         std::size_t pages_index_size = pages.size();
@@ -379,7 +379,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice3d_integer_0d(Data&& t,
         ir::node_data<std::int64_t> && pages, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         // handle single value page-slicing result
         auto pageslice = blaze::pageslice(
@@ -392,7 +392,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice3d_integer_1d(Data&& t,
         ir::node_data<std::int64_t> && pages, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t numpages = t.pages();
         std::size_t pages_index_size = pages.size();
@@ -413,7 +413,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice3d_integer(Data&& t,
         ir::node_data<std::int64_t> && pages, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         switch (pages.num_dimensions())
         {
@@ -443,7 +443,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::uint8_t> && rows,
         ir::node_data<std::uint8_t> && columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice3d_boolean_boolean_boolean",
@@ -466,7 +466,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, F const& f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (is_list_operand_strict(rows) && is_list_operand_strict(columns) &&
             is_list_operand_strict(pages))
@@ -597,7 +597,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice3d<T>(data.tensor(), pages, rows, columns,
             detail::slice_identity<T>{}, name, codename, ctx);
@@ -610,7 +610,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice3d<T>(data.tensor(), rows, columns,
             primitive_argument_type{}, detail::slice_identity<T>{}, name,
@@ -623,7 +623,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_extract3d(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         return slice3d<T>(data.tensor(), indices, primitive_argument_type{},
             primitive_argument_type{}, detail::slice_identity<T>{}, name,
@@ -636,7 +636,7 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice1d_assign3d(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice1d_assign3d",
@@ -651,7 +651,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice2d_assign3d",
@@ -667,7 +667,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice3d",

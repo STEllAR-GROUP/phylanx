@@ -20,7 +20,7 @@ namespace phylanx { namespace execution_tree {
     PHYLANX_EXPORT ir::node_data<T> slice_extract(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT execution_tree::primitive_argument_type dist_slice_extract(
@@ -28,14 +28,14 @@ namespace phylanx { namespace execution_tree {
         execution_tree::primitive_argument_type const& indices,
         execution_tree::localities_information&& arr_localities,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_extract(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT execution_tree::primitive_argument_type dist_slice_extract(
@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree {
         execution_tree::primitive_argument_type const& columns,
         execution_tree::localities_information&& arr_localities,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_extract(ir::node_data<T> const& data,
@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree {
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given node_data instance
@@ -61,7 +61,7 @@ namespace phylanx { namespace execution_tree {
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT execution_tree::primitive_argument_type dist_slice_assign(
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree {
         execution_tree::localities_information&& arr_localities,
         execution_tree::localities_information&& val_localities,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT execution_tree::primitive_argument_type dist_slice_assign(
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree {
         ir::node_data<T>&& value,
         execution_tree::localities_information&& arr_localities,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_assign(ir::node_data<T>&& data,
@@ -88,7 +88,7 @@ namespace phylanx { namespace execution_tree {
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_assign(ir::node_data<T>&& data,
@@ -97,7 +97,7 @@ namespace phylanx { namespace execution_tree {
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 }}    // namespace phylanx::execution_tree
 
 #endif
