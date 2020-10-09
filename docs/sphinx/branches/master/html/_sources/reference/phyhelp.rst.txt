@@ -1143,6 +1143,18 @@ define (name, args, body)
                 <nothing>
 
 
+define_global
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+define_global (name)
+            Args:
+
+                name (string) : name of symbol to define globally
+
+            Returns:
+
+                <nothing>
+
+
 determinant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 determinant (arg)
