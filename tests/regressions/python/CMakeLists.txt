@@ -59,6 +59,7 @@ set(tests
     1236_store_failure
     1242_list_comparison
     1244_function_call
+    1258_randn_missing
     1255_assign_string
     1266_sum_axis_argument
     1267_random_integers

@@ -40,7 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             random,
             random_sample,
-            random_integers
+            random_integers,
+            randn
         };
 
     public:
@@ -149,6 +150,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_context ctx) const override;
 
         hpx::future<primitive_argument_type> eval_random_integers(
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const;
+
+        hpx::future<primitive_argument_type> eval_randn(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const;
