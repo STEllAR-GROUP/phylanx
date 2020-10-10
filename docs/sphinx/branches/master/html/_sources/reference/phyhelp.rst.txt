@@ -1712,6 +1712,19 @@ hard_sigmoid (a)
             approximation of the sigmoid function.
 
 
+hostname
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+hostname (hostname)
+
+            Args:
+
+                none
+
+            Returns:
+
+            The hostname of the currently executing code
+
+
 hsplit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 hsplit (args)
@@ -1952,7 +1965,7 @@ list (args)
 
 locality
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-locality (locality)
+locality (find_here)
 
             Args:
 
