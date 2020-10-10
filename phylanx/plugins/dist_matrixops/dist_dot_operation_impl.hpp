@@ -36,6 +36,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
 
@@ -564,7 +566,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             (rhs_ndim != 2 && rhs_ndim != 0))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot2d2d_par",
+                "dist_dot_operation::dot2d2d",
                 generate_error_message(
                     "the operands have incompatible dimensionalities"));
         }
@@ -573,9 +575,22 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             rhs_localities.rows(name_, codename_))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_dot_operation::dot2d2d_par",
+                "dist_dot_operation::dot2d2d",
                 generate_error_message(
                     "the operands have incompatible number of dimensions"));
+        }
+
+        // we do not support block tiling here yet
+        if (!(lhs.dimension(1) == lhs_localities.columns(name_, codename_) ||
+            lhs.dimension(0) == lhs_localities.rows(name_, codename_)) ||
+            !(rhs.dimension(1) == rhs_localities.columns(name_, codename_) ||
+            rhs.dimension(0) == rhs_localities.rows(name_, codename_)))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dist_dot_operation::dot2d2d",
+                generate_error_message(
+                    "the operands currently must be either be row-tiled or "
+                    "column-tiled (block tiling is not supported yet)"));
         }
 
         // construct a distributed matrix object for the rhs
@@ -628,6 +643,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 lhs_localities.project_coords(
                     lhs_localities.locality_.locality_id_, lhs_span_index,
                     intersection);
+
             // What does this end up looking like? Does it start at 0?
             execution_tree::tiling_span rhs_intersection =
                 rhs_localities.project_coords(
@@ -637,7 +653,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             {
                 // calculate the dot product with local tile
                 // TODO ensure that this is generating a sub-matrix
-                //dot_result += blaze::DynamicVector<T>{1};
                 blaze::submatrix(result_matrix, 0, rhs_column_start,
                     lhs.dimension(0), rhs_column_size) +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
@@ -648,7 +663,6 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             else
             {
                 // calculate the dot product with remote tile
-                // dot_result += blaze::DynamicVector<T>{1};
                 blaze::submatrix(result_matrix, 0, rhs_column_start,
                     lhs.dimension(0), rhs_column_size) +=
                     blaze::submatrix(lhs.matrix(), 0, lhs_intersection.start_,
@@ -669,9 +683,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             {
                 // If the lhs number of columns is equal to the overall
                 // number of columns we don't have to all_reduce the
-                // result. Instead, the overall result is a tiled vector.
-                //result = execution_tree::primitive_argument_type{
-                //std::move(dot_result)};
+                // result. Instead, the overall result is a tiled matrix.
                 result = execution_tree::primitive_argument_type{
                     std::move(result_matrix)};
                 execution_tree::annotation ann{ir::range("tile",
@@ -680,7 +692,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     ir::range("columns", static_cast<std::int64_t>(0),
                         static_cast<std::int64_t>(
                             rhs_localities.columns(name_, codename_))))};
-                // Generate new tiling annotation for the result vector
+
+                // Generate new tiling annotation for the result matrix
                 execution_tree::tiling_information_2d tile_info(
                     ann, name_, codename_);
 
@@ -710,9 +723,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             // the result is completely local, no need to all_reduce it
             result = execution_tree::primitive_argument_type{
                 std::move(result_matrix)};
+
             // if the rhs is distributed we should synchronize with all
             // connected localities however to avoid for the distributed
-            // vector going out of scope
+            // matrix going out of scope
             if (rhs_localities.locality_.num_localities_ > 1)
             {
                 hpx::lcos::barrier b(
