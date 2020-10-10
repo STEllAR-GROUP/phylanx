@@ -2354,21 +2354,6 @@ prod (v, axis, keepdims, initial, dtype)
             The product of all values along the specified axis.
 
 
-randn
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-randn (dN*)
-            Args:
-
-                dN (integer) : The dimensions of the returned array, must be
-                    non-negative. If no argument is given a single Python float
-                    is returned.
-
-            Returns:
-
-            Return an array filled with random numbers from the
-            "standard normal" distribution.
-
-
 random
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 random (size, dist, dtype)
