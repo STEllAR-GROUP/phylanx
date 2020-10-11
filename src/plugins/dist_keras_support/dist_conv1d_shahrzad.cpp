@@ -96,7 +96,7 @@ namespace phylanx { namespace dist_keras_support { namespace primitives {
 
         if (numtiles > 0 && numtiles_k == 1)
         {
-            std::size_t filter_length = kernel.tensor().pages();
+            std::size_t filter_length = kernel.tensor().columns();
 
             // parallelization mode is data, spatial or a combination of both
             std::string base_name =
