@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     HPX_FORCEINLINE std::int64_t check_index(std::int64_t index,
         std::size_t size, std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         if (index < 0)
         {
@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace detail
     std::size_t slicing_size(
         execution_tree::primitive_argument_type const& indices,
         std::size_t arg_size, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         if (is_list_operand_strict(indices))
         {

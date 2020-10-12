@@ -19,14 +19,14 @@ namespace phylanx { namespace execution_tree {
     PHYLANX_EXPORT primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given list instance
     PHYLANX_EXPORT primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices, primitive_argument_type&& value,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 }}    // namespace phylanx::execution_tree
 
 #endif

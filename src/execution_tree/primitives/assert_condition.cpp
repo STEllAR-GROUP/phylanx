@@ -59,7 +59,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "assert_condition",
                 generate_error_message(
-                    "Assert requires exactly one or two argument(s)", ctx));
+                    "Assert requires exactly one or two argument(s)",
+                    std::move(ctx)));
         }
 
         auto arg =
@@ -71,14 +72,14 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             return hpx::dataflow(
                 hpx::launch::sync,
                 [this_ = std::move(this_), ctx = std::move(ctx)](
-                    hpx::future<std::uint8_t>&& cond)
+                    hpx::future<std::uint8_t>&& cond) mutable
                     -> primitive_argument_type {
                     if (cond.get() == 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "assert_condition",
                             this_->generate_error_message(
-                                "Assertion failed", ctx));
+                                "Assertion failed", std::move(ctx)));
                     }
                     return {};
                 },
@@ -91,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             hpx::launch::sync,
             [this_ = std::move(this_), ctx = std::move(ctx)](
                 hpx::future<std::uint8_t>&& cond,
-                hpx::future<primitive_argument_type>&& msg)
+                hpx::future<primitive_argument_type>&& msg) mutable
                 -> primitive_argument_type {
                 if (cond.get() == 0)
                 {
@@ -99,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                         this_->generate_error_message(
                             hpx::util::format(
                                 "Assertion failed: {}", to_string(msg.get())),
-                            ctx));
+                            std::move(ctx)));
                 }
                 return {};
             },

@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree
     // extract a slice from the given range instance
     primitive_argument_type slice_list(ir::range&& list,
         ir::slicing_indices const& indices, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         std::size_t list_size = list.size();
 
@@ -130,7 +130,7 @@ namespace phylanx { namespace execution_tree
     // extract a slice from the given range instance
     primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices, std::string const& name,
-        std::string const& codename, eval_context const& ctx)
+        std::string const& codename, eval_context ctx)
     {
         std::size_t size = data.size();
         return slice_list(std::move(data),
@@ -144,7 +144,7 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type slice_list(ir::range&& list,
         ir::slicing_indices const& indices, F && f,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
 //         std::size_t list_size = list.size();
 
@@ -313,7 +313,7 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices, primitive_argument_type&& value,
         std::string const& name, std::string const& codename,
-        eval_context const& ctx)
+        eval_context ctx)
     {
         std::size_t size = data.size();
 

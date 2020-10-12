@@ -20,27 +20,27 @@ namespace phylanx { namespace execution_tree {
         primitive_argument_type const& data,
         primitive_argument_type const& indices, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type dist_slice(
         primitive_argument_type const& data,
         primitive_argument_type const& indices, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type slice(
         primitive_argument_type const& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type dist_slice(
         primitive_argument_type const& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type slice(
         primitive_argument_type const& data,
@@ -48,27 +48,27 @@ namespace phylanx { namespace execution_tree {
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given primitive_argument_type instance
     PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& indices, primitive_argument_type&& value,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, primitive_argument_type&& value,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& pages,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, primitive_argument_type&& value,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_context const& ctx = eval_context{});
+        eval_context ctx = eval_context{});
 }}    // namespace phylanx::execution_tree
 
 #endif

@@ -197,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_), ctx));
+                        target_name_), std::move(ctx)));
         }
 
         // handle slicing, simply append the slicing parameters to the end of
@@ -242,7 +242,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     hpx::util::format("the variable '{}' is unbound in the "
                                       "current execution environment",
-                        target_name_), ctx));
+                        target_name_), std::move(ctx)));
         }
 
         if (operands_.size() > 1)

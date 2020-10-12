@@ -1932,7 +1932,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "stack_operation::handle_hvdstack",
                     generate_error_message(
                         "the first argument to the hstack "
-                        "primitive has to be a list of arrays to stack"));
+                        "primitive has to be a list of arrays to stack",
+                        std::move(ctx)));
             }
         }
         else
@@ -1949,7 +1950,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "stack_operation::handle_stack",
-                            generate_error_message("lists cannot be stacked"));
+                            generate_error_message(
+                                "lists cannot be stacked", std::move(ctx)));
                     }
                     ops.push_back(std::move(op));
                 }
@@ -1958,10 +1960,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "stack_operation::hvdhandle_stack",
-                    generate_error_message(hpx::util::format(
-                        "the first argument to the {}stack "
-                        "primitive has to be a list of arrays to stack",
-                        mode_ == stacking_mode_row_wise ? 'v' : 'd')));
+                    generate_error_message(
+                        hpx::util::format(
+                            "the first argument to the {}stack "
+                            "primitive has to be a list of arrays to stack",
+                            mode_ == stacking_mode_row_wise ? 'v' : 'd'),
+                        std::move(ctx)));
             }
         }
 
@@ -1972,9 +1976,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(operands[1]), args, name_, codename_, ctx);
         }
 
-        ops = detail::map_operands(std::move(ops),
-            functional::value_operand_sync{}, std::move(args), name_, codename_,
-            std::move(ctx));
+        ops = detail::map_operands(ops, functional::value_operand_sync{},
+            std::move(args), name_, codename_, ctx);
 
         switch (extract_largest_dimension(ops, name_, codename_))
         {
@@ -1995,7 +1998,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "stack_operation::handle_hvdstack",
                 generate_error_message(
                     "left hand side operand has unsupported "
-                    "number of dimensions"));
+                    "number of dimensions", std::move(ctx)));
         }
     }
 
@@ -2106,9 +2109,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "are valid"));
         }
 
+        auto ctx_copy = ctx;
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_), args = args, ctx](
+            [this_ = std::move(this_), args = args, ctx = std::move(ctx)](
                     primitive_arguments_type&& ops) mutable
             -> primitive_argument_type
             {
@@ -2124,6 +2129,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }),
             detail::map_operands(operands, functional::value_operand{}, args,
-                name_, codename_, std::move(ctx)));
+                name_, codename_, std::move(ctx_copy)));
     }
 }}}

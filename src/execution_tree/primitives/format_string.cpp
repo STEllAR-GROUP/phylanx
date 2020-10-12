@@ -285,12 +285,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "format_string::eval",
                 generate_error_message(
                     "the format_string primitive expects to be invoked with "
-                    "at least one argument", ctx));
+                    "at least one argument", std::move(ctx)));
         }
+
+        auto ctx_copy = ctx;
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_arguments_type&& args)
+            [this_ = std::move(this_), ctx = std::move(ctx)](
+                primitive_arguments_type&& args) mutable
             ->  primitive_argument_type
             {
                 if (!is_string_operand(args[0]))
@@ -299,7 +302,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "format_string::eval",
                         this_->generate_error_message(
                             "the format_string primitive expects a formatting "
-                                "string as its first argument"));
+                            "string as its first argument",
+                            std::move(ctx)));
                 }
 
                 std::string fmt = extract_string_value(
@@ -317,6 +321,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_,
-                std::move(ctx)));
+                std::move(ctx_copy)));
     }
 }}}

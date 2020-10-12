@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
-                        argnum_ + 1, params.size()), ctx));
+                        argnum_ + 1, params.size()), std::move(ctx)));
             }
             target = extract_ref_value(operands_[1], name_, codename_);
         }
@@ -121,32 +121,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (operands_.size() == 4)
                 {
                     // handle row/column-slicing
-                    auto op1 = value_operand(
+                    auto&& op1 = value_operand(
                         operands_[2], params, name_, codename_, ctx);
-                    auto op2 = value_operand(
+                    auto&& op2 = value_operand(
                         operands_[3], params, name_, codename_, ctx);
                     return hpx::dataflow(
                         hpx::launch::sync,
                         [this_ = std::move(this_), target = std::move(target),
                             ctx = std::move(ctx)](
                                 hpx::future<primitive_argument_type>&& rows,
-                                hpx::future<primitive_argument_type>&& cols)
+                                hpx::future<primitive_argument_type>&& cols
+                            ) mutable
                         ->  primitive_argument_type
                         {
                             return slice(target, rows.get(), cols.get(),
-                                this_->name_, this_->codename_, ctx);
+                                this_->name_, this_->codename_, std::move(ctx));
                         },
-                        op1, op2);
+                        std::move(op1), std::move(op2));
                 }
 
                 if (operands_.size() > 4)
                 {
                     // handle page/row/column-slicing
-                    auto op1 = value_operand(
+                    auto&& op1 = value_operand(
                         operands_[2], params, name_, codename_, ctx);
-                    auto op2 = value_operand(
+                    auto&& op2 = value_operand(
                         operands_[3], params, name_, codename_, ctx);
-                    auto op3 = value_operand(
+                    auto&& op3 = value_operand(
                         operands_[4], params, name_, codename_, ctx);
                     return hpx::dataflow(
                         hpx::launch::sync,
@@ -154,14 +155,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             ctx = std::move(ctx)](
                             hpx::future<primitive_argument_type>&& pages,
                             hpx::future<primitive_argument_type>&& rows,
-                            hpx::future<primitive_argument_type>&& cols)
+                            hpx::future<primitive_argument_type>&& cols
+                        ) mutable
                             -> primitive_argument_type
                         {
                             return slice(target, pages.get(), rows.get(),
                                 cols.get(), this_->name_, this_->codename_,
-                                ctx);
+                                std::move(ctx));
                         },
-                        op1, op2, op3);
+                        std::move(op1), std::move(op2), std::move(op3));
                 }
 
                 // handle row-slicing
@@ -170,11 +172,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return op.then(hpx::launch::sync,
                     [this_ = std::move(this_), target = std::move(target),
                         ctx = std::move(ctx)](
-                        hpx::future<primitive_argument_type>&& rows)
+                        hpx::future<primitive_argument_type>&& rows) mutable
                         -> primitive_argument_type
                     {
                         return slice(target, rows.get(), this_->name_,
-                            this_->codename_, ctx);
+                            this_->codename_, std::move(ctx));
                     });
             }
 
@@ -254,20 +256,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "store",
                         generate_error_message(
                             "assignment to (non-sliced) function argument is "
-                            "not supported (yet)", ctx));
+                            "not supported (yet)", std::move(ctx)));
                 }
                 break;
 
             case 3:
-                slice(std::move(target),
-                    value_operand_sync(std::move(operands_[2]),
-                        std::move(params), name_, codename_, std::move(ctx)),
-                    std::move(data[0]), name_, codename_, ctx);
+                {
+                    auto ctx_copy = ctx;
+                    slice(std::move(target),
+                        value_operand_sync(std::move(operands_[2]),
+                            std::move(params), name_, codename_,
+                            std::move(ctx)),
+                        std::move(data[0]), name_, codename_,
+                        std::move(ctx_copy));
+                }
                 return;
 
             case 4:
                 {
-                    auto data1 = value_operand_sync(
+                    auto&& data1 = value_operand_sync(
                         operands_[2], params, name_, codename_, ctx);
                     slice(std::move(target), std::move(data1),
                         value_operand_sync(operands_[3], std::move(params),
@@ -278,9 +285,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             case 5:
                 {
-                    auto data1 = value_operand_sync(
+                    auto&& data1 = value_operand_sync(
                         operands_[2], params, name_, codename_, ctx);
-                    auto data2 = value_operand_sync(
+                    auto&& data2 = value_operand_sync(
                         operands_[3], params, name_, codename_, ctx);
                     slice(std::move(target), std::move(data1), std::move(data2),
                         value_operand_sync(operands_[4], std::move(params),
@@ -380,15 +387,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
             case 3:
-                slice(std::move(target),
-                    value_operand_sync(std::move(operands_[2]),
-                        std::move(params), name_, codename_, std::move(ctx)),
-                    std::move(data), name_, codename_, ctx);
+                {
+                    auto ctx_copy = ctx;
+                    slice(std::move(target),
+                        value_operand_sync(std::move(operands_[2]),
+                            std::move(params), name_, codename_, std::move(ctx)),
+                        std::move(data), name_, codename_, std::move(ctx_copy));
+                }
                 return;
 
             case 4:
                 {
-                    auto data1 = value_operand_sync(
+                    auto&& data1 = value_operand_sync(
                         operands_[2], params, name_, codename_, ctx);
                     slice(std::move(target), std::move(data1),
                         value_operand_sync(operands_[3], std::move(params),
@@ -399,9 +409,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             case 5:
                 {
-                    auto data1 = value_operand_sync(
+                    auto&& data1 = value_operand_sync(
                         operands_[2], params, name_, codename_, ctx);
-                    auto data2 = value_operand_sync(
+                    auto&& data2 = value_operand_sync(
                         operands_[3], params, name_, codename_, ctx);
                     slice(std::move(target), std::move(data1), std::move(data2),
                         value_operand_sync(operands_[4], std::move(params),
@@ -419,7 +429,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::access_argument::store",
                 generate_error_message(
-                    "storing a value to a local value has no effect", ctx));
+                    "storing a value to a local value has no effect",
+                    std::move(ctx)));
         }
     }
 }}}

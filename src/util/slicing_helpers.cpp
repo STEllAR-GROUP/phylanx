@@ -125,7 +125,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
     ir::slicing_indices extract_slicing(
         execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name,
-        std::string const& codename, execution_tree::eval_context const& ctx)
+        std::string const& codename, execution_tree::eval_context ctx)
     {
         ir::slicing_indices indices;
 
@@ -243,7 +243,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
     ///////////////////////////////////////////////////////////////////////////
     std::size_t slicing_size(execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name,
-        std::string const& codename, execution_tree::eval_context const& ctx)
+        std::string const& codename, execution_tree::eval_context ctx)
     {
         // Extract the list or the single integer index
         // from second argument (row-> start, stop, step)

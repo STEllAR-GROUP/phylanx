@@ -59,16 +59,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "enable_tracing::eval",
                 generate_error_message(
-                    "expected one (boolean) argument", ctx));
+                    "expected one (boolean) argument", std::move(ctx)));
         }
 
         if (!valid(operands[0]))
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "enable_tracing::eval",
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "enable_tracing::eval",
                 generate_error_message(
                     "the enable_tracing primitive requires that the "
-                        "argument given by the operand is valid", ctx));
+                    "argument given by the operand is valid",
+                    std::move(ctx)));
         }
 
         primitive::enable_tracing =
