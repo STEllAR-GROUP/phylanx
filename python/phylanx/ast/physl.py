@@ -681,6 +681,9 @@ class PhySL:
                 result = (*result, a)
             else:
                 op = get_symbol_info(arg, '__arg')
+                default_name = re.sub(r'\$\d+', '', default)
+                if default_name in self.fglobals:
+                    default = '%s' % self.fglobals[default_name]
                 result = (*result, [op, (a, default)])
         return result
 

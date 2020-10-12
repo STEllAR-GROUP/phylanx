@@ -52,6 +52,7 @@ set(tests
     1056_client_base
     1104_no_arg_lambda
     1170_no_error
+    1206_improper_defaults
     1224_dictionary_len
     1225_iterate_dictionary
     1230_assign_argument_dictionary
