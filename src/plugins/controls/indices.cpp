@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             dimensions, dtype, sparse
             Args:
 
-                dimensions (list of ints) : the shape of the grid
+                dimensions (list of integers) : the shape of the grid
                 dtype (optional, string) : the data-type of the returned array,
                   defaults to 'int'.
                 sparse (optional, bool) : return a sparse representation of the
@@ -53,71 +53,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     {
     }
 
-    primitive_argument_type indices::generate_indices(
-        ir::range&& shape, node_data_type dtype, eval_context ctx) const
-    {
-        switch (shape.size())
-        {
-        case 0:
-            return common::indices0d(
-                std::move(shape), name_, codename_, std::move(ctx));
-
-        case 1:
-            return common::indices1d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-
-        case 2:
-            return common::indices2d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-
-        case 3:
-            return common::indices3d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-
-        case 4:
-            return common::indices4d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter, "indices::generate_indices",
-            generate_error_message(
-                "unsupported dimensionality of shape argument",
-                std::move(ctx)));
-    }
-
-    primitive_argument_type indices::generate_sparse_indices(
-        ir::range&& shape, node_data_type dtype, eval_context ctx) const
-    {
-        switch (shape.size())
-        {
-        case 0:
-            return common::sparse_indices0d(
-                std::move(shape), name_, codename_, std::move(ctx));
-
-        case 1:
-            return common::sparse_indices1d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-
-        case 2:
-            return common::sparse_indices2d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-
-        case 3:
-            return common::sparse_indices3d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-
-        case 4:
-            return common::sparse_indices4d(
-                std::move(shape), dtype, name_, codename_, std::move(ctx));
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "indices::generate_sparse_indices",
-            generate_error_message(
-                "unsupported dimensionality of shape argument",
-                std::move(ctx)));
-    }
-
     hpx::future<primitive_argument_type> indices::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -127,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "indices::eval",
                 generate_error_message(
-                    "the indices primitive requires at most two operands",
+                    "the indices primitive requires at most three operands",
                     std::move(ctx)));
         }
 
@@ -150,8 +85,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 hpx::launch::sync,
                 [this_ = std::move(this_), ctx = std::move(ctx)](
                     hpx::future<ir::range>&& farg) mutable {
-                    return this_->generate_indices(
-                        farg.get(), node_data_type_int64, std::move(ctx));
+                    return common::generate_indices(farg.get(),
+                        node_data_type_int64, this_->name_, this_->codename_,
+                        std::move(ctx));
                 },
                 std::move(arg0));
         }
@@ -173,8 +109,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 [this_ = std::move(this_), ctx = std::move(ctx)](
                     hpx::future<ir::range>&& farg,
                     hpx::future<std::string>&& fdtype) mutable {
-                    return this_->generate_indices(
-                        farg.get(), map_dtype(fdtype.get()), std::move(ctx));
+                    return common::generate_indices(farg.get(),
+                        map_dtype(fdtype.get()), this_->name_, this_->codename_,
+                        std::move(ctx));
                 },
                 std::move(arg0), std::move(arg1));
         }
@@ -197,11 +134,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 hpx::future<std::uint8_t>&& fsparse) mutable {
                 if (fsparse.get())
                 {
-                    return this_->generate_sparse_indices(
-                        farg.get(), map_dtype(fdtype.get()), std::move(ctx));
+                    return common::generate_sparse_indices(farg.get(),
+                        map_dtype(fdtype.get()), this_->name_, this_->codename_,
+                        std::move(ctx));
                 }
-                return this_->generate_indices(
-                    farg.get(), map_dtype(fdtype.get()), std::move(ctx));
+                return common::generate_indices(farg.get(),
+                    map_dtype(fdtype.get()), this_->name_, this_->codename_,
+                    std::move(ctx));
             },
             std::move(arg0), std::move(arg1), std::move(arg2));
     }

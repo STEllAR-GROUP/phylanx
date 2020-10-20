@@ -27,6 +27,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(for_each_plugin,
     phylanx::execution_tree::primitives::for_each::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(for_operation_plugin,
     phylanx::execution_tree::primitives::for_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(fromfunction_plugin,
+    phylanx::execution_tree::primitives::fromfunction::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(if_conditional_plugin,
     phylanx::execution_tree::primitives::if_conditional::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(indices_plugin,

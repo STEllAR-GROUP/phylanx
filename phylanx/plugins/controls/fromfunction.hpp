@@ -19,11 +19,11 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    class indices
+namespace phylanx { namespace execution_tree { namespace primitives {
+
+    class fromfunction
       : public primitive_component_base
-      , public std::enable_shared_from_this<indices>
+      , public std::enable_shared_from_this<fromfunction>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
@@ -34,18 +34,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         static match_pattern_type const match_data;
 
-        indices() = default;
+        fromfunction() = default;
 
-        indices(primitive_arguments_type&& operands,
+        fromfunction(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
+
+    private:
+        primitive_argument_type call_fromfunction(
+            primitive_argument_type&& func, ir::range&& shape,
+            node_data_type dtype, eval_context ctx) const;
     };
 
-    inline primitive create_indices(hpx::id_type const& locality,
-        primitive_arguments_type&& operands,
-        std::string const& name = "", std::string const& codename = "")
+    inline primitive create_fromfunction(hpx::id_type const& locality,
+        primitive_arguments_type&& operands, std::string const& name = "",
+        std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "indices", std::move(operands), name, codename);
+            locality, "fromfunction", std::move(operands), name, codename);
     }
-}}}
-
+}}}    // namespace phylanx::execution_tree::primitives

@@ -309,7 +309,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             tiling_span(column_start, column_start + column_size));
         auto locality_ann = arr_localities.locality_.as_annotation();
         auto attached_annotation = std::make_shared<annotation>(
-            localities_annotation(std::move(locality_ann),
+            localities_annotation(locality_ann,
                 tile_info.as_annotation(name_, codename_),
                 arr_localities.annotation_, name_, codename_));
 

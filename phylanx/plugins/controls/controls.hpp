@@ -15,6 +15,7 @@
 #include <phylanx/plugins/controls/fold_right_operation.hpp>
 #include <phylanx/plugins/controls/for_each.hpp>
 #include <phylanx/plugins/controls/for_operation.hpp>
+#include <phylanx/plugins/controls/fromfunction.hpp>
 #include <phylanx/plugins/controls/if_conditional.hpp>
 #include <phylanx/plugins/controls/indices.hpp>
 #include <phylanx/plugins/controls/parallel_block_operation.hpp>

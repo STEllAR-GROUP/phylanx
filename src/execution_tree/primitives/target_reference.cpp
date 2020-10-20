@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , ctx_(eval_context::noinit)
     {
         // operands_[0] holds the target function/variable
-        if (operands_.empty() || !valid(operands_[0]))
+        if (operands_.empty() || is_implicit_nil(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "target_reference::target_reference",

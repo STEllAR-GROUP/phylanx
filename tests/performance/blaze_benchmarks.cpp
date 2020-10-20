@@ -56,9 +56,9 @@ void benchmark(std::string const& name,
         auto input_vec1 = rand(vec_size);
         auto input_vec2 = rand(vec_size);
 
-        t = hpx::util::high_resolution_clock::now();
+        t = hpx::chrono::high_resolution_clock::now();
         bench(input_vec1, input_vec2);
-        t = hpx::util::high_resolution_clock::now() - t;
+        t = hpx::chrono::high_resolution_clock::now() - t;
 
         std::cout << i << "       " << (t / 1e3) << " microseconds\n";
     }

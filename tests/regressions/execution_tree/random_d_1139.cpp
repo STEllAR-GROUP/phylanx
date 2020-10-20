@@ -29,9 +29,9 @@ void execution_time(std::string const& name, std::string const& codestr)
 
     std::cout << "Locality: " << hpx::get_locality_id()
               << "  Starting execution for: " << name << std::endl;
-    std::uint64_t t = hpx::util::high_resolution_clock::now();
+    std::uint64_t t = hpx::chrono::high_resolution_clock::now();
     phylanx::execution_tree::primitive_argument_type a = compiled_code.run().arg_;
-    t = hpx::util::high_resolution_clock::now() - t;
+    t = hpx::chrono::high_resolution_clock::now() - t;
 
     std::cout << "       " << (t / 1e6) << " ms.\n" << std::endl;
 }

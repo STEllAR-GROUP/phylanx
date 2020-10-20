@@ -10,6 +10,7 @@ set(tests
     fold_left_operation
     fold_right_operation
 #    for_operation
+    fromfunction
     if_conditional
     indices_operation
     fmap_operation

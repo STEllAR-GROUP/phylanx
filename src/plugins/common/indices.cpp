@@ -10,9 +10,11 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/common/indices.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <numeric>
 #include <string>
+#include <utility>
 
 #include <blaze/Math.h>
 #include <blaze_tensor/Math.h>
@@ -330,6 +332,39 @@ namespace phylanx { namespace common {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    execution_tree::primitive_argument_type generate_indices(
+        ir::range const& shape, execution_tree::node_data_type dtype,
+        std::string const& name, std::string const& codename,
+        execution_tree::eval_context ctx)
+    {
+        switch (shape.size())
+        {
+        case 0:
+            return indices0d(shape, name, codename, std::move(ctx));
+
+        case 1:
+            return indices1d(shape, dtype, name, codename, std::move(ctx));
+
+        case 2:
+            return indices2d(shape, dtype, name, codename, std::move(ctx));
+
+        case 3:
+            return indices3d(shape, dtype, name, codename, std::move(ctx));
+
+        case 4:
+            return indices4d(shape, dtype, name, codename, std::move(ctx));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "common::generate_indices",
+            util::generate_error_message(
+                "unsupported dimensionality of shape argument", name, codename,
+                ctx.back_trace()));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type sparse_indices0d(
         ir::range const& shape, std::string const& name,
         std::string const& codename, execution_tree::eval_context ctx)
@@ -633,4 +668,43 @@ namespace phylanx { namespace common {
                 "be valid",
                 name, codename, ctx.back_trace()));
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    execution_tree::primitive_argument_type generate_sparse_indices(
+        ir::range const& shape, execution_tree::node_data_type dtype,
+        std::string const& name, std::string const& codename,
+        execution_tree::eval_context ctx)
+    {
+        switch (shape.size())
+        {
+        case 0:
+            return sparse_indices0d(shape, name, codename, std::move(ctx));
+
+        case 1:
+            return sparse_indices1d(
+                shape, dtype, name, codename, std::move(ctx));
+
+        case 2:
+            return sparse_indices2d(
+                shape, dtype, name, codename, std::move(ctx));
+
+        case 3:
+            return sparse_indices3d(
+                shape, dtype, name, codename, std::move(ctx));
+
+        case 4:
+            return sparse_indices4d(
+                shape, dtype, name, codename, std::move(ctx));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "common::generate_sparse_indices",
+            util::generate_error_message(
+                "unsupported dimensionality of shape argument", name, codename,
+                ctx.back_trace()));
+    }
+
 }}    // namespace phylanx::common

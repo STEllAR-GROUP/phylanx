@@ -40,6 +40,11 @@ namespace phylanx { namespace common {
         std::string const& name, std::string const& codename,
         execution_tree::eval_context ctx);
 
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    generate_indices(ir::range const& shape,
+        execution_tree::node_data_type dtype, std::string const& name,
+        std::string const& codename, execution_tree::eval_context ctx);
+
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     sparse_indices0d(ir::range const& shape, std::string const& name,
@@ -62,6 +67,11 @@ namespace phylanx { namespace common {
 
     PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
     sparse_indices4d(ir::range const& shape,
+        execution_tree::node_data_type dtype, std::string const& name,
+        std::string const& codename, execution_tree::eval_context ctx);
+
+    PHYLANX_COMMON_EXPORT execution_tree::primitive_argument_type
+    generate_sparse_indices(ir::range const& shape,
         execution_tree::node_data_type dtype, std::string const& name,
         std::string const& codename, execution_tree::eval_context ctx);
 

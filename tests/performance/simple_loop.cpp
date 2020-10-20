@@ -82,11 +82,11 @@ void benchmark(std::string const& name,
     auto bench = code.run();
 
 
-    std::uint64_t t = hpx::util::high_resolution_clock::now();
+    std::uint64_t t = hpx::chrono::high_resolution_clock::now();
 
     bench(y, ARRAY_SIZE);
 
-    t = hpx::util::high_resolution_clock::now() - t;
+    t = hpx::chrono::high_resolution_clock::now() - t;
 
     std::cout << name << ": " << (t / 1e6) << " ms.\n";
 }

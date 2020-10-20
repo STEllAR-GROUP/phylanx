@@ -65,39 +65,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> lambda::eval(
         primitive_arguments_type const& args, eval_context ctx) const
     {
+        if (ctx.mode_ & eval_dont_evaluate_lambdas)
+        {
+            primitive_arguments_type fargs;
+            fargs.reserve(args.size() + 1);
+
+            fargs.push_back(
+                extract_ref_value(operands_[0], name_, codename_));
+            for (auto const& arg : args)
+            {
+                fargs.push_back(extract_value(arg, name_, codename_));
+            }
+
+            compiler::primitive_name_parts name_parts =
+                compiler::parse_primitive_name(name_);
+            name_parts.primitive = "target-reference";
+
+            return hpx::make_ready_future(primitive_argument_type{
+                create_primitive_component(hpx::find_here(),
+                    name_parts.primitive, std::move(fargs), std::move(ctx),
+                    compiler::compose_primitive_name(name_parts),
+                    codename_)});
+        }
+
         if (!valid(operands_[0]))
         {
             // body is allowed to be 'nil'
             return hpx::make_ready_future(primitive_argument_type{});
-        }
-
-        if (ctx.mode_ & eval_dont_evaluate_lambdas)
-        {
-            if (!args.empty())
-            {
-                primitive_arguments_type fargs;
-                fargs.reserve(args.size() + 1);
-
-                fargs.push_back(
-                    extract_ref_value(operands_[0], name_, codename_));
-                for (auto const& arg : args)
-                {
-                    fargs.push_back(extract_value(arg, name_, codename_));
-                }
-
-                compiler::primitive_name_parts name_parts =
-                    compiler::parse_primitive_name(name_);
-                name_parts.primitive = "target-reference";
-
-                return hpx::make_ready_future(primitive_argument_type{
-                    create_primitive_component(hpx::find_here(),
-                        name_parts.primitive, std::move(fargs), std::move(ctx),
-                        compiler::compose_primitive_name(name_parts),
-                        codename_)});
-            }
-
-            return hpx::make_ready_future(
-                extract_ref_value(operands_[0], name_, codename_));
         }
 
         // simply invoke the given body with the given arguments
