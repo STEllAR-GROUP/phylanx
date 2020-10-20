@@ -11,6 +11,7 @@ set(tests
     fold_right_operation
 #    for_operation
     if_conditional
+    indices_operation
     fmap_operation
     parallel_block_operation
     parallel_map_operation

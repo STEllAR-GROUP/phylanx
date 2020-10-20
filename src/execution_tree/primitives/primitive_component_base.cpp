@@ -13,7 +13,7 @@
 #include <hpx/errors/throw_exception.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/modules/naming.hpp>
 #include <hpx/runtime_local/config_entry.hpp>
 
 #include <cstddef>

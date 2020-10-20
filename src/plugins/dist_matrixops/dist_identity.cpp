@@ -84,27 +84,25 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     namespace detail {
         static std::atomic<std::size_t> identity_count(0);
-        std::string generate_identity_name(std::string&& given_name)
+
+        std::string generate_identity_name(std::string given_name)
         {
             if (given_name.empty())
             {
                 return "identity_array_" + std::to_string(++identity_count);
             }
-
-            return std::move(given_name);
+            return given_name;
         }
     }    // namespace detail
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_identity::dist_identity_helper(
-        std::int64_t&& sz, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& tiling_type) const
+        std::int64_t size, std::uint32_t const& tile_idx,
+        std::uint32_t numtiles, std::string given_name,
+        std::string const& tiling_type, execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
-
-        std::size_t size = static_cast<std::size_t>(sz);
 
         std::int64_t row_start, column_start;
         std::size_t row_size, column_size;
@@ -157,35 +155,36 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dist_identity::dist_identity_helper",
                 generate_error_message(
-                    "wrong numtiles input when tiling_type is sym"));
+                    "wrong numtiles input when tiling_type is sym",
+                    std::move(ctx)));
         }
 
         return primitive_argument_type(std::move(m), attached_annotation);
     }
 
     execution_tree::primitive_argument_type dist_identity::dist_identity_nd(
-        std::int64_t&& sz, std::uint32_t const& tile_idx,
-        std::uint32_t const& numtiles, std::string&& given_name,
-        std::string const& tiling_type,
-        execution_tree::node_data_type dtype) const
+        std::int64_t sz, std::uint32_t const& tile_idx, std::uint32_t numtiles,
+        std::string given_name, std::string const& tiling_type,
+        execution_tree::node_data_type dtype,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
         switch (dtype)
         {
         case node_data_type_bool:
-            return dist_identity_helper<std::uint8_t>(std::move(sz), tile_idx,
-                numtiles, std::move(given_name), tiling_type);
+            return dist_identity_helper<std::uint8_t>(sz, tile_idx, numtiles,
+                std::move(given_name), tiling_type, std::move(ctx));
 
         case node_data_type_int64:
-            return dist_identity_helper<std::int64_t>(std::move(sz), tile_idx,
-                numtiles, std::move(given_name), tiling_type);
+            return dist_identity_helper<std::int64_t>(sz, tile_idx, numtiles,
+                std::move(given_name), tiling_type, std::move(ctx));
 
         case node_data_type_unknown:
             HPX_FALLTHROUGH;
         case node_data_type_double:
-            return dist_identity_helper<double>(std::move(sz), tile_idx,
-                numtiles, std::move(given_name), tiling_type);
+            return dist_identity_helper<double>(sz, tile_idx, numtiles,
+                std::move(given_name), tiling_type, std::move(ctx));
 
         default:
             break;
@@ -193,9 +192,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_matrixops::dist_identity::dist_identity_nd",
-            util::generate_error_message(
+            generate_error_message(
                 "the constant primitive requires for all arguments to "
-                "be numeric data types"));
+                "be numeric data types",
+                std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -209,7 +209,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_identity::eval",
                 generate_error_message("the identity_d primitive requires "
-                                       "at least 1 and at most 6 operands"));
+                                       "at least 1 and at most 6 operands",
+                    std::move(ctx)));
         }
 
         if (!valid(operands[0]))
@@ -217,77 +218,82 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_identity::eval",
                 generate_error_message(
                     "the identity_d primitive requires the first argument"
-                    "given by the operands array is valid"));
+                    "given by the operands array is valid", std::move(ctx)));
         }
 
+        auto ctx_copy = ctx;
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    execution_tree::primitive_arguments_type&& args)
-                    -> execution_tree::primitive_argument_type {
-                    using namespace execution_tree;
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_), ctx = std::move(ctx_copy)](
+                execution_tree::primitive_arguments_type&& args) mutable
+            -> execution_tree::primitive_argument_type
+            {
+                using namespace execution_tree;
 
-                    std::int64_t sz = extract_scalar_integer_value_strict(
-                        std::move(args[0]), this_->name_, this_->codename_);
+                std::int64_t sz = extract_scalar_integer_value_strict(
+                    std::move(args[0]), this_->name_, this_->codename_);
 
-                    std::uint32_t tile_idx = hpx::get_locality_id();
-                    if (valid(args[1]))
-                    {
-                        tile_idx = extract_scalar_nonneg_integer_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
-                    }
-                    std::uint32_t numtiles =
-                        hpx::get_num_localities(hpx::launch::sync);
-                    if (valid(args[2]))
-                    {
-                        numtiles = extract_scalar_positive_integer_value_strict(
-                            std::move(args[2]), this_->name_, this_->codename_);
-                    }
-                    if (tile_idx >= numtiles)
+                std::uint32_t tile_idx = hpx::get_locality_id();
+                if (valid(args[1]))
+                {
+                    tile_idx = extract_scalar_nonneg_integer_value_strict(
+                        std::move(args[1]), this_->name_, this_->codename_);
+                }
+
+                std::uint32_t numtiles =
+                    hpx::get_num_localities(hpx::launch::sync);
+                if (valid(args[2]))
+                {
+                    numtiles = extract_scalar_positive_integer_value_strict(
+                        std::move(args[2]), this_->name_, this_->codename_);
+                }
+                if (tile_idx >= numtiles)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dist_identity::eval",
+                        this_->generate_error_message(
+                            "invalid tile index. Tile indices start from 0 "
+                            "and should be smaller than number of tiles",
+                            std::move(ctx)));
+                }
+
+                std::string given_name;
+                if (valid(args[3]))
+                {
+                    given_name = extract_string_value(
+                        std::move(args[3]), this_->name_, this_->codename_);
+                }
+
+                // using balanced symmetric tiles
+                std::string tiling_type = "sym";
+                if (valid(args[4]))
+                {
+                    tiling_type = extract_string_value(
+                        std::move(args[4]), this_->name_, this_->codename_);
+                    if ((tiling_type != "sym" && tiling_type != "row") &&
+                        tiling_type != "column")
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_identity::eval",
                             this_->generate_error_message(
-                                "invalid tile index. Tile indices start from 0 "
-                                "and should be smaller than number of tiles"));
+                                "invalid tling_type. the tiling_type cane "
+                                "one of these: `sym`, `row` or `column`",
+                                std::move(ctx)));
                     }
+                }
 
-                    std::string given_name = "";
-                    if (valid(args[3]))
-                    {
-                        given_name = extract_string_value(
-                            std::move(args[3]), this_->name_, this_->codename_);
-                    }
+                node_data_type dtype = node_data_type_unknown;
+                if (valid(args[5]))
+                {
+                    dtype =
+                        map_dtype(extract_string_value(std::move(args[5]),
+                            this_->name_, this_->codename_));
+                }
 
-                    // using balanced symmetric tiles
-                    std::string tiling_type = "sym";
-                    if (valid(args[4]))
-                    {
-                        tiling_type = extract_string_value(
-                            std::move(args[4]), this_->name_, this_->codename_);
-                        if ((tiling_type != "sym" && tiling_type != "row") &&
-                            tiling_type != "column")
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_identity::eval",
-                                this_->generate_error_message(
-                                    "invalid tling_type. the tiling_type cane "
-                                    "one of these: `sym`, `row` or `column`"));
-                        }
-                    }
-
-                    node_data_type dtype = node_data_type_unknown;
-                    if (valid(args[5]))
-                    {
-                        dtype =
-                            map_dtype(extract_string_value(std::move(args[5]),
-                                this_->name_, this_->codename_));
-                    }
-
-                    return this_->dist_identity_nd(std::move(sz), tile_idx,
-                        numtiles, std::move(given_name), tiling_type, dtype);
-                }),
+                return this_->dist_identity_nd(sz, tile_idx, numtiles,
+                    std::move(given_name), tiling_type, dtype,
+                    std::move(ctx));
+            }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
                 codename_, std::move(ctx)));

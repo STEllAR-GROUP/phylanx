@@ -116,7 +116,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
     execution_tree::primitive_argument_type dist_constant::constant1d_helper(
         execution_tree::primitive_argument_type&& value, std::size_t const& dim,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
-        std::string&& given_name, std::size_t intersection) const
+        std::string&& given_name, std::size_t intersection,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -162,7 +163,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::size_t intersection,
-        execution_tree::node_data_type dtype) const
+        execution_tree::node_data_type dtype,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -170,16 +172,19 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         {
         case node_data_type_bool:
             return constant1d_helper<std::uint8_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), intersection);
+                tile_idx, numtiles, std::move(given_name), intersection,
+                std::move(ctx));
 
         case node_data_type_int64:
             return constant1d_helper<std::int64_t>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), intersection);
+                tile_idx, numtiles, std::move(given_name), intersection,
+                std::move(ctx));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant1d_helper<double>(std::move(value), dims[0],
-                tile_idx, numtiles, std::move(given_name), intersection);
+                tile_idx, numtiles, std::move(given_name), intersection,
+                std::move(ctx));
 
         default:
             break;
@@ -187,9 +192,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_matrixops::dist_constant::constant1d",
-            util::generate_error_message(
+            generate_error_message(
                 "the constant primitive requires for all arguments to "
-                    "be numeric data types"));
+                "be numeric data types",
+                std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -199,8 +205,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersections)
-        const
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersections,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -261,7 +267,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersections,
-        execution_tree::node_data_type dtype) const
+        execution_tree::node_data_type dtype,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -270,17 +277,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         case node_data_type_bool:
             return constant2d_helper<std::uint8_t>(std::move(value), dims,
                 tile_idx, numtiles, std::move(given_name), tiling_type,
-                intersections);
+                intersections, std::move(ctx));
 
         case node_data_type_int64:
             return constant2d_helper<std::int64_t>(std::move(value), dims,
                 tile_idx, numtiles, std::move(given_name), tiling_type,
-                intersections);
+                intersections, std::move(ctx));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant2d_helper<double>(std::move(value), dims, tile_idx,
-                numtiles, std::move(given_name), tiling_type, intersections);
+                numtiles, std::move(given_name), tiling_type, intersections,
+                std::move(ctx));
 
         default:
             break;
@@ -288,9 +296,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_matrixops::dist_constant::constant2d",
-            util::generate_error_message(
+            generate_error_message(
                 "the constant primitive requires for all arguments to "
-                    "be numeric data types"));
+                "be numeric data types",
+                std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -300,8 +309,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         operand_type::dimensions_type const& dims,
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersections)
-        const
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersections,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -369,7 +378,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
         std::string&& given_name, std::string const& tiling_type,
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersections,
-        execution_tree::node_data_type dtype) const
+        execution_tree::node_data_type dtype,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -378,17 +388,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         case node_data_type_bool:
             return constant3d_helper<std::uint8_t>(std::move(value), dims,
                 tile_idx, numtiles, std::move(given_name), tiling_type,
-                intersections);
+                intersections, std::move(ctx));
 
         case node_data_type_int64:
             return constant3d_helper<std::int64_t>(std::move(value), dims,
                 tile_idx, numtiles, std::move(given_name), tiling_type,
-                intersections);
+                intersections, std::move(ctx));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return constant3d_helper<double>(std::move(value), dims, tile_idx,
-                numtiles, std::move(given_name), tiling_type, intersections);
+                numtiles, std::move(given_name), tiling_type, intersections,
+                std::move(ctx));
 
         default:
             break;
@@ -396,9 +407,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_matrixops::dist_constant::constant3d",
-            util::generate_error_message(
+            generate_error_message(
                 "the constant primitive requires for all arguments to "
-                    "be numeric data types"));
+                "be numeric data types",
+                std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -410,11 +422,10 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         // verify arguments
         if (operands.size() < 2 || operands.size() > 8)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dist_constant::eval",
-                generate_error_message(
-                    "the constant_d primitive requires "
-                        "at least 2 and at most 8 operands"));
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_constant::eval",
+                generate_error_message("the constant_d primitive requires at "
+                                       "least 2 and at most 8 operands",
+                    std::move(ctx)));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
@@ -422,25 +433,28 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_constant::eval",
                 generate_error_message(
                     "the constant_d primitive requires the first two arguments "
-                    "given by the operands array are valid"));
+                    "given by the operands array are valid", std::move(ctx)));
         }
 
+        auto ctx_copy = ctx;
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                    execution_tree::primitive_arguments_type&& args)
+                [this_ = std::move(this_), ctx = std::move(ctx_copy)](
+                    execution_tree::primitive_arguments_type&& args) mutable
                 -> execution_tree::primitive_argument_type
                 {
                     using namespace execution_tree;
 
                     if (valid(args[0]) &&
-                        extract_numeric_value_dimension(args[0]) != 0)
+                        extract_numeric_value_dimension(
+                            args[0], this_->name_, this_->codename_) != 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_constant::eval",
                             this_->generate_error_message(
-                                "the first argument must be a literal "
-                                "scalar value"));
+                                "the first argument must be a literal scalar "
+                                "value",
+                                std::move(ctx)));
                     }
 
                     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{0};
@@ -456,7 +470,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 "dist_constant::eval",
                                 this_->generate_error_message(
                                     "the given shape has a number of "
-                                    "dimensions that is not supported"));
+                                    "dimensions that is not supported",
+                                    std::move(ctx)));
                         }
 
                         dims = util::detail::extract_positive_range_dimensions(
@@ -476,14 +491,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     std::uint32_t tile_idx = hpx::get_locality_id();
                     if (valid(args[2]))
                     {
-                        extract_scalar_nonneg_integer_value_strict(
+                        tile_idx = extract_scalar_nonneg_integer_value_strict(
                             std::move(args[2]), this_->name_, this_->codename_);
                     }
                     std::uint32_t numtiles =
                         hpx::get_num_localities(hpx::launch::sync);
                     if (valid(args[3]))
                     {
-                        extract_scalar_positive_integer_value_strict(
+                        numtiles = extract_scalar_positive_integer_value_strict(
                             std::move(args[3]), this_->name_, this_->codename_);
                     }
                     if (tile_idx >= numtiles)
@@ -492,10 +507,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                             "dist_constant::eval",
                             this_->generate_error_message(
                                 "invalid tile index. Tile indices start from 0 "
-                                "and should be smaller than number of tiles"));
+                                "and should be smaller than number of tiles",
+                                std::move(ctx)));
                     }
 
-                    std::string given_name = "";
+                    std::string given_name;
                     if (valid(args[4]))
                     {
                         given_name = extract_string_value(std::move(args[4]),
@@ -515,7 +531,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 this_->generate_error_message(
                                     "invalid tiling_type. The tiling_type can "
                                     "be one of these: `sym`, `page`, `row` or "
-                                    "`column`"));
+                                    "`column`", std::move(ctx)));
                         }
                     }
 
@@ -538,7 +554,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                         "intersection should have the same "
                                         "number of dimensions as the array, or "
                                         "be represented with an integer for "
-                                        "all dimensions"));
+                                        "all dimensions", std::move(ctx)));
                             }
                             intersections =
                                 util::detail::extract_nonneg_range_dimensions(
@@ -568,7 +584,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                                 "dist_constant::eval",
                                 this_->generate_error_message(
                                     "intersection can be an integer or a list "
-                                    "of integers"));
+                                    "of integers", std::move(ctx)));
                         }
                     }
 
@@ -585,25 +601,24 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                     case 1:
                         return this_->constant1d(std::move(args[0]), dims,
                             tile_idx, numtiles, std::move(given_name),
-                            intersections[0], dtype);
+                            intersections[0], dtype, std::move(ctx));
 
                     case 2:
                         return this_->constant2d(std::move(args[0]), dims,
                             tile_idx, numtiles, std::move(given_name),
-                            tiling_type, intersections, dtype);
+                            tiling_type, intersections, dtype, std::move(ctx));
 
                     case 3:
                         return this_->constant3d(std::move(args[0]), dims,
                             tile_idx, numtiles, std::move(given_name),
-                            tiling_type, intersections, dtype);
+                            tiling_type, intersections, dtype, std::move(ctx));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_constant::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "the given shape is of an unsupported "
-                                "dimensionality",
-                                this_->name_, this_->codename_));
+                                "dimensionality", std::move(ctx)));
                     }
 
                 }),
