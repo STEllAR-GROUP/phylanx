@@ -1639,6 +1639,28 @@ format (s,args)
             a value from `*args`.
 
 
+fromfunction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fromfunction (function, dimensions, dtype)
+            Args:
+
+                function (callable) : The function is called with N parameters,
+                  where N is the rank of 'dimension'. Each parameter represents
+                  the coordinates of the array varying along a specific axis.
+                dimensions (list of integers) : the shape of the array, which
+                  also determines the shape of the coordinate arrays passed to
+                  'function'.
+                dtype (optional, string) : data-type of the coordinate arrays
+                  passed to 'function', default is 'float'.
+
+            Returns:
+
+            The result of the call to 'function' is passed back directly.
+            Therefore the shape of fromfunction is completely determined by
+            'function'. If 'function' returns a scalar value, the shape of
+            fromfunction would not match the shape parameter.
+
+
 full
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 full (shape, value, dtype)
@@ -1807,6 +1829,22 @@ if (cond, thenf, elsef)
 
               The value returned by the statement that was executed, `nil`
               otherwise
+
+
+indices
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+indices (dimensions, dtype, sparse)
+            Args:
+
+                dimensions (list of integers) : the shape of the grid
+                dtype (optional, string) : the data-type of the returned array,
+                  defaults to 'int'.
+                sparse (optional, bool) : return a sparse representation of the
+                  grid instead of a dense representation, defaults to 'false'
+
+            Returns:
+
+            One array or tuple of arrays.
 
 
 insert

@@ -191,6 +191,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#for">for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#for-each">for_each</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#format">format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fromfunction">fromfunction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#full">full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#full-like">full_like</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-seed-action">get_seed_action</a></li>
@@ -202,6 +203,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#identity">identity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#identity-d">identity_d</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#if">if</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#indices">indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#insert">insert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#invgje">invGJE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#inverse">inverse</a></li>
@@ -2188,6 +2190,30 @@ def foo():</p>
 a value from <cite>*args</cite>.</p>
 </div></blockquote>
 </div>
+<div class="section" id="fromfunction">
+<h2>fromfunction<a class="headerlink" href="#fromfunction" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>fromfunction (function, dimensions, dtype)</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>function (callable)<span class="classifier">The function is called with N parameters,</span></dt><dd><p>where N is the rank of ‘dimension’. Each parameter represents
+the coordinates of the array varying along a specific axis.</p>
+</dd>
+<dt>dimensions (list of integers)<span class="classifier">the shape of the array, which</span></dt><dd><p>also determines the shape of the coordinate arrays passed to
+‘function’.</p>
+</dd>
+<dt>dtype (optional, string)<span class="classifier">data-type of the coordinate arrays</span></dt><dd><p>passed to ‘function’, default is ‘float’.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>The result of the call to ‘function’ is passed back directly.
+Therefore the shape of fromfunction is completely determined by
+‘function’. If ‘function’ returns a scalar value, the shape of
+fromfunction would not match the shape parameter.</p>
+</dd>
+</dl>
+</div>
 <div class="section" id="full">
 <h2>full<a class="headerlink" href="#full" title="Permalink to this headline">¶</a></h2>
 <dl>
@@ -2369,6 +2395,26 @@ elsef (statement, optional) : a statement</p>
 <div><p>The value returned by the statement that was executed, <cite>nil</cite>
 otherwise</p>
 </div></blockquote>
+</dd>
+</dl>
+</div>
+<div class="section" id="indices">
+<h2>indices<a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>indices (dimensions, dtype, sparse)</dt><dd><p>Args:</p>
+<blockquote>
+<div><p>dimensions (list of integers) : the shape of the grid
+dtype (optional, string) : the data-type of the returned array,</p>
+<blockquote>
+<div><p>defaults to ‘int’.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>sparse (optional, bool)<span class="classifier">return a sparse representation of the</span></dt><dd><p>grid instead of a dense representation, defaults to ‘false’</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns:</p>
+<p>One array or tuple of arrays.</p>
 </dd>
 </dl>
 </div>
@@ -3871,7 +3917,7 @@ are provided, then <cite>where</cite> is equivalent to <cite>cond.nonzero()</cit
     <p>
         &copy; Copyright 2017-2020, The STE||AR-Group.
       <span class="lastupdated">
-        Last updated on Oct 12, 2020.
+        Last updated on Oct 21, 2020.
       </span>
 
     </p>
