@@ -83,13 +83,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
     template <typename T>
     execution_tree::primitive_argument_type dist_diag::dist_diag1d_helper(
-        ir::node_data<T>&& arr, std::int64_t k,
-        std::string const& tiling_type, std::uint32_t const loc_id,
-        std::uint32_t const num_localities, std::size_t span_index,
-        std::size_t row_size, std::size_t column_size,
+        ir::node_data<T>&& arr, std::int64_t k, std::string const& tiling_type,
+        std::uint32_t const loc_id, std::uint32_t const num_localities,
+        std::size_t span_index, std::size_t row_size, std::size_t column_size,
         std::int64_t row_start, std::int64_t column_start,
         std::int64_t cur_start, std::int64_t cur_stop,
-        execution_tree::localities_information&& arr_localities) const
+        execution_tree::localities_information&& arr_localities,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
         blaze::DynamicMatrix<T> result(row_size, column_size, T(0));
@@ -300,28 +300,29 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "detail::dist_diag1d_helper",
-                phylanx::util::generate_error_message(
-                    "the given tiling_type is invalid"));
+                generate_error_message(
+                    "the given tiling_type is invalid", std::move(ctx)));
         }
+
         tiling_information_2d tile_info(
-        tiling_span(row_start, row_start + row_size),
-        tiling_span(column_start, column_start + column_size));
+            tiling_span(row_start, row_start + row_size),
+            tiling_span(column_start, column_start + column_size));
         auto locality_ann = arr_localities.locality_.as_annotation();
-        auto attached_annotation =
-            std::make_shared<annotation>(localities_annotation(
-                locality_ann,
+        auto attached_annotation = std::make_shared<annotation>(
+            localities_annotation(locality_ann,
                 tile_info.as_annotation(name_, codename_),
                 arr_localities.annotation_, name_, codename_));
-        return primitive_argument_type(result, attached_annotation);
-    }
 
+        return primitive_argument_type(result, std::move(attached_annotation));
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         ir::node_data<T>&& arr, std::int64_t k, std::string const& tiling_type,
         std::uint32_t tile_idx, std::uint32_t numtiles,
-        execution_tree::localities_information&& arr_localities) const
+        execution_tree::localities_information&& arr_localities,
+        execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
 
@@ -358,15 +359,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         return dist_diag::dist_diag1d_helper(
             std::move(arr), k, tiling_type, loc_id, num_localities, span_index,
             row_size, column_size, row_start, column_start, cur_start, cur_stop,
-            std::move(arr_localities));
+            std::move(arr_localities), std::move(ctx));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     execution_tree::primitive_argument_type dist_diag::dist_diag1d(
         execution_tree::primitive_argument_type&& arr, std::int64_t k,
         std::string const& tiling_type, std::uint32_t tile_idx,
-        std::uint32_t numtiles) const
+        std::uint32_t numtiles, execution_tree::eval_context ctx) const
     {
         using namespace execution_tree;
         execution_tree::localities_information arr_localities =
@@ -377,26 +377,26 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         case node_data_type_bool:
             return dist_diag1d(
                 extract_boolean_value_strict(std::move(arr), name_, codename_),
-                k, tiling_type, tile_idx, numtiles,
-                std::move(arr_localities));
+                k, tiling_type, tile_idx, numtiles, std::move(arr_localities),
+                std::move(ctx));
 
         case node_data_type_int64:
             return dist_diag1d(
                 extract_integer_value_strict(std::move(arr), name_, codename_),
-                k, tiling_type, tile_idx, numtiles,
-                std::move(arr_localities));
+                k, tiling_type, tile_idx, numtiles, std::move(arr_localities),
+                std::move(ctx));
 
         case node_data_type_unknown:
             return dist_diag1d(
-                extract_numeric_value(std::move(arr), name_, codename_),
-                k, tiling_type, tile_idx, numtiles,
-                std::move(arr_localities));
+                extract_numeric_value(std::move(arr), name_, codename_), k,
+                tiling_type, tile_idx, numtiles, std::move(arr_localities),
+                std::move(ctx));
 
         case node_data_type_double:
             return dist_diag1d(
                 extract_numeric_value_strict(std::move(arr), name_, codename_),
-                k, tiling_type, tile_idx, numtiles,
-                std::move(arr_localities));
+                k, tiling_type, tile_idx, numtiles, std::move(arr_localities),
+                std::move(ctx));
 
         default:
             break;
@@ -404,9 +404,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "dist_matrixops::dist_diag::dist_diag1d",
-            util::generate_error_message(
+            generate_error_message(
                 "the constant primitive requires for all arguments to "
-                "be numeric data types"));
+                "be numeric data types", std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -419,8 +419,9 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         if (operands.empty() || operands.size() > 5)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_diag::eval",
-                generate_error_message("the diag_d primitive requires "
-                                       "at least 1 and at most 5 operands"));
+                generate_error_message("the diag_d primitive requires at least "
+                                       "1 and at most 5 operands",
+                    std::move(ctx)));
         }
 
         if (!valid(operands[0]))
@@ -428,79 +429,79 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_diag::eval",
                 generate_error_message(
                     "the diag_d primitive requires the first argument"
-                    "given by the operands array is valid"));
+                    "given by the operands array is valid", std::move(ctx)));
         }
 
+        auto ctx_copy = ctx;
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](
-                        execution_tree::primitive_arguments_type&& args)
-                -> execution_tree::primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_), ctx = std::move(ctx_copy)](
+                    execution_tree::primitive_arguments_type&& args) mutable
+            -> execution_tree::primitive_argument_type
+            {
+                using namespace execution_tree;
+
+                std::int64_t k = 0;
+                if (valid(args[1]))
                 {
-                    using namespace execution_tree;
+                    k = extract_scalar_integer_value_strict(
+                        std::move(args[1]), this_->name_, this_->codename_);
+                }
 
-                    std::int64_t k = 0;
-
-                    if (valid(args[1]))
-                    {
-                        k = extract_scalar_integer_value_strict(
-                            std::move(args[1]), this_->name_, this_->codename_);
-                    }
-
-                    std::string tiling_type = "sym";
-                    if (valid(args[2]))
-                    {
-                        tiling_type = extract_string_value(
-                            std::move(args[2]), this_->name_, this_->codename_);
-                        if ((tiling_type != "sym" && tiling_type != "row") &&
-                            tiling_type != "column")
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_diag::eval",
-                                this_->generate_error_message(
-                                    "invalid tiling_type. the tiling_type cane "
-                                    "one of these: `sym`, `row` or `column`"));
-                        }
-                    }
-
-                    std::uint32_t tile_idx = hpx::get_locality_id();
-                    if (valid(args[3]))
-                    {
-                        tile_idx = extract_scalar_nonneg_integer_value_strict(
-                            std::move(args[3]), this_->name_, this_->codename_);
-                    }
-                    std::uint32_t numtiles =
-                        hpx::get_num_localities(hpx::launch::sync);
-                    if (valid(args[4]))
-                    {
-                        numtiles = extract_scalar_positive_integer_value_strict(
-                            std::move(args[4]), this_->name_, this_->codename_);
-                    }
-                    if (tile_idx >= numtiles)
+                std::string tiling_type = "sym";
+                if (valid(args[2]))
+                {
+                    tiling_type = extract_string_value(
+                        std::move(args[2]), this_->name_, this_->codename_);
+                    if ((tiling_type != "sym" && tiling_type != "row") &&
+                        tiling_type != "column")
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "dist_diag::eval",
                             this_->generate_error_message(
-                                "invalid tile index. Tile indices start from 0 "
-                                "and should be smaller than number of tiles"));
+                                "invalid tiling_type. the tiling_type cane "
+                                "one of these: `sym`, `row` or `column`"));
                     }
+                }
 
-                    switch (extract_numeric_value_dimension(
-                        std::move(args[0]), this_->name_, this_->codename_))
-                    {
-                        case 1:
-                            return this_->dist_diag1d(std::move(args[0]),
-                            k, tiling_type, tile_idx, numtiles);
+                std::uint32_t tile_idx = hpx::get_locality_id();
+                if (valid(args[3]))
+                {
+                    tile_idx = extract_scalar_nonneg_integer_value_strict(
+                        std::move(args[3]), this_->name_, this_->codename_);
+                }
 
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dist_diag::eval",
-                                this_->generate_error_message(
-                                    "left hand side operand has unsupported "
-                                    "number of dimensions"));
-                    }
-                }),
+                std::uint32_t numtiles =
+                    hpx::get_num_localities(hpx::launch::sync);
+                if (valid(args[4]))
+                {
+                    numtiles = extract_scalar_positive_integer_value_strict(
+                        std::move(args[4]), this_->name_, this_->codename_);
+                }
+                if (tile_idx >= numtiles)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "dist_diag::eval",
+                        this_->generate_error_message(
+                            "invalid tile index. Tile indices start from 0 "
+                            "and should be smaller than number of tiles",
+                            std::move(ctx)));
+                }
+
+                switch (extract_numeric_value_dimension(
+                    std::move(args[0]), this_->name_, this_->codename_))
+                {
+                    case 1:
+                        return this_->dist_diag1d(std::move(args[0]),
+                        k, tiling_type, tile_idx, numtiles, std::move(ctx));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dist_diag::eval",
+                            this_->generate_error_message(
+                                "left hand side operand has unsupported "
+                                "number of dimensions", std::move(ctx)));
+                }
+            }),
             execution_tree::primitives::detail::map_operands(operands,
                 execution_tree::functional::value_operand{}, args, name_,
                 codename_, std::move(ctx)));

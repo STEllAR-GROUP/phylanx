@@ -6,7 +6,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/modules/naming.hpp>
 #include <hpx/modules/testing.hpp>
 
 #include <string>

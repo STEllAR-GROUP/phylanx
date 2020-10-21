@@ -52,14 +52,15 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             execution_tree::primitive_argument_type&& value,
             std::size_t const& dim, std::uint32_t const& tile_idx,
             std::uint32_t const& numtiles, std::string&& given_name,
-            std::size_t intersection) const;
+            std::size_t intersection, execution_tree::eval_context ctx) const;
 
         execution_tree::primitive_argument_type constant1d(
             execution_tree::primitive_argument_type&& value,
             operand_type::dimensions_type const& dims,
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::size_t intersection,
-            execution_tree::node_data_type dtype) const;
+            execution_tree::node_data_type dtype,
+            execution_tree::eval_context ctx) const;
 
         template <typename T>
         execution_tree::primitive_argument_type constant2d_helper(
@@ -68,7 +69,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
-                intersections) const;
+                intersections,
+            execution_tree::eval_context ctx) const;
 
         execution_tree::primitive_argument_type constant2d(
             execution_tree::primitive_argument_type&& value,
@@ -77,7 +79,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::string&& given_name, std::string const& tiling_type,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
                 intersections,
-            execution_tree::node_data_type dtype) const;
+            execution_tree::node_data_type dtype,
+            execution_tree::eval_context ctx) const;
 
         template <typename T>
         execution_tree::primitive_argument_type constant3d_helper(
@@ -86,7 +89,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::uint32_t const& tile_idx, std::uint32_t const& numtiles,
             std::string&& given_name, std::string const& tiling_type,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
-                intersections) const;
+                intersections,
+            execution_tree::eval_context ctx) const;
 
         execution_tree::primitive_argument_type constant3d(
             execution_tree::primitive_argument_type&& value,
@@ -95,7 +99,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::string&& given_name, std::string const& tiling_type,
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
                 intersections,
-            execution_tree::node_data_type dtype) const;
+            execution_tree::node_data_type dtype,
+            execution_tree::eval_context ctx) const;
     };
 
     inline execution_tree::primitive

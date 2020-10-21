@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/modules/naming.hpp>
 #include <hpx/runtime_local/get_locality_id.hpp>
 
 #include <cstdint>
