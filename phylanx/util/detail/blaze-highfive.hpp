@@ -21,56 +21,33 @@ namespace HighFive { namespace details {
 
 ///////////////////////////////////////////////////////////////////////////////
 template <typename T, bool TF>
-struct array_dims<blaze::DynamicVector<T, TF>>
+struct inspector<blaze::DynamicVector<T, TF>>
 {
-    static const std::size_t value = 1 + array_dims<T>::value;
+    static const std::size_t recursive_ndim = 1 + inspector<T>::recursive_ndim;
+    typedef typename inspector<T>::base_type base_type;
 };
 
 template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool TF,
     typename RT>
-struct array_dims<blaze::CustomVector<T, AF, PF, TF, RT>>
+struct inspector<blaze::CustomVector<T, AF, PF, TF, RT>>
 {
-    static const std::size_t value = 1 + array_dims<T>::value;
+    static const std::size_t recursive_ndim = 1 + inspector<T>::recursive_ndim;
+    typedef typename inspector<T>::base_type base_type;
 };
 
 template <typename T, bool SO>
-struct array_dims<blaze::DynamicMatrix<T, SO>>
+struct inspector<blaze::DynamicMatrix<T, SO>>
 {
-    static const std::size_t value = 2 + array_dims<T>::value;
+    static const std::size_t recursive_ndim = 2 + inspector<T>::recursive_ndim;
+    typedef typename inspector<T>::base_type base_type;
 };
 
 template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool SO,
     typename RT>
-struct array_dims<blaze::CustomMatrix<T, AF, PF, SO, RT>>
+struct inspector<blaze::CustomMatrix<T, AF, PF, SO, RT>>
 {
-    static const std::size_t value = 2 + array_dims<T>::value;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-template <typename T, bool TF>
-struct type_of_array<blaze::DynamicVector<T, TF>>
-{
-    typedef typename type_of_array<T>::type type;
-};
-
-template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool TF,
-    typename RT>
-struct type_of_array<blaze::CustomVector<T, AF, PF, TF, RT>>
-{
-    typedef typename type_of_array<T>::type type;
-};
-
-template <typename T, bool SO>
-struct type_of_array<blaze::DynamicMatrix<T, SO>>
-{
-    typedef typename type_of_array<T>::type type;
-};
-
-template <typename T, blaze::AlignmentFlag AF, blaze::PaddingFlag PF, bool SO,
-    typename RT>
-struct type_of_array<blaze::CustomMatrix<T, AF, PF, SO, RT>>
-{
-    typedef typename type_of_array<T>::type type;
+    static const std::size_t recursive_ndim = 2 + inspector<T>::recursive_ndim;
+    typedef typename inspector<T>::base_type base_type;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,7 +62,7 @@ struct data_converter<blaze::DynamicVector<T, TF>, void>
         assert(_dims.size() == 1);
     }
 
-    inline typename type_of_array<T>::type* transform_read(Vector& vector) const
+    inline typename inspector<T>::type* transform_read(Vector& vector) const
     {
         if (_dims[0] != vector.size())
         {
@@ -94,7 +71,7 @@ struct data_converter<blaze::DynamicVector<T, TF>, void>
         return vector.data();
     }
 
-    inline typename type_of_array<T>::type const* transform_write(
+    inline typename inspector<T>::type const* transform_write(
         Vector const& vector) const noexcept
     {
         return vector.data();
@@ -120,12 +97,12 @@ struct data_converter<blaze::CustomVector<T, AF, PF, TF, RT>, void>
         assert(_dims.size() == 1);
     }
 
-    inline typename type_of_array<T>::type* transform_read(Vector& vector) const
+    inline typename inspector<T>::type* transform_read(Vector& vector) const
     {
         throw std::runtime_error("can't read into blaze::CustomVector");
     }
 
-    inline typename type_of_array<T>::type const* transform_write(
+    inline typename inspector<T>::type const* transform_write(
         Vector const& vector) const noexcept
     {
         return vector.data();
@@ -150,7 +127,7 @@ struct data_converter<blaze::DynamicMatrix<T, SO>, void>
         assert(_dims.size() == 2);
     }
 
-    inline typename type_of_array<T>::type* transform_read(Matrix& matrix) const
+    inline typename inspector<T>::type* transform_read(Matrix& matrix) const
     {
         if (_dims[0] != matrix.rows() || _dims[1] != matrix.columns())
         {
@@ -159,7 +136,7 @@ struct data_converter<blaze::DynamicMatrix<T, SO>, void>
         return matrix.data();
     }
 
-    inline typename type_of_array<T>::type const* transform_write(
+    inline typename inspector<T>::type const* transform_write(
         Matrix const& matrix) const noexcept
     {
         return matrix.data();
@@ -185,13 +162,13 @@ struct data_converter<blaze::CustomMatrix<T, AF, PF, SO, RT>, void>
         assert(_dims.size() == 2);
     }
 
-    inline typename type_of_array<T>::type* transform_read(
+    inline typename inspector<T>::type* transform_read(
         Matrix& matrix) const
     {
         throw std::runtime_error("can't read into blaze::CustomMatrix");
     }
 
-    inline typename type_of_array<T>::type const* transform_write(
+    inline typename inspector<T>::type const* transform_write(
         Matrix const& matrix) const noexcept
     {
         return matrix.data();
