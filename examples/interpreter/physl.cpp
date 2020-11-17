@@ -513,9 +513,30 @@ void print_newick_tree(std::string const& code_source_name,
 
 void print_performance_profile(
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const& code_source_name, std::string const& dot_file,
-    std::string const& newick_tree_file, std::string const& counter_file)
+    std::string const& code_source_name, std::string const& _dot_file,
+    std::string const& _newick_tree_file, std::string const& _counter_file)
 {
+    std::int64_t _locality =
+        hpx::naming::get_locality_id_from_id(hpx::find_here());
+
+    std::ostringstream cf;
+    cf << _counter_file;
+    if(_locality > 0)
+        cf << "." << _locality;
+    std::string counter_file = cf.str();
+
+    std::ostringstream df;
+    df << _dot_file;
+    if(_locality > 0)
+        df << "." << _locality;
+    std::string dot_file = df.str();
+
+    std::ostringstream nf;
+    nf << _newick_tree_file;
+    if(_locality > 0)
+        nf << "." << _locality;
+    std::string newick_tree_file = nf.str();
+
     std::set<std::string> resolve_children;
     for (auto const& ep : snippets.program_.entry_points())
     {
@@ -681,7 +702,14 @@ void interpreter(po::variables_map const& vm)
     // if requested
     if (vm.count("print") != 0)
     {
-        std::string const result_file = vm["print"].as<std::string>();
+        std::string const _result_file = vm["print"].as<std::string>();
+        std::int64_t _locality =
+            hpx::naming::get_locality_id_from_id(hpx::find_here());
+        std::ostringstream rf;
+        rf << _result_file;
+        if(_locality > 0)
+            rf << "." << _locality;
+        std::string result_file = rf.str();
         std::string format = "plain";
         if (vm.count("print-format") != 0)
         {

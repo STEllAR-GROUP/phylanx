@@ -203,7 +203,10 @@ namespace phylanx { namespace util {
             // Collect the performance counter values
             for (auto& f : values_futures.second)
             {
-                counter_values.push_back(f.get().values_);
+                try {
+                    counter_values.push_back(f.get().values_);
+                } catch(...) {
+                }
             }
         }
 
