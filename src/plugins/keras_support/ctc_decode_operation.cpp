@@ -126,7 +126,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     for (std::size_t i = 0; i < num_samples; ++i)
                     {
                         std::int64_t length = input_length[i];
-                        auto prob = blaze::pageslice(y_pred, i);
+                        blaze::DynamicMatrix<double> prob =
+                            blaze::pageslice(y_pred, i);
                         auto tmp =
                             blaze::submatrix(prob, 0, 0, length, num_classes);
                         matrix_row_iterator<decltype(prob)> tmp_begin(prob);

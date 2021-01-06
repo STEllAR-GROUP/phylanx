@@ -126,12 +126,12 @@ namespace phylanx { namespace performance_counters
         void reinit(bool reset) override
         {
             // Structure of primitives in symbolic namespace:
-            //     /phylanx/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag>
+            // /phylanx$<locality_id>/<primitive>$<sequence-nr>[$<instance>]/
+            //      <compile_id>$<tag>
             auto entries = hpx::agas::find_symbols(hpx::launch::sync,
-                "/phylanx*/" + detail::extract_primitive_type(info_) + "$*");
+                hpx::util::format("/phylanx${}/{}$*", hpx::get_locality_id(),
+                    detail::extract_primitive_type(info_)));
 
-            // TODO: Only keep entries that live on this locality.
-            // This will be a problem when Phylanx becomes distributed.
             std::map<std::int64_t, base_primitive_ptr> instances_sorted;
 
             for (auto const& value : entries)
@@ -292,12 +292,12 @@ namespace phylanx { namespace performance_counters
         void reinit(bool reset) override
         {
             // Structure of primitives in symbolic namespace:
-            //     /phylanx/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag>
+            // /phylanx$<locality_id>/<primitive>$<sequence-nr>[$<instance>]/
+            //      <compile_id>$<tag>
             auto entries = hpx::agas::find_symbols(hpx::launch::sync,
-                "/phylanx*/" + detail::extract_primitive_type(info_) + "$*");
+                hpx::util::format("/phylanx${}/{}$*", hpx::get_locality_id(),
+                    detail::extract_primitive_type(info_)));
 
-            // TODO: Only keep entries that live on this locality.
-            // This will be a problem when Phylanx becomes distributed.
             std::map<std::int64_t, base_primitive_ptr> instances_sorted;
 
             for (auto const& value : entries)

@@ -284,7 +284,8 @@ namespace phylanx { namespace util {
         hpx::naming::id_type const& locality_id)
     {
         auto entries = hpx::agas::find_symbols(hpx::launch::sync,
-            hpx::util::format("/phylanx${}/*$*", hpx::get_locality_id()));
+            hpx::util::format("/phylanx${}/*$*",
+                hpx::naming::get_locality_id_from_id(locality_id)));
 
         std::vector<std::string> primitive_instances;
         primitive_instances.reserve(entries.size());
