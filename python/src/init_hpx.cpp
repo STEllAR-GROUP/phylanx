@@ -174,8 +174,10 @@ namespace phylanx { namespace bindings {
             hpx::util::function_nonser<int(int, char**)> start_function =
                 hpx::util::bind_front(&manage_global_runtime::hpx_main, this);
 
-            if (!hpx::start(start_function, __argc, __argv, cfg,
-                    hpx::runtime_mode::console))
+            hpx::init_params params;
+            params.cfg = cfg;
+            params.mode = hpx::runtime_mode::console;
+            if (!hpx::start(start_function, __argc, __argv, params))
             {
                 // Something went wrong while initializing the runtime.
                 // This early we can't generate any output, just bail out.
