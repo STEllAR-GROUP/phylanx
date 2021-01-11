@@ -25,11 +25,17 @@ namespace phylanx { namespace execution_tree
 {
     namespace detail
     {
-        pybind11::dtype to_dtype(pybind11::object o)
+        pybind11::object to_dtype(pybind11::object o)
         {
             if (pybind11::isinstance<pybind11::str>(o))
             {
                 return pybind11::dtype(pybind11::cast<std::string>(o));
+            }
+
+            // pybind11::dtype cannot be none, so leave this alone
+            if(o.is_none())
+            {
+                return o;
             }
 
 //            HPX_ASSERT(pybind11::isinstance<pybind11::dtype>(o));
@@ -305,7 +311,8 @@ namespace phylanx { namespace execution_tree
         // access dtype of result, if necessary
         if (!dtype_.is_none())
         {
-            switch (dtype_.kind())
+            pybind11::dtype ddtype(dtype_);
+            switch (ddtype.kind())
             {
             case 'b':   // boolean
                 if (!is_boolean_operand_strict(result))
@@ -315,19 +322,19 @@ namespace phylanx { namespace execution_tree
                 break;
 
             case 'i':   // signed integer
-                if (!is_integer_operand_strict(result) || dtype_.itemsize() != 8)
+                if (!is_integer_operand_strict(result) || ddtype.itemsize() != 8)
                 {
-                    return handle_return_i(std::move(result), dtype_.itemsize());
+                    return handle_return_i(std::move(result), ddtype.itemsize());
                 }
                 break;
 
             case 'u':   // unsigned integer
-                return handle_return_u(std::move(result), dtype_.itemsize());
+                return handle_return_u(std::move(result), ddtype.itemsize());
 
             case 'f':   // floating-point
-                if (!is_numeric_operand_strict(result) || dtype_.itemsize() != 8)
+                if (!is_numeric_operand_strict(result) || ddtype.itemsize() != 8)
                 {
-                    return handle_return_f(std::move(result), dtype_.itemsize());
+                    return handle_return_f(std::move(result), ddtype.itemsize());
                 }
                 break;
 
@@ -349,7 +356,7 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "variable::eval",
-                        hpx::util::format("unsupported dtype: {}", dtype_.kind()));
+                        hpx::util::format("unsupported dtype: {}", ddtype.kind()));
                 }
                 break;
             }
