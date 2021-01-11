@@ -75,7 +75,10 @@ namespace phylanx { namespace bindings
         }
 
         compiler_state(std::string name, std::string codename)
-          : m(import_phylanx())
+          // Note: The second argument is a callback function.
+          // To select an appropriate constructor, it must be
+          // provided with newer Pybind11.
+          : m(import_phylanx(), {})
           , eval_env(construct_default_environment())
           , eval_snippets()
           , eval_ctx(name, codename, phylanx::execution_tree::language::python)
