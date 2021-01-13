@@ -78,7 +78,7 @@ namespace phylanx { namespace bindings
           // Note: The second argument is a callback function.
           // To select an appropriate constructor, it must be
           // provided with newer Pybind11.
-          : m(import_phylanx(), {})
+          : m(import_phylanx(), pybind11::handle{})
           , eval_env(construct_default_environment())
           , eval_snippets()
           , eval_ctx(name, codename, phylanx::execution_tree::language::python)
