@@ -406,5 +406,7 @@ int main(int argc, char* argv[])
             "col_stop (default: 30)")
         ;
 
-    return hpx::init(desc, argc, argv);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    return hpx::init(argc, argv, params);
 }

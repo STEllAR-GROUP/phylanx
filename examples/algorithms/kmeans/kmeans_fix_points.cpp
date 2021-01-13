@@ -142,5 +142,7 @@ int main(int argc, char* argv[])
         ("enable_output, e", hpx::program_options::value<bool>()->default_value(false),
             "enable progress output (default: false)");
 
-    return hpx::init(desc, argc, argv);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    return hpx::init(argc, argv, params);
 }

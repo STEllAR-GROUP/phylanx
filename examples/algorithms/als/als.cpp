@@ -161,5 +161,7 @@ int main(int argc, char* argv[])
         hpx::program_options::value<double>()->default_value(0.1),
         "regularization (default: 0.1)");
 
-    return hpx::init(desc, argc, argv);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    return hpx::init(argc, argv, params);
 }

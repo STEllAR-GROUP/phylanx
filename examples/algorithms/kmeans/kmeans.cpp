@@ -133,5 +133,7 @@ int main(int argc, char* argv[])
         ("show_result", hpx::program_options::value<bool>()->default_value(false),
             "show calculated result (default: false)");
 
-    return hpx::init(desc, argc, argv);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    return hpx::init(argc, argv, params);
 }

@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include <hpx/filesystem.hpp>
+#include <hpx/modules/filesystem.hpp>
 #include <hpx/format.hpp>
 #include <hpx/program_options.hpp>
 

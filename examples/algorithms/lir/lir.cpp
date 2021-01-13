@@ -95,6 +95,8 @@ int main(int argc, char* argv[])
              "number of iterations (default: 850)")
             ;
 
-    return hpx::init(desc, argc, argv);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    return hpx::init(argc, argv, params);
 }
 

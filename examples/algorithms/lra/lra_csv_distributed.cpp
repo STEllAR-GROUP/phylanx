@@ -243,5 +243,9 @@ int main(int argc, char* argv[])
         "hpx.run_hpx_main!=1"
     };
 
-    return hpx::init(desc, argc, argv, cfg);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    params.cfg = std::move(cfg);
+
+    return hpx::init(argc, argv, params);
 }
