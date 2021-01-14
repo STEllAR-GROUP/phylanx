@@ -48,9 +48,13 @@ def fib(n):
         return fib(n - 1) + fib(n - 2)
 
 
-assert fib.__src__ == \
-    'define$44$0(fib$44$0, n$44$8, if$45$4(__lt$45$7(n$45$7, 2), n$46$15, __add$48$15(fib$48$15(__sub$48$19(n$48$19, 1)), fib$48$28(__sub$48$32(n$48$32, 2)))))' # noqa E501
-assert "[" + fib.__src__ + "]" == str(fib.generate_ast())
+src = fib.__src__
+assert src == \
+    'define$44$0(fib$44$0, n$44$8, if$45$4(__lt$45$7(n$45$7, 2), ' + \
+    'n$46$15, __add$48$15(fib$48$15(__sub$48$19(n$48$19, 1)), ' + \
+    'fib$48$28(__sub$48$32(n$48$32, 2)))))', src
+assert "[" + src + "]" == str(fib.generate_ast()), \
+    str(fib.generate_ast())
 assert fib(10) == 55.0
 
 
@@ -59,9 +63,10 @@ def pass_str(a):
     return a
 
 
-assert pass_str.__src__ == \
-    'define$58$0(pass_str$58$0, a$58$13, a$59$11)'
-assert "[" + pass_str.__src__ + "]" == str(pass_str.generate_ast())
+src = pass_str.__src__
+assert src == 'define$62$0(pass_str$62$0, a$62$13, a$63$11)', src
+assert "[" + src + "]" == str(pass_str.generate_ast()), \
+    str(pass_str.generate_ast())
 assert "foo" == str(pass_str("foo"))
 
 

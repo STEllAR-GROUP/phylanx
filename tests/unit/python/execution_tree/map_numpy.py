@@ -155,8 +155,12 @@ def np_slice_01(x):
 
 
 assert (np_slice_01(arr) == arr[1:4]).all
-assert np_slice_01.get_physl_source() == \
-    "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11, list(1, 4)))"
+
+result = np_slice_01.get_physl_source()
+assert result == \
+    "define$153$0(np_slice_01$153$0, x$153$16, " + \
+    "slice$154$11(x$154$11, list(1, 4)))", \
+    result
 
 a = np.array([1, 4, 9])
 
@@ -166,9 +170,10 @@ def np_sqrt(x):
     return np.sqrt(x)
 
 
+result = np_sqrt.get_physl_source()
 assert (np_sqrt(a) == np.sqrt(a)).all
-assert np_sqrt.get_physl_source() == \
-    'define$165$0(np_sqrt$165$0, x$165$12, sqrt$166$11(x$166$19))'
+assert result == \
+    'define$169$0(np_sqrt$169$0, x$169$12, sqrt$170$11(x$170$19))', result
 
 
 @Phylanx
@@ -177,9 +182,12 @@ def np_transpose(x):
     return transx
 
 
+result = np_transpose.get_physl_source()
 assert (np_transpose(np_array) == np.transpose(np_array)).all
-assert np_transpose.get_physl_source() == \
-    'define$175$0(np_transpose$175$0, x$175$17, block(define$176$4(transx$176$4, transpose$176$13(x$176$26)), transx$177$11))' # noqa E501
+assert result == \
+    'define$180$0(np_transpose$180$0, x$180$17, block(' + \
+    'define$181$4(transx$181$4, transpose$181$13(x$181$26)), ' + \
+    'transx$182$11))', result
 
 # @Phylanx
 # def np_vstack((np_x, np_y)):

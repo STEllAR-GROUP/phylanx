@@ -4,7 +4,6 @@
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
 ////////////////////////////////////////////////////////////////////////////////
 /// This is a distributed_object example using HPX component.
 ///
@@ -19,14 +18,12 @@
 #include <phylanx/config.hpp>
 #include <phylanx/include/util.hpp>
 
+#include <hpx/barrier.hpp>
+#include <hpx/future.hpp>
 #include <hpx/hpx_init.hpp>
-#include <hpx/lcos/barrier.hpp>
-#include <hpx/parallel/algorithms/for_each.hpp>
-
-#include <hpx/lcos/async.hpp>
-#include <hpx/lcos/dataflow.hpp>
-#include <hpx/lcos/when_all.hpp>
+#include <hpx/include/async.hpp>
 #include <hpx/modules/testing.hpp>
+#include <hpx/parallel/algorithms/for_each.hpp>
 
 #include <boost/range/irange.hpp>
 

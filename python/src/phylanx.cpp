@@ -52,13 +52,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // Register a callback function that is invoked when the BaseClass object
     // is collected
-    pybind11::cpp_function cleanup_callback(
-        [](pybind11::handle weakref)
-        {
-            phylanx::bindings::stop_hpx_runtime();
-            weakref.dec_ref();    // release weak reference
-        });
-
-    // Create a weak reference with a cleanup callback and initially leak it
-    (void) pybind11::weakref(m, cleanup_callback).release();
+    auto atexit = pybind11::module_::import("atexit");
+    atexit.attr("register")(pybind11::cpp_function(
+        []() { phylanx::bindings::stop_hpx_runtime(); }));
 }
