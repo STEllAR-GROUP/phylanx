@@ -43,4 +43,5 @@ def sumn3():
     return local_sum + c
 
 
-assert sumn3() == 9
+result = sumn3()
+assert result == 9, result

@@ -133,7 +133,9 @@ namespace phylanx { namespace execution_tree
 
     private:
         bindings::compiler_state& state_;
-        pybind11::dtype dtype_;
+        // We cannot use pybind11::dtype here because
+        // we allow this field to be None.
+        pybind11::object dtype_;
         std::string name_;
         primitive value_;
         pybind11::object constraint_;

@@ -5,8 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //   http://www.boost.org/LICENSE_1_0.txt)
 
-#include <phylanx/phylanx.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_init.hpp>
 #include <hpx/iostream.hpp>
@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include <hpx/filesystem.hpp>
+#include <hpx/modules/filesystem.hpp>
 #include <hpx/format.hpp>
 #include <hpx/program_options.hpp>
 
@@ -32,8 +32,7 @@ std::string read_user_code(std::string const& path)
     std::ifstream code_stream(path);
     if (!code_stream.good())
     {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "read_user_code",
+        HPX_THROW_EXCEPTION(hpx::filesystem_error, "read_user_code",
             "Failed to open the specified file: " + path);
     }
 
@@ -41,8 +40,7 @@ std::string read_user_code(std::string const& path)
     std::ostringstream str_stream;
     if (!(str_stream << code_stream.rdbuf()))
     {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "read_user_code",
+        HPX_THROW_EXCEPTION(hpx::filesystem_error, "read_user_code",
             "Failed to read code from the specified file: " + path);
     }
 
@@ -62,10 +60,9 @@ std::string read_user_code(std::string const& path)
 // https://github.com/ReneNyffenegger/cpp-base64/blob/master/LICENSE
 //
 
-static const std::string base64_chars =
-             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-             "abcdefghijklmnopqrstuvwxyz"
-             "0123456789+/";
+static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                        "abcdefghijklmnopqrstuvwxyz"
+                                        "0123456789+/";
 
 static inline bool is_base64(unsigned char c)
 {
@@ -122,7 +119,7 @@ std::string base64_decode(std::string const& encoded_string)
 
 std::tuple<bool, std::string> get_env_physl_ir()
 {
-    const char * env_physl_ir = std::getenv("PHYSL_IR");
+    const char* env_physl_ir = std::getenv("PHYSL_IR");
     if (env_physl_ir == nullptr)
     {
         return std::make_tuple(false, std::string{});
@@ -132,13 +129,13 @@ std::tuple<bool, std::string> get_env_physl_ir()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void dump_ast(std::vector<phylanx::ast::expression> const& ast, std::string path)
+void dump_ast(
+    std::vector<phylanx::ast::expression> const& ast, std::string path)
 {
     std::ofstream ast_stream(path, std::ios::binary);
     if (!ast_stream.good())
     {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "dump_ast",
+        HPX_THROW_EXCEPTION(hpx::filesystem_error, "dump_ast",
             "Failed to open the specified file: " + path);
     }
 
@@ -154,18 +151,17 @@ std::vector<phylanx::ast::expression> load_ast_dump(std::string const& path)
     std::ifstream ast_stream(path, std::ios::binary | std::ios::ate);
     if (!ast_stream.good())
     {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "dump_ast",
+        HPX_THROW_EXCEPTION(hpx::filesystem_error, "dump_ast",
             "Failed to open the specified file: " + path);
     }
 
     // Size of the data
     auto const data_size = ast_stream.tellg();
 
-    if (data_size == decltype(data_size)(0) || !ast_stream.seekg(0, std::ios::beg))
+    if (data_size == decltype(data_size)(0) ||
+        !ast_stream.seekg(0, std::ios::beg))
     {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "load_ast",
+        HPX_THROW_EXCEPTION(hpx::filesystem_error, "load_ast",
             "Failed to read the specified file: " + path);
     }
 
@@ -187,14 +183,13 @@ void print_physl_code(std::vector<phylanx::ast::expression> const& ast)
     hpx::cout << "\n\n";
 }
 
-void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
-    std::string const& path)
+void dump_physl_code(
+    std::vector<phylanx::ast::expression> const& ast, std::string const& path)
 {
     std::ofstream os(path);
     if (!os.good())
     {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "dump_physl_code",
+        HPX_THROW_EXCEPTION(hpx::filesystem_error, "dump_physl_code",
             "Failed to open the specified file: " + path);
     }
 
@@ -204,19 +199,16 @@ void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
     }
 }
 
-phylanx::execution_tree::primitive_arguments_type
-read_arguments(std::vector<std::string> const& args,
+phylanx::execution_tree::primitive_arguments_type read_arguments(
+    std::vector<std::string> const& args,
     phylanx::execution_tree::compiler::function_list& snippets,
     phylanx::execution_tree::compiler::environment& env)
 {
-    phylanx::execution_tree::primitive_arguments_type result(
-        args.size());
+    phylanx::execution_tree::primitive_arguments_type result(args.size());
 
-    std::transform(
-        args.begin(), args.end(), result.begin(),
+    std::transform(args.begin(), args.end(), result.begin(),
         [&](std::string const& s)
-        -> phylanx::execution_tree::primitive_argument_type
-        {
+            -> phylanx::execution_tree::primitive_argument_type {
             auto const& code = phylanx::execution_tree::compile(
                 "<arguments>", s, snippets, env);
             return code.run().arg_;
@@ -232,9 +224,11 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
     {
         po::options_description cmdline_options(
             "Usage: physl <physl_script> [options] [arguments...]");
+
+        // clang-format off
         cmdline_options.add_options()
             ("help,h", "print out program usage")
-            ("docs","Print out all primitives/plugins and descriptions")
+            ("docs", "Print out all primitives/plugins and descriptions")
             ("code,c", po::value<std::string>(),
                 "Execute the PhySL code given in argument")
             ("print,p", po::value<std::string>()->implicit_value("<none>"),
@@ -271,15 +265,14 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "actually run the code")
             ("time", "Print overall execution time before exiting")
         ;
+        // clang-format on
 
         po::positional_options_description pd;
         pd.add("positional", -1);
 
         po::options_description positional_options;
-        positional_options.add_options()
-            ("positional", po::value<std::vector<std::string> >(),
-             "positional options")
-        ;
+        positional_options.add_options()("positional",
+            po::value<std::vector<std::string>>(), "positional options");
 
         po::options_description all_options;
         all_options.add(cmdline_options).add(positional_options);
@@ -289,8 +282,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 .options(all_options)
                 .positional(pd)
                 .style(po::command_line_style::unix_style)
-                .run()
-            );
+                .run());
 
         po::store(opts, vm);
 
@@ -309,8 +301,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
     return 0;
 }
 
-std::string get_dump_file(po::variables_map const& vm,
-    fs::path code_source_path, bool code_is_file)
+std::string get_dump_file(
+    po::variables_map const& vm, fs::path code_source_path, bool code_is_file)
 {
     std::string dump_file = vm["dump-ast"].as<std::string>();
     // If no dump file is specified but PhySL code is read from a
@@ -340,10 +332,12 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
     fs::path code_source_path;
     bool physl_ir_env_found = false;
 
-    if (vm.count("no-ast-env") < 1) {
+    if (vm.count("no-ast-env") < 1)
+    {
         auto physl_ir = get_env_physl_ir();
         physl_ir_env_found = std::get<0>(physl_ir);
-        if(physl_ir_env_found) {
+        if (physl_ir_env_found)
+        {
             ast = load_ast_dump(std::get<1>(physl_ir));
             code_source_name = "<environment_variable>";
         }
@@ -359,11 +353,9 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
     // Determine if an AST dump is to be loaded
     else if (vm.count("load-ast") != 0 && physl_ir_env_found == false)
     {
-
         if (vm.count("code"))
         {
-            HPX_THROW_EXCEPTION(hpx::commandline_option_error,
-                "get_ast()",
+            HPX_THROW_EXCEPTION(hpx::commandline_option_error, "get_ast()",
                 "'--dump-ast' and '--code' options cannot be used "
                 "simultaneously");
         }
@@ -373,7 +365,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
         code_source_name = fs::path(ast_dump_file).filename().string();
     }
     // Read PhySL source code from a file or the provided argument
-    else if(physl_ir_env_found == false)
+    else if (physl_ir_env_found == false)
     {
         // PhySL source code
         std::string user_code;
@@ -441,14 +433,13 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     auto def = phylanx::execution_tree::define_variable(code_source_name,
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
-        snippets, env,
-        phylanx::execution_tree::primitive_argument_type{args});
+        snippets, env, phylanx::execution_tree::primitive_argument_type{args});
 
     phylanx::execution_tree::eval_context ctx;
     def.run(ctx);
 
-    auto const& code = phylanx::execution_tree::compile(
-        code_source_name, ast, snippets, env);
+    auto const& code =
+        phylanx::execution_tree::compile(code_source_name, ast, snippets, env);
 
     // Re-init all performance counters to guarantee correct measurement
     // results if those are requested on the command line.
@@ -513,9 +504,19 @@ void print_newick_tree(std::string const& code_source_name,
 
 void print_performance_profile(
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const& code_source_name, std::string const& dot_file,
-    std::string const& newick_tree_file, std::string const& counter_file)
+    std::string const& code_source_name, std::string dot_file,
+    std::string newick_tree_file, std::string counter_file)
 {
+    std::string locality =
+        std::to_string(hpx::naming::get_locality_id_from_id(hpx::find_here()));
+
+    if (locality != "0")
+    {
+        counter_file += "." + locality;
+        dot_file += "." + locality;
+        newick_tree_file += "." + locality;
+    }
+
     std::set<std::string> resolve_children;
     for (auto const& ep : snippets.program_.entry_points())
     {
@@ -681,7 +682,7 @@ void interpreter(po::variables_map const& vm)
     // if requested
     if (vm.count("print") != 0)
     {
-        std::string const result_file = vm["print"].as<std::string>();
+        std::string result_file = vm["print"].as<std::string>();
         std::string format = "plain";
         if (vm.count("print-format") != 0)
         {
@@ -693,11 +694,15 @@ void interpreter(po::variables_map const& vm)
         }
         else
         {
+            std::string locality = std::to_string(
+                hpx::naming::get_locality_id_from_id(hpx::find_here()));
+            if (locality != "0")
+                result_file += "." + locality;
+
             std::ofstream os(result_file);
             if (!os.good())
             {
-                HPX_THROW_EXCEPTION(hpx::filesystem_error,
-                    "result-file",
+                HPX_THROW_EXCEPTION(hpx::filesystem_error, "result-file",
                     "Failed to open the specified file: " + result_file);
             }
             os << format_result(result, format) << "\n";
@@ -723,9 +728,10 @@ void interpreter(po::variables_map const& vm)
     else if (vm.count("dump-dot") != 0 || vm.count("dump-newick-tree") != 0 ||
         vm.count("dump-counters") != 0)
     {
-        hpx::cerr << "physl: in order to generate any of the performance "
-            "output (--dump-dot, --dump-newick-tree, or --dump-counters), "
-            "please also specify the command line option --performance.";
+        hpx::cerr
+            << "physl: in order to generate any of the performance "
+               "output (--dump-dot, --dump-newick-tree, or --dump-counters), "
+               "please also specify the command line option --performance.";
     }
 }
 

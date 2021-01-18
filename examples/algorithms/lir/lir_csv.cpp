@@ -165,5 +165,7 @@ int main(int argc, char* argv[])
         hpx::program_options::value<std::int64_t>()->default_value(30),
         "col_stop (default: 30)");
 
-    return hpx::init(desc, argc, argv);
+    hpx::init_params params;
+    params.desc_cmdline = desc;
+    return hpx::init(argc, argv, params);
 }

@@ -947,8 +947,16 @@ class PhySL:
         if isinstance(node.value, str):
             return self._Str(node)
 
+        # special integral values need special handling
+        name_constants = {None: 'nil', False: 'false', True: 'true'}
+        if isinstance(node.value, bool):
+            return name_constants[node.value]
+
+        if node.value is None:
+            return name_constants[node.value]
+
         # everything that's not a string can be directly passed on
-        return '%s' % node.n
+        return '%s' % node.value
 
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
@@ -1211,7 +1219,7 @@ class PhySL:
 
     def _NameConstant(self, node):
         name_constants = {None: 'nil', False: 'false', True: 'true'}
-        return name_constants[node.value] + get_symbol_info(node, '')
+        return name_constants[node.value]
 
     def _Not(self, node):
         """Leaf node, returning raw string of the 'not' operation."""

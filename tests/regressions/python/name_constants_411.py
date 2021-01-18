@@ -14,7 +14,7 @@ def f():
 
 
 assert f.get_physl_source() == \
-    "define$11$0(f$11$0, lambda$11$0(block(define$12$4(a$12$4, nil$12$8), a$13$11)))", \
+    "define$11$0(f$11$0, lambda$11$0(block(define$12$4(a$12$4, nil), a$13$11)))", \
     f.get_physl_source()
 
 
@@ -25,7 +25,7 @@ def f1():
 
 
 assert f1.get_physl_source() == \
-    "define$22$0(f1$22$0, lambda$22$0(block(define$23$4(a$23$4, true$23$8), a$24$11)))", \
+    "define$22$0(f1$22$0, lambda$22$0(block(define$23$4(a$23$4, true), a$24$11)))", \
     f1.get_physl_source()
 
 
@@ -37,5 +37,5 @@ def f2():
 
 assert f2.get_physl_source() == \
     "define$33$0(f2$33$0, lambda$33$0(" + \
-    "block(define$34$4(a$34$4, false$34$8), a$35$11)))", \
+    "block(define$34$4(a$34$4, false), a$35$11)))", \
     f2.get_physl_source()

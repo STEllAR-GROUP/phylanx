@@ -122,6 +122,9 @@ int main(int argc, char* argv[])
 {
     std::vector<std::string> cfg = { "hpx.run_hpx_main!=1" };
 
-    HPX_TEST_EQ(hpx::init(argc, argv, cfg), 0);
+    hpx::init_params params;
+    params.cfg = std::move(cfg);
+    HPX_TEST_EQ(hpx::init(argc, argv, params), 0);
+
     return hpx::util::report_errors();
 }
