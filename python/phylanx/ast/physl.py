@@ -1266,7 +1266,7 @@ class PhySL:
         symbol = get_symbol_info(node, "return")
 
         if type(node.value) == ast.Tuple:
-            return [symbol, self._apply_rule(node.value)]
+            return [symbol, (self._apply_rule(node.value),)]
 
         value = self._apply_rule(node.value)
         if value is None:

@@ -1205,6 +1205,29 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                     name_, id));
         }
 
+        std::string list_of_arguments(std::vector<std::size_t> const& args)
+        {
+            if (args.size() == 1)
+            {
+                return std::to_string(args[0]);
+            }
+
+            std::string result;
+            for (std::size_t i = 0; i != args.size(); ++i)
+            {
+                result += std::to_string(args[i]);
+                if (i == args.size() - 2)
+                {
+                    result += " or ";
+                }
+                else if (i != args.size() - 1)
+                {
+                    result += ", ";
+                }
+            }
+            return result;
+        }
+
         // handle function call arguments (default values, keyword arguments)
         void handle_function_call_argument(std::string const& function_name,
             primitive_arguments_type& fargs,
@@ -1243,17 +1266,22 @@ namespace phylanx { namespace execution_tree { namespace compiler {
 
             // find the first pattern that has a sufficient number of
             // placeholders
+            std::vector<std::size_t> args;
+            args.reserve(std::distance(p.first, p.second));
+
             auto it = p.first;
             auto jt = it;
             while (jt != p.second && !jt->second.expect_variadics() &&
                 exprs.size() > jt->second.args_.size())
             {
+                args.push_back(jt->second.args_.size());
                 it = jt;
                 jt = ++p.first;
             }
 
             if (jt == p.second)
             {
+                std::sort(args.begin(), args.end());
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::compiler::"
                     "handle_function_call_argument",
@@ -1262,7 +1290,7 @@ namespace phylanx { namespace execution_tree { namespace compiler {
                             "attempt to call function '{}' "
                             "with too many arguments (expected: {}, "
                             "supplied: {})",
-                            function_name, it->second.args_.size(),
+                            function_name, list_of_arguments(args),
                             exprs.size()),
                         name_, id));
             }
