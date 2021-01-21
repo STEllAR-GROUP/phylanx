@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018-2021 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -36,6 +36,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+
+        void iterate_over_array(primitive const* p,
+            primitive_argument_type&& value, eval_context ctx) const;
+
+        void iterate_over_array_scalar(primitive const* p,
+            primitive_argument_type&& value, eval_context ctx) const;
+        void iterate_over_array_vector(primitive const* p,
+            primitive_argument_type&& value, eval_context ctx) const;
+        void iterate_over_array_matrix(primitive const* p,
+            primitive_argument_type&& value, eval_context ctx) const;
 
     private:
         struct iteration_for;
