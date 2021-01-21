@@ -99,8 +99,15 @@ namespace phylanx { namespace execution_tree
             {
                 if (valid(rows))
                 {
-                    HPX_ASSERT(!valid(columns));
-                    return slice1d_extract1d(data, rows, name, codename, ctx);
+                    auto&& row_data =
+                        slice1d_extract1d(data, rows, name, codename, ctx);
+                    if (valid(columns))
+                    {
+                        // chaining two indexing schemes
+                        return slice1d_extract1d(
+                            std::move(row_data), columns, name, codename, ctx);
+                    }
+                    return row_data;
                 }
 
                 if (valid(columns))
