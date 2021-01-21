@@ -68,6 +68,7 @@ set(tests
     1279_global_keyword
     1280_hstack_problem
     1281_hostname
+    1301_return_tuple
     array_len_494
     array_shape_486
     array_subscript_403
