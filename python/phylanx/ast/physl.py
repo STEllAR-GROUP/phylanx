@@ -512,7 +512,8 @@ class PhySL:
 
         # compile this function if session was already initialized, otherwise
         # simply collect it for later compilation
-        if PhylanxSession.is_initialized:
+        # always compile right away if debug=True
+        if PhylanxSession.is_initialized or self.kwargs.get('debug', False):
             self._ensure_global_state()
             self._ensure_is_compiled()
 
