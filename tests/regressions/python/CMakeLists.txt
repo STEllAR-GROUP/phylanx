@@ -69,6 +69,7 @@ set(tests
     1280_hstack_problem
     1281_hostname
     1301_return_tuple
+    1302_array
     1303_iterate_over_array
     array_len_494
     array_shape_486

@@ -218,8 +218,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t i = 0; i != args.size(); ++i)
         {
-            std::size_t num_dims =
-                extract_numeric_value_dimension(args[i], name_, codename_);
+            std::size_t num_dims = std::size_t(-1);
+            if (is_list_operand_strict(args[i]))
+            {
+                num_dims = 1;
+            }
+            else if (is_numeric_operand(args[i]))
+            {
+                num_dims =
+                    extract_numeric_value_dimension(args[i], name_, codename_);
+            }
 
             if (num_dims != 0 && num_dims != 1)
             {
@@ -228,12 +236,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "stack_operation::get_vecsize",
                     generate_error_message(
                         "for 0d/1d stacking, the stack_operation primitive "
-                        "requires the input be either a vector or a scalar"));
+                        "requires the input to be either a list, a vector or "
+                        "a scalar"));
             }
 
             if (num_dims == 0)
             {
                 ++vec_size;
+            }
+            else if (is_list_operand_strict(args[i]))
+            {
+                vec_size += extract_list_value_size(args[i], name_, codename_);
             }
             else
             {
@@ -260,16 +273,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto iter = result.begin();
         for (auto && arg : args)
         {
-            auto && val = extract_node_data<T>(std::move(arg));
-            std::size_t num_d = val.num_dimensions();
-            if (num_d == 0)
+            if (is_list_operand_strict(arg))
             {
-                *iter++ = val.scalar();
+                auto&& val =
+                    extract_list_value_strict(std::move(arg), name_, codename_);
+                for (auto&& v : val)
+                {
+                    *iter++ =
+                        extract_scalar_data<T>(std::move(v), name_, codename_);
+                }
             }
             else
             {
-                std::copy(val.vector().begin(), val.vector().end(), iter);
-                iter += val.size();
+                auto&& val =
+                    extract_node_data<T>(std::move(arg), name_, codename_);
+                std::size_t num_d = val.num_dimensions();
+                if (num_d == 0)
+                {
+                    *iter++ = val.scalar();
+                }
+                else
+                {
+                    iter = std::copy(
+                        val.vector().begin(), val.vector().end(), iter);
+                }
             }
         }
 
