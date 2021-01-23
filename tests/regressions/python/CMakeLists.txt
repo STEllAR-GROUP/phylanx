@@ -71,6 +71,7 @@ set(tests
     1301_return_tuple
     1302_array
     1303_iterate_over_array
+    1306_indexing
     array_len_494
     array_shape_486
     array_subscript_403
