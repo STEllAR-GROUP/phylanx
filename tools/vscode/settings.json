@@ -1,0 +1,15 @@
+{
+    "python.pythonPath": "/bin/python3",
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/python"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/python"
+    ],
+    "python.testing.pytestArgs": [
+        "python"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
+}
