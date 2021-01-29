@@ -10,29 +10,33 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
 
-from physl.tasks import Task, Transpiler
+from abc import ABC
+
+from physl.control import Task
+from physl.transformations import Transpiler
 
 
-class Argument:
-    def __init__(self, name, scope, lineno=None, col_offset=None):
+class Expr(ABC):
+    def __init__(self,
+                 name: str,
+                 scope,
+                 lineno: int = None,
+                 col_offset: int = None):
         self.name = name
         self.scope = scope
         self.lineno = lineno
         self.col_offset = col_offset
 
-    def __eq__(self, other):
-        self_ = (self.name, self.scope, self.lineno, self.col_offset)
-        other_ = (other.name, other.scope, other.lineno, other.col_offset)
-        return self_ == other_
 
-
-class Variable(Argument):
-    def __init__(self, name, scope, lineno, col_offset, type_=None):
-        self.name = name
-        self.scope = scope
-        self.lineno = lineno
-        self.col_offset = col_offset
-        self.type = type_
+class Variable(Expr):
+    def __init__(self,
+                 name: str,
+                 scope,
+                 lineno: int,
+                 col_offset: int,
+                 dtype=None):
+        super().__init__(name, scope, lineno, col_offset)
+        self.type = dtype
 
     def __eq__(self, other):
         self_ = (self.name, self.scope, self.lineno, self.col_offset,
@@ -44,12 +48,12 @@ class Variable(Argument):
 
 class Array(Variable):
     def __init__(self,
-                 name,
+                 name: str,
                  scope,
-                 lineno,
-                 col_offset,
-                 dimension=None,
-                 shape=None):
+                 lineno: int,
+                 col_offset: int,
+                 dimension: int = None,
+                 shape: int = None):
         super().__init__(name, scope, lineno, col_offset)
 
         if dimension and dimension < 1:
@@ -71,13 +75,16 @@ class Array(Variable):
         return self_ == other_
 
 
-class Function:
-    def __init__(self, name, scope, lineno, col_offset, dtype=''):
-        self.name = name
-        self.scope = scope
-        self.lineno = lineno
-        self.col_offset = col_offset
-        self.args_list = []
+class Function(Expr):
+    def __init__(self,
+                 name: str,
+                 scope,
+                 lineno: int,
+                 col_offset: int,
+                 dtype: int,
+                 str=None):
+        super().__init__(name, scope, lineno, col_offset)
+        self.args_list = list()
         self.dtype = dtype
 
     def add_arg(self, argument):
@@ -111,22 +118,16 @@ class FunctionDef(Function):
     pass
 
 
-class Transpilation(Transpiler):
-    def __init__(self, py_ast: ast.AST) -> None:
-        super().__init__(py_ast)
-        self.transpile()
+class PhySL(Transpiler):
+    def transpile(self, node):
+        self.target = super().transpile(node)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        print("DEFINGGG")
         return 1
 
     def visit_Module(self, node: ast.Module) -> str:
-        return node.body
-
-
-class PhySL:
-    def __init__(self, task: Task) -> None:
-        self.transpile = Transpilation(task.py_ast)
-        self.task = task
+        return self.transpile(node.body[0])
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return self.task(*args, **kwds)
