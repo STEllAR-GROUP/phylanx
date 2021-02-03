@@ -18,6 +18,7 @@ class Task:
     def __init__(self, fn: FunctionType) -> None:
 
         self.fn = fn
+        self.dtype = None
         self.id = self.fn.__hash__()
 
         self.py_code = fn.__code__
