@@ -14,11 +14,36 @@ import inspect
 
 from abc import ABC
 from collections import namedtuple
-from typing import Any
+from typing import Any, List
 
 from physl.control import Task
 from physl.symbol_table import SymbolTable
 from physl.transformations import Transpiler
+
+
+class PhyLoc:
+    def __init__(self, lineno, col_offset) -> None:
+        self._lineno = lineno
+        self._col_offset = col_offset
+
+    @property
+    def lineno(self):
+        return self._lineno
+
+    @lineno.setter
+    def lineno(self, lineno):
+        self._lineno = lineno
+
+    @property
+    def col_offset(self):
+        return self._col_offset
+
+    @col_offset.setter
+    def col_offset(self, col_offset):
+        self._col_offset = col_offset
+
+    def __eq__(self, o: PhyLoc) -> bool:
+        return (self.lineno, self.col_offset) == (o.lineno, o.col_offset)
 
 
 class PhyExpr(ABC):
@@ -29,8 +54,7 @@ class PhyExpr(ABC):
                  col_offset: int = None):
         self.name = name
         self.namespace = namespace
-        self.lineno = lineno
-        self.col_offset = col_offset
+        self.loc = PhyLoc(lineno, col_offset)
 
     def namespace_str(self):
         return '+'.join(self.namespace)
@@ -46,11 +70,9 @@ class PhyVariable(PhyExpr):
         super().__init__(name, namespace, lineno, col_offset)
         self.type = dtype
 
-    def __eq__(self, other):
-        self_ = (self.name, self.namespace, self.lineno, self.col_offset,
-                 self.type)
-        other_ = (other.name, other.namespace, other.lineno, other.col_offset,
-                  self.type)
+    def __eq__(self, o: PhyVariable):
+        self_ = (self.name, self.namespace, self.loc)
+        other_ = (o.name, o.namespace, o.lineno, o.loc)
         return self_ == other_
 
 
@@ -79,12 +101,18 @@ class PhyArray(PhyVariable):
             )
         self.shape = shape
 
-    def __eq__(self, other):
-        self_ = (self.name, self.namespace, self.lineno, self.col_offset,
-                 self.dimensionality, self.shape)
-        other_ = (other.name, other.namespace, other.lineno, other.col_offset,
-                  other.dimensionality, other.shape)
+    def __eq__(self, o: PhyArray):
+        self_ = (self.name, self.namespace, self.loc, self.dimensionality,
+                 self.shape)
+        other_ = (o.name, o.namespace, o.loc, o.dimensionality, o.shape)
         return self_ == other_
+
+
+class PhyControl(PhyExpr):
+    def __init__(self, name: str, namespace, lineno: int, col_offset: int):
+        super().__init__(name, namespace, lineno=lineno, col_offset=col_offset)
+        self.preficate = None
+        self.body = list()
 
 
 class PhyFn(PhyExpr):
@@ -97,7 +125,7 @@ class PhyFn(PhyExpr):
     def add_arg(self, argument):
         self.arg_list.append(argument)
 
-    def add_args(self, arguments):
+    def add_args(self, arguments: List):
         self.arg_list.extend(arguments)
 
     def insert_arg(self, argument, position):
@@ -112,16 +140,24 @@ class PhyFn(PhyExpr):
     def add_statement(self, statement: PhyExpr) -> None:
         self.body.append(statement)
 
-    def __eq__(self, other):
-        self_ = (self.name, self.namespace, self.lineno, self.col_offset,
-                 self.arg_list)
-        other_ = (other.name, other.namespace, other.lineno, other.col_offset,
-                  other.args_list)
+    def get_statements(self):
+        return self.body
+
+    def __eq__(self, o: PhyFn) -> bool:
+        self_ = (self.name, self.namespace, self.loc, self.arg_list)
+        other_ = (o.name, o.namespace, o.loc, o.args_list)
         return self_ == other_
 
 
 class PhyFnCall(PhyFn):
-    pass
+    def __init__(self, name: str, namespace, lineno: int, col_offset: int):
+        super().__init__(name, namespace, lineno, col_offset)
+
+
+class PhyStatement:
+    def __init__(self, targets: List, value: Any) -> None:
+        self.targets = targets
+        self.value = value
 
 
 class PhySL(Transpiler):
@@ -138,9 +174,34 @@ class PhySL(Transpiler):
         return args
 
     def visit_Assign(self, node: ast.Assign) -> Any:
-        targets = [self.walk(target) for target in node.targets]
+        targets = [
+            dict(zip(('name', 'ctx', 'loc'), self.walk(target)))
+            for target in node.targets
+        ]
         value = self.walk(node.value)
-        return super().visit_Assign(node)
+
+        return PhyStatement(targets, value)
+
+    def visit_Compare(self, node: ast.Compare) -> Any:
+        ops_ = {
+            ast.Eq: '__eq',
+            ast.NotEq: '__ne',
+            ast.Lt: '__lt',
+            ast.LtE: '__le',
+            ast.Gt: '__gt',
+            ast.GtE:'__ge',
+            ast.Is: NotImplementedError(f"Phylanx: {ast.Is}"),
+            ast.IsNot: NotImplementedError(f"Phylanx: {ast.IsNot}"),
+            ast.In: NotImplementedError(f"Phylanx: {ast.In}"),
+            ast.NotIn: NotImplementedError(f"Phylanx: {ast.NotIn}")
+        }
+        left = self.walk(node.left)
+        comparators = [self.walk(c) for c in node.comparators]
+        ops = [ops_[type(c)] for c in node.ops]
+        for op in ops:
+            if not isinstance(op, str):
+                raise(op)
+        return
 
     def visit_Constant(self, node: ast.Constant) -> Any:
         return node.value
@@ -156,10 +217,17 @@ class PhySL(Transpiler):
             for arg in args:
                 phy_fn.add_arg(arg)
 
-        [phy_fn.add_statement(self.walk(statement)) for statement in node.body]
+        for statement in node.body:
+            phy_fn.add_statement(self.walk(statement))
 
         fn_args_specs = inspect.getfullargspec(fn)
         fn_params = fn_args_specs.args
+
+    def visit_If(self, node: ast.If) -> Any:
+        namespace = Namespace.get_namespace()
+        if_statement = PhyControl('if', namespace, node.lineno,
+                                  node.col_offset)
+        predicate = self.walk(node.test)
 
     def visit_Module(self, node: ast.Module) -> Any:
         fn = self.get_fn()
@@ -170,11 +238,10 @@ class PhySL(Transpiler):
             return self.walk(node.body[0])
 
     def visit_Name(self, node: ast.Name) -> Any:
-        return (
-            node.id,
-            node.ctx,
-            node._attributes,
-        )
+        return (node.id, node.ctx, {
+            'lineno': node.lineno,
+            'col_offset': node.col_offset
+        })
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.task(*args, **kwargs)
