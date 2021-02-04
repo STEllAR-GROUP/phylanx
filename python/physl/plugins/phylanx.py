@@ -13,10 +13,8 @@ import ast
 import inspect
 
 from abc import ABC
-from collections import namedtuple
 from typing import Any, List
 
-from physl.control import Task
 from physl.symbol_table import SymbolTable
 from physl.transformations import Transpiler
 
@@ -108,11 +106,23 @@ class PhyArray(PhyVariable):
         return self_ == other_
 
 
-class PhyControl(PhyExpr):
-    def __init__(self, name: str, namespace, lineno: int, col_offset: int):
-        super().__init__(name, namespace, lineno=lineno, col_offset=col_offset)
-        self.preficate = None
+class PhyControl:
+    def __init__(self):
+        self.predicate = None
         self.body = list()
+
+
+class PhyIf(PhyControl, PhyExpr):
+    def __init__(self):
+        super().__init__()
+        self.else_block = list()
+
+
+class PhyFor(PhyControl, PhyExpr):
+    def __init__(self):
+        super().__init__()
+        self.init = list()
+        self.iter = None
 
 
 class PhyFn(PhyExpr):
@@ -189,7 +199,7 @@ class PhySL(Transpiler):
             ast.Lt: '__lt',
             ast.LtE: '__le',
             ast.Gt: '__gt',
-            ast.GtE:'__ge',
+            ast.GtE: '__ge',
             ast.Is: NotImplementedError(f"Phylanx: {ast.Is}"),
             ast.IsNot: NotImplementedError(f"Phylanx: {ast.IsNot}"),
             ast.In: NotImplementedError(f"Phylanx: {ast.In}"),
@@ -197,11 +207,11 @@ class PhySL(Transpiler):
         }
         left = self.walk(node.left)
         comparators = [self.walk(c) for c in node.comparators]
-        ops = [ops_[type(c)] for c in node.ops]
+        ops = [ops_[type(op)] for op in node.ops]
         for op in ops:
             if not isinstance(op, str):
                 raise(op)
-        return
+        return 2
 
     def visit_Constant(self, node: ast.Constant) -> Any:
         return node.value
@@ -225,8 +235,7 @@ class PhySL(Transpiler):
 
     def visit_If(self, node: ast.If) -> Any:
         namespace = Namespace.get_namespace()
-        if_statement = PhyControl('if', namespace, node.lineno,
-                                  node.col_offset)
+        if_statement = PhyControl()
         predicate = self.walk(node.test)
 
     def visit_Module(self, node: ast.Module) -> Any:
