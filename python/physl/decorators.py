@@ -8,7 +8,7 @@ Distributed under the Boost Software License, Version 1.0. (See accompanying
 file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from types import FunctionType
 from typing import Any, Union
@@ -38,7 +38,8 @@ class Phylanx(Decorator):
 
         self.physl: PhySL = PhySL(self.task)
 
+    def __str__(self) -> str:
+        return self.physl.__str__()
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self.physl()
-
-
+        return self.physl(*args, **kwargs)

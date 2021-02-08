@@ -15,7 +15,7 @@ from typing import Union
 
 
 class Namespace:
-    compelete_namespace = []
+    complete_namespace = []
 
     def __init__(self, namespace):
         self.namespace = namespace
@@ -27,34 +27,35 @@ class Namespace:
     def __exit__(self, type, value, traceback):
         self.pop()
 
-    def get_compelete_namespace(self):
-        return self._compelete_namespace()
+    def get_complete_namespace(self):
+        return self._complete_namespace()
 
     @staticmethod
     def get_namespace():
-        return Namespace.compelete_namespace
+        return Namespace.complete_namespace
 
     @classmethod
-    def _compelete_namespace(cls):
-        return cls.compelete_namespace
+    def _complete_namespace(cls):
+        return cls.complete_namespace
 
     @classmethod
     def push(cls, namespace):
-        cls.compelete_namespace.append(namespace)
+        cls.complete_namespace.append(namespace)
 
     @classmethod
     def pop(cls):
-        cls.compelete_namespace.pop()
+        cls.complete_namespace.pop()
 
     @classmethod
-    def get_compelete_namespace_str(cls):
-        return '+'.join(cls.compelete_namespace)
+    def get_complete_namespace_str(cls):
+        return '+'.join(cls.complete_namespace)
 
     def get_current_space(self):
         return self.namespace
 
 
 class SymbolTable(ABC):
+    table = defaultdict
     def __init__(self) -> None:
         ...
 
@@ -70,7 +71,6 @@ class SymbolTable(ABC):
 
 
 class FnTable(SymbolTable):
-    table = defaultdict
 
     def __init__(self) -> None:
         super().__init__()
@@ -84,8 +84,6 @@ class FnTable(SymbolTable):
 
 
 class DataTable(SymbolTable):
-    table = defaultdict
-
     def __init__(self) -> None:
         super().__init__()
 

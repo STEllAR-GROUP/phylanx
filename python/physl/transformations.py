@@ -18,15 +18,18 @@ from physl.control import Task
 class Transpiler(ABC, ast.NodeVisitor):
     def __init__(self, task: Task) -> None:
         self.task = task
-        self.py_ast = task.py_ast
-        self.transpile(self.py_ast)
+        self.fn = task.fn
 
-    def get_fn(self):
-        return self.task.fn
+        py_ast = task.py_ast
+        self.transpile(py_ast)
 
     @abstractmethod
     def transpile(self, node):
         pass
+
+    @abstractmethod
+    def __str__(self) -> str:
+        ...
 
     def walk(self, node):
         target = self.visit(node)

@@ -24,6 +24,9 @@ class PhyLoc:
         self._lineno = lineno
         self._col_offset = col_offset
 
+    def gen_code(self):
+        return f"#{self.lineno}#{self.col_offset}"
+
     @property
     def lineno(self):
         return self._lineno
@@ -75,7 +78,8 @@ class PhyVariable(PhyExpr):
 
 
 class PhyArg(PhyExpr):
-    ...
+    def gen_code(self):
+        return f'{self.name}{self.loc.gen_code()}'
 
 
 class PhyArray(PhyVariable):
@@ -106,16 +110,23 @@ class PhyArray(PhyVariable):
         return self_ == other_
 
 
+class PhyCompare:
+    def __init__(self, left, op, right) -> None:
+        self.left = left
+        self.op = op
+        self.right = right
+
+
 class PhyControl:
-    def __init__(self):
+    def __init__(self, predicate, body):
         self.predicate = None
         self.body = list()
 
 
 class PhyIf(PhyControl, PhyExpr):
-    def __init__(self):
-        super().__init__()
-        self.else_block = list()
+    def __init__(self, predicate, body, orelse):
+        super().__init__(predicate, body)
+        self.else_block = orelse
 
 
 class PhyFor(PhyControl, PhyExpr):
@@ -150,8 +161,18 @@ class PhyFn(PhyExpr):
     def add_statement(self, statement: PhyExpr) -> None:
         self.body.append(statement)
 
+    def add_return(self, statement: PhyExpr) -> None:
+        self.returns.append(statement)
+
     def get_statements(self):
         return self.body
+
+    def gen_code(self):
+        fn_name = self.name
+        args = ', '.join(arg.gen_code() for arg in self.arg_list)
+        new_line = '\n'
+        body = f"block({',{new_line}'.join(b.gen_code() for b in self.body)})"
+        return f"define({fn_name, args, body})"
 
     def __eq__(self, o: PhyFn) -> bool:
         self_ = (self.name, self.namespace, self.loc, self.arg_list)
@@ -160,8 +181,10 @@ class PhyFn(PhyExpr):
 
 
 class PhyFnCall(PhyFn):
-    def __init__(self, name: str, namespace, lineno: int, col_offset: int):
+    def __init__(self, name: str, args, namespace, lineno: int,
+                 col_offset: int):
         super().__init__(name, namespace, lineno, col_offset)
+        self.args = args
 
 
 class PhyStatement:
@@ -170,7 +193,7 @@ class PhyStatement:
         self.value = value
 
 
-class PhySL(Transpiler):
+class PhySLTranmspiler(Transpiler):
     def transpile(self, node):
         self.target = super().walk(node)
 
@@ -184,13 +207,17 @@ class PhySL(Transpiler):
         return args
 
     def visit_Assign(self, node: ast.Assign) -> Any:
-        targets = [
-            dict(zip(('name', 'ctx', 'loc'), self.walk(target)))
-            for target in node.targets
-        ]
+        targets = [self.walk(target) for target in node.targets]
         value = self.walk(node.value)
 
         return PhyStatement(targets, value)
+
+    def visit_Call(self, node: ast.Call) -> Any:
+        fn_name = self.walk(node.func)
+        fn_args = [self.walk(arg) for arg in node.args]
+        namespace = Namespace.get_namespace()
+        return PhyFnCall(fn_name, fn_args, namespace, node.lineno,
+                         node.col_offset)
 
     def visit_Compare(self, node: ast.Compare) -> Any:
         ops_ = {
@@ -210,47 +237,62 @@ class PhySL(Transpiler):
         ops = [ops_[type(op)] for op in node.ops]
         for op in ops:
             if not isinstance(op, str):
-                raise(op)
-        return 2
+                raise op
+
+        if len(ops) > 1:
+            raise NotImplemented("Multi-target assignment is not supported")
+
+        return PhyCompare(left, ops[0], comparators[0])
 
     def visit_Constant(self, node: ast.Constant) -> Any:
         return node.value
 
+    def visit_Expr(self, node: ast.Expr) -> Any:
+        return self.walk(node.value)
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
-        fn = self.get_fn()
         fn_name = node.name
 
         with Namespace(fn_name) as ns:
-            namespace = ns.get_compelete_namespace()
+            namespace = ns.get_complete_namespace()
             phy_fn = PhyFn(fn_name, namespace, node.lineno, node.col_offset)
             args = self.walk(node.args)
             for arg in args:
                 phy_fn.add_arg(arg)
 
-        for statement in node.body:
-            phy_fn.add_statement(self.walk(statement))
+            for statement in node.body:
+                phy_statement = self.walk(statement)
+                phy_fn.add_statement(phy_statement)
+                if isinstance(node.body, ast.Return):
+                    phy_fn.add_return(phy_statement)
 
-        fn_args_specs = inspect.getfullargspec(fn)
-        fn_params = fn_args_specs.args
+        return phy_fn
 
     def visit_If(self, node: ast.If) -> Any:
-        namespace = Namespace.get_namespace()
-        if_statement = PhyControl()
         predicate = self.walk(node.test)
+        body = [self.walk(b) for b in node.body]
+        orelse = [self.walk(o) for o in node.orelse]
+
+        return PhyIf(predicate, body, orelse)
 
     def visit_Module(self, node: ast.Module) -> Any:
-        fn = self.get_fn()
-        module_name = "__phy_module+" + inspect.getfile(fn).split(
-            '/')[-1].split('.')[0]
+        module_name = "__phy_module+" + inspect.getfile(
+            self.fn).split('/')[-1].split('.')[0]
 
         with Namespace(module_name):
             return self.walk(node.body[0])
 
     def visit_Name(self, node: ast.Name) -> Any:
-        return (node.id, node.ctx, {
-            'lineno': node.lineno,
-            'col_offset': node.col_offset
-        })
+        return PhyVariable(node.id, Namespace.get_namespace(), node.lineno,
+                           node.col_offset)
+
+    def visit_Return(self, node: ast.Return) -> Any:
+        return self.walk(node.value)
+
+
+class PhySL(PhySLTranmspiler):
+    def __str__(self) -> str:
+        return self.target.gen_code()
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.task(*args, **kwargs)
