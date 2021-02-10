@@ -230,6 +230,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
     else:
         return _PhylanxDecorator
 
+
 class PhyDef:
     """
     PhyDef makes it possible to define two versions of the same function,
@@ -237,7 +238,7 @@ class PhyDef:
     from Python.
 
     Example:
-    
+
     from phylanx import PhyDef
     from numpy import zeros
 
@@ -258,23 +259,34 @@ class PhyDef:
         frame = inspect.currentframe()
         outer = inspect.getouterframes(frame)
         self.gs = outer[1].frame.f_globals
+
     def __enter__(self):
         self.save = self.gs.get(self.fname, None)
+
     def __exit__(self, ex_type, ex_val, trace):
         assert self.fname in self.gs and self.gs[self.fname] != self.save, \
             "Missing definition for '%s'" % self.fname
-        self.gs[self.fname+"_phylanx"] = self.gs[self.fname]
+        self.gs[self.fname + "_phylanx"] = self.gs[self.fname]
         self.gs[self.fname] = self.save
 
+
+@Phylanx
 def is_python():
     """
     The is_python() function can be used inside a function so
     that that a method can determine whether it's using phylanx
     or python.
     """
+    return False
+
+
+@Phylanx
+def is_python_phylanx():
+    return False
+
+
+def is_python_():
     return True
 
-with PhyDef("is_python"):
-    @Phylanx
-    def is_python():
-        return False
+
+globals()["is_python"] = is_python_
