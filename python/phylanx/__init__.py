@@ -5,5 +5,5 @@
 
 from .core import *
 from .core.config import *
-from .ast.transducer import Phylanx
+from .ast.transducer import Phylanx, PhyDef, is_python
 from .execution_tree import parallel

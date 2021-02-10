@@ -229,3 +229,52 @@ def Phylanx(__phylanx_arg=None, **kwargs):
         raise InvalidDecoratorArgumentError
     else:
         return _PhylanxDecorator
+
+class PhyDef:
+    """
+    PhyDef makes it possible to define two versions of the same function,
+    one that can be called from Phylanx and the other that can be called
+    from Python.
+
+    Example:
+    
+    from phylanx import PhyDef
+    from numpy import zeros
+
+    with PhyDef("zeros"):
+        @Phylanx
+        def zeros(shape,dtype):
+            return constant(0,shape,dtype)
+
+    a = zeros([3,3],dtype="float64") # call numpy zeros
+    a2 = zeros_phylanx([3,3],dtype="float64") # call phylanx zeros
+
+    @Phylanx
+    def foo():
+        a = zeros([3,3],dtype="float64") # call phylanx zeros
+    """
+    def __init__(self, fname):
+        self.fname = fname
+        frame = inspect.currentframe()
+        outer = inspect.getouterframes(frame)
+        self.gs = outer[1].frame.f_globals
+    def __enter__(self):
+        self.save = self.gs.get(self.fname, None)
+    def __exit__(self, ex_type, ex_val, trace):
+        assert self.fname in self.gs and self.gs[self.fname] != self.save, \
+            "Missing definition for '%s'" % self.fname
+        self.gs[self.fname+"_phylanx"] = self.gs[self.fname]
+        self.gs[self.fname] = self.save
+
+def is_python():
+    """
+    The is_python() function can be used inside a function so
+    that that a method can determine whether it's using phylanx
+    or python.
+    """
+    return True
+
+with PhyDef("is_python"):
+    @Phylanx
+    def is_python():
+        return False
