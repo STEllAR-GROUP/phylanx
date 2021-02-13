@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type append_operation::handle_list_operands(
         primitive_argument_type && op1, primitive_argument_type && rhs) const
     {
-        ir::range lhs =
+        ir::range&& lhs =
             extract_list_value_strict(std::move(op1), name_, codename_);
 
         if (lhs.is_ref())

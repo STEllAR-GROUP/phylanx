@@ -327,6 +327,12 @@ namespace phylanx { namespace ir {
         return dict().empty();
     }
 
+    bool dictionary::has_key(
+        phylanx::execution_tree::primitive_argument_type const& key) const
+    {
+        return dict().find(key) != dict().end();
+    }
+
     phylanx::execution_tree::primitive_argument_type& dictionary::operator[](
         phylanx::execution_tree::primitive_argument_type const& key)
     {
