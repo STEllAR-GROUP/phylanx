@@ -132,15 +132,17 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         {
             auto m = value.matrix();
 
-            using phylanx::util::matrix_iterator;
-            matrix_iterator<decltype(m)> begin(m, 0);
-            matrix_iterator<decltype(m)> end(m, m.rows());
+            using phylanx::util::matrix_row_iterator;
+            matrix_row_iterator<decltype(m)> begin(m, 0);
+            matrix_row_iterator<decltype(m)> end(m, m.rows());
 
             for (auto it = begin; it != end; ++it)
             {
-                blaze::DynamicVector<T> row(std::move(*it));
+                blaze::CustomVector<T, blaze::aligned, blaze::padded> row(
+                    it->data(), it->size(), it->spacing());
                 auto result = p->eval(hpx::launch::sync,
-                    primitive_argument_type{std::move(row)}, ctx);
+                    primitive_argument_type{ir::node_data{std::move(row)}},
+                    ctx);
 
                 if (is_boolean_operand_strict(result))
                 {
@@ -215,9 +217,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter, "for_each::iterate_over_array",
-            generate_error_message("the iteration space has an unsupported "
-                                   "numeric type (dimension)",
-                ctx));
+            generate_error_message(
+                "the iteration space has an unsupported dimension", ctx));
     }
 
     hpx::future<primitive_argument_type> for_each::eval(
