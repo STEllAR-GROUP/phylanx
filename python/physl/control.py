@@ -12,6 +12,15 @@ import ast
 import inspect
 
 from types import FunctionType
+from typing import Any
+
+
+class Profile:
+    def __init__(self) -> None:
+        self.called = 0
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        self.called += 1
 
 
 class Task:
@@ -21,14 +30,14 @@ class Task:
         self.dtype = None
         self.id = self.fn.__hash__()
 
-        self.py_code = fn.__code__
-        self.py_ast = ast.parse((inspect.getsource(fn)))
+        self.py_src = inspect.getsource(fn)
+        self.py_ast = ast.parse(self.py_src)
 
-        self.called = 0
+        self.profile = Profile()
 
-    def __call__(self, *args, **kwargs):
-        self.called += 1
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        self.profile()
         return self.fn(*args, **kwargs)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.id

@@ -38,8 +38,5 @@ class Phylanx(Decorator):
 
         self.physl: PhySL = PhySL(self.task)
 
-    def __str__(self) -> str:
-        return self.physl.__str__()
-
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.physl(*args, **kwargs)

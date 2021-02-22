@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from __future__ import annotations
-from physl.symbol_table import Namespace, SymbolTable
 
 __license__ = """ 
 Copyright (c) 2021 R. Tohid (@rtohid)
@@ -15,7 +14,7 @@ import inspect
 from abc import ABC
 from typing import Any, List
 
-from physl.symbol_table import SymbolTable
+from physl.symbol_table import Namespace, SymbolTable
 from physl.transformations import Transpiler
 
 
@@ -25,7 +24,7 @@ class PhyLoc:
         self._col_offset = col_offset
 
     def gen_code(self):
-        return f"#{self.lineno}#{self.col_offset}"
+        return f"${self.lineno}${self.col_offset}"
 
     @property
     def lineno(self):
@@ -171,7 +170,7 @@ class PhyFn(PhyExpr):
         fn_name = self.name
         args = ', '.join(arg.gen_code() for arg in self.arg_list)
         new_line = '\n'
-        body = f"block({',{new_line}'.join(b.gen_code() for b in self.body)})"
+        body = f"block({f',{new_line}'.join(b.gen_code() for b in self.body)})"
         return f"define({fn_name, args, body})"
 
     def __eq__(self, o: PhyFn) -> bool:
@@ -192,8 +191,11 @@ class PhyStatement:
         self.targets = targets
         self.value = value
 
+    def gen_code(self):
+        return
 
-class PhySLTranmspiler(Transpiler):
+
+class PhylanxTranspiler(Transpiler):
     def transpile(self, node):
         self.target = super().walk(node)
 
@@ -239,8 +241,10 @@ class PhySLTranmspiler(Transpiler):
             if not isinstance(op, str):
                 raise op
 
+        # TODO
         if len(ops) > 1:
-            raise NotImplemented("Multi-target assignment is not supported")
+            raise NotImplementedError(
+                "Multi-target assignment is not supported")
 
         return PhyCompare(left, ops[0], comparators[0])
 
@@ -276,8 +280,8 @@ class PhySLTranmspiler(Transpiler):
         return PhyIf(predicate, body, orelse)
 
     def visit_Module(self, node: ast.Module) -> Any:
-        module_name = "__phy_module+" + inspect.getfile(
-            self.fn).split('/')[-1].split('.')[0]
+        file_name = inspect.getfile(self.fn).split('/')[-1].split('.')[0]
+        module_name = "__phy_task+" + file_name
 
         with Namespace(module_name):
             return self.walk(node.body[0])
@@ -290,7 +294,7 @@ class PhySLTranmspiler(Transpiler):
         return self.walk(node.value)
 
 
-class PhySL(PhySLTranmspiler):
+class PhySL(PhylanxTranspiler):
     def __str__(self) -> str:
         return self.target.gen_code()
 

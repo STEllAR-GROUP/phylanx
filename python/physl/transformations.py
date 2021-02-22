@@ -11,25 +11,29 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import ast
 
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 from physl.control import Task
+from physl.symbol_table import FnTable, TaskTable
 
 
 class Transpiler(ABC, ast.NodeVisitor):
     def __init__(self, task: Task) -> None:
         self.task = task
         self.fn = task.fn
-
-        py_ast = task.py_ast
-        self.transpile(py_ast)
+        self.symbol_table = TaskTable(self.task)
+        self.src = self.transpile(task.py_ast)
 
     @abstractmethod
     def transpile(self, node):
-        pass
+        ...
 
     @abstractmethod
     def __str__(self) -> str:
         ...
+
+    def get_src(self):
+        return str(self.src)
 
     def walk(self, node):
         target = self.visit(node)
