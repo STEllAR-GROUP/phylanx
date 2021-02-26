@@ -31,9 +31,6 @@ class Namespace:
     def __exit__(self, type, value, traceback):
         self.pop()
 
-    def get_complete_namespace(self):
-        return tuple(self._complete_namespace())
-
     @classmethod
     def get_namespace(cls):
         return tuple(cls.complete_namespace)
@@ -46,6 +43,10 @@ class Namespace:
     def pop(cls):
         cls.complete_namespace.pop()
 
+    @classmethod
+    def __str__(cls):
+        return '+'.join(cls.complete_namespace) 
+
 
 class Symbol:
     def __init__(self, name: str, namespace: Namespace) -> None:
@@ -53,12 +54,12 @@ class Symbol:
         self.namespace = namespace
 
 
-class FnSymbol(Symbol):
+class Fn(Symbol):
     def __init__(self, name: str, namespace: Namespace) -> None:
         super().__init__(name, namespace)
 
 
-class DataSymbol(Symbol):
+class Var(Symbol):
     def __init__(self, name: str, namespace: Namespace) -> None:
         super().__init__(name, namespace)
 
@@ -128,17 +129,13 @@ class FnTable(SymbolTable):
         ...
 
 
-class ClassTable(SymbolTable):
-    ...
-
-
-class DataTable(SymbolTable):
+class VarTable(SymbolTable):
     def __init__(self) -> None:
         super().__init__()
 
     @classmethod
     def add_symbol(cls, symbol):
-        DataTable.table
+        VarTable.table
 
 
 class ClassTable(SymbolTable):

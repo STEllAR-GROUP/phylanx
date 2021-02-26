@@ -15,6 +15,7 @@ from typing import Any, Union
 
 from physl.control import Task
 from physl.plugins.phylanx import PhySL
+from physl.plugins.tiramisu import Polytope
 
 
 class Decorator(ABC):
@@ -40,3 +41,12 @@ class Phylanx(Decorator):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.physl(*args, **kwargs)
+
+
+class Polyhedral(Decorator):
+    def __init__(self, fn: Union[FunctionType, Task]) -> None:
+        super().__init__(fn)
+        self.pytiramisu: Polytope = Polytope(self.task)
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self.pytiramisu(*args, **kwargs)

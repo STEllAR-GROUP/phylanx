@@ -14,8 +14,8 @@ import inspect
 from abc import ABC
 from typing import Any, List
 
-from physl.symbol_table import Namespace, SymbolTable
-from physl.transformations import Transpiler
+from physl.ir.transpiler import Transpiler
+from physl.ir.symbol_table import Namespace, SymbolTable
 
 
 class PhyLoc:
