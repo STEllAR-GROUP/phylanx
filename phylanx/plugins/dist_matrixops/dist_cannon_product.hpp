@@ -24,6 +24,7 @@
 #include <vector>
 
 namespace phylanx { namespace dist_matrixops { namespace primitives {
+
     class dist_cannon_product
       : public execution_tree::primitives::primitive_component_base
       , public std::enable_shared_from_this<dist_cannon_product>
@@ -62,6 +63,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type dot_nd(
             execution_tree::primitive_argument_type&& lhs,
             execution_tree::primitive_argument_type&& rhs) const;
+
+    private:
+        std::int64_t get_transferred_bytes(bool reset) const;
+
+        mutable std::int64_t transferred_bytes_;
     };
 
     inline execution_tree::primitive create_dist_cannon_product(

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Hartmut Kaiser
+// Copyright (c) 2019-2021 Hartmut Kaiser
 // Copyright (c) 2019 Maxwell Reeser
 // Copyright (c) 2020 Bita Hasheminezhad
 //
@@ -26,8 +26,10 @@
 #include <hpx/thread_support/unlock_guard.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -35,8 +37,8 @@
 #include <blaze_tensor/Math.h>
 
 /// \cond NOINTERNAL
-namespace phylanx { namespace util { namespace server
-{
+namespace phylanx { namespace util { namespace server {
+
     ////////////////////////////////////////////////////////////////////////////
     template <typename T>
     class distributed_tensor_part
@@ -100,7 +102,7 @@ namespace phylanx { namespace util { namespace server
     private:
         reference_type data_;
     };
-}}}
+}}}    // namespace phylanx::util::server
 /// \endcond
 
 #define REGISTER_DISTRIBUTED_TENSOR_DECLARATION(type)                          \
@@ -117,8 +119,8 @@ namespace phylanx { namespace util { namespace server
     HPX_REGISTER_ACTION(                                                       \
         phylanx::util::server::distributed_tensor_part<type>::fetch_action,    \
         HPX_PP_CAT(__distributed_tensor_part_fetch_action_, type));            \
-    HPX_REGISTER_ACTION(phylanx::util::server::distributed_tensor_part<type>:: \
-            fetch_part_action,                                                 \
+    HPX_REGISTER_ACTION(phylanx::util::server::distributed_tensor_part<        \
+                            type>::fetch_part_action,                          \
         HPX_PP_CAT(__distributed_tensor_part_fetch_part_action_, type));       \
     typedef ::hpx::components::component<                                      \
         phylanx::util::server::distributed_tensor_part<type>>                  \
@@ -126,8 +128,8 @@ namespace phylanx { namespace util { namespace server
     HPX_REGISTER_COMPONENT(HPX_PP_CAT(__distributed_tensor_part_, type))       \
     /**/
 
-namespace phylanx { namespace util
-{
+namespace phylanx { namespace util {
+
     template <typename T>
     class distributed_tensor
     {
@@ -164,21 +166,23 @@ namespace phylanx { namespace util
         ///             provided locality index.
         ///
         distributed_tensor(std::string basename, reference_type const& data,
-                std::size_t num_sites = std::size_t(-1),
-                std::size_t this_site = std::size_t(-1))
+            std::size_t num_sites = std::size_t(-1),
+            std::size_t this_site = std::size_t(-1),
+            std::int64_t* transferred_bytes = nullptr)
           : num_sites_(num_sites == std::size_t(-1) ?
                     hpx::get_num_localities(hpx::launch::sync) :
                     num_sites)
           , this_site_(this_site == std::size_t(-1) ? hpx::get_locality_id() :
                                                       this_site)
           , basename_("dist_tensor_" + std::move(basename))
+          , transferred_bytes_(transferred_bytes)
         {
             if (this_site_ >= num_sites_)
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
                     "distributed_tensor::distributed_tensor",
                     "attempting to construct invalid part of the "
-                        "distributed object");
+                    "distributed object");
             }
             create_and_register_server(data);
         }
@@ -203,21 +207,23 @@ namespace phylanx { namespace util
         ///             provided locality index.
         ///
         distributed_tensor(std::string basename, reference_type&& data,
-                std::size_t num_sites = std::size_t(-1),
-                std::size_t this_site = std::size_t(-1))
+            std::size_t num_sites = std::size_t(-1),
+            std::size_t this_site = std::size_t(-1),
+            std::int64_t* transferred_bytes = nullptr)
           : num_sites_(num_sites == std::size_t(-1) ?
                     hpx::get_num_localities(hpx::launch::sync) :
                     num_sites)
           , this_site_(this_site == std::size_t(-1) ? hpx::get_locality_id() :
                                                       this_site)
           , basename_("dist_tensor_" + std::move(basename))
+          , transferred_bytes_(transferred_bytes)
         {
             if (this_site_ >= num_sites_)
             {
                 HPX_THROW_EXCEPTION(hpx::no_success,
                     "distributed_tensor::distributed_tensor",
                     "attempting to construct invalid part of the "
-                        "distributed object");
+                    "distributed object");
             }
             create_and_register_server(std::move(data));
         }
@@ -267,11 +273,30 @@ namespace phylanx { namespace util
         hpx::future<data_type> fetch(std::size_t idx) const
         {
             /// \cond NOINTERNAL
-            HPX_ASSERT(!!ptr_);
             using action_type =
                 typename server::distributed_tensor_part<T>::fetch_action;
 
-            return hpx::async<action_type>(get_part_id(idx));
+            auto f = hpx::async<action_type>(get_part_id(idx));
+
+            // keep track of number of transferred bytes, if needed
+            if (transferred_bytes_ != nullptr)
+            {
+                auto shared_state = hpx::traits::detail::get_shared_state(f);
+                shared_state->set_on_completed([this, shared_state]() -> void {
+                    data_type* r = shared_state->get_result();
+                    if (r != nullptr)
+                    {
+                        using spinlock_pool =
+                            hpx::util::spinlock_pool<std::uint64_t>;
+
+                        std::lock_guard<hpx::util::detail::spinlock> l(
+                            spinlock_pool::spinlock_for(transferred_bytes_));
+
+                        *transferred_bytes_ += r->capacity() * sizeof(T);
+                    }
+                });
+            }
+            return f;
             /// \endcond
         }
 
@@ -289,12 +314,31 @@ namespace phylanx { namespace util
             std::size_t stop_column) const
         {
             /// \cond NOINTERNAL
-            HPX_ASSERT(!!ptr_);
             using action_type =
                 typename server::distributed_tensor_part<T>::fetch_part_action;
 
-            return hpx::async<action_type>(get_part_id(idx), start_page,
+            auto f = hpx::async<action_type>(get_part_id(idx), start_page,
                 start_row, start_column, stop_page, stop_row, stop_column);
+
+            // keep track of number of transferred bytes, if needed
+            if (transferred_bytes_ != nullptr)
+            {
+                auto shared_state = hpx::traits::detail::get_shared_state(f);
+                shared_state->set_on_completed([this, shared_state]() -> void {
+                    data_type* r = shared_state->get_result();
+                    if (r != nullptr)
+                    {
+                        using spinlock_pool =
+                            hpx::util::spinlock_pool<std::uint64_t>;
+
+                        std::lock_guard<hpx::util::detail::spinlock> l(
+                            spinlock_pool::spinlock_for(transferred_bytes_));
+
+                        *transferred_bytes_ += r->capacity() * sizeof(T);
+                    }
+                });
+            }
+            return f;
             /// \endcond
         }
 
@@ -344,7 +388,8 @@ namespace phylanx { namespace util
                         part_ids_mtx_);
 
                     id = hpx::agas::on_symbol_namespace_event(
-                        hpx::detail::name_from_basename(basename_, idx), true).get();
+                        hpx::detail::name_from_basename(basename_, idx), true)
+                             .get();
                 }
 
                 it = part_ids_.find(idx);
@@ -364,8 +409,10 @@ namespace phylanx { namespace util
 
         mutable hpx::lcos::local::spinlock part_ids_mtx_;
         mutable std::map<std::size_t, hpx::id_type> part_ids_;
+
+        std::int64_t* transferred_bytes_;
         /// \endcond
     };
-}}
+}}    // namespace phylanx::util
 
 #endif

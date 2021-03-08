@@ -8,8 +8,6 @@
 #include <phylanx/util/distributed_tensor.hpp>
 #include <phylanx/util/distributed_matrix.hpp>
 
-#include <hpx/collectives/all_reduce.hpp>
-
 #include <cstddef>
 #include <cstdint>
 #include <utility>

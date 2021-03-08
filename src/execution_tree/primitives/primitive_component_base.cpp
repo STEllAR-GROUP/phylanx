@@ -303,6 +303,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::util::get_and_reset_value(execute_directly_, reset);
     }
 
+    std::int64_t primitive_component_base::get_transferred_bytes(bool reset) const
+    {
+        return 0;
+    }
+
     void primitive_component_base::enable_measurements()
     {
         measurements_enabled_ = true;

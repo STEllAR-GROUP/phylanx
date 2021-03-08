@@ -102,6 +102,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT std::int64_t get_eval_duration(bool reset) const;
         PHYLANX_EXPORT std::int64_t get_direct_execution(bool reset) const;
 
+        PHYLANX_EXPORT std::int64_t get_transferred_bytes(bool reset) const;
+
         PHYLANX_EXPORT void enable_measurements();
 
         // decide whether to execute eval directly

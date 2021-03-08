@@ -76,6 +76,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& intersection,
             std::uint32_t numtiles, ir::range&& new_tiling,
             execution_tree::localities_information&& arr_localities) const;
+
+    private:
+        std::int64_t get_transferred_bytes(bool reset) const;
+
+        mutable std::int64_t transferred_bytes_;
     };
 
     inline execution_tree::primitive create_retile_annotations(

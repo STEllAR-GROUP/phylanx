@@ -170,6 +170,7 @@ namespace phylanx { namespace util {
                     // Construct the name of the counter
                     std::string const counter_name("/phylanx/primitives/" +
                         tags.primitive + "/" + counter_name_last_part);
+
                     // The actual performance counter
                     hpx::performance_counters::performance_counter counter(
                         counter_name, locality_id);
@@ -274,7 +275,7 @@ namespace phylanx { namespace util {
         hpx::naming::id_type const& locality_id)
     {
         std::vector<std::string> const counter_names{
-            "count/eval", "time/eval", "eval_direct"};
+            "count/eval", "time/eval", "eval_direct", "transferred_bytes"};
 
         return retrieve_counter_data(
             primitive_instances, counter_names, locality_id);

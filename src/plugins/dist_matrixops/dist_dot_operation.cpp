@@ -49,11 +49,17 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
     ////////////////////////////////////////////////////////////////////////////
     dist_dot_operation::dist_dot_operation(
-            execution_tree::primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename)
+        execution_tree::primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
       : execution_tree::primitives::primitive_component_base(
             std::move(operands), name, codename)
+      , transferred_bytes_(0)
     {}
+
+    std::int64_t dist_dot_operation::get_transferred_bytes(bool reset) const
+    {
+        return hpx::util::get_and_reset_value(transferred_bytes_, reset);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     execution_tree::primitive_argument_type dist_dot_operation::dot0d(
