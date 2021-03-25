@@ -68,6 +68,8 @@ endif()
 phylanx_info("CMake version: " ${CMAKE_VERSION})
 phylanx_info("Phylanx version: " ${PHYLANX_VERSION})
 
+phylanx_detect_cpp_dialect()
+
 # ##############################################################################
 # C++ feature tests
 # ##############################################################################
@@ -82,7 +84,6 @@ phylanx_setup_hpx()
 # Special compiler flags
 phylanx_setup_compiler_flags()
 phylanx_setup_output_paths()
-phylanx_detect_cpp_dialect()
 
 ################################################################################
 # Build options
