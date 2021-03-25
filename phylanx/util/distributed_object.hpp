@@ -10,18 +10,17 @@
 
 #include <phylanx/config.hpp>
 
-#include <hpx/assert.hpp>
-#include <hpx/errors/throw_exception.hpp>
-#include <hpx/preprocessor/cat.hpp>
 #include <hpx/actions_base/component_action.hpp>
-#include <hpx/runtime/basename_registration_fwd.hpp>
-#include <hpx/runtime/components/component_factory.hpp>
-#include <hpx/runtime/components/new.hpp>
-#include <hpx/runtime/components/server/component.hpp>
-#include <hpx/runtime_local/get_locality_id.hpp>
-#include <hpx/runtime.hpp>
-#include <hpx/runtime/get_ptr.hpp>
+#include <hpx/assert.hpp>
 #include <hpx/async_base/launch_policy.hpp>
+#include <hpx/errors/throw_exception.hpp>
+#include <hpx/modules/components.hpp>
+#include <hpx/modules/components_base.hpp>
+#include <hpx/modules/runtime_components.hpp>
+#include <hpx/modules/runtime_components_base.hpp>
+#include <hpx/preprocessor/cat.hpp>
+#include <hpx/runtime.hpp>
+#include <hpx/runtime_local/get_locality_id.hpp>
 #include <hpx/synchronization/spinlock.hpp>
 #include <hpx/thread_support/unlock_guard.hpp>
 
