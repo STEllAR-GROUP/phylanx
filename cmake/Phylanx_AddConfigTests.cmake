@@ -118,7 +118,7 @@ function(add_phylanx_config_test variable)
             "-DLINK_DIRECTORIES=${CONFIG_TEST_LINK_DIRS}"
             "-DLINK_LIBRARIES=${CONFIG_TEST_LINK_LIBRARIES}"
             "-DCOMPILE_DEFINITIONS=${CONFIG_TEST_COMPILE_DEFINITIONS}"
-          CXX_STANDARD ${phylanx_CXX_STANDARD}
+          CXX_STANDARD ${CMAKE_CXX_STANDARD}
           CXX_STANDARD_REQUIRED ON
           CXX_EXTENSIONS FALSE
           RUN_OUTPUT_VARIABLE ${variable}_OUTPUT
@@ -145,7 +145,7 @@ function(add_phylanx_config_test variable)
           "-DLINK_LIBRARIES=${CONFIG_TEST_LINK_LIBRARIES}"
           "-DCOMPILE_DEFINITIONS=${CONFIG_TEST_COMPILE_DEFINITIONS}"
         OUTPUT_VARIABLE ${variable}_OUTPUT
-        CXX_STANDARD ${phylanx_CXX_STANDARD}
+        CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS FALSE
         COPY_FILE ${test_binary}
