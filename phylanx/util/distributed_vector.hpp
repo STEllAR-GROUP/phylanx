@@ -17,7 +17,6 @@
 #include <hpx/modules/components.hpp>
 #include <hpx/modules/components_base.hpp>
 #include <hpx/modules/runtime_components.hpp>
-#include <hpx/modules/runtime_components_base.hpp>
 #include <hpx/preprocessor/cat.hpp>
 #include <hpx/runtime.hpp>
 #include <hpx/runtime_local/get_locality_id.hpp>

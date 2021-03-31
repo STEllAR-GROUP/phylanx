@@ -9,7 +9,7 @@
 
 #include <phylanx/config.hpp>
 
-#include <hpx/runtime/find_here.hpp>
+#include <hpx/modules/runtime_distributed.hpp>
 
 #include <cstdint>
 #include <map>

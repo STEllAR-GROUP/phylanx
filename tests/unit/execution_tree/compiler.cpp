@@ -6,7 +6,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/runtime/find_here.hpp>
+#include <hpx/modules/runtime_distributed.hpp>
 #include <hpx/modules/testing.hpp>
 
 #include <cstdint>
