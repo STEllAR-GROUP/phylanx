@@ -46,6 +46,7 @@ REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_uint8_t);
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_cannon_product::product(
@@ -92,6 +93,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 generate_error_message(
                     "number of tiles in lhs and rhs must be equal"));
         }
+
         for (std::size_t i = 0; i < lhs_num_localities; i++)
         {
             // This works because lhs_localities.tiles_ is
@@ -156,9 +158,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         // construct a distributed matrix object for both tiles
         util::distributed_matrix<T> lhs_data(lhs_localities.annotation_.name_,
-            lhs.matrix(), lhs_num_localities, lhs_locality_id);
+            lhs.matrix(), lhs_num_localities, lhs_locality_id,
+            &transferred_bytes_);
         util::distributed_matrix<T> rhs_data(rhs_localities.annotation_.name_,
-            rhs.matrix(), rhs_num_localities, rhs_locality_id);
+            rhs.matrix(), rhs_num_localities, rhs_locality_id,
+            &transferred_bytes_);
 
         std::size_t lhs_local_tile_index = std::distance(lhs_tile_row.begin(),
             std::find(

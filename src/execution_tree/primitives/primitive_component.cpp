@@ -183,6 +183,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_->get_direct_execution(reset);
     }
 
+    std::int64_t primitive_component::get_transferred_bytes(bool reset) const
+    {
+        return primitive_->get_transferred_bytes(reset);
+    }
+
     void primitive_component::enable_measurements()
     {
         primitive_->enable_measurements();

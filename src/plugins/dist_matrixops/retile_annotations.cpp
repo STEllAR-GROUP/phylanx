@@ -94,7 +94,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , transferred_bytes_(0)
     {}
+
+    std::int64_t retile_annotations::get_transferred_bytes(bool reset) const
+    {
+        return hpx::util::get_and_reset_value(transferred_bytes_, reset);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
@@ -398,12 +404,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
             des_stop = des_start + des_size;
         }
 
-
         // creating the updated array as result
         auto v = arr.vector();
         blaze::DynamicVector<T> result(des_size);
-        util::distributed_vector<T> v_data(
-            arr_localities.annotation_.name_, v, num_localities, loc_id);
+        util::distributed_vector<T> v_data(arr_localities.annotation_.name_, v,
+            num_localities, loc_id, &transferred_bytes_);
 
         // relative start
         std::int64_t rel_start = des_start - cur_start;
@@ -601,8 +606,8 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         // updating the array
         auto m = arr.matrix();
         blaze::DynamicMatrix<T> result(des_row_size, des_col_size);
-        util::distributed_matrix<T> m_data(
-            arr_localities.annotation_.name_, m, num_localities, loc_id);
+        util::distributed_matrix<T> m_data(arr_localities.annotation_.name_, m,
+            num_localities, loc_id, &transferred_bytes_);
 
         // relative starts
         std::int64_t rel_row_start = des_row_start - cur_row_start;

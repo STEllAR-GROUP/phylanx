@@ -26,6 +26,7 @@
 #include <vector>
 
 namespace phylanx { namespace dist_matrixops { namespace primitives {
+
     class dist_diag
       : public execution_tree::primitives::primitive_component_base
       , public std::enable_shared_from_this<dist_diag>
@@ -68,6 +69,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::int64_t cur_start, std::int64_t cur_stop,
             execution_tree::localities_information&& arr_localities,
             execution_tree::eval_context ctx) const;
+
+    private:
+        std::int64_t get_transferred_bytes(bool reset) const;
+
+        mutable std::int64_t transferred_bytes_;
     };
 
     inline execution_tree::primitive create_dist_diag(

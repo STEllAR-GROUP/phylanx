@@ -1,4 +1,4 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+//  Copyright (c) 2018-2021 Hartmut Kaiser
 //  Copyright (c) 2018 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -17,11 +17,11 @@
 
 #include <atomic>
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 #include <boost/spirit/include/qi_char.hpp>
 #include <boost/spirit/include/qi_difference.hpp>
@@ -31,10 +31,9 @@
 #include <boost/spirit/include/qi_sequence.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace performance_counters
-{
-    namespace detail
-    {
+namespace phylanx { namespace performance_counters {
+
+    namespace detail {
         std::string extract_primitive_type(
             hpx::performance_counters::counter_info const& info)
         {
@@ -58,8 +57,9 @@ namespace phylanx { namespace performance_counters
 
             return result;
         }
-    }
+    }    // namespace detail
 
+    ///////////////////////////////////////////////////////////////////////////
     class primitive_counter
       : public hpx::performance_counters::base_performance_counter<
             primitive_counter>
@@ -68,7 +68,8 @@ namespace phylanx { namespace performance_counters
         primitive_counter()
           : first_init_(false)
           , duration_counter_(false)
-        {}
+        {
+        }
 
         primitive_counter(hpx::performance_counters::counter_info const& info)
           : hpx::performance_counters::base_performance_counter<
@@ -138,7 +139,7 @@ namespace phylanx { namespace performance_counters
             {
                 auto const& instance = hpx::get_ptr<
                     phylanx::execution_tree::primitives::primitive_component>(
-                        hpx::launch::sync, value.second);
+                    hpx::launch::sync, value.second);
 
                 auto instance_info =
                     phylanx::execution_tree::compiler::parse_primitive_name(
@@ -164,7 +165,7 @@ namespace phylanx { namespace performance_counters
             instances_.clear();
             instances_.reserve(entries.size());
 
-            for (auto && value : instances_sorted)
+            for (auto&& value : instances_sorted)
             {
                 instances_.emplace_back(std::move(value.second));
             }
@@ -190,16 +191,15 @@ namespace phylanx { namespace performance_counters
         // Break down the counter name
         pc::counter_path_elements paths;
         pc::get_counter_path_elements(info.fullname_, paths, ec);
-        if (ec) return hpx::naming::invalid_gid;
+        if (ec)
+            return hpx::naming::invalid_gid;
 
         // If another counter's name was give
         if (paths.parentinstance_is_basename_)
         {
-            HPX_THROWS_IF(ec,
-                hpx::bad_parameter,
-                "primitive_counter_creator",
+            HPX_THROWS_IF(ec, hpx::bad_parameter, "primitive_counter_creator",
                 "invalid counter instance parent name: " +
-                paths.parentinstancename_);
+                    paths.parentinstancename_);
             return hpx::naming::invalid_gid;
         }
 
@@ -207,7 +207,8 @@ namespace phylanx { namespace performance_counters
         {
             pc::counter_info complemented_info = info;
             pc::complement_counter_info(complemented_info, info, ec);
-            if (ec) return hpx::naming::invalid_gid;
+            if (ec)
+                return hpx::naming::invalid_gid;
 
             hpx::naming::gid_type id;
             try
@@ -232,9 +233,7 @@ namespace phylanx { namespace performance_counters
             return id;
         }
 
-        HPX_THROWS_IF(ec,
-            hpx::bad_parameter,
-            "primitive_counter_creator",
+        HPX_THROWS_IF(ec, hpx::bad_parameter, "primitive_counter_creator",
             "invalid counter instance name: " + paths.instancename_);
         return hpx::naming::invalid_gid;
     }
@@ -247,14 +246,16 @@ namespace phylanx { namespace performance_counters
     public:
         direct_execution_counter()
           : first_init_(false)
-        {}
+        {
+        }
 
         direct_execution_counter(
-                hpx::performance_counters::counter_info const& info)
+            hpx::performance_counters::counter_info const& info)
           : hpx::performance_counters::base_performance_counter<
                 direct_execution_counter>(info)
           , first_init_(false)
-        {}
+        {
+        }
 
         // Produce the counter value
         hpx::performance_counters::counter_values_array
@@ -304,7 +305,7 @@ namespace phylanx { namespace performance_counters
             {
                 auto const& instance = hpx::get_ptr<
                     phylanx::execution_tree::primitives::primitive_component>(
-                        hpx::launch::sync, value.second);
+                    hpx::launch::sync, value.second);
 
                 auto instance_info =
                     phylanx::execution_tree::compiler::parse_primitive_name(
@@ -345,14 +346,14 @@ namespace phylanx { namespace performance_counters
         // Break down the counter name
         pc::counter_path_elements paths;
         pc::get_counter_path_elements(info.fullname_, paths, ec);
-        if (ec) return hpx::naming::invalid_gid;
+        if (ec)
+            return hpx::naming::invalid_gid;
 
         // If another counter's name was give
         if (paths.parentinstance_is_basename_)
         {
-            HPX_THROWS_IF(ec,
-                hpx::bad_parameter,
-                "primitive_counter_creator",
+            HPX_THROWS_IF(ec, hpx::bad_parameter,
+                "direct_execution_counter_creator",
                 "invalid counter instance parent name: " +
                     paths.parentinstancename_);
             return hpx::naming::invalid_gid;
@@ -362,7 +363,8 @@ namespace phylanx { namespace performance_counters
         {
             pc::counter_info complemented_info = info;
             pc::complement_counter_info(complemented_info, info, ec);
-            if (ec) return hpx::naming::invalid_gid;
+            if (ec)
+                return hpx::naming::invalid_gid;
 
             hpx::naming::gid_type id;
             try
@@ -387,9 +389,165 @@ namespace phylanx { namespace performance_counters
             return id;
         }
 
-        HPX_THROWS_IF(ec,
-            hpx::bad_parameter,
-            "primitive_counter_creator",
+        HPX_THROWS_IF(ec, hpx::bad_parameter,
+            "direct_execution_counter_creator",
+            "invalid counter instance name: " + paths.instancename_);
+        return hpx::naming::invalid_gid;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    class transferred_bytes_counter
+      : public hpx::performance_counters::base_performance_counter<
+            transferred_bytes_counter>
+    {
+    public:
+        transferred_bytes_counter()
+          : first_init_(false)
+        {
+        }
+
+        transferred_bytes_counter(
+            hpx::performance_counters::counter_info const& info)
+          : hpx::performance_counters::base_performance_counter<
+                transferred_bytes_counter>(info)
+          , first_init_(false)
+        {
+        }
+
+        // Produce the counter value
+        hpx::performance_counters::counter_values_array
+        get_counter_values_array(bool reset) override
+        {
+            // Need to call reinit here if it has never been called before.
+            bool expected = false;
+            if (first_init_.compare_exchange_strong(expected, true))
+            {
+                reinit(false);
+            }
+
+            hpx::performance_counters::counter_values_array value;
+
+            value.time_ = static_cast<std::int64_t>(hpx::get_system_uptime());
+            value.status_ = hpx::performance_counters::status_new_data;
+            value.count_ = ++invocation_count_;
+
+            std::vector<std::int64_t> result;
+            result.reserve(instances_.size());
+
+            // Extract the values from instances_
+            for (auto const& instance : instances_)
+            {
+                result.push_back(instance->get_transferred_bytes(reset));
+            }
+
+            value.values_ = std::move(result);
+
+            return value;
+        }
+
+        // Retrieve the list of existing primitives for the current execution
+        // tree and keep it
+        void reinit(bool reset) override
+        {
+            // Structure of primitives in symbolic namespace:
+            // /phylanx$<locality_id>/<primitive>$<sequence-nr>[$<instance>]/
+            //      <compile_id>$<tag>
+            auto entries = hpx::agas::find_symbols(hpx::launch::sync,
+                hpx::util::format("/phylanx${}/{}$*", hpx::get_locality_id(),
+                    detail::extract_primitive_type(info_)));
+
+            std::map<std::int64_t, base_primitive_ptr> instances_sorted;
+
+            for (auto const& value : entries)
+            {
+                auto const& instance = hpx::get_ptr<
+                    phylanx::execution_tree::primitives::primitive_component>(
+                    hpx::launch::sync, value.second);
+
+                auto instance_info =
+                    phylanx::execution_tree::compiler::parse_primitive_name(
+                        value.first);
+
+                // Consider the reset flag
+                if (reset)
+                {
+                    instance->get_transferred_bytes(true);
+                }
+                instances_sorted[instance_info.sequence_number] = instance;
+            }
+
+            instances_.clear();
+            instances_.reserve(entries.size());
+            for (auto const& value : instances_sorted)
+            {
+                instances_.push_back(value.second);
+            }
+
+            first_init_ = true;
+        }
+
+    private:
+        using base_primitive_ptr = std::shared_ptr<
+            phylanx::execution_tree::primitives::primitive_component>;
+
+        std::vector<base_primitive_ptr> instances_;
+        std::atomic<bool> first_init_;
+    };
+
+    hpx::naming::gid_type transferred_bytes_counter_creator(
+        hpx::performance_counters::counter_info const& info,
+        hpx::error_code& ec)
+    {
+        namespace pc = hpx::performance_counters;
+
+        // Break down the counter name
+        pc::counter_path_elements paths;
+        pc::get_counter_path_elements(info.fullname_, paths, ec);
+        if (ec)
+            return hpx::naming::invalid_gid;
+
+        // If another counter's name was give
+        if (paths.parentinstance_is_basename_)
+        {
+            HPX_THROWS_IF(ec, hpx::bad_parameter,
+                "transferred_bytes_counter_creator",
+                "invalid counter instance parent name: " +
+                    paths.parentinstancename_);
+            return hpx::naming::invalid_gid;
+        }
+
+        if (paths.instancename_ == "total" && paths.instanceindex_ == -1)
+        {
+            pc::counter_info complemented_info = info;
+            pc::complement_counter_info(complemented_info, info, ec);
+            if (ec)
+                return hpx::naming::invalid_gid;
+
+            hpx::naming::gid_type id;
+            try
+            {
+                // Try constructing the actual counter
+                using transferred_bytes_counter_type =
+                    hpx::components::component<transferred_bytes_counter>;
+
+                id = hpx::components::server::construct<
+                    transferred_bytes_counter_type>(complemented_info);
+            }
+            catch (hpx::exception const& e)
+            {
+                if (&ec == &hpx::throws)
+                    throw;
+                ec = hpx::make_error_code(e.get_error(), e.what());
+                return hpx::naming::invalid_gid;
+            }
+
+            if (&ec != &hpx::throws)
+                ec = hpx::make_success_code();
+            return id;
+        }
+
+        HPX_THROWS_IF(ec, hpx::bad_parameter,
+            "transferred_bytes_counter_creator",
             "invalid counter instance name: " + paths.instancename_);
         return hpx::naming::invalid_gid;
     }
@@ -406,25 +564,25 @@ namespace phylanx { namespace performance_counters
             "/phylanx/node_data_double/count/copy_constructions",
             &ir::node_data<double>::copy_construction_count,
             "returns the current value of the copy-construction count of "
-                "any node_data<double>");
+            "any node_data<double>");
 
         hpx::performance_counters::install_counter_type(
             "/phylanx/node_data_double/count/move_constructions",
             &ir::node_data<double>::move_construction_count,
             "returns the current value of the move-construction count of "
-                "any node_data<double>");
+            "any node_data<double>");
 
         hpx::performance_counters::install_counter_type(
             "/phylanx/node_data_double/count/copy_assignments",
             &ir::node_data<double>::copy_assignment_count,
             "returns the current value of the copy-assignment count of "
-                "any node_data<double>");
+            "any node_data<double>");
 
         hpx::performance_counters::install_counter_type(
             "/phylanx/node_data_double/count/move_assignments",
             &ir::node_data<double>::move_assignment_count,
             "returns the current value of the move-assignment count of "
-                "any node_data<double>");
+            "any node_data<double>");
 
         // Iterate and register a time and count performance counter per each
         // primitive
@@ -439,7 +597,7 @@ namespace phylanx { namespace performance_counters
                 "/phylanx/primitives/" + name + "/time/eval",
                 hpx::performance_counters::counter_raw_values,
                 "returns a list whose elements contain the total execution "
-                    "time of the eval function for each " +
+                "time of the eval function for each " +
                     name + " primitive",
                 &primitive_counter_creator,
                 &hpx::performance_counters::locality_counter_discoverer,
@@ -450,7 +608,7 @@ namespace phylanx { namespace performance_counters
                 "/phylanx/primitives/" + name + "/count/eval",
                 hpx::performance_counters::counter_raw_values,
                 "returns a list whose elements contain the number of times "
-                    "the eval function was called for each " +
+                "the eval function was called for each " +
                     name + " primitive",
                 &primitive_counter_creator,
                 &hpx::performance_counters::locality_counter_discoverer);
@@ -460,13 +618,24 @@ namespace phylanx { namespace performance_counters
                 "/phylanx/primitives/" + name + "/eval_direct",
                 hpx::performance_counters::counter_raw_values,
                 "returns a list whose elements contain whether "
-                    "the eval function for the " + name + " primitive "
-                    "was executed directly",
+                "the eval function for each " +
+                    name +
+                    " primitive was executed directly",
                 &direct_execution_counter_creator,
+                &hpx::performance_counters::locality_counter_discoverer);
+
+            // Register a transferred bytes performance counter
+            hpx::performance_counters::install_counter_type(
+                "/phylanx/primitives/" + name + "/transferred_bytes",
+                hpx::performance_counters::counter_raw_values,
+                "returns a list whose elements contain the number of "
+                "transferred bytes for each " +
+                    name + " primitive",
+                &transferred_bytes_counter_creator,
                 &hpx::performance_counters::locality_counter_discoverer);
         }
     }
-}}
+}}    // namespace phylanx::performance_counters
 
 ///////////////////////////////////////////////////////////////////////////////
 // Register the factory functionality for the performance counter
@@ -482,5 +651,13 @@ using direct_execution_type = hpx::components::component<
 using direct_execution_counter =
     phylanx::performance_counters::direct_execution_counter;
 
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    direct_execution_type, direct_execution_counter, "base_performance_counter");
+HPX_REGISTER_DERIVED_COMPONENT_FACTORY(direct_execution_type,
+    direct_execution_counter, "base_performance_counter");
+
+using transferred_bytes_type = hpx::components::component<
+    phylanx::performance_counters::transferred_bytes_counter>;
+using transferred_bytes_counter =
+    phylanx::performance_counters::transferred_bytes_counter;
+
+HPX_REGISTER_DERIVED_COMPONENT_FACTORY(transferred_bytes_type,
+    transferred_bytes_counter, "base_performance_counter");

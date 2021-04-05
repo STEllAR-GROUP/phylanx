@@ -99,6 +99,8 @@ namespace phylanx { namespace execution_tree
             std::int64_t get_eval_duration(bool reset) const;
             std::int64_t get_direct_execution(bool reset) const;
 
+            virtual std::int64_t get_transferred_bytes(bool reset) const;
+
             void enable_measurements();
 
             // decide whether to execute eval directly

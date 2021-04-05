@@ -115,6 +115,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
         execution_tree::primitive_argument_type dot_nd(
             execution_tree::primitive_argument_type&& lhs,
             execution_tree::primitive_argument_type&& rhs) const;
+
+    private:
+        std::int64_t get_transferred_bytes(bool reset) const;
+
+        mutable std::int64_t transferred_bytes_;
     };
 
     inline execution_tree::primitive create_dist_dot_operation(

@@ -73,14 +73,18 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    dist_diag::dist_diag(
-        execution_tree::primitive_arguments_type&& operands,
+    dist_diag::dist_diag(execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , transferred_bytes_(0)
     {}
 
-    ///////////////////////////////////////////////////////////////////////////
+    std::int64_t dist_diag::get_transferred_bytes(bool reset) const
+    {
+        return hpx::util::get_and_reset_value(transferred_bytes_, reset);
+    }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_diag::dist_diag1d_helper(
         ir::node_data<T>&& arr, std::int64_t k, std::string const& tiling_type,
@@ -93,13 +97,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
     {
         using namespace execution_tree;
         blaze::DynamicMatrix<T> result(row_size, column_size, T(0));
+
         // updating the annotation_ part of localities annotation
         arr_localities.annotation_.name_ += "_diag";
         ++arr_localities.annotation_.generation_;
         auto v = arr.vector();
-        util::distributed_vector<T> v_data(
-            arr_localities.annotation_.name_, v,
-            num_localities, loc_id);
+        util::distributed_vector<T> v_data(arr_localities.annotation_.name_, v,
+            num_localities, loc_id, &transferred_bytes_);
 
         std::int64_t num_band;
         std::int64_t upper_band = column_size - 1;

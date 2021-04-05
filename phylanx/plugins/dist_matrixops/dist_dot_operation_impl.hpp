@@ -55,6 +55,7 @@ REGISTER_DISTRIBUTED_MATRIX_DECLARATION(std_uint8_t);
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace dist_matrixops { namespace primitives {
+
     ////////////////////////////////////////////////////////////////////////////
     template <typename T>
     execution_tree::primitive_argument_type dist_dot_operation::dot0d(
@@ -114,7 +115,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // construct a distributed vector object for the rhs
         util::distributed_vector<T> rhs_data(rhs_localities.annotation_.name_,
             rhs.vector(), rhs_localities.locality_.num_localities_,
-            rhs_localities.locality_.locality_id_);
+            rhs_localities.locality_.locality_id_, &transferred_bytes_);
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs
@@ -229,7 +230,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // construct a distributed matrix object for the rhs
         util::distributed_matrix<T> rhs_data(rhs_localities.annotation_.name_,
             rhs.matrix(), rhs_localities.locality_.num_localities_,
-            rhs_localities.locality_.locality_id_);
+            rhs_localities.locality_.locality_id_, &transferred_bytes_);
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs
@@ -427,7 +428,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // construct a distributed vector object for the rhs
         util::distributed_vector<T> rhs_data(rhs_localities.annotation_.name_,
             rhs.vector(), rhs_localities.locality_.num_localities_,
-            rhs_localities.locality_.locality_id_);
+            rhs_localities.locality_.locality_id_, &transferred_bytes_);
 
         // we need to get the lhs column span
         std::size_t lhs_span_index = 1;
@@ -596,7 +597,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // construct a distributed matrix object for the rhs
         util::distributed_matrix<T> rhs_data(rhs_localities.annotation_.name_,
             rhs.matrix(), rhs_localities.locality_.num_localities_,
-            rhs_localities.locality_.locality_id_);
+            rhs_localities.locality_.locality_id_, &transferred_bytes_);
 
         // use the local tile of lhs and calculate the dot product with all
         // corresponding tiles of rhs, lhs column span

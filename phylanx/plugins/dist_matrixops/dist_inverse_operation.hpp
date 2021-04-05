@@ -15,6 +15,7 @@
 
 #include <hpx/futures/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -50,6 +51,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             execution_tree::localities_information&& lhs_localities) const;
         execution_tree::primitive_argument_type distGaussInv(
             execution_tree::primitive_argument_type&& lhs) const;
+
+    private:
+        std::int64_t get_transferred_bytes(bool reset) const;
+
+        mutable std::int64_t transferred_bytes_;
     };
 
     inline execution_tree::primitive create_dist_inverse(

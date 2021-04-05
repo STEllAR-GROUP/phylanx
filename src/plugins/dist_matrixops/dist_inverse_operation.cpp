@@ -50,8 +50,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         hpx::make_tuple("inverse_d", std::vector<std::string>{R"(
               inverse_d(
                  _1_matrix
-               )
-               )"},
+              ))"},
             &create_dist_inverse,
             &execution_tree::create_primitive<dist_inverse>, help_string)};
 
@@ -59,7 +58,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , transferred_bytes_(0)
     {
+    }
+
+    std::int64_t dist_inverse::get_transferred_bytes(bool reset) const
+    {
+        return hpx::util::get_and_reset_value(transferred_bytes_, reset);
     }
 
     // find the first column belonging to a locality
@@ -112,7 +117,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
 
         util::distributed_matrix<T> lhs_data(lhs_localities.annotation_.name_,
             arg.matrix(), lhs_localities.locality_.num_localities_,
-            lhs_localities.locality_.locality_id_);
+            lhs_localities.locality_.locality_id_, &transferred_bytes_);
 
         auto myMatrix = arg.matrix();
         std::size_t numRows = myMatrix.rows();

@@ -26,28 +26,28 @@
 #include <blaze_tensor/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-
 namespace phylanx { namespace dist_matrixops { namespace primitives {
+
     ///////////////////////////////////////////////////////////////////////////
-     execution_tree::match_pattern_type const dist_cannon_product::match_data =
-     {
-         execution_tree::match_pattern_type{
-             "cannon_product_d",
-             std::vector<std::string>{"cannon_product_d(_1, _2)"},
-             &create_dist_cannon_product,
-             &execution_tree::create_primitive<dist_cannon_product>,
-             R"(a, b
-             Args:
+    execution_tree::match_pattern_type const dist_cannon_product::match_data =
+    {
+        execution_tree::match_pattern_type{
+            "cannon_product_d",
+            std::vector<std::string>{"cannon_product_d(_1, _2)"},
+            &create_dist_cannon_product,
+            &execution_tree::create_primitive<dist_cannon_product>,
+            R"(a, b
+            Args:
 
-                 a (array) : a matrix
-                 b (array) : a matrix
+                a (array) : a matrix
+                b (array) : a matrix
 
-             Returns:
+            Returns:
 
-             The dot product of two matrices: `a` and `b` using Cannon's algorithm.
-             The dot product of an MxN matrix and an NxL is of size MxL)"
-         }
-     };
+            The dot product of two matrices: `a` and `b` using Cannon's algorithm.
+            The dot product of an MxN matrix and an NxL is of size MxL)"
+        }
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     dist_cannon_product::dist_cannon_product(
@@ -55,7 +55,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         std::string const& name, std::string const& codename)
       : execution_tree::primitives::primitive_component_base(
             std::move(operands), name, codename)
+      , transferred_bytes_(0)
     {
+    }
+
+    std::int64_t dist_cannon_product::get_transferred_bytes(bool reset) const
+    {
+        return hpx::util::get_and_reset_value(transferred_bytes_, reset);
     }
 
     ////////////////////////////////////////////////////////////////////////////
