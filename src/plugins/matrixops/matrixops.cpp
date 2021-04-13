@@ -130,6 +130,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(tile_operation_plugin,
     phylanx::execution_tree::primitives::tile_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(transpose_operation_plugin,
     phylanx::execution_tree::primitives::transpose_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(triu_operation_plugin,
+    phylanx::execution_tree::primitives::triu_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(tuple_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[3]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(unique_operation_plugin,
