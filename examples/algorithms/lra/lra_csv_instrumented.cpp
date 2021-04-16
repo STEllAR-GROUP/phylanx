@@ -8,7 +8,7 @@
 
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/agas.hpp>
-#include <hpx/runtime_fwd.hpp>
+#include <hpx/runtime_distributed/runtime_fwd.hpp>
 
 #include <cstddef>
 #include <cstdint>

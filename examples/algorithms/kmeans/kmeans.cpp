@@ -11,7 +11,7 @@
 #include <hpx/program_options.hpp>
 
 #include <hpx/include/agas.hpp>
-#include <hpx/runtime_fwd.hpp>
+#include <hpx/runtime_distributed/runtime_fwd.hpp>
 
 #include <algorithm>
 #include <cstddef>
