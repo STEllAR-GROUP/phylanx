@@ -231,6 +231,9 @@ function(phylanx_setup_target target)
     endif()
   endforeach()
 
+  target_compile_definitions(
+    ${target} ${PHYLANX_TLL_PUBLIC} $<$<CONFIG:Debug>:PHYLANX_DEBUG>)
+
   hpx_setup_target(
     ${target}
     ${hpx_options}

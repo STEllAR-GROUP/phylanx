@@ -17,6 +17,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

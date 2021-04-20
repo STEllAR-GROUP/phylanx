@@ -16,7 +16,7 @@
 #include <hpx/preprocessor/stringize.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-#if defined(_DEBUG)
+#if defined(PHYLANX_DEBUG)
 PYBIND11_MODULE(_phylanxd, m)
 #else
 PYBIND11_MODULE(_phylanx, m)

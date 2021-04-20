@@ -24,6 +24,10 @@
 #  define PHYLANX_DEBUG
 #endif
 
+#if defined(HPX_DEBUG) && !defined(PHYLANX_DEBUG)
+#  define PHYLANX_DEBUG
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Blaze: use HPX threads. Do not use C++11 threads
 #if !defined(BLAZE_USE_HPX_THREADS) || BLAZE_USE_HPX_THREADS != 1
