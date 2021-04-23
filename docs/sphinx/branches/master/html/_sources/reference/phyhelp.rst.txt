@@ -759,15 +759,15 @@ block (stmt)
 cannon_product_d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 cannon_product_d (a, b)
-             Args:
+            Args:
 
-                 a (array) : a matrix
-                 b (array) : a matrix
+                a (array) : a matrix
+                b (array) : a matrix
 
-             Returns:
+            Returns:
 
-             The dot product of two matrices: `a` and `b` using Cannon's algorithm.
-             The dot product of an MxN matrix and an NxL is of size MxL
+            The dot product of two matrices: `a` and `b` using Cannon's algorithm.
+            The dot product of an MxN matrix and an NxL is of size MxL
 
 
 car_cdr
