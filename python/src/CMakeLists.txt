@@ -95,6 +95,9 @@ set_target_properties(phylanx_py
     OUTPUT_NAME _phylanx
     FOLDER "Core")
 
+target_compile_definitions(
+    phylanx_py PUBLIC $<$<CONFIG:Debug>:PHYLANX_DEBUG>)
+
 if(MSVC)
   set_target_properties(phylanx_py
     PROPERTIES

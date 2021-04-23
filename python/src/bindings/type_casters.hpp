@@ -74,7 +74,7 @@ namespace pybind11 { namespace detail
     inline PHYLANX_PYBIND_DESCR
     get_name<phylanx::execution_tree::primitive_arguments_type>()
     {
-#if defined(_DEBUG)
+#if defined(PHYLANX_DEBUG)
         return _("List[_phylanxd.execution_tree.primitive_argument_type]");
 #else
         return _("List[_phylanx.execution_tree.primitive_argument_type]");
@@ -85,7 +85,7 @@ namespace pybind11 { namespace detail
     inline PHYLANX_PYBIND_DESCR
     get_name<phylanx::execution_tree::primitive_argument_type>()
     {
-#if defined(_DEBUG)
+#if defined(PHYLANX_DEBUG)
         return _("_phylanxd.execution_tree.primitive_argument_type");
 #else
         return _("_phylanx.execution_tree.primitive_argument_type");
