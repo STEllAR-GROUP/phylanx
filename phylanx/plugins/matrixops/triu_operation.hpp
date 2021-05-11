@@ -22,7 +22,6 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives {
-    
     class triu_operation
       : public primitive_component_base
       , public std::enable_shared_from_this<triu_operation>

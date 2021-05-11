@@ -38,9 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 a (array) : a matrix or a tensor
                 k (optional, integer) : index of the diagonal: 0 (the default)
                   refers to the main diagonal, a positive value refers to an
-                  upper diagonal, and a negative value to a lower diagonal.
-                
-            Returns:
+                  upper diagonal, and a negative value to a lower diagonal.Returns:
 
             Return a copy of an array with the elements below the k-th diagonal zeroed.)"
         },
@@ -50,18 +48,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_triu_operation, &create_primitive<triu_operation>, R"(
             a, k
             Args:
-
                 a (array) : a matrix or a tensor
                 k (optional, integer) : index of the diagonal: 0 (the default)
                   refers to the main diagonal, a positive value refers to an
                   upper diagonal, and a negative value to a lower diagonal.
-                
+
             Returns:
 
             Return a copy of an array with the elements above the k-th diagonal zeroed.)"
-        },     
+        },
     };
-
     ///////////////////////////////////////////////////////////////////////////
     triu_operation::tri_mode extract_tri_mode(std::string const& name)
     {
