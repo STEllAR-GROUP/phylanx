@@ -171,12 +171,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             std::int64_t index,
             execution_tree::localities_information const& locs)
         {
-            auto p = hpx::all_reduce(
+            auto p = hpx::collectives::all_reduce(
                 ("all_reduce_" + locs.annotation_.name_).c_str(),
                 std::make_pair(value, index), all_reduce_op_0d<Op>{},
-                locs.locality_.num_localities_, std::size_t(-1),
-                locs.locality_.locality_id_)
-                         .get();
+                hpx::collectives::num_sites_arg{locs.locality_.num_localities_},
+		hpx::collectives::this_site_arg{std::size_t(-1)},
+                hpx::collectives::generation_arg{locs.locality_.locality_id_})
+                .get();
 
             return execution_tree::primitive_argument_type{p.second};
         }
@@ -271,12 +272,13 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                         return std::make_pair(value, index);
                     });
 
-            auto p = hpx::all_reduce(
+            auto p = hpx::collectives::all_reduce(
                 ("all_reduce_" + locs.annotation_.name_).c_str(),
                 value_index_vector, all_reduce_op_1d<Op>{},
-                locs.locality_.num_localities_, std::size_t(-1),
-                locs.locality_.locality_id_)
-                         .get();
+                hpx::collectives::num_sites_arg{locs.locality_.num_localities_},
+		hpx::collectives::this_site_arg{std::size_t(-1)},
+                hpx::collectives::generation_arg{locs.locality_.locality_id_})
+                .get();
 
             blaze::DynamicVector<std::int64_t> res = blaze::map(
                 p, [](std::pair<T, std::int64_t> r) { return r.second; });
