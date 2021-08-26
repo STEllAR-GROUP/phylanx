@@ -13,11 +13,15 @@ macro(phylanx_setup_hpx)
     set(HPX_DIR $ENV{HPX_DIR})
   endif()
   if(EXISTS "${HPX_DIR}")
+    set(__hpx_dir ${HPX_DIR})
     find_package(HPX REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
 
     if(NOT HPX_FOUND)
       phylanx_error("HPX could not be found, please set HPX_DIR to help locating it.")
     endif()
+
+    # HPX_DIR is being reset by find_packe *sigh*
+    set(HPX_DIR ${__hpx_dir})
 
     # make sure that configured build type for Phylanx matches the one used for HPX
     get_property(_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)

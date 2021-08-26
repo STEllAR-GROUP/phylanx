@@ -69,7 +69,7 @@ include_directories(${pybind11_INCLUDE_DIR})
 
 # this makes sure CMake uses the proper HPX library dependencies
 target_link_libraries(phylanx_py
-  ${HPX_TLL_PRIVATE}
+    PRIVATE
     HPX::hpx
     HPX::iostreams_component
     phylanx_component

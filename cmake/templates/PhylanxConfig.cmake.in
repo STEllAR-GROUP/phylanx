@@ -7,9 +7,10 @@
 # include exported targets if not already defined
 if (NOT TARGET blaze::blaze)
   include("@BLAZE_CONF_DIR@/blaze-targets.cmake")
+  include("@BLAZE_TENSOR_CONF_DIR@/BlazeTensorTargets.cmake")
 endif()
 if (NOT TARGET hpx)
-  include("@HPX_CONF_DIR@/HPXTargets.cmake")
+  find_package(HPX REQUIRED)
 endif()
 if (NOT TARGET phylanx)
   include("${CMAKE_CURRENT_LIST_DIR}/PhylanxTargets.cmake")

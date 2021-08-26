@@ -159,15 +159,6 @@ phylanx_setup_highfive()
 
 phylanx_include(GitCommit)
 
-###############################################################################
-if(NOT HPX_WITH_CUDA)
-  set(HPX_TLL_PUBLIC "PUBLIC")      # keywords for target_link_libraries
-  set(HPX_TLL_PRIVATE "PRIVATE")
-endif()
-
-set(PHYLANX_TLL_PUBLIC ${HPX_TLL_PUBLIC})
-set(PHYLANX_TLL_PRIVATE ${HPX_TLL_PRIVATE})
-
 ################################################################################
 # Set basic search paths for the generated Phylanx headers
 ################################################################################

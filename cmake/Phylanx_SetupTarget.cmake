@@ -201,7 +201,7 @@ function(phylanx_setup_target target)
     string(STRIP "${phylanx_libs}" __phylanx_libs)
   endif()
   phylanx_debug("phylanx_setup_target.${target}: phylanx_libs:" ${__phylanx_libs})
-  target_link_libraries(${target} ${PHYLANX_TLL_PUBLIC} ${__phylanx_libs} ${target_DEPENDENCIES})
+  target_link_libraries(${target} PUBLIC ${__phylanx_libs} ${target_DEPENDENCIES})
 
   get_target_property(target_EXCLUDE_FROM_ALL ${target} EXCLUDE_FROM_ALL)
 
@@ -232,7 +232,7 @@ function(phylanx_setup_target target)
   endforeach()
 
   target_compile_definitions(
-    ${target} ${PHYLANX_TLL_PUBLIC} $<$<CONFIG:Debug>:PHYLANX_DEBUG>)
+    ${target} PUBLIC $<$<CONFIG:Debug>:PHYLANX_DEBUG>)
 
   hpx_setup_target(
     ${target}

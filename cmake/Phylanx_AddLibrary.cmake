@@ -194,9 +194,9 @@ function(add_phylanx_library name)
   )
 
   target_link_libraries(${name}
-    ${HPX_TLL_PUBLIC} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+    PUBLIC ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
   target_link_libraries(${name}
-    ${HPX_TLL_PRIVATE} blaze::blaze BlazeTensor::BlazeTensor)
+    PRIVATE blaze::blaze BlazeTensor::BlazeTensor)
 
 endfunction()
 
