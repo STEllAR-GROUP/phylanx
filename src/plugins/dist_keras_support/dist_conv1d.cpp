@@ -335,7 +335,7 @@ namespace phylanx { namespace dist_keras_support { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
+            hpx::unwrapping([this_ = std::move(this_)](
                               execution_tree::primitive_arguments_type&& args)
                                   -> execution_tree::primitive_argument_type
             {

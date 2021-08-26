@@ -117,6 +117,9 @@ set_property(TARGET phylanx_component APPEND
 
 target_compile_definitions(
     phylanx_component PUBLIC $<$<CONFIG:Debug>:PHYLANX_DEBUG>)
+if(MSVC)
+  target_compile_definitions(phylanx_component PUBLIC NOMINMAX)
+endif()
 
 get_property(PHYLANX_TARGET_COMPILE_OPTIONS_VAR
   GLOBAL PROPERTY PHYLANX_TARGET_COMPILE_OPTIONS)

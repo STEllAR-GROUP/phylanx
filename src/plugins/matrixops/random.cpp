@@ -1408,7 +1408,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using array_type = std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>;
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_), ctx = std::move(ctx)](
                 std::vector<ir::node_data<std::int64_t>>&& args) mutable
             -> primitive_argument_type
@@ -1807,7 +1807,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return integer_operand(operands[0], args, name, codename, std::move(ctx))
-            .then(hpx::launch::sync, hpx::util::unwrapping(
+            .then(hpx::launch::sync, hpx::unwrapping(
                 [](ir::node_data<std::int64_t>&& data) -> primitive_argument_type
                 {
                     util::set_seed(static_cast<std::uint32_t>(data[0]));

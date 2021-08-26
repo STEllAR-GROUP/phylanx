@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& args, eval_context ctx) const
     {
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_), ctx](
                     primitive_argument_type&& bound_func, ir::range&& list)
             ->  hpx::future<primitive_argument_type>
@@ -88,7 +88,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     result.push_back(p->eval(std::move(args), ctx));
                 }
 
-                return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
                     [](primitive_arguments_type&& result)
                     -> primitive_argument_type
                     {
@@ -113,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::back_inserter(lists));
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_), ctx](
                 primitive_argument_type&& bound_func,
                 std::vector<ir::range, arguments_allocator<ir::range>>&& lists)
@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     result.push_back(p->eval(std::move(args), ctx));
                 }
 
-                return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
                     [](primitive_arguments_type&& result)
                     -> primitive_argument_type
                     {

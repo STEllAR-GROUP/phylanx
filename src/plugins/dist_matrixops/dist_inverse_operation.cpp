@@ -381,7 +381,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         // Get a future to the result of the actual computation
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
+            hpx::unwrapping(
                 [this_ = std::move(this_)](primitive_arguments_type&& args)
                     -> primitive_argument_type {
                     return this_->distGaussInv(std::move(args[0]));

@@ -943,7 +943,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "requires exactly one operand"));
 
             return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
+                hpx::unwrapping(
                     [this_ = std::move(this_)](primitive_argument_type&& arg,
                         ir::range&& axis)->primitive_argument_type {
 
@@ -980,7 +980,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 1 || mode_ == flip_mode_axes)
         {
             return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
+                hpx::unwrapping(
                     [this_ = std::move(this_)](primitive_argument_type&& arg)
                         -> primitive_argument_type {
                         switch (this_->mode_)

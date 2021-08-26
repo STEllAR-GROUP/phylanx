@@ -209,7 +209,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 
         auto this_ = this->shared_from_this();
         auto ctx_copy = ctx;
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_), ctx = std::move(ctx_copy)](
                 primitive_arguments_type&& ops)
             ->  primitive_argument_type

@@ -530,7 +530,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 2)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
                 [this_ = std::move(this_)](primitive_argument_type&& op1,
                     primitive_argument_type&& op2)
                 ->primitive_argument_type
@@ -567,7 +567,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             else if (this_->mode_ == doubledot_product)
             {
                 return hpx::dataflow(hpx::launch::sync,
-                    hpx::util::unwrapping(
+                    hpx::unwrapping(
                         [this_ = std::move(this_)](
                             primitive_argument_type&& op1,
                             primitive_argument_type&& op2,

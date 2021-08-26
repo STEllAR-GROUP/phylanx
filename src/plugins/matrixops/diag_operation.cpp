@@ -181,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands.size() == 1)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
                 [this_ = std::move(this_)](primitive_argument_type&& arg)
                 -> primitive_argument_type
                 {
@@ -208,7 +208,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto arg1 = value_operand(operands[0], args, name_, codename_, ctx);
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_)](primitive_argument_type&& arg1,
                 ir::node_data<std::int64_t>&& arg2)
             -> primitive_argument_type

@@ -191,7 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 value_operand(operands[1], args, name_, codename_, ctx));
         }
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {

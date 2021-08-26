@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return value_operand(
             operands[0], args, name_, codename_, std::move(ctx))
             .then(hpx::launch::sync,
-                hpx::util::unwrapping(
+                hpx::unwrapping(
                     [this_ = std::move(this_)](primitive_argument_type&& arg)
                         -> primitive_argument_type {
                         // Extract the argument, the result should always be double

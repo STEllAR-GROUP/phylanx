@@ -482,7 +482,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_)](primitive_argument_type&& value,
                     primitive_argument_type&& op1,
                     primitive_argument_type&& dtype_op)
@@ -628,7 +628,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_)](primitive_argument_type&& shape,
                     primitive_argument_type&& value,
                     primitive_argument_type&& dtype_op)
@@ -740,7 +740,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
             [this_ = std::move(this_)](primitive_argument_type&& arr,
                     primitive_argument_type&& value,
                     primitive_argument_type&& dtype_op)

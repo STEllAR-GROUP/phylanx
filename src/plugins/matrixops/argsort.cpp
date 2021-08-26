@@ -439,7 +439,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
                     "`array_like`."));
 
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
+            hpx::unwrapping(
                 [this_ = std::move(this_)](primitive_arguments_type&& args)
                     -> primitive_argument_type {
                     std::string kind = extract_string_value_strict(

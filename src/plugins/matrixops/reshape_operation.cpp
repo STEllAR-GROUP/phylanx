@@ -777,7 +777,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             else if (this_->mode_ == flatten_mode)
             {
                 return hpx::dataflow(hpx::launch::sync,
-                    hpx::util::unwrapping([this_ = std::move(this_)](
+                    hpx::unwrapping([this_ = std::move(this_)](
                                               primitive_argument_type&& arr)
                                               -> primitive_argument_type {
                     switch (extract_common_type(arr))
@@ -817,7 +817,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         if (this_->mode_ == general_reshape)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            return hpx::dataflow(hpx::launch::sync, hpx::unwrapping(
                 [this_ = std::move(this_)](
                     primitive_argument_type&& arr, ir::range&& arg)
                 ->primitive_argument_type
@@ -875,7 +875,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if (this_->mode_ == flatten_mode)
         {
             return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
+                hpx::unwrapping(
                     [this_ = std::move(this_)](primitive_argument_type&& arr,
                         std::string order) -> primitive_argument_type {
 

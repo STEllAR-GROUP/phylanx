@@ -242,7 +242,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         // Get a future to the result of the actual computation
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
+            hpx::unwrapping(
                 [this_ = std::move(this_)](
                     primitive_argument_type&& op) -> primitive_argument_type {
                     if ((extract_numeric_value_dimension(
