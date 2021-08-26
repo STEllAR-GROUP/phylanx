@@ -134,7 +134,8 @@ int main(int argc, char* argv[])
     std::vector<std::string> cfg = {
         "hpx.run_hpx_main!=1"
     };
-
-    return hpx::init(argc, argv, cfg);
+    hpx::init_params params;
+    params.cfg = cfg;
+    return hpx::init(argc, argv, params);
 }
 
