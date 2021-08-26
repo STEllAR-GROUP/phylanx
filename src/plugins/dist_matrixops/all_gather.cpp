@@ -221,11 +221,11 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
 
         blaze::DynamicMatrix<T> m = arr.matrix();
         // use hpx::all_gather to get a vector of values
-        auto p = hpx::all_gather(
+        auto p = hpx::collectives::all_gather(
             ("all_gather_" + locs.annotation_.name_).c_str(),
-            m, locs.locality_.num_localities_,
-            std::size_t(-1),
-            locs.locality_.locality_id_)
+            m, hpx::collectives::num_sites_arg{locs.locality_.num_localities_},
+            hpx::collectives::this_site_arg{std::size_t(-1)},
+            hpx::collectives::generation_arg{locs.locality_.locality_id_})
                 .get();
 
         // row and column dimensions of the whole array
