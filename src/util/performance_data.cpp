@@ -256,12 +256,17 @@ namespace phylanx { namespace util {
 
             // Collect the performance counter values
             std::vector<std::int64_t> data(counter_name_last_parts.size());
-            for (unsigned int i = 0; i < counter_values.size(); ++i)
+            for (std::size_t i = 0; i < counter_values.size(); ++i)
             {
-                HPX_ASSERT(static_cast<std::size_t>(r.second - r.first) <
-                    counter_values[i].size());
-
-                data[i] = counter_values[i][tags.sequence_number - r.first];
+                if (static_cast<std::size_t>(r.second - r.first) <
+                    counter_values[i].size())
+                {
+                    data[i] = counter_values[i][tags.sequence_number - r.first];
+                }
+                else
+                {
+                    data[i] = 0;
+                }
             }
 
             result.emplace(decltype(result)::value_type(name, data));

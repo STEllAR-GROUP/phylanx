@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2021 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/compiler/compiler.hpp>
 #include <phylanx/execution_tree/compiler_component.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/util/performance_data.hpp>
 
 #include <hpx/modules/format.hpp>
 #include <hpx/include/naming.hpp>
@@ -20,6 +21,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+namespace phylanx { namespace util {
+
+    bool need_performance_counters();
+}}
 
 namespace phylanx { namespace execution_tree
 {
@@ -76,7 +82,16 @@ namespace phylanx { namespace execution_tree
         }
 
         // always return the last of all generated compiler-functions
-        return snippets.program_.add_entry_point(std::move(entry_point));
+        auto const& result =
+            snippets.program_.add_entry_point(std::move(entry_point));
+
+        // re-enable all performance counters, if needed
+        if (util::need_performance_counters())
+        {
+            phylanx::util::enable_measurements();
+        }
+
+        return result;
     }
 
     compiler::entry_point const& compile(std::string const& name,
@@ -94,7 +109,16 @@ namespace phylanx { namespace execution_tree
         }
 
         // always return the last of all generated compiler-functions
-        return snippets.program_.add_entry_point(std::move(entry_point));
+        auto const& result =
+            snippets.program_.add_entry_point(std::move(entry_point));
+
+        // re-enable all performance counters, if needed
+        if (util::need_performance_counters())
+        {
+            phylanx::util::enable_measurements();
+        }
+
+        return result;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -150,7 +174,16 @@ namespace phylanx { namespace execution_tree
         }
 
         // always return the last of all generated compiler-functions
-        return snippets.program_.add_entry_point(std::move(entry_point));
+        auto const& result =
+            snippets.program_.add_entry_point(std::move(entry_point));
+
+        // re-enable all performance counters, if needed
+        if (util::need_performance_counters())
+        {
+            phylanx::util::enable_measurements();
+        }
+
+        return result;
     }
 
     compiler::entry_point const& compile(std::string const& name,
