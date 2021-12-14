@@ -57,9 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             OutIter operator()(
                 InIter begin, InIter end, OutIter dest, T init) const
             {
-                return hpx::parallel::inclusive_scan(
-                    hpx::execution::seq, begin, end, dest,
-                    std::plus<>{}, init);
+                return hpx::inclusive_scan(
+                    hpx::execution::seq, begin, end, dest, std::plus<>{}, init);
             }
         };
     }

@@ -492,8 +492,8 @@ void test_dist_object_vector_mo_sub_localities_constructor()
         std::sort(sub_localities.begin(), sub_localities.end());
         if (cur_locality == sub_localities[0])
         {
-            using hpx::parallel::for_each;
-            using hpx::parallel::execution::par;
+            using hpx::for_each;
+            using hpx::execution::par;
 
             std::vector<std::vector<int>> res(num_localities);
 
