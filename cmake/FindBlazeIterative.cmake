@@ -5,7 +5,7 @@
 
 find_package(PkgConfig QUIET)
 
-find_path(BLAZEITERATIVE_INCLUDE BlazeIterative/BlazeIterative.hpp
+find_path(BLAZEITERATIVE_INCLUDE BlazeIterative.hpp
   HINTS /usr/include /usr/local/include "${BLAZEITERATIVE_DIR}/include/" )
 
 mark_as_advanced(BLAZEITERATIVE_DIR)
