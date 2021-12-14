@@ -11,7 +11,7 @@
 #include <phylanx/util/serialization/variant.hpp>
 
 #include <hpx/errors/exception.hpp>
-#include <hpx/execution_base/register_locks.hpp>
+#include <hpx/lock_registration/detail/register_locks.hpp>
 #include <hpx/include/run_as.hpp>
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
