@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
-        hpx::util::annotate_function annotate(eval_name_.c_str());
+        hpx::scoped_annotation annotate(eval_name_.c_str());
 #endif
 
         // perform measurements only when needed
@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type&& param, eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
-        hpx::util::annotate_function annotate(eval_name_.c_str());
+        hpx::scoped_annotation annotate(eval_name_.c_str());
 #endif
 
         // perform measurements only when needed
