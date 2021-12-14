@@ -195,7 +195,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
                 dot_result, std::plus<T>{},
                 num_sites_arg{lhs_localities.locality_.num_localities_},
-		this_site_arg{std::size_t(-1)},
+                this_site_arg{std::size_t(-1)},
                 generation_arg{lhs_localities.locality_.locality_id_})
                       .get();
         }
@@ -313,15 +313,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
         execution_tree::primitive_argument_type result;
         if (lhs_localities.locality_.num_localities_ > 1)
         {
-            result =
-                execution_tree::primitive_argument_type{hpx::collectives::all_reduce(
-                    ("all_reduce_" + lhs_localities.annotation_.name_)
-                        .c_str(),
+            result = execution_tree::primitive_argument_type{
+                hpx::collectives::all_reduce(
+                    ("all_reduce_" + lhs_localities.annotation_.name_).c_str(),
                     dot_result, blaze::Add{},
                     num_sites_arg{lhs_localities.locality_.num_localities_},
-                    this_site_arg{std::size_t(-1)}, generation_arg{lhs_localities.locality_.locality_id_})
-                                                            .get()};
-
+                    this_site_arg{std::size_t(-1)},
+                    generation_arg{lhs_localities.locality_.locality_id_})
+                    .get()};
         }
         else
         {
@@ -529,14 +528,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             }
             else
             {
-                result =
-                    execution_tree::primitive_argument_type{hpx::collectives::all_reduce(
+                result = execution_tree::primitive_argument_type{
+                    hpx::collectives::all_reduce(
                         ("all_reduce_" + lhs_localities.annotation_.name_)
                             .c_str(),
                         dot_result, blaze::Add{},
                         num_sites_arg{lhs_localities.locality_.num_localities_},
                         this_site_arg{std::size_t(-1)},
-			generation_arg{lhs_localities.locality_.locality_id_})
+                        generation_arg{lhs_localities.locality_.locality_id_})
                         .get()};
             }
         }
@@ -715,14 +714,14 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
             }
             else
             {
-                result =
-                    execution_tree::primitive_argument_type{hpx::collectives::all_reduce(
+                result = execution_tree::primitive_argument_type{
+                    hpx::collectives::all_reduce(
                         ("all_reduce_" + lhs_localities.annotation_.name_)
                             .c_str(),
                         result_matrix, blaze::Add{},
                         num_sites_arg{lhs_localities.locality_.num_localities_},
                         this_site_arg{std::size_t(-1)},
-			generation_arg{lhs_localities.locality_.locality_id_})
+                        generation_arg{lhs_localities.locality_.locality_id_})
                         .get()};
             }
         }
