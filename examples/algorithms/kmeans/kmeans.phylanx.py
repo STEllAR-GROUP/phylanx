@@ -18,13 +18,15 @@
 # \returns the cluster centroids
 # flake8: noqa
 
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
 import argparse
 import csv
 import numpy as np
 import os
 import time
 
+np.set_printoptions(threshold=np.inf)
+PhylanxSession.init(16)
 
 @Phylanx
 def initialize_centroids(points, k):
@@ -54,7 +56,7 @@ def move_centroids(points, closest, centroids):
 
 
 @Phylanx
-def kmeans(points, k, iterations):
+def kmeans_t(points, k, iterations):
     centroids = initialize_centroids(points, k)
     for i in range(iterations):
         centroids = np.apply(
@@ -119,13 +121,16 @@ def main():
 
     # time the execution
     start_time = time.time()
-
     # print what is going to be run and do not run
     if args.dry_run:
         print('kmeans', args.points.shape, args.centroids, args.iterations)
     else:
+        print('Number of points: ', len(args.points))
+        print('Points')
+        print(args.points)
+        print('Numebr of iterations: ', args.iterations)
         print('Cluster centroids are:\n',
-              kmeans(args.points, args.centroids, args.iterations))
+              kmeans_t(args.points, args.centroids, args.iterations))
     execution_time = time.time() - start_time
     print('Time:', execution_time)
 
