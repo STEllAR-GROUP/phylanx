@@ -79,8 +79,8 @@ namespace phylanx { namespace execution_tree
                     detail::slice_assign_scalar<T>{rhs}, name, codename, ctx);
             }
 
-        case 1: HPX_FALLTHROUGH;
-        case 2: HPX_FALLTHROUGH;
+        case 1: [[fallthrough]];
+        case 2: [[fallthrough]];
         default:
             break;
         }

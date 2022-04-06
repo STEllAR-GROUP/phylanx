@@ -180,7 +180,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tile_idx, numtiles, std::move(given_name), intersection,
                 std::move(ctx));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return constant1d_helper<double>(std::move(value), dims[0],
                 tile_idx, numtiles, std::move(given_name), intersection,
@@ -284,7 +284,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tile_idx, numtiles, std::move(given_name), tiling_type,
                 intersections, std::move(ctx));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return constant2d_helper<double>(std::move(value), dims, tile_idx,
                 numtiles, std::move(given_name), tiling_type, intersections,
@@ -395,7 +395,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 tile_idx, numtiles, std::move(given_name), tiling_type,
                 intersections, std::move(ctx));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return constant3d_helper<double>(std::move(value), dims, tile_idx,
                 numtiles, std::move(given_name), tiling_type, intersections,

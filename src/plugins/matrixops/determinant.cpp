@@ -106,8 +106,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return determinant2d(
                 extract_numeric_value_strict(std::move(op), name_, codename_));
 
-        case node_data_type_int64:  HPX_FALLTHROUGH;
-        case node_data_type_bool:   HPX_FALLTHROUGH;
+        case node_data_type_int64:  [[fallthrough]];
+        case node_data_type_bool:   [[fallthrough]];
         case node_data_type_unknown:
             return determinant2d(
                 extract_numeric_value(std::move(op), name_, codename_));
@@ -159,7 +159,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return this_->determinant2d(std::move(op));
 
-                case 1: HPX_FALLTHROUGH;
+                case 1: [[fallthrough]];
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",

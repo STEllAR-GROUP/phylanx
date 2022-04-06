@@ -78,12 +78,12 @@ namespace phylanx { namespace common {
             return indices1d_helper<std::int64_t>(size);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return indices1d_helper<double>(size);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -147,12 +147,12 @@ namespace phylanx { namespace common {
             return indices2d_helper<std::int64_t>(rows, columns);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return indices2d_helper<double>(rows, columns);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -224,12 +224,12 @@ namespace phylanx { namespace common {
             return indices3d_helper<std::int64_t>(pages, rows, columns);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return indices3d_helper<double>(pages, rows, columns);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -314,12 +314,12 @@ namespace phylanx { namespace common {
             return indices4d_helper<std::int64_t>(quats, pages, rows, columns);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]]
         case node_data_type_double:
             return indices4d_helper<double>(quats, pages, rows, columns);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -422,12 +422,12 @@ namespace phylanx { namespace common {
             return sparse_indices1d_helper<std::int64_t>(size);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return sparse_indices1d_helper<double>(size);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -489,12 +489,12 @@ namespace phylanx { namespace common {
             return sparse_indices2d_helper<std::int64_t>(rows, columns);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return sparse_indices2d_helper<double>(rows, columns);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -563,12 +563,12 @@ namespace phylanx { namespace common {
             return sparse_indices3d_helper<std::int64_t>(pages, rows, columns);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return sparse_indices3d_helper<double>(pages, rows, columns);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -651,12 +651,12 @@ namespace phylanx { namespace common {
                 quats, pages, rows, columns);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return sparse_indices4d_helper<double>(quats, pages, rows, columns);
 
         case node_data_type_bool:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }

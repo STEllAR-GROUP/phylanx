@@ -91,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return shuffle_1d(extract_integer_value_strict(std::move(arg)));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return shuffle_1d(extract_numeric_value(std::move(arg)));
 
@@ -117,7 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return shuffle_2d(extract_integer_value_strict(std::move(arg)));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return shuffle_2d(extract_numeric_value(std::move(arg)));
 

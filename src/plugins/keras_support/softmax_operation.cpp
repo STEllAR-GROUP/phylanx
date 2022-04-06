@@ -102,11 +102,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case -2: HPX_FALLTHROUGH;
+        case -2: [[fallthrough]];
         case 0:
             return softmax2d_axis0(std::move(arg));
 
-        case -1: HPX_FALLTHROUGH;
+        case -1: [[fallthrough]];
         case 1:
             return softmax2d_axis1(std::move(arg));
 
@@ -195,15 +195,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case -3: HPX_FALLTHROUGH;
+        case -3: [[fallthrough]];
         case 0:
             return softmax3d_axis0(std::move(arg));
 
-        case -2: HPX_FALLTHROUGH;
+        case -2: [[fallthrough]];
         case 1:
             return softmax3d_axis1(std::move(arg));
 
-        case -1: HPX_FALLTHROUGH;
+        case -1: [[fallthrough]];
         case 2:
             return softmax3d_axis2(std::move(arg));
 
@@ -352,19 +352,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case -4: HPX_FALLTHROUGH;
+        case -4: [[fallthrough]];
         case 0:
             return softmax4d_axis0(std::move(arg));
 
-        case -3: HPX_FALLTHROUGH;
+        case -3: [[fallthrough]];
         case 1:
             return softmax4d_axis1(std::move(arg));
 
-        case -2: HPX_FALLTHROUGH;
+        case -2: [[fallthrough]];
         case 2:
             return softmax4d_axis2(std::move(arg));
 
-        case -1: HPX_FALLTHROUGH;
+        case -1: [[fallthrough]];
         case 3:
             return softmax4d_axis3(std::move(arg));
 

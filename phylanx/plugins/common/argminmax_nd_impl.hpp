@@ -375,14 +375,14 @@ namespace phylanx { namespace common {
             {
                 // Option 2: Find min/max among rows
             case -2:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 0:
                 return argminmax2d_0_axis<Operation>(
                     std::move(arg), value, name, codename);
 
                 // Option 3: Find min/max among columns
             case -1:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 1:
                 return argminmax2d_1_axis<Operation>(
                     std::move(arg), value, name, codename);
@@ -601,21 +601,21 @@ namespace phylanx { namespace common {
             {
                 // Option 1: Find min/max among pages
             case -3:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 0:
                 return argminmax3d_0_axis<Operation>(
                     std::move(arg), name, codename);
 
                 // Option 2: Find min/max among rows
             case -2:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 1:
                 return argminmax3d_1_axis<Operation>(
                     std::move(arg), name, codename);
 
                 // Option 3: Find min/max among columns
             case -1:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 2:
                 return argminmax3d_2_axis<Operation>(
                     std::move(arg), name, codename);

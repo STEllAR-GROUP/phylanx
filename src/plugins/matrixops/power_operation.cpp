@@ -125,9 +125,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:    HPX_FALLTHROUGH;
-        case node_data_type_int64:   HPX_FALLTHROUGH;
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_bool:    [[fallthrough]];
+        case node_data_type_int64:   [[fallthrough]];
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return power0d(extract_numeric_value(std::move(lhs)),
                 extract_numeric_value(std::move(rhs)));
@@ -156,9 +156,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:    HPX_FALLTHROUGH;
-        case node_data_type_int64:   HPX_FALLTHROUGH;
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_bool:    [[fallthrough]];
+        case node_data_type_int64:   [[fallthrough]];
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return power1d(extract_numeric_value(std::move(lhs)),
                 extract_numeric_value(std::move(rhs)));
@@ -187,9 +187,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:    HPX_FALLTHROUGH;
-        case node_data_type_int64:   HPX_FALLTHROUGH;
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_bool:    [[fallthrough]];
+        case node_data_type_int64:   [[fallthrough]];
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return power2d(extract_numeric_value(std::move(lhs)),
                 extract_numeric_value(std::move(rhs)));
@@ -218,9 +218,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:    HPX_FALLTHROUGH;
-        case node_data_type_int64:   HPX_FALLTHROUGH;
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_bool:    [[fallthrough]];
+        case node_data_type_int64:   [[fallthrough]];
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return power3d(extract_numeric_value(std::move(lhs)),
                 extract_numeric_value(std::move(rhs)));

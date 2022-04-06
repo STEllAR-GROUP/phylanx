@@ -247,11 +247,11 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         switch (axis)
         {
         case -2:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 0:
             return argsort2d_axis0(std::move(in_array), kind, order);
         case -1:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 1:
             return argsort2d_axis1(std::move(in_array), kind, order);
         default:
@@ -380,15 +380,15 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.ar
         switch (axis)
         {
         case -3:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 0:
             return argsort3d_axis0(std::move(in_array), kind, order);
         case -2:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 1:
             return argsort3d_axis1(std::move(in_array), kind, order);
         case -1:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 2:
             return argsort3d_axis2(std::move(in_array), kind, order);
         default:

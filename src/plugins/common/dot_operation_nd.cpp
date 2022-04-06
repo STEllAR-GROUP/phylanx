@@ -42,7 +42,7 @@ namespace phylanx { namespace common
                 extract_integer_value(std::move(rhs), name, codename),
                 name, codename);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dot0d(
                 extract_numeric_value(std::move(lhs), name, codename),
@@ -81,7 +81,7 @@ namespace phylanx { namespace common
                 extract_integer_value(std::move(rhs), name, codename),
                 name, codename);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dot1d(
                 extract_numeric_value(std::move(lhs), name, codename),
@@ -120,7 +120,7 @@ namespace phylanx { namespace common
                 extract_integer_value(std::move(rhs), name, codename),
                 name, codename);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dot2d(
                 extract_numeric_value(std::move(lhs), name, codename),
@@ -159,7 +159,7 @@ namespace phylanx { namespace common
                 extract_integer_value(std::move(rhs), name, codename),
                 name, codename);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dot3d(
                 extract_numeric_value(std::move(lhs), name, codename),

@@ -392,7 +392,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(lhs), name_, codename_),
                 extract_integer_value(std::move(rhs), name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return cross1d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -424,7 +424,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(lhs), name_, codename_),
                 extract_integer_value(std::move(rhs), name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return cross2d(
                 extract_numeric_value(std::move(lhs), name_, codename_),

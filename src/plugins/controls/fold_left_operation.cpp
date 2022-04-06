@@ -279,7 +279,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_node_data<std::int64_t>(std::move(data)),
                 std::move(ctx));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return fold_left_array_helper(std::move(bound_func),
                 std::move(initial), extract_node_data<double>(std::move(data)),

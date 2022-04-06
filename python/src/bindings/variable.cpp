@@ -348,10 +348,10 @@ namespace phylanx { namespace execution_tree
                 }
                 break;
 
-            case 'c': HPX_FALLTHROUGH;  // complex floating-point
-            case 'm': HPX_FALLTHROUGH;  // timedelta
-            case 'M': HPX_FALLTHROUGH;  // datetime
-            case 'U': HPX_FALLTHROUGH;  // Unicode
+            case 'c': [[fallthrough]];  // complex floating-point
+            case 'm': [[fallthrough]];  // timedelta
+            case 'M': [[fallthrough]];  // datetime
+            case 'U': [[fallthrough]];  // Unicode
             case 'V':                   // void
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

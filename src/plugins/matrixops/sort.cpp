@@ -204,11 +204,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (axis)
         {
         case -2:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 0:
             return sort2d_axis0(std::move(arg), kind);
         case -1:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 1:
             return sort2d_axis1(std::move(arg), kind);
 
@@ -288,15 +288,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (axis)
         {
         case -3:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 0:
             return sort3d_axis0(std::move(arg), kind);
         case -2:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 1:
             return sort3d_axis1(std::move(arg), kind);
         case -1:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 2:
             return sort3d_axis2(std::move(arg), kind);
         default:

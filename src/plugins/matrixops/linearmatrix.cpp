@@ -111,8 +111,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_scalar_integer_value(std::move(dx), name_, codename_),
                 extract_scalar_integer_value(std::move(dy), name_, codename_));
 
-        case node_data_type_bool:   HPX_FALLTHROUGH;
-        case node_data_type_double: HPX_FALLTHROUGH;
+        case node_data_type_bool:   [[fallthrough]];
+        case node_data_type_double: [[fallthrough]];
         case node_data_type_unknown:
             return linmatrix(nx, ny,
                 extract_scalar_numeric_value(std::move(x0), name_, codename_),

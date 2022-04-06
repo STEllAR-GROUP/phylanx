@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return eye_n_helper<std::int64_t>(n);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return eye_n_helper<double>(n);
 
@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return eye_nmk_helper<std::int64_t>(n, m, k);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return eye_nmk_helper<double>(n, m, k);
 

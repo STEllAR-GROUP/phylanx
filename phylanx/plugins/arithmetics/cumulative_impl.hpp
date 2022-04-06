@@ -434,7 +434,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->template cumulative_helper<std::int64_t>(
                         std::move(ops), std::move(axis));
 
-                case node_data_type_unknown: HPX_FALLTHROUGH;
+                case node_data_type_unknown: [[fallthrough]];
                 case node_data_type_double:
                     return this_->template cumulative_helper<double>(
                         std::move(ops), std::move(axis));

@@ -433,16 +433,16 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
 //             return extract_value(util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return val;
 
@@ -465,13 +465,13 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
 //             return extract_copy_value(
 //                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
         case primitive_argument_type::primitive_index:
             return val;
 
@@ -550,12 +550,12 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
 //             return extract_ref_value(
 //                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
         case primitive_argument_type::primitive_index:
             return val;
 
@@ -632,20 +632,20 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::future_index:  HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index:  [[fallthrough]];
 //         {
 //             auto f = util::get<6>(val).get();
 //             val = f.get();
 //             return extract_value(std::move(val), name, codename);
 //         }
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return std::move(val);
 
@@ -667,12 +667,12 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
 //             return extract_copy_value(
 //                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
         case primitive_argument_type::primitive_index:
             return std::move(val);
 
@@ -767,20 +767,20 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
 //         {
 //             auto f = util::get<6>(val).get();
 //             val = f.get();
 //             return extract_ref_value(std::move(val), name, codename);
 //         }
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return std::move(val);
 
@@ -822,8 +822,8 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::future_index:
             return is_ref_value(util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
         case primitive_argument_type::primitive_index:
             return false;
 
@@ -847,12 +847,12 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return val;
 
@@ -860,7 +860,7 @@ namespace phylanx { namespace execution_tree
             return extract_literal_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index: [[fallthrough]];
         default:
             break;
         }
@@ -880,7 +880,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
         case primitive_argument_type::bool_index:
             return primitive_argument_type{util::get<1>(val).ref()};
 
@@ -936,7 +936,7 @@ namespace phylanx { namespace execution_tree
                 util::get<6>(val).get().get(), name, codename);
 
         case primitive_argument_type::primitive_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -955,12 +955,12 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return std::move(val);
 
@@ -970,7 +970,7 @@ namespace phylanx { namespace execution_tree
             return extract_literal_value(std::move(val), name, codename);
         }
 
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index: [[fallthrough]];
         default:
             break;
         }
@@ -988,18 +988,18 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
         case primitive_argument_type::float64_index:
             return true;
 
         case primitive_argument_type::future_index:
             return is_literal_operand(util::get<6>(val).get().get());
 
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
         default:
             break;
@@ -1027,11 +1027,11 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1058,13 +1058,13 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value_strict(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1098,11 +1098,11 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value(std::move(val), name, codename);
         }
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1141,11 +1141,11 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_numeric_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1174,13 +1174,13 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_numeric_value_strict(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1221,11 +1221,11 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_numeric_value(std::move(val), name, codename);
         }
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1254,13 +1254,13 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value_strict(std::move(val), name, codename);
         }
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1291,13 +1291,13 @@ namespace phylanx { namespace execution_tree
                 std::move(val), name, codename);
         }
 
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1316,19 +1316,19 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
         case primitive_argument_type::float64_index:
             return true;
 
         case primitive_argument_type::future_index:
             return is_numeric_operand(util::get<6>(val).get().get());
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1345,13 +1345,13 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::future_index:
             return is_numeric_operand(util::get<6>(val).get().get());
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1377,11 +1377,11 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value_dimension(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1414,11 +1414,11 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value_size(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1451,11 +1451,11 @@ namespace phylanx { namespace execution_tree
             return extract_numeric_value_dimensions(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1480,13 +1480,13 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::future_index:
             return is_boolean_data_operand(util::get<6>(val).get().get());
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1513,11 +1513,11 @@ namespace phylanx { namespace execution_tree
             return extract_integer_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1550,11 +1550,11 @@ namespace phylanx { namespace execution_tree
             return extract_integer_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1593,11 +1593,11 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_integer_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1637,11 +1637,11 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_integer_value(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1660,19 +1660,19 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
         case primitive_argument_type::float64_index:
             return true;
 
         case primitive_argument_type::future_index:
             return is_integer_operand(util::get<6>(val).get().get());
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1695,13 +1695,13 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_integer_value_strict(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1730,13 +1730,13 @@ namespace phylanx { namespace execution_tree
             return extract_scalar_integer_value_strict(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1764,13 +1764,13 @@ namespace phylanx { namespace execution_tree
             return extract_integer_value_strict(
                 util::get<6>(val).get().get(), name, codename);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1799,13 +1799,13 @@ namespace phylanx { namespace execution_tree
             return extract_integer_value_strict(std::move(val), name, codename);
         }
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1829,13 +1829,13 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::future_index:
             return is_integer_operand_strict(util::get<6>(val).get().get());
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -1984,11 +1984,11 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::float64_index:
             return ir::node_data<std::uint8_t>{util::get<4>(val).ref()};
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2011,14 +2011,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::bool_index:
             return util::get<1>(val).ref();
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2047,12 +2047,12 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::float64_index:
             return ir::node_data<std::uint8_t>{util::get<4>(std::move(val))};
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2075,14 +2075,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::bool_index:
             return util::get<1>(std::move(val));
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2121,9 +2121,9 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::dictionary_index:
             return !(util::get<8>(val).empty());
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
         default:
             break;
         }
@@ -2160,9 +2160,9 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::dictionary_index:
             return !(util::get<8>(val).empty());
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
         default:
             break;
         }
@@ -2185,14 +2185,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::bool_index:
             return bool(util::get<1>(val));
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
         default:
             break;
         }
@@ -2215,14 +2215,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::bool_index:
             return bool(util::get<1>(std::move(val)));
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
         default:
             break;
         }
@@ -2240,17 +2240,17 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
         case primitive_argument_type::list_index:
             return true;
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2264,14 +2264,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::bool_index:
             return true;
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2287,14 +2287,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index:
             return util::get<3>(val);
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2316,14 +2316,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index:
             return util::get<3>(std::move(val));
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2344,14 +2344,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index:
             return true;
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2367,14 +2367,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index:
             return util::get<3>(val);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2396,14 +2396,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index:
             return util::get<3>(std::move(val));
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2424,14 +2424,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::string_index:
             return true;
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2454,12 +2454,12 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::float64_index:
             return {ast::expression(util::get<4>(val))};
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2488,12 +2488,12 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::float64_index:
             return {ast::expression(util::get<4>(std::move(val)))};
 
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2514,10 +2514,10 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return primitive_arguments_type{val};
 
@@ -2555,13 +2555,13 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return primitive_arguments_type{std::move(val)};
 
@@ -2585,14 +2585,14 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         case primitive_argument_type::dictionary_index:
             return true;
 
@@ -2611,14 +2611,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::list_index:     // phylanx::ir:range
             return util::get<7>(val).ref();
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2640,14 +2640,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::list_index:
             return util::get<7>(std::move(val));
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2670,14 +2670,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::list_index:
             return util::get<7>(val).size();
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2698,14 +2698,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::list_index:
             return true;
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2719,14 +2719,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::dictionary_index:
             return true;
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         default:
             break;
         }
@@ -2737,17 +2737,17 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
         case primitive_argument_type::future_index:
             return true;
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }
@@ -2763,14 +2763,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::dictionary_index:
             return util::get<8>(val);
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         default:
             break;
         }
@@ -2792,14 +2792,14 @@ namespace phylanx { namespace execution_tree
         case primitive_argument_type::dictionary_index:
             return util::get<8>(std::move(val));
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::bool_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::int64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::float64_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::bool_index: [[fallthrough]];
+        case primitive_argument_type::int64_index: [[fallthrough]];
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::float64_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
         default:
             break;
         }
@@ -2825,21 +2825,21 @@ namespace phylanx { namespace execution_tree
             return util::get<8>(val);
 
         case primitive_argument_type::nil_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::bool_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::int64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::string_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::float64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::primitive_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::future_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::list_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -2864,21 +2864,21 @@ namespace phylanx { namespace execution_tree
             return util::get<8>(std::move(val));
 
         case primitive_argument_type::nil_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::bool_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::int64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::string_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::float64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::primitive_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::future_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::list_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -2903,21 +2903,21 @@ namespace phylanx { namespace execution_tree
             return util::get<8>(val).size();
 
         case primitive_argument_type::nil_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::bool_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::int64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::string_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::float64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::primitive_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::future_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::list_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -2940,21 +2940,21 @@ namespace phylanx { namespace execution_tree
             return true;
 
         case primitive_argument_type::nil_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::bool_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::int64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::string_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::float64_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::primitive_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::future_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case primitive_argument_type::list_index:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -4313,10 +4313,10 @@ namespace phylanx { namespace execution_tree
         case 7:
             return ir::node_data<double>{util::get<7>(std::move(val))};
 
-        case 0: HPX_FALLTHROUGH;    // ast::nil
-        case 3: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];    // ast::nil
+        case 3: [[fallthrough]];
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
-        case 5: HPX_FALLTHROUGH;
+        case 5: [[fallthrough]];
         default:
             break;
         }
@@ -4333,14 +4333,14 @@ namespace phylanx { namespace execution_tree
         case 3:
             return util::get<3>(std::move(val));
 
-        case 0: HPX_FALLTHROUGH;    // ast::nil
-        case 1: HPX_FALLTHROUGH;    // bool
-        case 2: HPX_FALLTHROUGH;
-        case 4: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];    // ast::nil
+        case 1: [[fallthrough]];    // bool
+        case 2: [[fallthrough]];
+        case 4: [[fallthrough]];
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
-        case 5: HPX_FALLTHROUGH;
-        case 6: HPX_FALLTHROUGH;
-        case 7: HPX_FALLTHROUGH;
+        case 5: [[fallthrough]];
+        case 6: [[fallthrough]];
+        case 7: [[fallthrough]];
         default:
             break;
         }
@@ -4370,10 +4370,10 @@ namespace phylanx { namespace execution_tree
         case 7:
             return ir::node_data<std::int64_t>{util::get<7>(std::move(val))};
 
-        case 0: HPX_FALLTHROUGH;    // ast::nil
-        case 3: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];    // ast::nil
+        case 3: [[fallthrough]];
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
-        case 5: HPX_FALLTHROUGH;
+        case 5: [[fallthrough]];
         default:
             break;
         }
@@ -4407,10 +4407,10 @@ namespace phylanx { namespace execution_tree
         case 7:
             return util::get<7>(std::move(val));
 
-        case 0: HPX_FALLTHROUGH;    // ast::nil
-        case 3: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];    // ast::nil
+        case 3: [[fallthrough]];
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
-        case 5: HPX_FALLTHROUGH;
+        case 5: [[fallthrough]];
         default:
             break;
         }
@@ -4544,9 +4544,9 @@ namespace phylanx { namespace execution_tree
         case 0:    // ir::node_data<T> 0 dimension
             return boost::hash<T>{}(std::move(val[0]));
 
-        case 1: HPX_FALLTHROUGH; // 1 dimension
-        case 2: HPX_FALLTHROUGH; // 2 dimensions
-        case 3: HPX_FALLTHROUGH; // 3 dimensions
+        case 1: [[fallthrough]]; // 1 dimension
+        case 2: [[fallthrough]]; // 2 dimensions
+        case 3: [[fallthrough]]; // 3 dimensions
         default:
             break;
         }
@@ -4588,10 +4588,10 @@ namespace std
         case primitive_argument_type::future_index:
             return (*this)(phylanx::util::get<6>(val).get().get());
 
-        case primitive_argument_type::nil_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::list_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::dictionary_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::nil_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::list_index: [[fallthrough]];
+        case primitive_argument_type::dictionary_index: [[fallthrough]];
         default:
             break;
         }

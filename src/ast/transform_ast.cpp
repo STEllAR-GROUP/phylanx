@@ -121,14 +121,14 @@ namespace phylanx { namespace ast
                         return primary_expr{replace};
                     }
                 }
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
 
-            case 0: HPX_FALLTHROUGH;    // nil
-            case 1: HPX_FALLTHROUGH;    // bool
-            case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-            case 4: HPX_FALLTHROUGH;    // std::string
-            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
-            case 9: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+            case 0: [[fallthrough]];    // nil
+            case 1: [[fallthrough]];    // bool
+            case 2: [[fallthrough]];    // phylanx::ir::node_data<double>
+            case 4: [[fallthrough]];    // std::string
+            case 5: [[fallthrough]];    // phylanx::ir::node_data<std::int64_t>
+            case 9: [[fallthrough]];    // phylanx::ir::node_data<std::uint8_t>
             default:
                 return pe;
             }
@@ -147,7 +147,7 @@ namespace phylanx { namespace ast
                 return operand{
                     transduce(util::get<2>(op.var).get(), match, replace)};
 
-            case 0: HPX_FALLTHROUGH;    // nil
+            case 0: [[fallthrough]];    // nil
             default:
                 return op;
             }
@@ -264,13 +264,13 @@ namespace phylanx { namespace ast
                 // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
                 return transform(util::get<8>(pe.var).get(), rule, found_expr);
 
-            case 0: HPX_FALLTHROUGH;    // nil
-            case 1: HPX_FALLTHROUGH;    // bool
-            case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-            case 3: HPX_FALLTHROUGH;    // identifier
-            case 4: HPX_FALLTHROUGH;    // std::string
-            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
-            case 9: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+            case 0: [[fallthrough]];    // nil
+            case 1: [[fallthrough]];    // bool
+            case 2: [[fallthrough]];    // phylanx::ir::node_data<double>
+            case 3: [[fallthrough]];    // identifier
+            case 4: [[fallthrough]];    // std::string
+            case 5: [[fallthrough]];    // phylanx::ir::node_data<std::int64_t>
+            case 9: [[fallthrough]];    // phylanx::ir::node_data<std::uint8_t>
             default:
                 return pe;
             }
@@ -289,7 +289,7 @@ namespace phylanx { namespace ast
                 return operand{
                     transform(util::get<2>(op.var).get(), rule, found_expr)};
 
-            case 0: HPX_FALLTHROUGH;    // nil
+            case 0: [[fallthrough]];    // nil
             default:
                 return op;
             }
@@ -387,8 +387,8 @@ namespace phylanx { namespace ast
                             // phylanx::util::recursive_wrapper<primary_expr>
                             return simplify(util::get<1>(expr.first.var).get());
 
-                        case 0: HPX_FALLTHROUGH;
-                        case 2: HPX_FALLTHROUGH;
+                        case 0: [[fallthrough]];
+                        case 2: [[fallthrough]];
                         default:
                             break;
                         }
@@ -403,13 +403,13 @@ namespace phylanx { namespace ast
                 // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
                 return simplify(util::get<8>(pe.var).get());
 
-            case 0: HPX_FALLTHROUGH;    // nil
-            case 1: HPX_FALLTHROUGH;    // bool
-            case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-            case 3: HPX_FALLTHROUGH;    // identifier
-            case 4: HPX_FALLTHROUGH;    // std::string
-            case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
-            case 9: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+            case 0: [[fallthrough]];    // nil
+            case 1: [[fallthrough]];    // bool
+            case 2: [[fallthrough]];    // phylanx::ir::node_data<double>
+            case 3: [[fallthrough]];    // identifier
+            case 4: [[fallthrough]];    // std::string
+            case 5: [[fallthrough]];    // phylanx::ir::node_data<std::int64_t>
+            case 9: [[fallthrough]];    // phylanx::ir::node_data<std::uint8_t>
             default:
                 return pe;
             }
@@ -440,7 +440,7 @@ namespace phylanx { namespace ast
                                 return operand{simplify(
                                     util::get<2>(expr.first.var).get())};
 
-                            case 0: HPX_FALLTHROUGH;    // nil
+                            case 0: [[fallthrough]];    // nil
                             default:
                                 break;
                             }
@@ -452,7 +452,7 @@ namespace phylanx { namespace ast
             case 2:     // phylanx::util::recursive_wrapper<unary_expr>
                 return operand{simplify(util::get<2>(op.var).get())};
 
-            case 0: HPX_FALLTHROUGH;    // nil
+            case 0: [[fallthrough]];    // nil
             default:
                 return op;
             }
@@ -484,7 +484,7 @@ namespace phylanx { namespace ast
                     return expression{
                         simplify(util::get<2>(expr.first.var).get())};
 
-                case 0: HPX_FALLTHROUGH;    // nil
+                case 0: [[fallthrough]];    // nil
                 default:
                     break;
                 }

@@ -462,7 +462,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                                 this_->name_,
                                 this_->codename_));
                     case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+                        [[fallthrough]];
                     case node_data_type_double:
                         return this_->pad_helper(
                             extract_numeric_value_strict(std::move(args[0]),
@@ -492,7 +492,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                             std::move(width),
                             ir::node_data<std::uint8_t>{0});
                     case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+                        [[fallthrough]];
                     case node_data_type_double:
                         return this_->pad_helper(
                             extract_numeric_value_strict(std::move(args[0]),

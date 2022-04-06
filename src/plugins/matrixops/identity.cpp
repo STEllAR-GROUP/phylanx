@@ -79,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return identity_helper<std::int64_t>(std::move(op));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return identity_helper<double>(std::move(op));
 

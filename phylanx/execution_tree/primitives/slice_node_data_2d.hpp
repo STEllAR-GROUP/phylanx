@@ -1373,8 +1373,8 @@ namespace phylanx { namespace execution_tree
     {
         switch (value.num_dimensions())
         {
-        case 0: HPX_FALLTHROUGH;
-        case 1: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
+        case 1: [[fallthrough]];
         case 2:
             {
                 auto m = data.matrix();
@@ -1424,8 +1424,8 @@ namespace phylanx { namespace execution_tree
     {
         switch (value.num_dimensions())
         {
-        case 0: HPX_FALLTHROUGH;
-        case 1: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
+        case 1: [[fallthrough]];
         case 2:
             {
                 auto m = data.matrix();

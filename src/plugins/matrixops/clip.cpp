@@ -180,7 +180,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case node_data_type_bool:
                     return this_->clip_helper<std::uint8_t>(std::move(args));
                 case node_data_type_unknown:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case node_data_type_double:
                     return this_->clip_helper<double>(std::move(args));
 

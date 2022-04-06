@@ -239,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 3:
                     return this_->inverse3d(std::move(op));
 
-                case 1: HPX_FALLTHROUGH;
+                case 1: [[fallthrough]];
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "inverse_operation::eval",

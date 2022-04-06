@@ -240,26 +240,26 @@ namespace phylanx { namespace ir
 
             switch (dims)
             {
-            case storage0d:         HPX_FALLTHROUGH;
+            case storage0d:         [[fallthrough]];
             case custom_storage0d:
                 return storage_type(d.scalar());
 
-            case storage1d:         HPX_FALLTHROUGH;
+            case storage1d:         [[fallthrough]];
             case custom_storage1d:
                 increment_copy_construction_count();
                 return storage_type(d.vector());
 
-            case storage2d:         HPX_FALLTHROUGH;
+            case storage2d:         [[fallthrough]];
             case custom_storage2d:
                 increment_copy_construction_count();
                 return storage_type(d.matrix());
 
-            case storage3d:         HPX_FALLTHROUGH;
+            case storage3d:         [[fallthrough]];
             case custom_storage3d:
                 increment_copy_construction_count();
                 return storage_type(d.tensor());
 
-            case storage4d:         HPX_FALLTHROUGH;
+            case storage4d:         [[fallthrough]];
             case custom_storage4d:
                 increment_copy_construction_count();
                 return storage_type(d.quatern());

@@ -194,7 +194,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return constant0d_helper<std::int64_t>(std::move(op));
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return constant0d_helper<double>(std::move(op));
         default:
@@ -241,7 +241,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return constant1d_helper<std::int64_t>(std::move(op), dim);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return constant1d_helper<double>(std::move(op), dim);
 
@@ -291,7 +291,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return constant2d_helper<std::int64_t>(std::move(op), dim);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return constant2d_helper<double>(std::move(op), dim);
 
@@ -343,7 +343,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return constant3d_helper<std::int64_t>(std::move(op), dim);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return constant3d_helper<double>(std::move(op), dim);
 
@@ -401,7 +401,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return constant4d_helper<std::int64_t>(std::move(op), dim);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return constant4d_helper<double>(std::move(op), dim);
 

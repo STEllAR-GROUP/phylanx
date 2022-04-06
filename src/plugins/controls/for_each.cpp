@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 std::move(ctx), name_, codename_);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return detail::iterate_over_array_vector_helper(p,
                 extract_numeric_value_strict(
@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 std::move(ctx), name_, codename_);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return detail::iterate_over_array_matrix_helper(p,
                 extract_numeric_value_strict(

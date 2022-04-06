@@ -512,8 +512,8 @@ namespace phylanx { namespace ir
     {
         switch (data_.index())
         {
-        case 0: HPX_FALLTHROUGH;    // int_range_type
-        case 1: HPX_FALLTHROUGH;    // wrapped_args_type
+        case 0: [[fallthrough]];    // int_range_type
+        case 1: [[fallthrough]];    // wrapped_args_type
         case 2:                     // arg_pair_type
             return range{begin(), end()};
 
@@ -533,7 +533,7 @@ namespace phylanx { namespace ir
         case 1:                     // wrapped_args_type
             return false;
 
-        case 0: HPX_FALLTHROUGH;    // int_range_type
+        case 0: [[fallthrough]];    // int_range_type
         case 2:                     // arg_pair_type
             return true;
 
@@ -553,7 +553,7 @@ namespace phylanx { namespace ir
         case 0:                     // int_range_type
             return false;
 
-        case 1: HPX_FALLTHROUGH;    // wrapped_args_type
+        case 1: [[fallthrough]];    // wrapped_args_type
         case 2:                     // arg_pair_type
             return true;
 
@@ -570,7 +570,7 @@ namespace phylanx { namespace ir
     {
         switch (data_.index())
         {
-        case 0: HPX_FALLTHROUGH;    // int_range_type
+        case 0: [[fallthrough]];    // int_range_type
         case 1:                     // wrapped_args_type
             return false;
 
@@ -593,7 +593,7 @@ namespace phylanx { namespace ir
         case 0:                     // int_range_type
             return true;
 
-        case 1: HPX_FALLTHROUGH;    // wrapped_args_type
+        case 1: [[fallthrough]];    // wrapped_args_type
         case 2:                     // arg_pair_type
             return false;
 

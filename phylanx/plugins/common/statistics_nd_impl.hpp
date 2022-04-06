@@ -392,13 +392,13 @@ namespace phylanx { namespace common {
                 switch (axis.value())
                 {
                 case -2:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 0:
                     return statistics2d_axis0<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
 
                 case -1:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 1:
                     return statistics2d_axis1<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
@@ -687,19 +687,19 @@ namespace phylanx { namespace common {
                 switch (axis.value())
                 {
                 case -3:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 0:
                     return statistics3d_axis0<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
 
                 case -2:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 1:
                     return statistics3d_axis1<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
 
                 case -1:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 2:
                     return statistics3d_axis2<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
@@ -915,7 +915,7 @@ namespace phylanx { namespace common {
                     std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case execution_tree::node_data_type_double:
                 return statistics3d_slice<Op>(
                     extract_numeric_value(std::move(arg), name, codename),
@@ -1343,7 +1343,7 @@ namespace phylanx { namespace common {
                     std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case execution_tree::node_data_type_double:
                 return statistics4d_slice<Op>(
                     extract_numeric_value(std::move(arg), name, codename),
@@ -1613,7 +1613,7 @@ namespace phylanx { namespace common {
                     codename, std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case execution_tree::node_data_type_double:
                 return statistics4d_tensor<Op>(
                     execution_tree::extract_numeric_value(
@@ -2009,25 +2009,25 @@ namespace phylanx { namespace common {
                 switch (axis.value())
                 {
                 case -4:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 0:
                     return statistics4d_axis0<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
 
                 case -3:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 1:
                     return statistics4d_axis1<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
 
                 case -2:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 2:
                     return statistics4d_axis2<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
 
                 case -1:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case 3:
                     return statistics4d_axis3<Op>(std::move(arg), keepdims,
                         initial, name, codename, std::move(ctx));
@@ -2126,7 +2126,7 @@ namespace phylanx { namespace common {
                 std::move(ctx));
 
         case execution_tree::node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case execution_tree::node_data_type_double:
             return detail::statisticsnd<Op>(
                 extract_numeric_value(std::move(arg), name, codename), axis,
@@ -2222,7 +2222,7 @@ namespace phylanx { namespace common {
                     std::move(initial), name, codename, std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case execution_tree::node_data_type_double:
                 return detail::statisticsnd<Op>(
                     execution_tree::extract_numeric_value(
@@ -2320,7 +2320,7 @@ namespace phylanx { namespace common {
                     std::move(ctx));
 
             case execution_tree::node_data_type_unknown:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case execution_tree::node_data_type_double:
                 return statisticsnd_flat<Op>(
                     execution_tree::extract_numeric_value(

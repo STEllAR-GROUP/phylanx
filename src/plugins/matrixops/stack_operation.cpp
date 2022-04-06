@@ -327,7 +327,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return hstack0d1d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return hstack0d1d_helper<double>(std::move(args));
 
@@ -431,7 +431,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return hstack2d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return hstack2d_helper<double>(std::move(args));
 
@@ -549,7 +549,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return hstack3d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return hstack3d_helper<double>(std::move(args));
 
@@ -624,7 +624,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return vstack0d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return vstack0d_helper<double>(std::move(args));
 
@@ -762,7 +762,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return vstack1d2d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return vstack1d2d_helper<double>(std::move(args));
 
@@ -880,7 +880,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return vstack3d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return vstack3d_helper<double>(std::move(args));
 
@@ -955,7 +955,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return dstack0d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dstack0d_helper<double>(std::move(args));
 
@@ -1060,7 +1060,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return dstack1d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dstack1d_helper<double>(std::move(args));
 
@@ -1197,7 +1197,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return dstack2d3d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return dstack2d3d_helper<double>(std::move(args));
 
@@ -1340,7 +1340,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return stack1d_axis1_helper<std::int64_t>(std::move(args));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return stack1d_axis1_helper<double>(std::move(args));
 
@@ -1495,7 +1495,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return stack2d_axis0_helper<std::int64_t>(std::move(args));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return stack2d_axis0_helper<double>(std::move(args));
 
@@ -1620,7 +1620,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return stack2d_axis1_helper<std::int64_t>(std::move(args));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return stack2d_axis1_helper<double>(std::move(args));
 
@@ -1754,7 +1754,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return stack3d_axis1_helper<std::int64_t>(std::move(args));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return stack3d_axis1_helper<double>(std::move(args));
 
@@ -1841,7 +1841,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return stack3d_axis2_helper<std::int64_t>(std::move(args));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return stack3d_axis2_helper<double>(std::move(args));
 
