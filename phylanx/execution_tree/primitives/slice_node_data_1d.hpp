@@ -394,7 +394,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (value.num_dimensions())
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case 1:
             {
                 auto v = data.vector();
@@ -418,7 +418,7 @@ namespace phylanx { namespace execution_tree
                     detail::slice_assign_vector<T>{rhs}, name, codename, ctx);
             }
 
-        case 2: HPX_FALLTHROUGH;
+        case 2: [[fallthrough]];
         default:
             break;
         }
@@ -440,7 +440,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (value.num_dimensions())
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case 1:
             {
                 if (valid(rows))
@@ -459,7 +459,7 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-        case 2: HPX_FALLTHROUGH;
+        case 2: [[fallthrough]];
         default:
             break;
         }

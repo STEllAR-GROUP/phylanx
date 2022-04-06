@@ -262,12 +262,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             switch (extract_scalar_integer_value_strict(*axes.begin()))
             {
             case -2:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 0:
                 return flip2d_axis0(std::move(arg));
 
             case -1:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 1:
                 return flip2d_axis1(std::move(arg));
 
@@ -694,17 +694,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             switch (extract_scalar_integer_value_strict(*axes.begin()))
             {
             case -3:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 0:
                 return flip3d_axis0(std::move(arg));
 
             case -2:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 1:
                 return flip3d_axis1(std::move(arg));
 
             case -1:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 2:
                 return flip3d_axis2(std::move(arg));
 

@@ -152,9 +152,9 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 norm_vector(std::move(data), *ord), keepdims);
 
         case ord_type::frobenius:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case ord_type::nuclear:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         default:
             break;
         }
@@ -233,7 +233,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         switch (type)
         {
         case ord_type::default_frobenius:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case ord_type::frobenius:
             return detail::apply_keepdims_matrix(
                 frobenius_norm_matrix(std::move(data)), keepdims);

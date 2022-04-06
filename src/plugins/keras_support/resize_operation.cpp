@@ -236,7 +236,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 std::move(interpolation));
 
                         case node_data_type_unknown:
-                            HPX_FALLTHROUGH;
+                            [[fallthrough]];
                         case node_data_type_double:
                             return this_->nearest(
                                 extract_numeric_value(std::move(arg),

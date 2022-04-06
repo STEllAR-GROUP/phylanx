@@ -215,7 +215,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto ndim = arg.num_dimensions();
         switch (ndim)
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case 1:
             return flatten_nd_helper(
                 std::move(arg), std::move(indices), std::move(values));
@@ -784,7 +784,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_),
                         axis);
 
-                case node_data_type_unknown: HPX_FALLTHROUGH;
+                case node_data_type_unknown: [[fallthrough]];
                 case node_data_type_double:
                     return this_->insert_nd(
                         extract_numeric_value(std::move(args[0]),

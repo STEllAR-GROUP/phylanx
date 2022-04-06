@@ -391,8 +391,8 @@ namespace phylanx { namespace ir
     {
         switch (d.data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
-        case storage1d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
+        case storage1d: [[fallthrough]];
         case storage2d:
             {
                 increment_copy_construction_count();
@@ -727,8 +727,8 @@ namespace phylanx { namespace ir
     {
         switch (d.data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
-        case storage1d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
+        case storage1d: [[fallthrough]];
         case storage2d:
             {
                 increment_copy_assignment_count();
@@ -828,15 +828,15 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return scalar();
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             return vector()[index];
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             {
                 auto m = matrix();
@@ -845,9 +845,9 @@ namespace phylanx { namespace ir
                 return m(idx_m, idx_n);
             }
 
-        case storage3d:         HPX_FALLTHROUGH;
-        case custom_storage3d:  HPX_FALLTHROUGH;
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
+        case custom_storage3d:  [[fallthrough]];
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             {
                 HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -871,23 +871,23 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return scalar();
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             return vector()[indicies[0]];
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             return matrix()(indicies[0], indicies[1]);
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             return tensor()(indicies[0], indicies[1], indicies[2]);
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             return quatern()(
                 indicies[0], indicies[1], indicies[2], indicies[3]);
@@ -907,23 +907,23 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return scalar();
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             return vector()[index1];
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             return matrix()(index1, index2);
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             return tensor()(index1, index2, index3);
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             return quatern()(index1, index2, index3, index4);
 
@@ -941,15 +941,15 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
         case custom_storage0d:
             return scalar();
 
-        case storage1d: HPX_FALLTHROUGH;
+        case storage1d: [[fallthrough]];
         case custom_storage1d:
             return vector()[index];
 
-        case storage2d: HPX_FALLTHROUGH;
+        case storage2d: [[fallthrough]];
         case custom_storage2d:
             {
                 auto m = matrix();
@@ -958,9 +958,9 @@ namespace phylanx { namespace ir
                 return m(idx_m, idx_n);
             }
 
-        case storage3d:         HPX_FALLTHROUGH;
-        case custom_storage3d:  HPX_FALLTHROUGH;
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
+        case custom_storage3d:  [[fallthrough]];
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             {
                 HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -984,23 +984,23 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
         case custom_storage0d:
             return scalar();
 
-        case storage1d: HPX_FALLTHROUGH;
+        case storage1d: [[fallthrough]];
         case custom_storage1d:
             return vector()[indices[0]];
 
-        case storage2d: HPX_FALLTHROUGH;
+        case storage2d: [[fallthrough]];
         case custom_storage2d:
             return matrix()(indices[0], indices[1]);
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             return tensor()(indices[0], indices[1], indices[2]);
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             return quatern()(indices[0], indices[1], indices[2], indices[3]);
 
@@ -1019,23 +1019,23 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return scalar();
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             return vector()[index1];
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             return matrix()(index1, index2);
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             return tensor()(index1, index2, index3);
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             return quatern()(index1, index2, index3, index4);
 
@@ -1053,29 +1053,29 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return 1;
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             return vector().size();
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             {
                 auto m = matrix();
                 return m.rows() * m.columns();
             }
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             {
                 auto t = tensor();
                 return t.rows() * t.columns() * t.pages();
             }
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             {
                 auto q = quatern();
@@ -2057,23 +2057,23 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return 0;
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             return 1;
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             return 2;
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             return 3;
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             return 4;
         default:
@@ -2091,29 +2091,29 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
         case custom_storage0d:
             return dimensions_type{0ul};
 
-        case storage1d: HPX_FALLTHROUGH;
+        case storage1d: [[fallthrough]];
         case custom_storage1d:
             return dimensions_type{vector().size()};
 
-        case storage2d: HPX_FALLTHROUGH;
+        case storage2d: [[fallthrough]];
         case custom_storage2d:
             {
                 auto m = matrix();
                 return dimensions_type{m.rows(), m.columns()};
             }
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             {
                 auto t = tensor();
                 return dimensions_type{t.pages(), t.rows(), t.columns()};
             }
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             {
                 auto q = quatern();
@@ -2134,11 +2134,11 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:
             return 0ul;
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             {
                 switch (dim)
@@ -2154,7 +2154,7 @@ namespace phylanx { namespace ir
                 }
             }
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             {
                 auto m = matrix();
@@ -2174,7 +2174,7 @@ namespace phylanx { namespace ir
                 }
             }
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             {
                 auto t = tensor();
@@ -2197,7 +2197,7 @@ namespace phylanx { namespace ir
                 }
             }
 
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             {
                 auto q = quatern();
@@ -2252,10 +2252,10 @@ namespace phylanx { namespace ir
         case storage4d:
             return node_data<T>{quatern()};
 
-        case custom_storage0d: HPX_FALLTHROUGH;
-        case custom_storage1d: HPX_FALLTHROUGH;
-        case custom_storage2d: HPX_FALLTHROUGH;
-        case custom_storage3d: HPX_FALLTHROUGH;
+        case custom_storage0d: [[fallthrough]];
+        case custom_storage1d: [[fallthrough]];
+        case custom_storage2d: [[fallthrough]];
+        case custom_storage3d: [[fallthrough]];
         case custom_storage4d:
             return *this;
 
@@ -2288,10 +2288,10 @@ namespace phylanx { namespace ir
         case storage4d:
             return node_data<T>{quatern()};
 
-        case custom_storage0d: HPX_FALLTHROUGH;
-        case custom_storage1d: HPX_FALLTHROUGH;
-        case custom_storage2d: HPX_FALLTHROUGH;
-        case custom_storage3d: HPX_FALLTHROUGH;
+        case custom_storage0d: [[fallthrough]];
+        case custom_storage1d: [[fallthrough]];
+        case custom_storage2d: [[fallthrough]];
+        case custom_storage3d: [[fallthrough]];
         case custom_storage4d:
             return *this;
 
@@ -2326,10 +2326,10 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
-        case storage1d: HPX_FALLTHROUGH;
-        case storage2d: HPX_FALLTHROUGH;
-        case storage3d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
+        case storage1d: [[fallthrough]];
+        case storage2d: [[fallthrough]];
+        case storage3d: [[fallthrough]];
         case storage4d:
             return *this;
 
@@ -2365,21 +2365,21 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage0d: HPX_FALLTHROUGH;
-        case storage1d: HPX_FALLTHROUGH;
+        case storage0d: [[fallthrough]];
+        case storage1d: [[fallthrough]];
         case storage2d:
             return false;
 
-        case custom_storage0d: HPX_FALLTHROUGH;
-        case custom_storage1d: HPX_FALLTHROUGH;
+        case custom_storage0d: [[fallthrough]];
+        case custom_storage1d: [[fallthrough]];
         case custom_storage2d:
             return true;
 
-        case storage3d: HPX_FALLTHROUGH;
+        case storage3d: [[fallthrough]];
         case storage4d:
             return false;
 
-        case custom_storage3d: HPX_FALLTHROUGH;
+        case custom_storage3d: [[fallthrough]];
         case custom_storage4d:
             return true;
 
@@ -2398,21 +2398,21 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:
             {
                 auto v = vector();
                 return std::vector<T>(v.begin(), v.end());
             }
 
-        case storage0d:         HPX_FALLTHROUGH;
-        case storage2d:         HPX_FALLTHROUGH;
-        case custom_storage0d:  HPX_FALLTHROUGH;
-        case custom_storage2d:  HPX_FALLTHROUGH;
-        case storage3d:         HPX_FALLTHROUGH;
-        case custom_storage3d:  HPX_FALLTHROUGH;
-        case storage4d:         HPX_FALLTHROUGH;
-        case custom_storage4d:  HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
+        case storage2d:         [[fallthrough]];
+        case custom_storage0d:  [[fallthrough]];
+        case custom_storage2d:  [[fallthrough]];
+        case storage3d:         [[fallthrough]];
+        case custom_storage3d:  [[fallthrough]];
+        case storage4d:         [[fallthrough]];
+        case custom_storage4d:  [[fallthrough]];
 
         default:
             break;
@@ -2428,7 +2428,7 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:
             {
                 auto m = matrix();
@@ -2440,14 +2440,14 @@ namespace phylanx { namespace ir
                 return result;
             }
 
-        case storage0d:         HPX_FALLTHROUGH;
-        case storage1d:         HPX_FALLTHROUGH;
-        case custom_storage0d:  HPX_FALLTHROUGH;
-        case custom_storage1d:  HPX_FALLTHROUGH;
-        case storage3d:         HPX_FALLTHROUGH;
-        case custom_storage3d:  HPX_FALLTHROUGH;
-        case storage4d:         HPX_FALLTHROUGH;
-        case custom_storage4d:  HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
+        case storage1d:         [[fallthrough]];
+        case custom_storage0d:  [[fallthrough]];
+        case custom_storage1d:  [[fallthrough]];
+        case storage3d:         [[fallthrough]];
+        case custom_storage3d:  [[fallthrough]];
+        case storage4d:         [[fallthrough]];
+        case custom_storage4d:  [[fallthrough]];
         default:
             break;
         }
@@ -2462,7 +2462,7 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:
             {
                 auto t = tensor();
@@ -2479,14 +2479,14 @@ namespace phylanx { namespace ir
                 return result;
             }
 
-        case storage0d:         HPX_FALLTHROUGH;
-        case storage1d:         HPX_FALLTHROUGH;
-        case storage2d:         HPX_FALLTHROUGH;
-        case custom_storage0d:  HPX_FALLTHROUGH;
-        case custom_storage1d:  HPX_FALLTHROUGH;
-        case custom_storage2d:  HPX_FALLTHROUGH;
-        case storage4d:         HPX_FALLTHROUGH;
-        case custom_storage4d:  HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
+        case storage1d:         [[fallthrough]];
+        case storage2d:         [[fallthrough]];
+        case custom_storage0d:  [[fallthrough]];
+        case custom_storage1d:  [[fallthrough]];
+        case custom_storage2d:  [[fallthrough]];
+        case storage4d:         [[fallthrough]];
+        case custom_storage4d:  [[fallthrough]];
         default:
             break;
         }
@@ -2502,7 +2502,7 @@ namespace phylanx { namespace ir
     {
         switch(data_.index())
         {
-        case storage4d:         HPX_FALLTHROUGH;
+        case storage4d:         [[fallthrough]];
         case custom_storage4d:
             {
                 auto q = quatern();
@@ -2525,14 +2525,14 @@ namespace phylanx { namespace ir
                 return result;
             }
 
-        case storage0d:         HPX_FALLTHROUGH;
-        case storage1d:         HPX_FALLTHROUGH;
-        case storage2d:         HPX_FALLTHROUGH;
-        case custom_storage0d:  HPX_FALLTHROUGH;
-        case custom_storage1d:  HPX_FALLTHROUGH;
-        case custom_storage2d:  HPX_FALLTHROUGH;
-        case storage3d:         HPX_FALLTHROUGH;
-        case custom_storage3d:  HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
+        case storage1d:         [[fallthrough]];
+        case storage2d:         [[fallthrough]];
+        case custom_storage0d:  [[fallthrough]];
+        case custom_storage1d:  [[fallthrough]];
+        case custom_storage2d:  [[fallthrough]];
+        case storage3d:         [[fallthrough]];
+        case custom_storage3d:  [[fallthrough]];
         default:
             break;
         }
@@ -2553,23 +2553,23 @@ namespace phylanx { namespace ir
 
         switch (lhs.index())
         {
-        case node_data<double>::storage0d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage0d:          [[fallthrough]];
         case node_data<double>::custom_storage0d:
             return lhs.scalar() == rhs.scalar();
 
-        case node_data<double>::storage1d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage1d:          [[fallthrough]];
         case node_data<double>::custom_storage1d:
             return lhs.vector() == rhs.vector();
 
-        case node_data<double>::storage2d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage2d:          [[fallthrough]];
         case node_data<double>::custom_storage2d:
             return lhs.matrix() == rhs.matrix();
 
-        case node_data<double>::storage3d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage3d:          [[fallthrough]];
         case node_data<double>::custom_storage3d:
             return lhs.tensor() == rhs.tensor();
 
-        case node_data<double>::storage4d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage4d:          [[fallthrough]];
         case node_data<double>::custom_storage4d:
             return lhs.quatern() == rhs.quatern();
         default:
@@ -2592,23 +2592,23 @@ namespace phylanx { namespace ir
 
         switch (lhs.index())
         {
-        case node_data<std::uint8_t>::storage0d:          HPX_FALLTHROUGH;
+        case node_data<std::uint8_t>::storage0d:          [[fallthrough]];
         case node_data<std::uint8_t>::custom_storage0d:
             return lhs.scalar() == rhs.scalar();
 
-        case node_data<std::uint8_t>::storage1d:          HPX_FALLTHROUGH;
+        case node_data<std::uint8_t>::storage1d:          [[fallthrough]];
         case node_data<std::uint8_t>::custom_storage1d:
             return lhs.vector() == rhs.vector();
 
-        case node_data<std::uint8_t>::storage2d:          HPX_FALLTHROUGH;
+        case node_data<std::uint8_t>::storage2d:          [[fallthrough]];
         case node_data<std::uint8_t>::custom_storage2d:
             return lhs.matrix() == rhs.matrix();
 
-        case node_data<std::uint8_t>::storage3d:          HPX_FALLTHROUGH;
+        case node_data<std::uint8_t>::storage3d:          [[fallthrough]];
         case node_data<std::uint8_t>::custom_storage3d:
             return lhs.tensor() == rhs.tensor();
 
-        case node_data<std::uint8_t>::storage4d:          HPX_FALLTHROUGH;
+        case node_data<std::uint8_t>::storage4d:          [[fallthrough]];
         case node_data<std::uint8_t>::custom_storage4d:
             return lhs.quatern() == rhs.quatern();
         default:
@@ -2631,23 +2631,23 @@ namespace phylanx { namespace ir
 
         switch (lhs.index())
         {
-        case node_data<std::int64_t>::storage0d:          HPX_FALLTHROUGH;
+        case node_data<std::int64_t>::storage0d:          [[fallthrough]];
         case node_data<std::int64_t>::custom_storage0d:
             return lhs.scalar() == rhs.scalar();
 
-        case node_data<std::int64_t>::storage1d:          HPX_FALLTHROUGH;
+        case node_data<std::int64_t>::storage1d:          [[fallthrough]];
         case node_data<std::int64_t>::custom_storage1d:
             return lhs.vector() == rhs.vector();
 
-        case node_data<std::int64_t>::storage2d:          HPX_FALLTHROUGH;
+        case node_data<std::int64_t>::storage2d:          [[fallthrough]];
         case node_data<std::int64_t>::custom_storage2d:
             return lhs.matrix() == rhs.matrix();
 
-        case node_data<std::int64_t>::storage3d:          HPX_FALLTHROUGH;
+        case node_data<std::int64_t>::storage3d:          [[fallthrough]];
         case node_data<std::int64_t>::custom_storage3d:
             return lhs.tensor() == rhs.tensor();
 
-        case node_data<std::int64_t>::storage4d:          HPX_FALLTHROUGH;
+        case node_data<std::int64_t>::storage4d:          [[fallthrough]];
         case node_data<std::int64_t>::custom_storage4d:
             return lhs.quatern() == rhs.quatern();
         default:
@@ -2689,29 +2689,29 @@ namespace phylanx { namespace ir
 
         switch (lhs.index())
         {
-        case node_data<double>::storage0d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage0d:          [[fallthrough]];
         case node_data<double>::custom_storage0d:
             return isclose(lhs.scalar(), rhs.scalar());
 
-        case node_data<double>::storage1d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage1d:          [[fallthrough]];
         case node_data<double>::custom_storage1d:
             return blaze::reduce(
                 blaze::map(lhs.vector(), rhs.vector(), isclose),
                 std::logical_and<bool>{});
 
-        case node_data<double>::storage2d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage2d:          [[fallthrough]];
         case node_data<double>::custom_storage2d:
             return blaze::reduce(
                 blaze::map(lhs.matrix(), rhs.matrix(), isclose),
                 std::logical_and<bool>{});
 
-        case node_data<double>::storage3d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage3d:          [[fallthrough]];
         case node_data<double>::custom_storage3d:
             return blaze::reduce(
                 blaze::map(lhs.tensor(), rhs.tensor(), isclose),
                 std::logical_and<bool>{});
 
-        case node_data<double>::storage4d:          HPX_FALLTHROUGH;
+        case node_data<double>::storage4d:          [[fallthrough]];
         case node_data<double>::custom_storage4d:
             return blaze::reduce(
                 blaze::map(lhs.quatern(), rhs.quatern(), isclose),
@@ -2796,17 +2796,17 @@ namespace phylanx { namespace ir
         {
             switch (nd.index())
             {
-            case node_data<double>::storage0d:          HPX_FALLTHROUGH;
+            case node_data<double>::storage0d:          [[fallthrough]];
             case node_data<double>::custom_storage0d:
                 out << nd.scalar();
                 break;
 
-            case node_data<double>::storage1d:          HPX_FALLTHROUGH;
+            case node_data<double>::storage1d:          [[fallthrough]];
             case node_data<double>::custom_storage1d:
                 detail::print_vector<double>(out, nd.vector(), nd.size());
                 break;
 
-            case node_data<double>::storage2d:          HPX_FALLTHROUGH;
+            case node_data<double>::storage2d:          [[fallthrough]];
             case node_data<double>::custom_storage2d:
                 {
                     auto m = nd.matrix();
@@ -2814,7 +2814,7 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-            case node_data<double>::storage3d:          HPX_FALLTHROUGH;
+            case node_data<double>::storage3d:          [[fallthrough]];
             case node_data<double>::custom_storage3d:
                 {
                     auto t = nd.tensor();
@@ -2823,7 +2823,7 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-            case node_data<double>::storage4d:          HPX_FALLTHROUGH;
+            case node_data<double>::storage4d:          [[fallthrough]];
             case node_data<double>::custom_storage4d:
                 {
                     auto q = nd.quatern();
@@ -2850,17 +2850,17 @@ namespace phylanx { namespace ir
         {
             switch (nd.index())
             {
-            case node_data<std::int64_t>::storage0d:          HPX_FALLTHROUGH;
+            case node_data<std::int64_t>::storage0d:          [[fallthrough]];
             case node_data<std::int64_t>::custom_storage0d:
                 out << nd.scalar();
                 break;
 
-            case node_data<std::int64_t>::storage1d:          HPX_FALLTHROUGH;
+            case node_data<std::int64_t>::storage1d:          [[fallthrough]];
             case node_data<std::int64_t>::custom_storage1d:
                 detail::print_vector<std::int64_t>(out, nd.vector(), nd.size());
                 break;
 
-            case node_data<std::int64_t>::storage2d:          HPX_FALLTHROUGH;
+            case node_data<std::int64_t>::storage2d:          [[fallthrough]];
             case node_data<std::int64_t>::custom_storage2d:
                 {
                     auto m = nd.matrix();
@@ -2869,7 +2869,7 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-            case node_data<std::int64_t>::storage3d:          HPX_FALLTHROUGH;
+            case node_data<std::int64_t>::storage3d:          [[fallthrough]];
             case node_data<std::int64_t>::custom_storage3d:
                 {
                     auto t = nd.tensor();
@@ -2878,7 +2878,7 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-            case node_data<std::int64_t>::storage4d:          HPX_FALLTHROUGH;
+            case node_data<std::int64_t>::storage4d:          [[fallthrough]];
             case node_data<std::int64_t>::custom_storage4d:
                 {
                     auto q = nd.quatern();
@@ -2905,18 +2905,18 @@ namespace phylanx { namespace ir
         {
             switch (nd.index())
             {
-            case node_data<std::uint8_t>::storage0d:          HPX_FALLTHROUGH;
+            case node_data<std::uint8_t>::storage0d:          [[fallthrough]];
             case node_data<std::uint8_t>::custom_storage0d:
                 out << std::boolalpha << bool{nd.scalar() != 0};
                 break;
 
-            case node_data<std::uint8_t>::storage1d:          HPX_FALLTHROUGH;
+            case node_data<std::uint8_t>::storage1d:          [[fallthrough]];
             case node_data<std::uint8_t>::custom_storage1d:
                 out << std::boolalpha;
                 detail::print_vector<bool>(out, nd.vector(), nd.size());
                 break;
 
-            case node_data<std::uint8_t>::storage2d:          HPX_FALLTHROUGH;
+            case node_data<std::uint8_t>::storage2d:          [[fallthrough]];
             case node_data<std::uint8_t>::custom_storage2d:
                 {
                     auto m = nd.matrix();
@@ -2925,7 +2925,7 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-            case node_data<std::uint8_t>::storage3d:          HPX_FALLTHROUGH;
+            case node_data<std::uint8_t>::storage3d:          [[fallthrough]];
             case node_data<std::uint8_t>::custom_storage3d:
                 {
                     auto t = nd.tensor();
@@ -2934,7 +2934,7 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-            case node_data<std::uint8_t>::storage4d:          HPX_FALLTHROUGH;
+            case node_data<std::uint8_t>::storage4d:          [[fallthrough]];
             case node_data<std::uint8_t>::custom_storage4d:
                 {
                     auto q = nd.quatern();
@@ -2959,23 +2959,23 @@ namespace phylanx { namespace ir
     {
         switch (index())
         {
-        case storage0d:          HPX_FALLTHROUGH;
+        case storage0d:          [[fallthrough]];
         case custom_storage0d:
             return scalar() != T(0);
 
-        case storage1d:          HPX_FALLTHROUGH;
+        case storage1d:          [[fallthrough]];
         case custom_storage1d:
             return vector().nonZeros() != 0;
 
-        case storage2d:          HPX_FALLTHROUGH;
+        case storage2d:          [[fallthrough]];
         case custom_storage2d:
             return matrix().nonZeros() != 0;
 
-        case storage3d:          HPX_FALLTHROUGH;
+        case storage3d:          [[fallthrough]];
         case custom_storage3d:
             return tensor().nonZeros() != 0;
 
-        case storage4d:          HPX_FALLTHROUGH;
+        case storage4d:          [[fallthrough]];
         case custom_storage4d:
             return quatern().nonZeros() != 0;
         default:
@@ -3051,7 +3051,7 @@ namespace phylanx { namespace ir
 
         switch (index)
         {
-        case storage0d:         HPX_FALLTHROUGH;
+        case storage0d:         [[fallthrough]];
         case custom_storage0d:     // deserialize reference_wrapper<T> as T
             {
                 T val = 0;
@@ -3060,7 +3060,7 @@ namespace phylanx { namespace ir
             }
             break;
 
-        case storage1d:         HPX_FALLTHROUGH;
+        case storage1d:         [[fallthrough]];
         case custom_storage1d:     // deserialize CustomVector as DynamicVector
             {
                 storage1d_type v;
@@ -3069,7 +3069,7 @@ namespace phylanx { namespace ir
             }
             break;
 
-        case storage2d:         HPX_FALLTHROUGH;
+        case storage2d:         [[fallthrough]];
         case custom_storage2d:     // deserialize CustomMatrix as DynamicMatrix
             {
                 storage2d_type m;
@@ -3078,7 +3078,7 @@ namespace phylanx { namespace ir
             }
             break;
 
-        case storage3d:         HPX_FALLTHROUGH;
+        case storage3d:         [[fallthrough]];
         case custom_storage3d:     // deserialize CustomTensor as DynamicTensor
             {
                 storage3d_type t;

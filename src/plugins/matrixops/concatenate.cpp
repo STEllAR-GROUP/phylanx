@@ -136,7 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate1d_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return concatenate1d_helper<double>(std::move(args));
 
@@ -298,11 +298,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case -2:
             return concatenate2d_axis0<T>(std::move(args));
 
-        case 1: HPX_FALLTHROUGH;
+        case 1: [[fallthrough]];
         case -1:
             return concatenate2d_axis1<T>(std::move(args));
 
@@ -333,7 +333,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate2d_helper<std::int64_t>(std::move(args), axis);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return concatenate2d_helper<double>(std::move(args), axis);
 
@@ -417,7 +417,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate_flatten_helper<std::int64_t>(std::move(args));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return concatenate_flatten_helper<double>(std::move(args));
 
@@ -674,15 +674,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case -3:
             return concatenate3d_axis0<T>(std::move(args));
 
-        case 1: HPX_FALLTHROUGH;
+        case 1: [[fallthrough]];
         case -2:
             return concatenate3d_axis1<T>(std::move(args));
 
-        case 2: HPX_FALLTHROUGH;
+        case 2: [[fallthrough]];
         case -1:
             return concatenate3d_axis2<T>(std::move(args));
 
@@ -714,7 +714,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return concatenate3d_helper<std::int64_t>(std::move(args), axis);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return concatenate3d_helper<double>(std::move(args), axis);
 

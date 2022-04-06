@@ -917,10 +917,10 @@ namespace pybind11 { namespace detail
 
             // blaze::CustomVector<T>, blaze::CustomMatrix<T>,
             // blaze::CustomTensor<T>, blaze::CustomArray<4, T>
-            case phylanx::ir::node_data<T>::custom_storage1d: HPX_FALLTHROUGH;
-            case phylanx::ir::node_data<T>::custom_storage2d: HPX_FALLTHROUGH;
-            case phylanx::ir::node_data<T>::custom_storage3d: HPX_FALLTHROUGH;
-            case phylanx::ir::node_data<T>::custom_storage4d: HPX_FALLTHROUGH;
+            case phylanx::ir::node_data<T>::custom_storage1d: [[fallthrough]];
+            case phylanx::ir::node_data<T>::custom_storage2d: [[fallthrough]];
+            case phylanx::ir::node_data<T>::custom_storage3d: [[fallthrough]];
+            case phylanx::ir::node_data<T>::custom_storage4d: [[fallthrough]];
             default:
                 throw cast_error("cast_impl_reference_internal: "
                     "unexpected node_data type: should not happen!");
@@ -945,7 +945,7 @@ namespace pybind11 { namespace detail
 
             switch (policy)
             {
-            case return_value_policy::take_ownership:   HPX_FALLTHROUGH;
+            case return_value_policy::take_ownership:   [[fallthrough]];
             case return_value_policy::automatic:
                 return cast_impl_automatic(src);
 
@@ -955,7 +955,7 @@ namespace pybind11 { namespace detail
             case return_value_policy::copy:
                 return cast_impl_copy(src);
 
-            case return_value_policy::reference:        HPX_FALLTHROUGH;
+            case return_value_policy::reference:        [[fallthrough]];
             case return_value_policy::automatic_reference:
                 return cast_impl_automatic_reference(src);
 
@@ -1210,7 +1210,7 @@ namespace pybind11 { namespace detail
             case 2:                     // arg_pair_type
                 return list_caster_type::cast(src->copy(), policy, parent);
 
-            case 0: HPX_FALLTHROUGH;    // int_range_type
+            case 0: [[fallthrough]];    // int_range_type
             default:
                 throw cast_error(
                     "cast_impl: unexpected range type: should not happen!");

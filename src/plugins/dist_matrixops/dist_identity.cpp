@@ -181,7 +181,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 std::move(given_name), tiling_type, std::move(ctx));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return dist_identity_helper<double>(sz, tile_idx, numtiles,
                 std::move(given_name), tiling_type, std::move(ctx));

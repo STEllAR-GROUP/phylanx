@@ -121,9 +121,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 result[0] = extract_scalar_integer_value(data, name, codename);
                 break;
 
-            case 4:  HPX_FALLTHROUGH;
-            case 3:  HPX_FALLTHROUGH;
-            case 1:  HPX_FALLTHROUGH;
+            case 4:  [[fallthrough]];
+            case 3:  [[fallthrough]];
+            case 1:  [[fallthrough]];
             case 2:
                 break;
 
@@ -220,9 +220,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case primitive_argument_type::nil_index:
             return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{};
 
-        case primitive_argument_type::string_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::primitive_index: HPX_FALLTHROUGH;
-        case primitive_argument_type::future_index: HPX_FALLTHROUGH;
+        case primitive_argument_type::string_index: [[fallthrough]];
+        case primitive_argument_type::primitive_index: [[fallthrough]];
+        case primitive_argument_type::future_index: [[fallthrough]];
         default:
             break;
         }
@@ -281,12 +281,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 3:
                     std::get<1>(result)++;
                     std::get<3>(result) = double(extract_numeric_value(args[2])[0]);
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
 
                 case 2:
                     std::get<1>(result)++;
                     std::get<2>(result) = double(extract_numeric_value(args[1])[0]);
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
 
                 case 1:
                     std::get<0>(result) = extract_string_value(args[0]);
@@ -301,12 +301,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 3: // string
             return distribution_parameters_type{util::get<3>(val), 0, 0.0, 1.0};
 
-        case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
-        case 2: HPX_FALLTHROUGH;    // std::uint64_t
-        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-        case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 0: [[fallthrough]];    // nil
+        case 1: [[fallthrough]];    // phylanx::ir::node_data<std::uint8_t>
+        case 2: [[fallthrough]];    // std::uint64_t
+        case 4: [[fallthrough]];    // phylanx::ir::node_data<double>
+        case 5: [[fallthrough]];    // primitive
+        case 6: [[fallthrough]];    // std::vector<ast::expression>
         default:
             break;
         }
@@ -519,7 +519,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case node_data_type_int64:
                 return convert_to<std::int64_t>(std::move(result));
 
-            case node_data_type_unknown: HPX_FALLTHROUGH;
+            case node_data_type_unknown: [[fallthrough]];
             case node_data_type_double:
                 return convert_to<double>(std::move(result));
 

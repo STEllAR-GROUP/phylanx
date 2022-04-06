@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return neg0d(extract_value_scalar<std::int64_t>(
                 std::move(op), name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return neg0d(
                 extract_value_scalar<double>(std::move(op), name_, codename_));
@@ -167,7 +167,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return neg1d(extract_value_vector<std::int64_t>(
                 std::move(op), sizes[0], name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return neg1d(extract_value_vector<double>(
                 std::move(op), sizes[0], name_, codename_));
@@ -201,7 +201,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return neg2d(extract_value_matrix<std::int64_t>(
                 std::move(op), sizes[0], sizes[1], name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return neg2d(extract_value_matrix<double>(
                 std::move(op), sizes[0], sizes[1], name_, codename_));
@@ -235,7 +235,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return neg3d(extract_value_matrix<std::int64_t>(
                 std::move(op), sizes[0], sizes[1], name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return neg3d(extract_value_matrix<double>(
                 std::move(op), sizes[0], sizes[1], name_, codename_));

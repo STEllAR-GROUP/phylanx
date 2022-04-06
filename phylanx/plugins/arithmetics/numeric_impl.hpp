@@ -357,7 +357,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 .template handle_numeric_operands_helper<std::int64_t>(
                     std::move(op1), std::move(op2));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return derived().template handle_numeric_operands_helper<double>(
                 std::move(op1), std::move(op2));
@@ -469,7 +469,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 .template handle_numeric_operands_helper<std::int64_t>(
                     std::move(ops));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return derived().template handle_numeric_operands_helper<double>(
                 std::move(ops));

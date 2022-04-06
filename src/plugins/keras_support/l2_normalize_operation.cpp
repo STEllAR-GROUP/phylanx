@@ -135,11 +135,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case -2: HPX_FALLTHROUGH;
+        case -2: [[fallthrough]];
         case 0:
             return l2_normalize2d_axis0(std::move(arg));
 
-        case -1: HPX_FALLTHROUGH;
+        case -1: [[fallthrough]];
         case 1:
             return l2_normalize2d_axis1(std::move(arg));
 
@@ -259,15 +259,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (axis)
         {
-        case -3: HPX_FALLTHROUGH;
+        case -3: [[fallthrough]];
         case 0:
             return l2_normalize3d_axis0(std::move(arg));
 
-        case -2: HPX_FALLTHROUGH;
+        case -2: [[fallthrough]];
         case 1:
             return l2_normalize3d_axis1(std::move(arg));
 
-        case -1: HPX_FALLTHROUGH;
+        case -1: [[fallthrough]];
         case 2:
             return l2_normalize3d_axis2(std::move(arg));
 

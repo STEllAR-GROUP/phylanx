@@ -101,7 +101,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 std::move(lhs_localities), rhs_localities);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return dot2d2d(
                 extract_numeric_value(std::move(lhs), name_, codename_),

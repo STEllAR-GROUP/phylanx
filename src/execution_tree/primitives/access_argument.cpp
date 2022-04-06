@@ -86,8 +86,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // parameters as argument evaluation can't depend on those anyways
         switch (operands_.size())
         {
-        case 5: HPX_FALLTHROUGH;
-        case 3: HPX_FALLTHROUGH;
+        case 5: [[fallthrough]];
+        case 3: [[fallthrough]];
         case 4:
             {
                 // if no additional params are given , we can forward this

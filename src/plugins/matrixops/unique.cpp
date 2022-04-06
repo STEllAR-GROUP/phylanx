@@ -279,11 +279,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (axis)
         {
         case -2:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 0:
             return unique2d_x_axis(std::move(arg));
         case -1:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case 1:
             return unique2d_y_axis(std::move(arg));
 

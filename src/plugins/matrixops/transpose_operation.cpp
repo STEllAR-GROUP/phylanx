@@ -128,7 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (dims)
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case 1:
             return common::transpose0d1d(std::move(arg0));
 
@@ -161,7 +161,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (dims)
         {
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         case 1:
             return common::transpose0d1d(std::move(arg0));
 

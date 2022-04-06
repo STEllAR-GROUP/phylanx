@@ -443,12 +443,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             switch (axis.value())
             {
             case -2:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 0:
                 return repeat2d_axis0(std::move(arg), std::move(rep));
 
             case -1:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 1:
                 return repeat2d_axis1(std::move(arg), std::move(rep));
 
@@ -797,17 +797,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             switch (axis.value())
             {
             case -3:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 0:
                 return repeat3d_axis0(std::move(arg), std::move(rep));
 
             case -2:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 1:
                 return repeat3d_axis1(std::move(arg), std::move(rep));
 
             case -1:
-                HPX_FALLTHROUGH;
+                [[fallthrough]];
             case 2:
                 return repeat3d_axis2(std::move(arg), std::move(rep));
 

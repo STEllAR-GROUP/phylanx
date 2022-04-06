@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(rhs), name_, codename_));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return outer1d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -175,7 +175,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(rhs), name_, codename_));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return outer2d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -208,7 +208,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(rhs), name_, codename_));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return outer3d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -241,7 +241,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(rhs), name_, codename_));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return contraction2d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -274,7 +274,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(rhs), name_, codename_));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return contraction3d(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -310,7 +310,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 axis_b);
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return tensordot_range_of_scalars(
                 extract_numeric_value(std::move(lhs), name_, codename_),
@@ -344,7 +344,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 extract_integer_value(std::move(rhs), name_, codename_));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return outer_nd_helper(
                 extract_numeric_value(std::move(lhs), name_, codename_),

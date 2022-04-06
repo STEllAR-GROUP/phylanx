@@ -250,7 +250,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         alpha, max_value, threshold);
                 }
                 case node_data_type_unknown:
-                    HPX_FALLTHROUGH;
+                    [[fallthrough]];
                 case node_data_type_double:
                 {
                     double max_value = 0.0;

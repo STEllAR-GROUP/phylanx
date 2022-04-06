@@ -358,7 +358,7 @@ namespace phylanx { namespace ir {
         switch (index)
         {
         case dictionary_data:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case custom_dictionary_data:    // deserialize reference_wrapper<T> as T
         {
             dictionary_data_type val;

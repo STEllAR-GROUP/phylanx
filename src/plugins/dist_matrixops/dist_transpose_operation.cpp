@@ -232,7 +232,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 extract_integer_value_strict(std::move(arg), name_, codename_),
                 std::move(localities_info));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose2d(
                 extract_numeric_value(std::move(arg), name_, codename_),
@@ -294,7 +294,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 extract_integer_value_strict(std::move(arg), name_, codename_),
                 std::move(localities_info));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose2d(
                 extract_numeric_value(std::move(arg), name_, codename_),
@@ -383,7 +383,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 extract_integer_value_strict(std::move(arg), name_, codename_),
                 std::move(localities_info));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose3d(
                 extract_numeric_value(std::move(arg), name_, codename_),
@@ -476,7 +476,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives
                 extract_integer_value_strict(std::move(arg), name_, codename_),
                 std::move(axes), std::move(localities_info));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose3d(
                 extract_numeric_value(std::move(arg), name_, codename_),

@@ -97,7 +97,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                 return primitive_argument_type(
                     Op::template initial<std::int64_t>());
 
-            case node_data_type_double: HPX_FALLTHROUGH;
+            case node_data_type_double: [[fallthrough]];
             case node_data_type_unknown:
                 return primitive_argument_type(Op::template initial<double>());
 
@@ -131,7 +131,7 @@ namespace phylanx { namespace dist_matrixops { namespace primitives {
                     blaze::DynamicVector<std::int64_t>(
                         size, Op::template initial<std::int64_t>()));
 
-            case node_data_type_double: HPX_FALLTHROUGH;
+            case node_data_type_double: [[fallthrough]];
             case node_data_type_unknown:
                 return primitive_argument_type(blaze::DynamicVector<double>(
                     size, Op::template initial<double>()));

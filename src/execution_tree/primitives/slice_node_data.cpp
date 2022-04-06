@@ -124,7 +124,7 @@ namespace phylanx { namespace execution_tree
         case 3:
             return slice2d_extract3d(data, rows, columns, name, codename, ctx);
 
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         default:
             break;
         }
@@ -178,9 +178,9 @@ namespace phylanx { namespace execution_tree
             return slice3d_extract3d(
                 data, pages, rows, columns, name, codename, ctx);
 
-        case 0: HPX_FALLTHROUGH;
-        case 1: HPX_FALLTHROUGH;
-        case 2: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
+        case 1: [[fallthrough]];
+        case 2: [[fallthrough]];
         default:
             break;
         }
@@ -418,7 +418,7 @@ namespace phylanx { namespace execution_tree
             return slice2d_assign3d(std::move(data), rows, columns,
                 std::move(value), name, codename, ctx);
 
-        case 0: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
         default:
             break;
         }

@@ -340,9 +340,9 @@ namespace phylanx { namespace execution_tree
             case 4:
                 return detail::dimension<0>(tiles_);
 
-            case 1: HPX_FALLTHROUGH;
-            case 2: HPX_FALLTHROUGH;
-            case 3: HPX_FALLTHROUGH;
+            case 1: [[fallthrough]];
+            case 2: [[fallthrough]];
+            case 3: [[fallthrough]];
             default:
                 break;
             }
@@ -374,8 +374,8 @@ namespace phylanx { namespace execution_tree
             case 4:
                 return detail::dimension<1>(tiles_);
 
-            case 1: HPX_FALLTHROUGH;
-            case 2: HPX_FALLTHROUGH;
+            case 1: [[fallthrough]];
+            case 2: [[fallthrough]];
             default:
                 break;
             }
@@ -542,9 +542,9 @@ namespace phylanx { namespace execution_tree
                 return detail::dim_tiled<1>(tiles_, rows(name, codename)) &&
                     detail::dim_tiled<2>(tiles_, columns(name, codename));
 
-            case 1: HPX_FALLTHROUGH;
-            case 2: HPX_FALLTHROUGH;
-            case 4: HPX_FALLTHROUGH;
+            case 1: [[fallthrough]];
+            case 2: [[fallthrough]];
+            case 4: [[fallthrough]];
             default:
                 break;
             }
@@ -578,8 +578,8 @@ namespace phylanx { namespace execution_tree
                 return detail::dim_tiled<0>(tiles_, pages(name, codename)) &&
                     detail::dim_tiled<2>(tiles_, columns(name, codename));
 
-            case 1: HPX_FALLTHROUGH;
-            case 4: HPX_FALLTHROUGH;
+            case 1: [[fallthrough]];
+            case 4: [[fallthrough]];
             default:
                 break;
             }
@@ -613,8 +613,8 @@ namespace phylanx { namespace execution_tree
                 return detail::dim_tiled<0>(tiles_, pages(name, codename)) &&
                     detail::dim_tiled<1>(tiles_, rows(name, codename));
 
-            case 1: HPX_FALLTHROUGH;
-            case 4: HPX_FALLTHROUGH;
+            case 1: [[fallthrough]];
+            case 4: [[fallthrough]];
             default:
                 break;
             }

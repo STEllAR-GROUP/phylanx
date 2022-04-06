@@ -333,8 +333,8 @@ namespace phylanx { namespace execution_tree
             }
             break;
         }
-        case 0: HPX_FALLTHROUGH;
-        case 4: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
+        case 4: [[fallthrough]];
         default:
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -485,8 +485,8 @@ namespace phylanx { namespace execution_tree
             }
             break;
         }
-        case 0: HPX_FALLTHROUGH;
-        case 4: HPX_FALLTHROUGH;
+        case 0: [[fallthrough]];
+        case 4: [[fallthrough]];
         default:
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

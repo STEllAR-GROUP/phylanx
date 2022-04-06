@@ -63,7 +63,7 @@ namespace phylanx { namespace common
             return transpose2d(
                 extract_integer_value_strict(std::move(arg), name, codename));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose2d(
                 extract_numeric_value(std::move(arg), name, codename));
@@ -116,7 +116,7 @@ namespace phylanx { namespace common
                 std::move(axes));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return transpose2d(
                 extract_numeric_value(std::move(arg), name, codename),
@@ -214,7 +214,7 @@ namespace phylanx { namespace common
             return transpose3d(
                 extract_integer_value_strict(std::move(arg), name, codename));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose3d(
                 extract_numeric_value(std::move(arg), name, codename));
@@ -275,7 +275,7 @@ namespace phylanx { namespace common
                 std::move(axes));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return transpose3d(
                 extract_numeric_value(std::move(arg), name, codename),
@@ -492,7 +492,7 @@ namespace phylanx { namespace common
             return transpose4d(
                 extract_integer_value_strict(std::move(arg), name, codename));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown: [[fallthrough]];
         case node_data_type_double:
             return transpose4d(
                 extract_numeric_value(std::move(arg), name, codename));
@@ -636,7 +636,7 @@ namespace phylanx { namespace common
                 std::move(axes));
 
         case node_data_type_unknown:
-            HPX_FALLTHROUGH;
+            [[fallthrough]];
         case node_data_type_double:
             return transpose4d(
                 extract_numeric_value(std::move(arg), name, codename),

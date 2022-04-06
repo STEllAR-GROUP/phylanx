@@ -575,7 +575,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 std::move(op2), this_->name_, this_->codename_));
 
                     case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+                        [[fallthrough]];
                     case node_data_type_double:
                         return this_->batch_dot_nd(
                             extract_numeric_value(
@@ -636,7 +636,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             std::move(axes));
 
                     case node_data_type_unknown:
-                        HPX_FALLTHROUGH;
+                        [[fallthrough]];
                     case node_data_type_double:
                         return this_->batch_dot_nd(
                             extract_numeric_value(

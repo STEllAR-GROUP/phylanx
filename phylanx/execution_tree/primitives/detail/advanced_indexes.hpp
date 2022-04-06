@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace detail
         case 1:
             return extract_numeric_value_dimensions(indices, name, codename)[0];
 
-        case 3: HPX_FALLTHROUGH;
+        case 3: [[fallthrough]];
         case 2:
             break;
         }

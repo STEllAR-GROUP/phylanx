@@ -28,10 +28,10 @@ namespace phylanx { namespace ast { namespace detail
     {
         switch (pe.index())
         {
-        case 1: HPX_FALLTHROUGH;    // bool
-        case 2: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-        case 4: HPX_FALLTHROUGH;    // std::string
-        case 5: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::int64_t>
+        case 1: [[fallthrough]];    // bool
+        case 2: [[fallthrough]];    // phylanx::ir::node_data<double>
+        case 4: [[fallthrough]];    // std::string
+        case 5: [[fallthrough]];    // phylanx::ir::node_data<std::int64_t>
         case 9:                     // phylanx::ir::node_data<std::uint8_t>
             return true;
 
@@ -43,10 +43,10 @@ namespace phylanx { namespace ast { namespace detail
         case 8:
             return is_literal_value(util::get<8>(pe.get()).get());
 
-        case 0: HPX_FALLTHROUGH;    // nil
-        case 3: HPX_FALLTHROUGH;    // identifier
+        case 0: [[fallthrough]];    // nil
+        case 3: [[fallthrough]];    // identifier
         // phylanx::util::recursive_wrapper<function_call>
-        case 7: HPX_FALLTHROUGH;
+        case 7: [[fallthrough]];
         default:
             break;
         }
@@ -95,10 +95,10 @@ namespace phylanx { namespace ast { namespace detail
         case 8:
             return literal_value(util::get<8>(pe.get()).get());
 
-        case 0: HPX_FALLTHROUGH;    // nil
-        case 3: HPX_FALLTHROUGH;    // identifier
+        case 0: [[fallthrough]];    // nil
+        case 3: [[fallthrough]];    // identifier
         // phylanx::util::recursive_wrapper<function_call>
-        case 7: HPX_FALLTHROUGH;
+        case 7: [[fallthrough]];
         default:
             break;
         }
@@ -130,9 +130,9 @@ namespace phylanx { namespace ast { namespace detail
         case 7:     // phylanx::ir::node_data<std::uint8_t>
             return ir::node_data<double>{util::get<7>(val)};
 
-        case 3: HPX_FALLTHROUGH;    // std::string
+        case 3: [[fallthrough]];    // std::string
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
-        case 5: HPX_FALLTHROUGH;
+        case 5: [[fallthrough]];
         default:
             break;
         }
