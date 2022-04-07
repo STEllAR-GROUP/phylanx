@@ -73,6 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             { PHYLANX_GEN_MATCH_DATA("sinh"), false },
             { PHYLANX_GEN_MATCH_DATA("cosh"), false },
             { PHYLANX_GEN_MATCH_DATA("tanh"), false },
+            { PHYLANX_GEN_MATCH_DATA("sleep"), false },
             { PHYLANX_GEN_MATCH_DATA("arcsin"), false },
             { PHYLANX_GEN_MATCH_DATA("arccos"), false },
             { PHYLANX_GEN_MATCH_DATA("arctan"), false },

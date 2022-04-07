@@ -53,6 +53,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"log", [](T m) -> T { return blaze::log(m); }},
             {"log2", [](T m) -> T { return blaze::log2(m); }},
             {"log10", [](T m) -> T { return blaze::log10(m); }},
+            {"sleep", [](T m) -> T {
+                hpx::this_thread::suspend(std::uint64_t(1000*m));
+                return 0;
+            }},
             {"sin", [](T m) -> T { return blaze::sin(m); }},
             {"cos", [](T m) -> T { return blaze::cos(m); }},
             {"tan", [](T m) -> T { return blaze::tan(m); }},
