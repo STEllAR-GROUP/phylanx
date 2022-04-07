@@ -13,6 +13,8 @@
 #include <phylanx/plugins/fileio/file_write.hpp>
 #include <phylanx/plugins/fileio/file_write_csv.hpp>
 #include <phylanx/plugins/fileio/file_write_hdf5.hpp>
+#include <phylanx/plugins/fileio/csc_read_hdf5.hpp>
+#include <phylanx/plugins/fileio/csc_write_hdf5.hpp>
 
 #endif
 
