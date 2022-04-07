@@ -81,7 +81,7 @@ if (PYTHON_EXECUTABLE)
 
   # for the install step it does not matter which setup.py we use
   install(CODE
-    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__install_config}.py install --user)")
+    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__install_config}.py bdist_wheel)")
 
 endif()
 
