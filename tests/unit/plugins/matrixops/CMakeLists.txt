@@ -48,6 +48,7 @@ set(tests
     stack_operation
     tile_operation
     transpose_operation
+    triu_operation
     unique
     vsplit_operation
     vstack_operation
