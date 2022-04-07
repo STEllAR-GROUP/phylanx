@@ -959,6 +959,25 @@ class PhySL:
         # everything that's not a string can be directly passed on
         return '%s' % node.value
 
+    def _Delete(self, node):
+        """class Delete(targets)
+
+        Represents a del statement.
+
+        `targets` is a list of nodes, such as Name, Attribute or Subscript nodes.
+        """
+
+        if len(node.targets) > 1:
+            raise Exception("Phylanx does not support del operators with " + \
+                            "more than one argument.")
+
+        if isinstance(node.targets[0], ast.Subscript):
+            target = self._apply_rule(node.targets[0].value)
+            index = self._apply_rule(node.targets[0].slice)
+            return ['delete', (target, index)]
+
+        return ''
+
     def _Div(self, node):
         """Leaf node, returning raw string of the 'division' operation."""
 

@@ -118,6 +118,9 @@ namespace phylanx { namespace ir {
         std::size_t size() const;
         bool empty() const;
 
+        bool has_key(
+            phylanx::execution_tree::primitive_argument_type const& key) const;
+
         phylanx::execution_tree::primitive_argument_type& operator[](
             phylanx::execution_tree::primitive_argument_type const& key);
         phylanx::execution_tree::primitive_argument_type& operator[](
