@@ -8,6 +8,7 @@ set(tests
     #define_locality
     remote_add
     remote_run
+    remote_arrays_addition
    )
 
 foreach(test ${tests})
