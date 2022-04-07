@@ -7,6 +7,7 @@ add_phylanx_library(common
   SOURCE_ROOT "${PROJECT_SOURCE_DIR}/src/plugins/common"
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/common"
   AUTOGLOB
+  PLUGIN
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
