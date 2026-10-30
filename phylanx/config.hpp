@@ -7,6 +7,7 @@
 #define PHYLANX_CONFIG_AUG_25_2017_0711PM
 
 #include <hpx/config.hpp>
+#include <phylanx/config/hpx_compat.hpp>
 
 #include <phylanx/config/defines.hpp>
 #include <phylanx/config/export_definitions.hpp>

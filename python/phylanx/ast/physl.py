@@ -116,7 +116,13 @@ def create_array(array_tree, kwargs):
             args = (['list', tuple(data)], )
         return [hstack_symbol, args]
 
-    data = np.array(*extract_data(array_tree))
+    extracted = extract_data(array_tree)
+    try:
+        data = np.array(*extracted)
+    except ValueError:
+        # NumPy 1 built an object array for a ragged hstack, such as
+        # hstack((a, hstack((a, b, c)), c)). NumPy 2 raises instead.
+        data = np.array(*extracted, dtype=object)
     num_dim = len(data.shape)
 
     if 3 == num_dim:
@@ -944,9 +950,9 @@ class PhySL:
             return self._apply_rule(node.value)
 
         # starting V3.8 string and number literals are represented as _Constant
-        # nodes
+        # nodes. Constant stores the value in .value; .s belongs to ast.Str.
         if isinstance(node.value, str):
-            return self._Str(node)
+            return '"' + re.sub(r'(["|\\])', r'\\\1', node.value) + '"'
 
         # special integral values need special handling
         name_constants = {None: 'nil', False: 'false', True: 'true'}
@@ -1306,6 +1312,17 @@ class PhySL:
 
         return '__sub'
 
+    def _subscript_index(self, sl):
+        """Compile a subscript index.
+
+        Python 3.9 stores a[i, j] as a Tuple and removed Index and ExtSlice.
+        Those elements are separate indices. _Tuple would turn them into a
+        PhySL list, which the slice primitive then rejects as a range.
+        """
+        if isinstance(sl, ast.Tuple):
+            return tuple(self._apply_rule(elt) for elt in sl.elts)
+        return self._apply_rule(sl)
+
     def _Subscript(self, node):
         """class Subscript(value, slice, ctx)"""
 
@@ -1321,15 +1338,15 @@ class PhySL:
                 value = self._apply_rule(node.value)
                 op = '%s' % get_symbol_info(node, 'slice')
                 # if isinstance(node.ctx, ast.Load):
-                # slice_ = self._apply_rule(node.slice)
+                # slice_ = self._subscript_index(node.slice)
                 # return [value, [slice_]]
 
                 # if isinstance(node.ctx, ast.Store):
-                slice_ = self._apply_rule(node.slice)
+                slice_ = self._subscript_index(node.slice)
                 return [op, (value, [slice_])]
 
         op = get_symbol_info(node, 'slice')
-        slice_ = self._apply_rule(node.slice)
+        slice_ = self._subscript_index(node.slice)
         if isinstance(node.value, ast.Subscript):
             value = _NestedSubscript(node.value)
             return [op, (value, slice_)]
@@ -1392,6 +1409,10 @@ class PhySL:
        `names`: holds a list of identifiers to make global
        """
 
+        # define_global is emitted for every name. op has to be bound before
+        # the loop: a name that is already in self.defined skips the
+        # assignment, and Python then treats op as an unbound local.
+        op = get_symbol_info(node, "define_global")
         result = ()
         for name in node.names:
             if name not in self.defined:
@@ -1400,7 +1421,6 @@ class PhySL:
                 # with no extra information. We may want to make it a
                 # dictionary with the symbol names as keys and list of
                 # symbol_infos to keep track of the symbol.
-                op = get_symbol_info(node, "define_global")
                 self.defined.add(name)
 
             result = result + ([op, (name, 'nil')],)

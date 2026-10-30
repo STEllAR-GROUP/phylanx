@@ -21,7 +21,7 @@ def np_Inf():
     return np.Inf
 
 
-assert np_Inf() == np.Inf
+assert np_Inf() == np.inf
 
 
 @Phylanx
@@ -29,7 +29,7 @@ def np_Infinity():
     return np.Infinity
 
 
-assert np_Infinity() == np.Infinity
+assert np_Infinity() == np.inf
 
 
 @Phylanx
@@ -37,7 +37,7 @@ def np_PINF():
     return np.PINF
 
 
-assert np_PINF() == np.PINF
+assert np_PINF() == np.inf
 
 
 @Phylanx
@@ -45,7 +45,7 @@ def np_NINF():
     return np.NINF
 
 
-assert np_NINF() == np.NINF
+assert np_NINF() == -np.inf
 
 
 @Phylanx
@@ -77,7 +77,7 @@ def np_PZERO():
     return np.PZERO
 
 
-assert np_PZERO() == np.PZERO
+assert np_PZERO() == 0.0
 
 
 @Phylanx
@@ -85,7 +85,7 @@ def np_NZERO():
     return np.NZERO
 
 
-assert np_NZERO() == np.NZERO
+assert np_NZERO() == 0.0
 
 
 @Phylanx

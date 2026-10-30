@@ -126,7 +126,7 @@ namespace phylanx { namespace util {
     std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         std::vector<std::string> const& primitive_instances,
         std::vector<std::string> const& counter_name_last_parts,
-        hpx::naming::id_type const& locality_id)
+        hpx::id_type const& locality_id)
     {
         // Ensure counter_name_last_part has at least one entry
         if (counter_name_last_parts.empty())
@@ -277,7 +277,7 @@ namespace phylanx { namespace util {
 
     std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         std::vector<std::string> const& primitive_instances,
-        hpx::naming::id_type const& locality_id)
+        hpx::id_type const& locality_id)
     {
         std::vector<std::string> const counter_names{
             "count/eval", "time/eval", "eval_direct", "transferred_bytes"};
@@ -287,7 +287,7 @@ namespace phylanx { namespace util {
     }
 
     std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
-        hpx::naming::id_type const& locality_id)
+        hpx::id_type const& locality_id)
     {
         auto entries = hpx::agas::find_symbols(hpx::launch::sync,
             hpx::util::format("/phylanx${}/*$*",

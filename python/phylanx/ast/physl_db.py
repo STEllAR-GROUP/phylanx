@@ -98,9 +98,16 @@ class db:
             # the database is older than the given timestamp, recreate it
 
             db_version, db_created = self.created()
+            # physl.py is the compiler. A newer compiler must not keep
+            # serving PhySL that was compiled by the previous one.
+            compiler = os.path.join(os.path.dirname(__file__), 'physl.py')
+            compiler_mtime = (
+                self.file_mod_date(compiler) if os.path.exists(compiler)
+                else db_created)
             if db_version < version or \
                db_created < timestamp or \
-               db_created < self.file_mod_date(__file__):
+               db_created < self.file_mod_date(__file__) or \
+               db_created < compiler_mtime:
 
                 self.db.close()
                 os.remove(self.dbname)

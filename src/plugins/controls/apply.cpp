@@ -79,7 +79,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_), ctx = std::move(ctx)](
                 primitive_argument_type&& func, ir::range&& list) mutable
             {
-                if (list.is_ref())
+                // is_ref() is an iterator pair or an integer range. args() is
+                // only valid for a range that owns its argument vector.
+                if (!list.is_ref())
                 {
                     return value_operand_sync(func, std::move(list.args()),
                         this_->name_, this_->codename_, std::move(ctx));

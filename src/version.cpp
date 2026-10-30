@@ -7,14 +7,46 @@
 #include <phylanx/config/user_main_config.hpp>
 #include <phylanx/version.hpp>
 
+#include <hpx/modules/filesystem.hpp>
 #include <hpx/modules/format.hpp>
 #include <hpx/preprocessor/expand.hpp>
 #include <hpx/preprocessor/stringize.hpp>
+
+#if !defined(_WIN32) && !defined(__WIN32__) && !defined(WIN32)
+#include <dlfcn.h>
+#endif
 
 #include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <vector>
+
+namespace {
+
+    // glibc exposes RTLD_DI_ORIGIN as an enumerator, not a macro, so
+    // hpx::util::find_prefix records the HPX install prefix. hpx.location is
+    // the host executable, which for the Python extension is python itself.
+    // Primitive plugins are always in the phylanx directory next to this
+    // component library.
+    std::string module_plugin_directory()
+    {
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+        return {};
+#else
+        Dl_info info{};
+        if (::dladdr(reinterpret_cast<void*>(&module_plugin_directory),
+                &info) == 0 ||
+            info.dli_fname == nullptr)
+        {
+            return {};
+        }
+
+        return (hpx::filesystem::path(info.dli_fname).parent_path() / "phylanx")
+            .string();
+#endif
+    }
+
+}    // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx
@@ -85,6 +117,14 @@ namespace phylanx
                 cfg.emplace_back(hpx::util::format(
                     "hpx.component_paths=$[hpx.component_paths]{1}{2}",
                     HPX_INI_PATH_DELIMITER, std::string(path)));
+            }
+
+            std::string const plugin_dir = module_plugin_directory();
+            if (!plugin_dir.empty())
+            {
+                cfg.emplace_back(hpx::util::format(
+                    "hpx.component_paths=$[hpx.component_paths]{1}{2}",
+                    HPX_INI_PATH_DELIMITER, plugin_dir));
             }
 
             // If there was another config function registered, call it

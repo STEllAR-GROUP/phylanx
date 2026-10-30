@@ -86,8 +86,11 @@ if (PYTHON_EXECUTABLE)
 endif()
 
 phylanx_get_python_extension_location(${PYTHON_MODULE_EXTENSION} _result)
+# FORCE: this path is derived from the active interpreter. A cached value from
+# an older Python tag (for example lib.linux-x86_64-1.4) would keep the tests
+# pointed at a directory setuptools never creates.
 set(PHYLANX_PYTHON_EXTENSION_LOCATION ${_result} CACHE STRING
-    "Location of the staged python extension")
+    "Location of the staged python extension" FORCE)
 mark_as_advanced(PHYLANX_PYTHON_EXTENSION_LOCATION)
 
 set(phylanx_targets ${phylanx_targets} PARENT_SCOPE)
