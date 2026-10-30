@@ -121,7 +121,7 @@ def test_full_nodtype():
 
 r = test_full_nodtype()
 assert (r == np.full((3, 3), 2.0)).all()
-assert (r.dtype == np.float)
+assert (r.dtype == np.float64)
 
 
 @Phylanx
@@ -145,4 +145,4 @@ def test_full_like_nodtype():
 a = np.zeros((3, 3), dtype=float)
 r = test_full_like_nodtype()
 assert (r == np.full_like(a, 42)).all()
-assert (r.dtype == np.float)
+assert (r.dtype == np.float64)

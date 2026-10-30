@@ -17,6 +17,10 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/tokenizer.hpp>
 
+#if !defined(_WIN32) && !defined(__WIN32__) && !defined(WIN32)
+#include <dlfcn.h>
+#endif
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,6 +29,33 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace plugin
 {
+    namespace {
+
+        // glibc exposes RTLD_DI_ORIGIN as an enumerator, not a macro, so
+        // hpx::util::plugin::dll::get_directory never calls dlinfo. find_prefix
+        // then stores the HPX install prefix in every [phylanx.plugins.*] path.
+        // The modules themselves are always next to this component library.
+        std::string module_plugin_directory()
+        {
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+            return {};
+#else
+            Dl_info info{};
+            if (::dladdr(reinterpret_cast<void*>(&module_plugin_directory),
+                    &info) == 0 ||
+                info.dli_fname == nullptr)
+            {
+                return {};
+            }
+
+            return (hpx::filesystem::path(info.dli_fname).parent_path() /
+                "phylanx")
+                .string();
+#endif
+        }
+
+    }    // namespace
+
     ///////////////////////////////////////////////////////////////////////////
     bool load_plugins(plugin_map_type& plugins)
     {
@@ -118,6 +149,21 @@ namespace phylanx { namespace plugin
                     break;
                 }
                 lib_path.clear();
+            }
+
+            if (lib_path.string().empty())
+            {
+                std::string const fallback_dir = module_plugin_directory();
+                if (!fallback_dir.empty())
+                {
+                    hpx::filesystem::path fallback =
+                        hpx::filesystem::path(fallback_dir) /
+                        std::string(HPX_MAKE_DLL_STRING(component));
+                    if (hpx::filesystem::exists(fallback, fsec))
+                    {
+                        lib_path = HPX_MOVE(fallback);
+                    }
+                }
             }
 
             if (lib_path.string().empty())
